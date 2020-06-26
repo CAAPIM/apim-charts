@@ -8,6 +8,8 @@ Currently this only works with Gateway v10.0.00
 
 ## From this Repository
 
+`$ helm repo add stable https://kubernetes-charts.storage.googleapis.com`
+
 `$ helm dep build`
 
 If that fails then 
