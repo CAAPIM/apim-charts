@@ -36,9 +36,9 @@ Create java args to apply.
 */}}
 {{- define "gateway.javaArgs" -}}
 {{- if .Values.management.enabled -}}
-  {{- join " " .Values.config.javaArgs }} -Dcom.l7tech.server.config.mode=RUNTIME
-{{- else -}}
   {{- join " " .Values.config.javaArgs }}
+{{- else -}}
+  {{- join " " .Values.config.javaArgs }} -Dcom.l7tech.server.config.mode=RUNTIME
 {{- end  -}}
 {{- end -}}
 

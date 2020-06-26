@@ -17,12 +17,6 @@ image:
    username:
    password:
 
-imageCredentials:
-  registry: quay.io
-  username: someone
-  password: sillyness
-  email: someone@host.com
-
 # Number of Edge Gateways to deploy
 replicas: 1
 revisionHistoryLimit: 10
