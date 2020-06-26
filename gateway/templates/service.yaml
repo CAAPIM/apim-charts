@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ template "gateway.fullname" . }}
+  annotations:
+    description: "The edge Gateway service"
+spec:
+  selector:
+    app: {{ template "gateway.fullname" . }}
+    release: {{ .Release.Name }}
+  type: LoadBalancer
+  ports:
+{{- range .Values.service.ports }}
+    - protocol: TCP
+      port: {{ .external }}
+      targetPort: {{ .internal }}
+      name: {{ .name | quote }}
+{{- end }}

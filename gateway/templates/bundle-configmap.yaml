@@ -1,0 +1,12 @@
+{{ if .Values.bundle.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bundle-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{ end }}

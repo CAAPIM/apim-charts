@@ -1,0 +1,12 @@
+Success!
+
+{{if .Release.IsInstall}}
+Your deployment has been INSTALLED
+{{ else }}
+Your deployment has been UPGRADED
+{{ end }}
+To get the Gateway's IP Address type the following
+
+kubectl get svc -n {{ .Release.Namespace }}
+
+The Gateway is accessible on <gateway-ip>:8443/9443

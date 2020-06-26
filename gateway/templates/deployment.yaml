@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "gateway.fullname" . }}
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}
+  replicas: {{ .Values.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    spec:
+{{ if .Values.image.pullSecret }}
+     imagePullSecrets:
+         - name: {{ .Values.image.pullSecret | quote }}
+{{ end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
+          imagePullPolicy: {{ .Values.pullPolicy }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          ports:
+            {{- range .Values.service.ports }}
+            - containerPort: {{ .internal }}
+            {{- end }}
+          volumeMounts:
+{{ if  .Values.tls.customKey.enabled }}
+            - name: {{ template "gateway.fullname" . }}-ssl
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/config/privateKeys
+{{ end }}
+            - name: {{ template "gateway.fullname" . }}-license-xml
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
+              subPath: license.xml
+{{ if .Values.hazelcast.enabled }}
+            - name: {{ template "gateway.fullname" . }}-hazelcast-client
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
+              subPath: hazelcast-client.xml
+{{ end }}
+{{ if .Values.config.log.override }}
+            - name: {{ template "gateway.fullname" . }}-log-config-override
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+              subPath: log-override.properties
+{{ end }}
+{{ if .Values.bundle.enabled }}
+            - name: bundle-configmap
+              mountPath: opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
+{{ end }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "gateway.fullname" . }}-configmap
+{{ if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command:
+              - /opt/docker/rc.d/diagnostic/health_check.sh
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+{{ end }}
+{{ if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command:
+              - /opt/docker/rc.d/diagnostic/health_check.sh
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+{{ end }}
+      volumes:
+{{ if  .Values.tls.customKey.enabled }}
+        - name: {{ template "gateway.fullname" . }}-ssl
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-ssl
+{{ end }}
+        - name: {{ template "gateway.fullname" . }}-license-xml
+          secret:
+            secretName: {{ template "gateway.fullname" .}}-license
+            items:
+            - key: license
+              path: license.xml
+{{ if .Values.hazelcast.enabled }}
+        - name: {{ template "gateway.fullname" . }}-hazelcast-client
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: hazelcast-xml
+              path: hazelcast-client.xml
+{{ end }}
+{{ if .Values.config.log.override }}
+        - name: {{ template "gateway.fullname" . }}-log-config-override
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: log-override-properties
+              path: log-override.properties
+{{ end }}
+{{ if .Values.bundle.enabled }}
+        - name: bundle-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: bundle-configmap
+{{ end }}

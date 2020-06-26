@@ -1,0 +1,14 @@
+apiVersion: v2
+appVersion: "10.0.00"
+description: This Helm Chart deploys the EDGE Gateway in Kubernetes along with an STS Gateway, hazelcast, grafana, influxdb and reloader
+name: ssg
+version: 1.0.1
+dependencies:
+- name: hazelcast
+  version: ^1.1.0
+  repository: "@stable"
+  condition: hazelcast.enabled
+- name: mysql
+  version: ^1.6.2
+  repository: "@stable"
+  condition: database.create

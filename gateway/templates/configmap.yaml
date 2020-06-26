@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
+  SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
+  SSG_ADMIN_USERNAME: {{ .Values.management.username }}
+  SSG_ADMIN_PASSWORD: {{ .Values.management.password }}
+  SSG_JVM_HEAP: {{ .Values.config.heapSize }}
+{{ if .Values.database.enabled }}
+  {{ if .Values.database.create }}
+  SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
+  {{ else }}
+  SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
+  {{ end }}
+  SSG_DATABASE_USER: {{.Values.database.username }}
+  SSG_DATABASE_PASSWORD:  {{.Values.database.password }}
+  SSG_CLUSTER_PASSWORD: {{.Values.clusterPassword}}
+{{ end }}
+
+{{ if .Values.hazelcast.enabled }}
+  EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
+  hazelcast-xml: |+
+  {{ .Files.Get "files/hazelcast-xml.xml" | nindent 4 }}
+{{ else }}
+  EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}
+{{ end }}
+
+{{ if .Values.config.log.override }}
+  log-override-properties: |-
+{{ .Values.config.log.properties | indent 4 }}
+{{ end }}
+
+{{ if .Values.additionalEnv }}
+{{- range $key, $value := .Values.additionalEnv }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{ end }}

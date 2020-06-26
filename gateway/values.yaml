@@ -1,0 +1,177 @@
+nameOverride: ""
+fullnameOverride: ""
+
+# Use set file to place a Gateway license here
+license:
+  value:
+  accept: false
+
+image:
+  registry: docker.io
+  repository: caapim/gateway
+  tag: 10.0.00
+  pullPolicy: Always
+  # Will create a Registry secret and apply it to the Gateway
+  secretName:
+  credentials:
+   username:
+   password:
+
+imageCredentials:
+  registry: quay.io
+  username: someone
+  password: sillyness
+  email: someone@host.com
+
+# Number of Edge Gateways to deploy
+replicas: 1
+revisionHistoryLimit: 10
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Cluster Hostname
+clusterHostname: broadcom.localdomain
+
+# Cluster Password, used if db backed
+clusterPassword: 7layer
+
+# This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
+# Credentials will be moved to a secret object in the next push..
+management:
+  enabled: true
+  username: admin
+  password: 7layer
+
+# Database configuration
+database:
+  # DB Backed or ephemeral
+  enabled: true
+  # A MySQL Database is configured with this Chart, set to false to configure your own DB server
+  create: true
+  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  # Configurable, update the mysql.<settings> if you change this
+  username: gateway
+  password: 7layer
+  name: ssg
+
+config:
+  heapSize: "2g"
+  javaArgs:
+    - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
+    - -Dcom.l7tech.server.audit.message.saveToInternal=false
+    - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+    - -Dcom.l7tech.server.audit.system.saveToInternal=false
+    - -Dcom.l7tech.server.audit.log.format=json
+    - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+    - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+    - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+  log:
+    override: true
+    properties: |-
+      handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
+      com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
+      java.util.logging.SimpleFormatter.format=
+      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
+      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
+tls:
+  customKey:
+    enabled: false
+
+#Additional Environment variables to be added to the Gateway Configmap - Need to fix
+additionalEnv:
+  - key1: value
+
+#  - key1: value
+#  - key2: value
+
+# This mounts a bundle folder to the Gateway.
+bundle:
+  enabled: false
+
+service:
+  ports:
+    - name: https
+      internal: 8443
+      external: 8443
+    - name: management
+      internal: 9443
+      external: 9443
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  timeoutSeconds: 1
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 10
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  timeoutSeconds: 1
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 10
+
+resources:
+  requests:
+    memory: 2Gi
+    cpu: 1
+  limits:
+    memory: 4Gi
+    cpu: 3
+
+# MySQL stable chart
+mysql:
+  imageTag: "8"
+  mysqlUser: gateway
+  mysqlPassword: 7layer
+  mysqlDatabase: ssg
+  #mysqlRootPassword: 7layer
+  persistence:
+    enabled: true
+    size: 8Gi
+    #storageClass:
+  
+  configurationFiles:
+    my.cnf: |-
+      [mysqld]
+      character-set-server = utf8
+      innodb_log_buffer_size = 32M
+      innodb_log_file_size = 80M
+      max_allowed_packet = 8M
+      default-authentication-plugin=mysql_native_password
+      log-bin-trust-function-creators=1
+
+# Settings for Hazelcast - https://github.com/helm/charts/tree/master/stable/hazelcast
+hazelcast:
+  enabled: false
+  hazelcast:
+  # configurationFiles are Hazelcast configuration files
+    # rest is a flag used to enable REST endpoints for Hazelcast member
+    rest: true
+    # javaOpts are additional JAVA_OPTS properties for Hazelcast member
+    javaOpts:
+    configurationFiles:
+      hazelcast.xml: |-
+        <?xml version="1.0" encoding="UTF-8"?>
+        <hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.10.xsd"
+                       xmlns="http://www.hazelcast.com/schema/config"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <properties>
+            <property name="hazelcast.discovery.enabled">true</property>
+          </properties>
+          <network>
+            <join>
+              <multicast enabled="false"/>
+              <kubernetes enabled="true">
+                <service-name>${serviceName}</service-name>
+                <namespace>${namespace}</namespace>
+                <resolve-not-ready-addresses>true</resolve-not-ready-addresses>
+              </kubernetes>
+            </join>
+          </network>
+        </hazelcast>
