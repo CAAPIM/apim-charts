@@ -18,13 +18,20 @@ If that fails then
 
 `$ helm install gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
 
+## Upgrade this Chart
+To upgrade the Gateway deployment
+
+`$ helm upgrade gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
+
 ## Delete this Chart
 To delete Gateway installation
 
 `helm delete <release name> -n <release namespace>`
 
-## Configuration
+## Custom values
+To make sure that your custom values don't get overwritten by a pull, create your own values.yaml (myvalues.yaml..) then specify -f myvalues.yaml when deploying/upgrading
 
+## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
 
 | Parameter                        | Description                               | Default                                                      |
@@ -88,7 +95,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `resources.limits`    | Resource Limits               | `{}` |
 | `resources.requests`    | Resource Requests              | `{}` |
 
-
+## MySQL
 The following table lists the configured parameters of the MySQL Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/mysql
 
 | Parameter                        | Description                               | Default                                                      |
@@ -103,7 +110,7 @@ The following table lists the configured parameters of the MySQL Subchart - see 
 | `mysql.persistence.storageClass`                | Storage class to use   | `nil` |
 | `mysql.configurationFiles`                | Name overrid   | `see values.yaml` |
 
-
+## Hazelcast
 The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/hazelcast
 Note: This chart is deprecated and will be replaced in the coming days/weeks
 
