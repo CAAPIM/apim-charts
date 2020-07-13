@@ -42,18 +42,18 @@ The following table lists the configurable parameters of the Gateway chart and t
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `nameOverride`                | Name override   | `""` |
-| `fullnameOverride`                      | Full name override                       | `sts-gateway`                                                     |
+| `nameOverride`                | Name override   | `nil` |
+| `fullnameOverride`                      | Full name override                       | `nil`                                                     |
 | `license.value`          | Gateway license file | `nil`  |
 | `license.accept`          | Accept Gateway license EULA | `false`  |
-| `image.registry`    | List of http external port mappings               | https: 8443 -> 8443, istio: 18888->18888 |
-| `image.repository`          | Gateway Cluster Hostname  | `broadcom.localdomain`  |
-| `image.tag`          | InfluxDb location | `influxdb`  |
-| `image.pullPolicy`          | InfluxDb Tags | `env=sts`  |
-| `image.secretName`          | Enable/Disable Policy Manager access | `true`  |
-| `image.credentials.username`          | Policy Manager Username | `admin`  |
-| `image.credentials.password`          | Policy Manager Password | `7layer`  |
-| `replicas`                   | Number of Gateway service replicas        | `1`                                                          |
+| `image.registry`    | Image Registry               | `docker.io` |
+| `image.repository`          | Image Repository  | `caapim/gateway`  |
+| `image.tag`          | Image tag | `10.0.00`  |
+| `image.pullPolicy`          | Image Pull Policy | `Always`  |
+| `image.secretName`          | Creates an imagePullSecrets | `nil`  |
+| `image.credentials.username`          | Registry Username | `nil`  |
+| `image.credentials.password`          | Registry Password | `nil`  |
+| `replicas`                   | Number of Gateway replicas        | `1`                                                          |
 | `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
 | `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
 | `updateStrategy.rollingUpdate.maxUnavailable`             | Rolling Update Max Unavailable                       | `0`                                              |
@@ -69,7 +69,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.password`          | Database Password | `7layer`  |
 | `database.name`          | Database name | `ssg`  |
 | `serviceMetrics.enabled`          | Enable the background metrics processing task | `false`  |
-| `serviceMetrics.external`          | Point to an external influx database. Set influxDbUrl | `false`  |
+| `serviceMetrics.external`          | Point to an external influx database. Set influxDbUrl if true | `false`  |
 | `serviceMetrics.influxDbUrl`          | InfluxDB URL | `http://influxdb`  |
 | `serviceMetrics.influxDbPort`          | InfluxDB port | `8086`  |
 | `serviceMetrics.influxDbDatabase`          | InfluxDB Database Name | `serviceMetricsDb`  |
@@ -109,7 +109,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `resources.requests`    | Resource Requests              | `{}` |
 
 ## Subcharts - these do not represent production configurations
-For Production implementations, please see the Chart links for recommended settings the best approach would deploying each independently
+For Production implementations, please see the Chart links for recommended settings. The best approach would be deploying each independently
 MySQL doesn't have a tried and tested K8's production deployment so it's best to use an external service. You could also try Vitess (https://vitess.io/)
 reference implementation coming soon...
 
@@ -180,7 +180,7 @@ The API Gateway containers are configured to output logs and audits as JSON even
     - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
 
 ### Subcharts
-*  Hazelcast ==> https://github.com/helm/charts/tree/master/stable/hazelcast
-*  MySQL  ==> https://github.com/helm/charts/tree/master/stable/mysql
-*  InfluxDb ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-*  Grafana ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
+*  Hazelcast (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
+*  MySQL (default: enabled)  ==> https://github.com/helm/charts/tree/master/stable/mysql
+*  InfluxDb (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+*  Grafana (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
