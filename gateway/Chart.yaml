@@ -7,10 +7,6 @@ maintainers:
   - name: Gary Vermeulen
     email: gary.vermeulen@broadcom.com
 dependencies:
-# - name: hazelcast
-#   version: ^1.1.0
-#   repository: "@stable"
-#   condition: hazelcast.enabled
 - name: hazelcast
   version: 3.4.4
   repository: "@hazelcast"
