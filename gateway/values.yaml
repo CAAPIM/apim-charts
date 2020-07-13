@@ -210,32 +210,25 @@ mysql:
       default-authentication-plugin=mysql_native_password
       log-bin-trust-function-creators=1
 
-# Settings for Hazelcast - https://github.com/helm/charts/tree/master/stable/hazelcast
+
+# Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 hazelcast:
+  # If you wish to connect to an existing Hazelcast instance set enabled to false
+  # external to true, and uncomment and set url.
   enabled: false
+  external: false
+  #url: hazelcast.example.com:5701
+  cluster:
+    memberCount: 2
   hazelcast:
-  # configurationFiles are Hazelcast configuration files
-    # rest is a flag used to enable REST endpoints for Hazelcast member
-    rest: true
-    # javaOpts are additional JAVA_OPTS properties for Hazelcast member
-    javaOpts:
-    configurationFiles:
-      hazelcast.xml: |-
-        <?xml version="1.0" encoding="UTF-8"?>
-        <hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.10.xsd"
-                       xmlns="http://www.hazelcast.com/schema/config"
-                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <properties>
-            <property name="hazelcast.discovery.enabled">true</property>
-          </properties>
-          <network>
-            <join>
-              <multicast enabled="false"/>
-              <kubernetes enabled="true">
-                <service-name>${serviceName}</service-name>
-                <namespace>${namespace}</namespace>
-                <resolve-not-ready-addresses>true</resolve-not-ready-addresses>
-              </kubernetes>
-            </join>
-          </network>
-        </hazelcast>
+    yaml:
+      hazelcast:
+        network:
+          join:
+            multicast:
+              enabled: false
+            kubernetes:
+              enabled: true
+              service-name: ${serviceName}
+              namespace: ${namespace}
+              resolve-not-ready-addresses: true

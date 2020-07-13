@@ -9,7 +9,7 @@ Currently this only works with Gateway v10.0.00
 ## From this Repository
 
 `$ helm repo add stable https://kubernetes-charts.storage.googleapis.com`
-
+`$ helm repo add hazelcast https://hazelcast-charts.s3.amazonaws.com/`
 `$ helm dep build`
 
 If that fails then 
@@ -117,14 +117,15 @@ The following table lists the configured parameters of the MySQL Subchart - see 
 | `mysql.configurationFiles`                | Name overrid   | `see values.yaml` |
 
 ## Hazelcast
-The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/hazelcast
-Note: This chart is deprecated and will be replaced in the coming days/weeks
+The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `hazelcast.enabled`                | Enable/Disable this sub chart   | `false` |
-| `hazelcast.hazelcast.rest`                | Enable the Hazelcast REST API   | `true` |
-| `hazelcast.javaOpts.configurationFiles`                | Configuration for Hazelcast   | `see values.yaml` |
+| `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
+| `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
+| `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
+| `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
+| `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |
 
 ### Logs & Audit Configuration
 

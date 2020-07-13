@@ -42,7 +42,7 @@ spec:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
-{{ if .Values.hazelcast.enabled }}
+{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
@@ -103,7 +103,7 @@ spec:
             items:
             - key: license
               path: license.xml
-{{ if .Values.hazelcast.enabled }}
+{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap

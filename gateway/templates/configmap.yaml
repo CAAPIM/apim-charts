@@ -19,10 +19,29 @@ data:
   {{ end }}
 {{ end }}
 
-{{ if .Values.hazelcast.enabled }}
+{{ if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
   hazelcast-xml: |+
-  {{ .Files.Get "files/hazelcast-xml.xml" | nindent 4 }}
+    <hazelcast-client
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
+         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.10.xsd"
+            xmlns="http://www.hazelcast.com/schema/client-config">
+        <instance-name>{{ .Release.Name }}-hazelcast-{{ .Release.Namespace }}</instance-name>
+        <network>
+            <cluster-members>
+                <!-- Set your Hazelcast server node addresses here -->
+                {{ if .Values.hazelcast.external }}
+                <address>{{ required "Please set an external Hazelcast URL in values.yaml" .Values.hazelcast.url }}</address>
+                {{ else }}
+                 <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.hazelcast.service.port}}</address>
+                {{ end }}
+            </cluster-members>
+            <connection-attempt-limit>10</connection-attempt-limit>
+            <redo-operation>true</redo-operation>
+        </network>
+        <connection-strategy async-start="false" reconnect-mode="ON" />
+    </hazelcast-client>
 {{ else }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}
 {{ end }}
