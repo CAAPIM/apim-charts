@@ -12,7 +12,6 @@ spec:
     matchLabels:
       app: {{ template "gateway.fullname" . }}
   replicas: {{ .Values.replicas }}
-  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   template:
@@ -60,6 +59,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
+            - secretRef:
+                name: {{ template "gateway.fullname" . }}-secret
 {{ if .Values.livenessProbe.enabled }}
           livenessProbe:
             exec:

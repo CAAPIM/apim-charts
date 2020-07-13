@@ -19,43 +19,109 @@ If that fails then
 `$ helm install gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
 
 ## Delete this Chart
-To delete STS installation
+To delete Gateway installation
 
-`helm del <release name> -n <release namespace>`
+`helm delete <release name> -n <release namespace>`
 
-## Configuration - THIS IS NOT UP TO DATE!! - view values.yaml to see what's configurable.
+## Configuration
 
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `replicas`                   | Number of Gateway service replicas        | `1`                                                          |
-| `deploymentStrategy`             | Deployment Strategy                       | `rollingUpdate`                                              |
 | `nameOverride`                | Name override   | `""` |
 | `fullnameOverride`                      | Full name override                       | `sts-gateway`                                                     |
-| `global.license.value`          | Gateway license file | `nil`  |
-| `global.license.accept`          | Accept Gateway license EULA | `false`  |
-| `service.type`    | Service Type               | `ClusterIP` |
-| `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, istio: 18888->18888 |
-| `gateway.clusterHostname`          | Gateway Cluster Hostname  | `broadcom.localdomain`  |
-| `gateway.influxdb.url`          | InfluxDb location | `influxdb`  |
-| `gateway.influxdb.tags`          | InfluxDb Tags | `env=sts`  |
-| `gateway.manager.enabled`          | Enable/Disable Policy Manager access | `true`  |
-| `gateway.manager.username`          | Policy Manager Username | `admin`  |
-| `gateway.manager.password`          | Policy Manager Password | `7layer`  |
-| `gateway.perftestUrl`          | Built in EDGE gateway Performance test | `https://sts-gateway:8443/oauth/manager`  |
-| `gateway.demoUrl`          | Location of the demo a service | `http://server-a-svc:8080`  |
+| `license.value`          | Gateway license file | `nil`  |
+| `license.accept`          | Accept Gateway license EULA | `false`  |
+| `image.registry`    | List of http external port mappings               | https: 8443 -> 8443, istio: 18888->18888 |
+| `image.repository`          | Gateway Cluster Hostname  | `broadcom.localdomain`  |
+| `image.tag`          | InfluxDb location | `influxdb`  |
+| `image.pullPolicy`          | InfluxDb Tags | `env=sts`  |
+| `image.secretName`          | Enable/Disable Policy Manager access | `true`  |
+| `image.credentials.username`          | Policy Manager Username | `admin`  |
+| `image.credentials.password`          | Policy Manager Password | `7layer`  |
+| `replicas`                   | Number of Gateway service replicas        | `1`                                                          |
+| `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
+| `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
+| `updateStrategy.rollingUpdate.maxUnavailable`             | Rolling Update Max Unavailable                       | `0`                                              |
+| `clusterHostname`          | Gateway Cluster Hostname  | `broadcom.localdomain`  |
+| `clusterPassword`          | Cluster Password, used if db backed  | `7layer`  |
+| `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
+| `management.username`          | Policy Manager Username | `admin`  |
+| `management.password`          | Policy Manager Password | `7layer`  |
+| `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
+| `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
+| `database.username`          | Database Username | `gateway`  |
+| `database.password`          | Database Password | `7layer`  |
+| `database.name`          | Database name | `ssg`  |
+| `config.heapSize`          | Java Heap Size | `2g`  |
+| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
+| `config.log.override`          | Override the standard log configuration | `true`  |
+| `config.log.properties`          | Custom logging properties | `see values.yaml`  |
+| `tls.customKey.enabled`          | Not currently implemented | `false`  |
+| `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
+| `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
+| `bundle.enabled`          | Create and mount an empty configMap that you can use to load policy bundles onto your Gateway | `false`  |
+| `service.type`    | Service Type               | `LoadBalancer` |
+| `service.loadbal..`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
+| `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
+| `service.annotations`    | Additional annotations to add to the service               | {} |
+| `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
+| `ingress.class`    | Ingress Class               | `nginx` |
+| `ingress.annotations`    | Additional ingress annotations               | `{}` |
+| `ingress.hostname`    | Override clusterHostname               | `nil` |
+| `ingress.port`    | The Gateway Port number/name to route to               | `https` |
+| `ingress.tls`    | Use TLS on the Ingress resource              | `false` |
+| `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `nil` |
+| `livenessProbe.enabled`    | Enable/Disable               | `true` |
+| `livenessProbe.initialDelaySeconds`    | Initial delay               | `60` |
+| `livenessProbe.timeoutSeconds`    | Timeout               | `1` |
+| `livenessProbe.periodSeconds`    | Frequency               | `10` |
+| `livenessProbe.successThreshold`    | Success Threshold               | `1` |
+| `livenessProbe.failureThreshold`    | Failure Threshold               | `10` |
+| `readinessProbe.enabled`    | Enable/Disable               | `true` |
+| `readinessProbe.initialDelaySeconds`    | Initial delay               | `60` |
+| `readinessProbe.timeoutSeconds`    | Timeout               | `1` |
+| `readinessProbe.periodSeconds`    | Frequency               | `10` |
+| `readinessProbe.successThreshold`    | Success Threshold               | `1` |
+| `readinessProbe.failureThreshold`    | Failure Threshold               | `10` |
+| `resources.limits`    | Resource Limits               | `{}` |
+| `resources.requests`    | Resource Requests              | `{}` |
 
+
+The following table lists the configured parameters of the MySQL Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/mysql
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `mysql.imageTag`                | MySQL Image to use   | `8` |
+| `mysql.mysqlUser`                | MySQL Username   | `gateway` |
+| `mysql.mysqlPassword`                | MySQL User Password   | `7layer` |
+| `mysql.mysqlDatabase`                | Database to create   | `ssg` |
+| `mysql.mysqlRootPassword`                | MySQL root password, not set by default   | `nil` |
+| `mysql.persistence.enabled`                | Enable/Disable Persistence   | `true` |
+| `mysql.persistence.size`                | Persistent Volume Size   | `8Gi` |
+| `mysql.persistence.storageClass`                | Storage class to use   | `nil` |
+| `mysql.configurationFiles`                | Name overrid   | `see values.yaml` |
+
+
+The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/hazelcast
+Note: This chart is deprecated and will be replaced in the coming days/weeks
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `hazelcast.enabled`                | Enable/Disable this sub chart   | `false` |
+| `hazelcast.hazelcast.rest`                | Enable the Hazelcast REST API   | `true` |
+| `hazelcast.javaOpts.configurationFiles`                | Configuration for Hazelcast   | `see values.yaml` |
 
 ### Logs & Audit Configuration
 
 The API Gateway containers are configured to output logs and audits as JSON events, and to never write audits to the in-memory Derby database:
 
-- System properties in the default template for the `gateway.javaArgs` value configure the log and audit behaviour:
+- System properties in the default template for the `config.javaArgs` value configure the log and audit behaviour:
   - Auditing to the database is disabled: `-Dcom.l7tech.server.audit.message.saveToInternal=false -Dcom.l7tech.server.audit.admin.saveToInternal=false -Dcom.l7tech.server.audit.system.saveToInternal=false`
   - JSON formatting is enabled: `-Dcom.l7tech.server.audit.log.format=json`
   - Default log output configuration is overridden by specifying an alternative configuration properties file: `-Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties`
-- The alternative log configuration properties file `log-override.properties` is mounted on the container, via the `gateway-config` ConfigMap.
+- The alternative log configuration properties file `log-override.properties` is mounted on the container, via ConfigMap.
 - System property to include well known Certificate Authorities Trust Anchors 
     - API Gateway does not implicitly trust certificates without importing it but If you want to avoid import step then configure Gateway to accept any certificate signed by well known CA's (Certificate Authorities)
       configure following property to true -
@@ -64,8 +130,5 @@ The API Gateway containers are configured to output logs and audits as JSON even
     - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
 
 ### Subcharts
-
-This Chart uses the following SubCharts
 *  Hazelcast ==> https://github.com/helm/charts/tree/master/stable/hazelcast
-*  STS  ==> this repository
-*  Demo   ==> this repository
+*  MySQL  ==> https://github.com/helm/charts/tree/master/stable/mysql

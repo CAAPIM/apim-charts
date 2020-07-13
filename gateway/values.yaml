@@ -19,7 +19,7 @@ image:
 
 # Number of Edge Gateways to deploy
 replicas: 1
-revisionHistoryLimit: 10
+# Update strategy
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
@@ -43,7 +43,7 @@ management:
 database:
   # DB Backed or ephemeral
   enabled: true
-  # A MySQL Database is configured with this Chart, set to false to configure your own DB server
+  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
   # Configurable, update the mysql.<settings> if you change this
@@ -74,18 +74,40 @@ tls:
   customKey:
     enabled: false
 
-#Additional Environment variables to be added to the Gateway Configmap - Need to fix
+#Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
-  - key1: value
+  key1: value
 
-#  - key1: value
-#  - key2: value
+# key1: value
+# key2: value
+
+#Additional Secret variables to be added to the Gateway Secret
+additionalSecret:
+  key1: value
+
+# key1: value
+# key2: value
 
 # This mounts a bundle folder to the Gateway.
 bundle:
   enabled: false
 
 service:
+  # Service Type, ClusterIP, NodePort, LoadBalancer
+  type: LoadBalancer
+  ## Load Balancer sources
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ##
+  # loadBalancerSourceRanges:
+  # - 10.10.10.0/24
+
+  ## Set the ExternalIPs
+  ##
+  # externalIPs:
+
+  ## Set the LoadBalancerIP
+  ##
+  # loadBalancerIP:
   ports:
     - name: https
       internal: 8443
@@ -93,6 +115,33 @@ service:
     - name: management
       internal: 9443
       external: 9443
+  # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
+  # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
+  annotations: {}
+#    cloud.google.com/load-balancer-type: "Internal"
+
+# This project does not currently support Google's GCE controller.
+# The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
+# Certificates are not created here, please specify an existing cert secret to use if enabling TLS
+ingress:
+  # Set to true to create ingress object
+  enabled: false
+  class: nginx
+  # Ingress annotations 
+  annotations:
+  # Ingress class
+  #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  
+  # When the ingress is enabled, a host pointing to this will be created
+  # By default clusterHostname is used, only set this if you want to use a different host
+  hostname:
+  ## The port that you want to route to via ingress. This needs to be available via service.ports.
+  port: https
+  ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
+  tls: false
+  secretName:
+
+  #Need to configure additional ingress options for hosts/tls
 
 livenessProbe:
   enabled: true
@@ -111,14 +160,20 @@ readinessProbe:
   failureThreshold: 10
 
 resources:
-  requests:
-    memory: 2Gi
-    cpu: 1
-  limits:
-    memory: 4Gi
-    cpu: 3
+  # There are no resource limits set by default, this is a consicious choice for the user and
+  # increases the chance of these running on environments with fewer resources available
+  # Remove the curly braces and uncomment cpu/memory to set.
+  limits: {}
+  #   cpu: 1000m
+  #   memory: 2Gi
+  requests: {}
+  #   cpu: 1000m
+  #   memory: 2Gi
 
-# MySQL stable chart
+#serviceAccount:
+
+
+# MySQL stable chart - this is not scalable nor will be in this format.
 mysql:
   imageTag: "8"
   mysqlUser: gateway

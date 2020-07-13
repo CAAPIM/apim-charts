@@ -10,8 +10,6 @@ metadata:
 data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
-  SSG_ADMIN_USERNAME: {{ .Values.management.username }}
-  SSG_ADMIN_PASSWORD: {{ .Values.management.password }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
 {{ if .Values.database.enabled }}
   {{ if .Values.database.create }}
@@ -19,9 +17,6 @@ data:
   {{ else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
   {{ end }}
-  SSG_DATABASE_USER: {{.Values.database.username }}
-  SSG_DATABASE_PASSWORD:  {{.Values.database.password }}
-  SSG_CLUSTER_PASSWORD: {{.Values.clusterPassword}}
 {{ end }}
 
 {{ if .Values.hazelcast.enabled }}
@@ -32,13 +27,13 @@ data:
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}
 {{ end }}
 
+{{ if .Values.additionalEnv }}
+{{- range $key, $val := .Values.additionalEnv }}
+  {{ $key }}: "{{ $val }}"
+{{- end }}
+{{ end }}
+
 {{ if .Values.config.log.override }}
   log-override-properties: |-
 {{ .Values.config.log.properties | indent 4 }}
-{{ end }}
-
-{{ if .Values.additionalEnv }}
-{{- range $key, $value := .Values.additionalEnv }}
-  {{ $key }}: {{ $value | quote }}
-{{- end }}
 {{ end }}
