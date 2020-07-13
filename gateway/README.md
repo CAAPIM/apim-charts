@@ -54,6 +54,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `clusterHostname`          | Gateway Cluster Hostname  | `broadcom.localdomain`  |
 | `clusterPassword`          | Cluster Password, used if db backed  | `7layer`  |
 | `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
+| `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `7layer`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
@@ -61,6 +62,11 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.username`          | Database Username | `gateway`  |
 | `database.password`          | Database Password | `7layer`  |
 | `database.name`          | Database name | `ssg`  |
+| `serviceMetrics.enabled`          | Enable the background metrics processing task | `false`  |
+| `serviceMetrics.influxDbUrl`          | InfluxDB URL | `http://influxdb`  |
+| `serviceMetrics.influxDbPort`          | InfluxDB port | `8086`  |
+| `serviceMetrics.influxDbDatabase`          | InfluxDB Database Name | `serviceMetricsDb`  |
+| `serviceMetrics.tags`          | InfluxDB tags | `env=dev`  |
 | `config.heapSize`          | Java Heap Size | `2g`  |
 | `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
 | `config.log.override`          | Override the standard log configuration | `true`  |

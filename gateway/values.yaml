@@ -36,6 +36,9 @@ clusterPassword: 7layer
 # Credentials will be moved to a secret object in the next push..
 management:
   enabled: true
+  # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
+  restman:
+    enabled: false
   username: admin
   password: 7layer
 
@@ -50,6 +53,18 @@ database:
   username: gateway
   password: 7layer
   name: ssg
+
+## Beta - enable/disable the background metrics processing task
+## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
+## Disabling on upgrade will have no effect on the deployed policy
+## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
+## InfluxDbUrl and tags are Cluster-Wide-Properties.
+serviceMetrics:
+  enabled: false
+  influxDbUrl: http://influxdb
+  influxDbPort: 8086
+  influxDbDatabase: serviceMetricsDb
+  tags: env=dev
 
 config:
   heapSize: "2g"

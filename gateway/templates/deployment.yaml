@@ -47,14 +47,22 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
 {{ end }}
+{{ if .Values.serviceMetrics.enabled }}
+            - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/servicemetrics
+{{ end }}
 {{ if .Values.config.log.override }}
             - name: {{ template "gateway.fullname" . }}-log-config-override
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
               subPath: log-override.properties
 {{ end }}
 {{ if .Values.bundle.enabled }}
-            - name: bundle-configmap
-              mountPath: opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
+            - name: {{ template "gateway.fullname" . }}-bundle-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
+{{ end }}
+{{ if .Values.management.restman.enabled }}
+            - name: {{ template "gateway.fullname" . }}-restman
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
           envFrom:
             - configMapRef:
@@ -112,9 +120,20 @@ spec:
               path: log-override.properties
 {{ end }}
 {{ if .Values.bundle.enabled }}
-        - name: bundle-configmap
+        - name: {{ template "gateway.fullname" . }}-bundle-configmap
           configMap:
             defaultMode: 292
             optional: false
-            name: bundle-configmap
+            name: {{ template "gateway.fullname" . }}-bundle-configmap
+{{ end }}
+{{ if .Values.serviceMetrics.enabled }}
+        - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-service-metrics-configmap
+{{ end }}
+{{ if .Values.management.restman.enabled }}
+        - name: {{ template "gateway.fullname" . }}-restman
+          emptyDir: {}
 {{ end }}

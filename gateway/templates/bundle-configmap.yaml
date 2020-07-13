@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bundle-configmap
+  name: {{ template "gateway.fullname" . }}-bundle-configmap
   labels:
     app: {{ template "gateway.name" . }}
     chart: {{ template "gateway.chart" . }}
