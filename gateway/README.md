@@ -9,7 +9,13 @@ Currently this only works with Gateway v10.0.00
 ## From this Repository
 
 `$ helm repo add stable https://kubernetes-charts.storage.googleapis.com`
-`$ helm repo add hazelcast https://hazelcast-charts.s3.amazonaws.com/`
+
+`$ helm repo add hazelcast https://hazelcast-charts.s3.amazonaws.com`
+
+`$ helm repo add influxdata https://helm.influxdata.com`
+
+`$ helm repo add bitnami https://charts.bitnami.com/bitnami`
+
 `$ helm dep build`
 
 If that fails then 
@@ -63,6 +69,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.password`          | Database Password | `7layer`  |
 | `database.name`          | Database name | `ssg`  |
 | `serviceMetrics.enabled`          | Enable the background metrics processing task | `false`  |
+| `serviceMetrics.external`          | Point to an external influx database. Set influxDbUrl | `false`  |
 | `serviceMetrics.influxDbUrl`          | InfluxDB URL | `http://influxdb`  |
 | `serviceMetrics.influxDbPort`          | InfluxDB port | `8086`  |
 | `serviceMetrics.influxDbDatabase`          | InfluxDB Database Name | `serviceMetricsDb`  |
@@ -101,6 +108,11 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `resources.limits`    | Resource Limits               | `{}` |
 | `resources.requests`    | Resource Requests              | `{}` |
 
+## Subcharts - these do not represent production configurations
+For Production implementations, please see the Chart links for recommended settings the best approach would deploying each independently
+MySQL doesn't have a tried and tested K8's production deployment so it's best to use an external service. You could also try Vitess (https://vitess.io/)
+reference implementation coming soon...
+
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/mysql
 
@@ -127,6 +139,30 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |
 
+## InfluxDb
+The following table lists the configured parameters of the InfluxDb Subchart - see the following for more detail https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `influxdb.enabled`                | Enable/Disable deployment of InfluxDb   | `false` |
+| `influxdb.service.port`                | Service Port  | `8086` |
+| `influxdb.persistence.enabled`                | Enable Persistence for InfluxDb   | `true` |
+| `influxdb.persistence.storageClass`                | Persistence Storage Class   | `nil` |
+| `influxdb.persistence.size`                | Persistent Volume Claim Size   | `8Gi` |
+| `influxdb.env`                | Array of additional environment variables   | `see values.yaml` |
+
+## Grafana
+The following table lists the configured parameters of the Grafana Subchart - see the following for more detail https://github.com/bitnami/charts/tree/master/bitnami/grafana
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `grafana.enabled`                | Enable/Disable deployment of Grafana   | `false` |
+| `grafana.admin.user`                | admin username  | `admin` |
+| `grafana.admin.password`                | admin password, leave blank to auto-generate  | `password` |
+| `grafana.dashboardsProvider.enabled`                | Allows dashboards to be preloaded   | `true` |
+| `grafana.dashboardsConfigMaps`                | Configmaps that contain grafana dashboards. You can create your own and set here.   | `see values.yaml` |
+| `grafana.datasources.secretName`                | Configures an InfluxDb Datasource.   | `see values.yaml` |
+
 ### Logs & Audit Configuration
 
 The API Gateway containers are configured to output logs and audits as JSON events, and to never write audits to the in-memory Derby database:
@@ -146,3 +182,5 @@ The API Gateway containers are configured to output logs and audits as JSON even
 ### Subcharts
 *  Hazelcast ==> https://github.com/helm/charts/tree/master/stable/hazelcast
 *  MySQL  ==> https://github.com/helm/charts/tree/master/stable/mysql
+*  InfluxDb ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+*  Grafana ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana

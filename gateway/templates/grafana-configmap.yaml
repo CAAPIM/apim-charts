@@ -1,0 +1,1635 @@
+{{ if .Values.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  gateway-service-metrics.json: |
+    {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 2,
+    "iteration": 1594679182133,
+    "links": [],
+    "panels": [
+      {
+        "columns": [
+          {
+            "text": "Total",
+            "value": "total"
+          }
+        ],
+        "datasource": "serviceMetrics",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 5,
+          "w": 7,
+          "x": 0,
+          "y": 0
+        },
+        "id": 17,
+        "links": [],
+        "pageSize": null,
+        "scroll": false,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": false
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "align": "auto",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "link": false,
+            "pattern": "Time",
+            "preserveFormat": false,
+            "type": "number"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "pattern": "Total",
+            "thresholds": [
+              ""
+            ],
+            "type": "number",
+            "unit": "none"
+          },
+          {
+            "alias": "Status",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "string",
+            "unit": "short"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 2,
+            "pattern": "/.*/",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Routing Failure"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isRoutingFailure",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "B",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Policy Violation"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicyViolation",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "C",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Success"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicySuccessful",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "D",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Total"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "timeFrom": "24h",
+        "timeShift": null,
+        "title": "Service Status",
+        "transform": "timeseries_aggregations",
+        "type": "table-old"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "serviceMetrics",
+        "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 6,
+          "w": 17,
+          "x": 7,
+          "y": 0
+        },
+        "hiddenSeries": false,
+        "id": 9,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": false,
+          "hideEmpty": false,
+          "hideZero": false,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "sideWidth": 200,
+          "total": false,
+          "values": true
+        },
+        "lines": false,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "null"
+                ],
+                "type": "fill"
+              }
+            ],
+            "hide": false,
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "query": "SELECT \"value\" FROM \"totalFrontendLatency\" WHERE $timeFilter GROUP BY time(5s), \"isPolicySuccessful\", \"isPolicyViolation\", \"isRoutingFailure\" fill(null)",
+            "rawQuery": false,
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "mean"
+                },
+                {
+                  "params": [
+                    "Front End"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "null"
+                ],
+                "type": "fill"
+              }
+            ],
+            "hide": false,
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "query": "SELECT \"value\" FROM \"totalFrontendLatency\" WHERE $timeFilter GROUP BY time(5s), \"isPolicySuccessful\", \"isPolicyViolation\", \"isRoutingFailure\" fill(null)",
+            "rawQuery": false,
+            "refId": "B",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalBackendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "mean"
+                },
+                {
+                  "params": [
+                    "Back End"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              },
+              {
+                "condition": "AND",
+                "key": "isPolicySuccessful",
+                "operator": "=",
+                "value": "true"
+              }
+            ]
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Service Latency",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "none",
+            "label": "Response Time (ms)",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "decimals": 0,
+            "format": "none",
+            "label": "Response Time (ms)",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "columns": [
+          {
+            "text": "Total",
+            "value": "total"
+          }
+        ],
+        "datasource": "serviceMetrics",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 4,
+          "w": 7,
+          "x": 0,
+          "y": 5
+        },
+        "hideTimeOverride": false,
+        "id": 20,
+        "links": [],
+        "pageSize": null,
+        "scroll": true,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": true
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "align": "auto",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "Service",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "string",
+            "unit": "short"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": "value",
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "pattern": "Total",
+            "thresholds": [],
+            "type": "number",
+            "unit": "none"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 2,
+            "pattern": "/.*/",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "alias": "$tag_serviceName",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "serviceName"
+                ],
+                "type": "tag"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicyViolation",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "timeFrom": "24h",
+        "title": "Policy Violation",
+        "transform": "timeseries_aggregations",
+        "type": "table-old"
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "serviceMetrics",
+        "decimals": 2,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 7,
+          "w": 17,
+          "x": 7,
+          "y": 6
+        },
+        "hiddenSeries": false,
+        "id": 10,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": false,
+          "hideEmpty": false,
+          "hideZero": false,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "sideWidth": 200,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    " / 5"
+                  ],
+                  "type": "math"
+                },
+                {
+                  "params": [
+                    "Message Rate"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Message Rate",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 2,
+            "format": "none",
+            "label": "Message Rate (requests/sec)",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "decimals": 2,
+            "format": "none",
+            "label": "Message Rate (requests/sec)",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "columns": [
+          {
+            "text": "Total",
+            "value": "total"
+          }
+        ],
+        "datasource": "serviceMetrics",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 4,
+          "w": 7,
+          "x": 0,
+          "y": 9
+        },
+        "id": 21,
+        "links": [],
+        "pageSize": null,
+        "scroll": true,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": true
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "align": "auto",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "Service",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "string",
+            "unit": "short"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": "value",
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "pattern": "Total",
+            "thresholds": [],
+            "type": "number",
+            "unit": "none"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 2,
+            "pattern": "/.*/",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "alias": "$tag_serviceName",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "serviceName"
+                ],
+                "type": "tag"
+              },
+              {
+                "params": [
+                  "isPolicyViolation"
+                ],
+                "type": "tag"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isRoutingFailure",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "timeFrom": "24h",
+        "title": "Routing Failure",
+        "transform": "timeseries_aggregations",
+        "type": "table-old"
+      },
+      {
+        "columns": [
+          {
+            "text": "Total",
+            "value": "total"
+          }
+        ],
+        "datasource": "serviceMetrics",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fontSize": "100%",
+        "gridPos": {
+          "h": 6,
+          "w": 7,
+          "x": 0,
+          "y": 13
+        },
+        "id": 19,
+        "links": [],
+        "pageSize": null,
+        "scroll": true,
+        "showHeader": true,
+        "sort": {
+          "col": 0,
+          "desc": true
+        },
+        "styles": [
+          {
+            "alias": "Time",
+            "align": "auto",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "pattern": "Time",
+            "type": "date"
+          },
+          {
+            "alias": "Service",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "pattern": "Metric",
+            "thresholds": [],
+            "type": "string",
+            "unit": "short"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 0,
+            "pattern": "Total",
+            "thresholds": [],
+            "type": "number",
+            "unit": "none"
+          },
+          {
+            "alias": "",
+            "align": "auto",
+            "colorMode": null,
+            "colors": [
+              "rgba(245, 54, 54, 0.9)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(50, 172, 45, 0.97)"
+            ],
+            "decimals": 2,
+            "pattern": "/.*/",
+            "thresholds": [],
+            "type": "number",
+            "unit": "short"
+          }
+        ],
+        "targets": [
+          {
+            "alias": "$tag_serviceName",
+            "groupBy": [
+              {
+                "params": [
+                  "$__interval"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "serviceName"
+                ],
+                "type": "tag"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalFrontendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicySuccessful",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "timeFrom": "24h",
+        "title": "Success",
+        "transform": "timeseries_aggregations",
+        "type": "table-old"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "serviceMetrics",
+        "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 6,
+          "w": 17,
+          "x": 7,
+          "y": 13
+        },
+        "hiddenSeries": false,
+        "id": 4,
+        "legend": {
+          "alignAsTable": true,
+          "avg": false,
+          "current": false,
+          "hideEmpty": false,
+          "hideZero": false,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "show": true,
+          "sideWidth": 200,
+          "total": true,
+          "values": true
+        },
+        "lines": false,
+        "linewidth": 1,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": true,
+        "steppedLine": false,
+        "targets": [
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "null"
+                ],
+                "type": "fill"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "A",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalBackendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Routing Failure"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isRoutingFailure",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "null"
+                ],
+                "type": "fill"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "B",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalBackendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Policy Violation"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicyViolation",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          },
+          {
+            "alias": "$col",
+            "groupBy": [
+              {
+                "params": [
+                  "5s"
+                ],
+                "type": "time"
+              },
+              {
+                "params": [
+                  "null"
+                ],
+                "type": "fill"
+              }
+            ],
+            "measurement": "request",
+            "orderByTime": "ASC",
+            "policy": "default",
+            "refId": "C",
+            "resultFormat": "time_series",
+            "select": [
+              [
+                {
+                  "params": [
+                    "totalBackendLatency"
+                  ],
+                  "type": "field"
+                },
+                {
+                  "params": [],
+                  "type": "count"
+                },
+                {
+                  "params": [
+                    "Success"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "tags": [
+              {
+                "key": "isPolicySuccessful",
+                "operator": "=",
+                "value": "true"
+              },
+              {
+                "condition": "AND",
+                "key": "nodeName",
+                "operator": "=~",
+                "value": "/^$nodeName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "serviceName",
+                "operator": "=~",
+                "value": "/^$serviceName$/"
+              },
+              {
+                "condition": "AND",
+                "key": "env",
+                "operator": "=~",
+                "value": "/^$env$/"
+              }
+            ]
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Service Status",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "none",
+            "label": "Number of Messages",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": true
+          },
+          {
+            "decimals": 0,
+            "format": "none",
+            "label": "Number of Messages",
+            "logBase": 1,
+            "max": null,
+            "min": "0",
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 25,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "serviceMetrics",
+          "definition": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Gateway Node",
+          "multi": false,
+          "name": "nodeName",
+          "options": [],
+          "query": "SHOW TAG VALUES  WITH KEY = \"nodeName\" ",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "serviceMetrics",
+          "definition": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Published Service",
+          "multi": false,
+          "name": "serviceName",
+          "options": [],
+          "query": "SHOW TAG VALUES  WITH KEY = \"serviceName\" ",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "serviceMetrics",
+          "definition": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Environment",
+          "multi": false,
+          "name": "env",
+          "options": [],
+          "query": "SHOW TAG VALUES  WITH KEY = \"env\" ",
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "",
+    "title": "Gateway Service Metrics",
+    "uid": "-0QQRAWiz",
+    "version": 1
+    }
+{{ end }}

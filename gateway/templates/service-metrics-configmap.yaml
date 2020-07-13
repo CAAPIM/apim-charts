@@ -19,7 +19,11 @@ data:
                 <l7:Resource>
                     <l7:ClusterProperty id="efa6324d69c65f8cbcbf28a203829fb1">
                         <l7:Name>influxdb.url</l7:Name>
+                        {{ if .Values.serviceMetrics.external }}
                         <l7:Value>{{ .Values.serviceMetrics.influxDbUrl }}</l7:Value>
+                        {{ else }}
+                         <l7:Value>http://{{ .Release.Name }}-influxdb.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.influxdb.service.port }}</l7:Value>
+                        {{ end }}
                     </l7:ClusterProperty>
                 </l7:Resource>
             </l7:Item>
@@ -305,7 +309,7 @@ data:
                         &lt;L7p:HttpRoutingAssertion&gt;
                             &lt;L7p:FailOnErrorStatus booleanValue=&quot;false&quot;/&gt;
                             &lt;L7p:HttpMethod httpMethod=&quot;POST&quot;/&gt;
-                            &lt;L7p:ProtectedServiceUrl stringValue=&quot;${influxdb-url}:{{ .Values.serviceMetrics.influxDbPort }}/write?db={{.Values.serviceMetrics.influxDbDatabase}}&quot;/&gt;
+                            &lt;L7p:ProtectedServiceUrl stringValue=&quot;${influxdb-url}/write?db={{.Values.serviceMetrics.influxDbDatabase}}&quot;/&gt;
                             &lt;L7p:ProxyPassword stringValueNull=&quot;null&quot;/&gt;
                             &lt;L7p:ProxyUsername stringValueNull=&quot;null&quot;/&gt;
                             &lt;L7p:RequestHeaderRules httpPassthroughRuleSet=&quot;included&quot;&gt;

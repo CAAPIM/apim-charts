@@ -11,6 +11,14 @@ dependencies:
   version: 3.4.4
   repository: "@hazelcast"
   condition: hazelcast.enabled
+- name: influxdb
+  version: 4.7.0
+  repository: "@influxdata"
+  condition: influxdb.enabled
+- name: grafana
+  version: 3.1.1
+  repository: "@bitnami"
+  condition: grafana.enabled
 - name: mysql
   version: ^1.6.2
   repository: "@stable"

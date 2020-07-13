@@ -61,8 +61,10 @@ database:
 ## InfluxDbUrl and tags are Cluster-Wide-Properties.
 serviceMetrics:
   enabled: false
-  influxDbUrl: http://influxdb
-  influxDbPort: 8086
+  ## By default influxdb is not deployed with this Chart.
+  ## Set influxdb.enabled in the subchart section to true to deploy it.
+  external: false
+  influxDbUrl: http://influxdb:8086
   influxDbDatabase: serviceMetricsDb
   tags: env=dev
 
@@ -188,6 +190,13 @@ resources:
 #serviceAccount:
 
 
+
+###############################################################################################
+##                                                                                           ##
+##                              Subchart Configuration                                       ##
+##                                                                                           ##
+###############################################################################################
+
 # MySQL stable chart - this is not scalable nor will be in this format.
 mysql:
   imageTag: "8"
@@ -232,3 +241,34 @@ hazelcast:
               service-name: ${serviceName}
               namespace: ${namespace}
               resolve-not-ready-addresses: true
+
+# Settings for InfluxDB - https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+# This is not a production implementation!
+influxdb:
+  enabled: false
+  service:
+    port: 8086
+  persistence:
+    enabled: true
+   # storageClass:
+    size: 8Gi
+  env:
+    - name: INFLUXDB_DB
+      value: "serviceMetricsDb"
+
+# Settings for Grafana - https://github.com/bitnami/charts/tree/master/bitnami/grafana
+grafana:
+  enabled: false
+  # Change this to update the UI Password
+  admin:
+    user: admin
+    password: password
+  dashboardsProvider:
+    enabled: true
+  dashboardsConfigMaps:
+    - configMapName: grafana-configmap
+      fileName: gateway-service-metrics.json
+  datasources:
+    secretName: grafana-secret
+
+
