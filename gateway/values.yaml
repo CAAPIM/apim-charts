@@ -49,6 +49,7 @@ database:
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  #jdbcURL: jdbc:mysql://vtgate-zone1.vitess.svc.cluster.local:3306/ssg
   # Configurable, update the mysql.<settings> if you change this
   username: gateway
   password: 7layer
@@ -229,6 +230,8 @@ hazelcast:
   #url: hazelcast.example.com:5701
   cluster:
     memberCount: 2
+  mancenter:
+    enabled: false
   hazelcast:
     yaml:
       hazelcast:

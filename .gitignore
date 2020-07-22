@@ -1,2 +1,2 @@
 *.lock
-*.tgz
+gateway/my-values.yaml
