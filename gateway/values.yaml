@@ -49,7 +49,6 @@ database:
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  #jdbcURL: jdbc:mysql://vtgate-zone1.vitess.svc.cluster.local:3306/ssg
   # Configurable, update the mysql.<settings> if you change this
   username: gateway
   password: 7layer
@@ -222,12 +221,15 @@ mysql:
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
+# The Gateway currently supports Hazelcast 3.x servers
 hazelcast:
   # If you wish to connect to an existing Hazelcast instance set enabled to false
   # external to true, and uncomment and set url.
   enabled: false
   external: false
   #url: hazelcast.example.com:5701
+  image:
+    tag: "3.12.8"
   cluster:
     memberCount: 2
   mancenter:

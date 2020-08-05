@@ -1,38 +1,37 @@
 # Layer7 API Gateway
 
-This chart deploys the API Gateway with hazelcast (optional) and mysql (optional).
+This Chart deploys the API Gateway with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
 
-Currently this only works with Gateway v10.0.00
+It's targeted at Gateway v10.x onward.
 
 # Install the Chart
 
 ## From this Repository
+Install from this repository assuming you've downloaded/forked the Git Repo
 
-`$ helm repo add stable https://kubernetes-charts.storage.googleapis.com`
+`$ helm install ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
 
-`$ helm repo add hazelcast https://hazelcast-charts.s3.amazonaws.com`
+## From the Layer7 Repository (Please read!)
+Install from the charts.brcmlabs.com Helm Repository, the ssg chart will require authentication until is made GA. Customers that have been invited to try the Chart out will receive credentials in a separate email. Please reach out to gary.vermeulen@broadcom.com if you haven't received these.
 
-`$ helm repo add influxdata https://helm.influxdata.com`
+`$ helm repo add layer7 https://charts.brcmlabs.com --username <username> --password <password>`
 
-`$ helm repo add bitnami https://charts.bitnami.com/bitnami`
-
-`$ helm dep build`
-
-If that fails then 
-
-`$ helm dep up`
-
-`$ helm install gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
+`$ helm install ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/ssg`
 
 ## Upgrade this Chart
 To upgrade the Gateway deployment
 
-`$ helm upgrade gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
+`$ helm upgrade ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
 
 ## Delete this Chart
 To delete Gateway installation
 
-`helm delete <release name> -n <release namespace>`
+`$ helm delete <release name> -n <release namespace>`
+
+## Rebuild Chart Dependencies
+To update the Charts dependencies
+
+`$ helm dep up`
 
 ## Custom values
 To make sure that your custom values don't get overwritten by a pull, create your own values.yaml (myvalues.yaml..) then specify -f myvalues.yaml when deploying/upgrading
@@ -135,6 +134,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
 | `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
+| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 3.x servers.  | `3.12.8` |
 | `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |

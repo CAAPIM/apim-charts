@@ -30,7 +30,6 @@ data:
         <instance-name>{{ .Release.Name }}-hazelcast-{{ .Release.Namespace }}</instance-name>
         <network>
             <cluster-members>
-                <!-- Set your Hazelcast server node addresses here -->
                 {{ if .Values.hazelcast.external }}
                 <address>{{ required "Please set an external Hazelcast URL in values.yaml" .Values.hazelcast.url }}</address>
                 {{ else }}
