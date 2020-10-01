@@ -1,0 +1,33 @@
+{{- if .Values.installSolutionKits.otkJdbcEnabled}}
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+        <l7:Item>
+            <l7:Name>OAuth</l7:Name>
+            <l7:Id>4432207d16a1b505e8a6ed59993eaa24</l7:Id>
+            <l7:Type>JDBC_CONNECTION</l7:Type>
+            <l7:TimeStamp>2020-08-20T20:20:20.020Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:JDBCConnection id="4432207d16a1b505e8a6ed59993eaa24">
+                    <l7:Name>OAuth</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Extension>
+                        <l7:DriverClass>{{ .Values.installSolutionKits.otkJdbcDriver }}</l7:DriverClass>
+                        <l7:JdbcUrl>{{ .Values.installSolutionKits.otkJdbcUrl }}</l7:JdbcUrl>
+                        <l7:ConnectionProperties>
+                            <l7:Property key="password">
+                                <l7:StringValue>{{ .Values.installSolutionKits.otkJdbcPassword }}</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="user">
+                                <l7:StringValue>{{ .Values.installSolutionKits.otkJdbcUser }}</l7:StringValue>
+                            </l7:Property>
+                        </l7:ConnectionProperties>
+                    </l7:Extension>
+                </l7:JDBCConnection>
+            </l7:Resource>
+        </l7:Item>
+    </l7:References>
+    <l7:Mappings>
+        <l7:Mapping action="NewOrExisting" srcId="4432207d16a1b505e8a6ed59993eaa24" type="JDBC_CONNECTION"/>
+    </l7:Mappings>
+</l7:Bundle>
+{{- end }}

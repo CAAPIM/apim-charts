@@ -1,0 +1,221 @@
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+        <l7:Item>
+            <l7:Name>Default HTTPS (8443)</l7:Name>
+            <l7:Id>abbc21deb6d16020c202d7cb1c80f5da</l7:Id>
+            <l7:Type>SSG_CONNECTOR</l7:Type>
+            <l7:TimeStamp>2020-08-18T21:58:00.717Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:ListenPort id="abbc21deb6d16020c202d7cb1c80f5da" version="0">
+                    <l7:Name>Default HTTPS (8443)</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Protocol>HTTPS</l7:Protocol>
+                    <l7:Port>8443</l7:Port>
+                    <l7:EnabledFeatures>
+                        <l7:StringValue>Published service message input</l7:StringValue>
+                        <l7:StringValue>Administrative access</l7:StringValue>
+                        <l7:StringValue>Browser-based administration</l7:StringValue>
+                        <l7:StringValue>Built-in services</l7:StringValue>
+                    </l7:EnabledFeatures>
+                    <l7:TlsSettings>
+                        <l7:ClientAuthentication>Optional</l7:ClientAuthentication>
+                        <l7:EnabledVersions>
+                            <l7:StringValue>TLSv1</l7:StringValue>
+                            <l7:StringValue>TLSv1.1</l7:StringValue>
+                            <l7:StringValue>TLSv1.2</l7:StringValue>
+                        </l7:EnabledVersions>
+                        <l7:EnabledCipherSuites>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                        </l7:EnabledCipherSuites>
+                        <l7:UseCipherSuitesOrder>true</l7:UseCipherSuitesOrder>
+                        <l7:Properties>
+                            <l7:Property key="usesTLS">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:TlsSettings>
+                </l7:ListenPort>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>Default HTTP (8080)</l7:Name>
+            <l7:Id>abbc21deb6d16020c202d7cb1c80f5db</l7:Id>
+            <l7:Type>SSG_CONNECTOR</l7:Type>
+            <l7:TimeStamp>2020-08-18T21:58:00.717Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:ListenPort id="abbc21deb6d16020c202d7cb1c80f5db" version="0">
+                    <l7:Name>Default HTTP (8080)</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Protocol>HTTP</l7:Protocol>
+                    <l7:Port>8080</l7:Port>
+                    <l7:EnabledFeatures>
+                        <l7:StringValue>Published service message input</l7:StringValue>
+                        <l7:StringValue>Policy download service</l7:StringValue>
+                        <l7:StringValue>Ping service</l7:StringValue>
+                        <l7:StringValue>WS-Trust security token service</l7:StringValue>
+                        <l7:StringValue>WSDL download service</l7:StringValue>
+                        <l7:StringValue>SNMP Query service</l7:StringValue>
+                    </l7:EnabledFeatures>
+                </l7:ListenPort>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>Default HTTPS (9443)</l7:Name>
+            <l7:Id>abbc21deb6d16020c202d7cb1c80f5dc</l7:Id>
+            <l7:Type>SSG_CONNECTOR</l7:Type>
+            <l7:TimeStamp>2020-08-18T21:58:00.717Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:ListenPort id="abbc21deb6d16020c202d7cb1c80f5dc" version="0">
+                    <l7:Name>Default HTTPS (9443)</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Protocol>HTTPS</l7:Protocol>
+                    <l7:Port>9443</l7:Port>
+                    <l7:EnabledFeatures>
+                        <l7:StringValue>Published service message input</l7:StringValue>
+                        <l7:StringValue>Administrative access</l7:StringValue>
+                        <l7:StringValue>Browser-based administration</l7:StringValue>
+                        <l7:StringValue>Built-in services</l7:StringValue>
+                    </l7:EnabledFeatures>
+                    <l7:TlsSettings>
+                        <l7:ClientAuthentication>None</l7:ClientAuthentication>
+                        <l7:EnabledVersions>
+                            <l7:StringValue>TLSv1</l7:StringValue>
+                            <l7:StringValue>TLSv1.1</l7:StringValue>
+                            <l7:StringValue>TLSv1.2</l7:StringValue>
+                        </l7:EnabledVersions>
+                        <l7:EnabledCipherSuites>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_GCM_SHA384</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_GCM_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_CBC_SHA256</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                        </l7:EnabledCipherSuites>
+                        <l7:UseCipherSuitesOrder>true</l7:UseCipherSuitesOrder>
+                        <l7:Properties>
+                            <l7:Property key="usesTLS">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:TlsSettings>
+                </l7:ListenPort>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>Node HTTPS (2124)</l7:Name>
+            <l7:Id>abbc21deb6d16020c202d7cb1c80f5dd</l7:Id>
+            <l7:Type>SSG_CONNECTOR</l7:Type>
+            <l7:TimeStamp>2020-08-18T21:58:00.718Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:ListenPort id="abbc21deb6d16020c202d7cb1c80f5dd" version="0">
+                    <l7:Name>Node HTTPS (2124)</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Protocol>HTTPS</l7:Protocol>
+                    <l7:Port>2124</l7:Port>
+                    <l7:EnabledFeatures>
+                        <l7:StringValue>Node Control</l7:StringValue>
+                        <l7:StringValue>Inter-Node Communication</l7:StringValue>
+                    </l7:EnabledFeatures>
+                    <l7:TlsSettings>
+                        <l7:ClientAuthentication>Optional</l7:ClientAuthentication>
+                        <l7:EnabledVersions>
+                            <l7:StringValue>TLSv1</l7:StringValue>
+                            <l7:StringValue>TLSv1.1</l7:StringValue>
+                            <l7:StringValue>TLSv1.2</l7:StringValue>
+                        </l7:EnabledVersions>
+                        <l7:EnabledCipherSuites>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_DHE_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_RSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                            <l7:StringValue>TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA</l7:StringValue>
+                        </l7:EnabledCipherSuites>
+                        <l7:UseCipherSuitesOrder>true</l7:UseCipherSuitesOrder>
+                        <l7:Properties>
+                            <l7:Property key="usesTLS">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:TlsSettings>
+                    <l7:Properties>
+                        <l7:Property key="threadPoolSize">
+                            <l7:StringValue>10</l7:StringValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:ListenPort>
+            </l7:Resource>
+        </l7:Item>
+    </l7:References>
+    <l7:Mappings>
+        <l7:Mapping action="NewOrExisting" srcId="abbc21deb6d16020c202d7cb1c80f5da" srcUri="https://ssg-7b69844cfc-jx2g4:9443/restman/1.0/listenPorts/abbc21deb6d16020c202d7cb1c80f5da" type="SSG_CONNECTOR"/>
+        <l7:Mapping action="NewOrExisting" srcId="abbc21deb6d16020c202d7cb1c80f5db" srcUri="https://ssg-7b69844cfc-jx2g4:9443/restman/1.0/listenPorts/abbc21deb6d16020c202d7cb1c80f5db" type="SSG_CONNECTOR"/>
+        <l7:Mapping action="NewOrExisting" srcId="abbc21deb6d16020c202d7cb1c80f5dc" srcUri="https://ssg-7b69844cfc-jx2g4:9443/restman/1.0/listenPorts/abbc21deb6d16020c202d7cb1c80f5dc" type="SSG_CONNECTOR"/>
+        <l7:Mapping action="NewOrExisting" srcId="abbc21deb6d16020c202d7cb1c80f5dd" srcUri="https://ssg-7b69844cfc-jx2g4:9443/restman/1.0/listenPorts/abbc21deb6d16020c202d7cb1c80f5dd" type="SSG_CONNECTOR"/>
+    </l7:Mappings>
+</l7:Bundle>

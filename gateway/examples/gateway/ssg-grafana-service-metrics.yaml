@@ -1,0 +1,68 @@
+## Beta - enable/disable the background metrics processing task
+## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
+## Disabling on upgrade will have no effect on the deployed policy
+## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
+## InfluxDbUrl and tags are Cluster-Wide-Properties.
+serviceMetrics:
+  enabled: true
+  ## By default influxdb is not deployed with this Chart.
+  ## Set influxdb.enabled in the subchart section to true to deploy it.
+  external: false
+  influxDbUrl: http://influxdb:8086
+  influxDbDatabase: serviceMetricsDb
+  tags: env=dev
+
+
+# Settings for InfluxDB - https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+# This is not a production implementation!
+influxdb:
+  enabled: true
+  service:
+    port: 8086
+  persistence:
+    enabled: true
+   # storageClass:
+    size: 8Gi
+  env:
+    - name: INFLUXDB_DB
+      value: "serviceMetricsDb"
+
+# Settings for Grafana - https://github.com/bitnami/charts/tree/master/bitnami/grafana
+# Using Internal Load Balanacer to expose Grafana service at 3000 port
+# To use ingress, you will need to expose port 3000 and add a route to Grafana service
+grafana:
+  enabled: true
+  # Change this to update the UI Password
+  admin:
+    user: admin
+    password: password
+  dashboardsProvider:
+    enabled: true
+## Create dashboards from a custom configMap that contains the file.
+## They will be mounted by the default dashboard provider if it is enabled
+## Use an array with the configMap names.
+## Example:
+## dashboardsConfigMaps:
+##   - configMapName: mydashboard
+##     fileName: mydashboard.json
+##   - configMapName: myotherdashboard
+##     fileName: myotherdashboard.json
+  dashboardsConfigMaps:
+    - configMapName: grafana-configmap
+      fileName: gateway-service-metrics.json
+  datasources:
+    secretName: grafana-secret
+  # This reference files folder that contains grafana configuration json file
+  files:
+    enabled: true
+    serviceMetricJSONPath: "files/grafana/gateway-service-metrics.json"
+  service:
+    type: LoadBalancer
+    ports:
+      - name: http
+        internal: 3000
+        external: 3000
+        protocol: TCP
+        targetPort: 3000
+    annotations:
+        cloud.google.com/load-balancer-type: "Internal"

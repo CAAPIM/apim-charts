@@ -1,0 +1,25 @@
+apiVersion: v2
+name: ssg
+version: 1.0.2
+appVersion: "10.0.00"
+description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+maintainers:
+  - name: Gary Vermeulen
+    email: gary.vermeulen@broadcom.com
+dependencies:
+- name: hazelcast
+  version: 3.4.6
+  repository: "https://hazelcast-charts.s3.amazonaws.com/"
+  condition: hazelcast.enabled
+- name: influxdb
+  version: 4.7.0
+  repository: "https://helm.influxdata.com/"
+  condition: influxdb.enabled
+- name: grafana
+  version: 3.1.1
+  repository: "https://charts.bitnami.com/bitnami"
+  condition: grafana.enabled
+- name: mysql
+  version: ^1.6.2
+  repository: "https://kubernetes-charts.storage.googleapis.com"
+  condition: database.create

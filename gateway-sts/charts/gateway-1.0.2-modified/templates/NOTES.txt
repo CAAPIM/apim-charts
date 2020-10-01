@@ -1,0 +1,23 @@
+Success!
+
+{{if .Release.IsInstall}}
+Your deployment has been INSTALLED
+{{ else }}
+Your deployment has been UPGRADED
+{{ end }}
+To get the Gateway's IP Address type the following
+$ kubectl get svc -n {{ .Release.Namespace }}
+
+The Gateway is accessible on <gateway-ip>:8443/9443
+
+{{if .Values.grafana.enabled}}
+To access the Grafana Dashboard
+$ kubectl port-forward svc/{{.Release.Name}}-grafana 3000 -n {{ .Release.Namespace }}
+
+Open a browser and navigate to
+http://localhost:3000
+
+username: {{.Values.grafana.admin.user}}
+password: {{.Values.grafana.admin.password}}
+
+{{ end }}

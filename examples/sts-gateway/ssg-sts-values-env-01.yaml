@@ -1,0 +1,186 @@
+ssg:
+  # This OTK sample only works with a custom image (Refer to readme file)
+  image:
+    registry: docker.io
+    repository: caapim/gateway
+    tag: 10.0.00
+    pullPolicy: Always
+    # Will create a Registry secret and apply it to the Gateway
+    secretName: ####sts-release-name
+    credentials:
+      username:
+      password:
+      email:
+
+  tls:
+    # when enabled, the pass cannot be empty
+    customDefaultSslKey:
+      enabled: true
+      key:
+      pass: mypassword
+
+  config:
+    javaArgs:
+      - -Dcom.l7tech.server.audit.message.saveToInternal=false
+      - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+      - -Dcom.l7tech.server.audit.system.saveToInternal=false
+      - -Dcom.l7tech.server.audit.log.format=json
+      - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+      - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+      - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+
+  # Install Gateway solution kit(s) using restman.
+  #   Prerequisites:
+  #     1) restman is enabled
+  #     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
+  installSolutionKits:
+    enabled: true
+    restmanPort: 8443
+    restmanReadyWaitInterval: 30s
+    restmanReadyWaitMaxAttempt: 10
+
+    # Install bundle required for Dual Gateway - OTK for Internal Gateway with API Portal Integration
+    otkInternalPortalInstallBundleEnabled: true
+    #   - OTK DMZ client settings
+    otkDmzClientUrl: https://####edge-release-name:8443
+    otkDmzClientSslCertIssuerName: CN%3D####edge-key-issuer
+    otkDmzClientSslCertSerialNumber: "####edge-key-serial"
+    otkDmzClientSslCertSubjectName: CN%3D####edge-key-subject
+    otkDmzClientSslCertEncoded: ####edge-key-cert
+    #   - OTK internal server settings
+    otkInternalServerSslCertIssuerName: CN%3D####sts-key-issuer
+    otkInternalServerSslCertSerialNumber: "####sts-key-serial"
+    otkInternalServerSslCertSubjectName: CN%3D####sts-key-subject
+    otkInternalServerSslCertEncoded: ####sts-key-cert
+    otkJdbcDriver: com.mysql.jdbc.Driver
+    #   - WARNING 1: MySQL deployed by this example is for DEVELOPMENT ONLY OTK database.
+    #                For production, an EXTERNALLY managed PERSISTENT deployment is recommended (along with using non-ROOT database/JDBC user).
+    #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase"
+    #   - The host part of jdbc url in this example is determined by the release name used to install. E.g. for "helm install ssg-otk-internal ..." use "ssg-otk-internal-mysql"
+    otkJdbcUrl: jdbc:mysql://####sts-release-name-mysql:3306/otk_db
+    # use root credentials for DB Backed STS. Change to 'otk' credentials when using in-memory STS
+    otkJdbcUser: root
+    otkJdbcPassword: mypassword
+
+    solutionKits:
+    # Dual Gateway - OTK for Internal Gateway with API Portal Integration
+    #    https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit/dual-gateway-scenario.html
+    #     Prerequisite:
+    #       1) set bundle.enabled (in this file) to true and path to "bundles/otk-internal-portal-install.bundle" (to make the needed configuration to the Gateway)
+    #       2) separate install of some OTK sub-solution kits to avoid bug that requires Gateway restart (recommendation from OTK engineering team)
+    #       3) Liquibase files to create OTK database schema (/tmp/otk-db-liquibase/)
+    - dualGatewayInternalPortal1:
+      preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase-3.2.2.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://####sts-release-name-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
+      param: --form solutionKitSelectByName="OTK Assertions"
+    - dualGatewayInternalPortal2:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001
+      param: --form solutionKitSelectByName="Shared OAuth Resources"
+    - dualGatewayInternalPortal3:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 0b0f9534-94f4-4cca-a05a-4c9e7776f8a9
+      param: --form solutionKitSelectByName="Shared Portal Resources"
+    - dualGatewayInternalPortal4:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 082be2e3-6399-4d51-8aad-a87715364537
+      param: --form solutionKitSelectByName="Persistence Layer%3A MySQL or Oracle"
+    - dualGatewayInternalPortal5:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 39efbb1d-4c10-4a88-9774-ece574845c94
+      param: --form solutionKitSelectByName="Portal Persistence Layer%3A MySQL or Oracle"
+    - dualGatewayInternalPortal6:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6004, 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6008
+      param: --form solutionKitSelectByName="Internal, OAuth Validation Point" --form solutionKitSelectByName="Internal, Server Tools"
+    - dualGatewayInternalPortal7:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6005, 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6006, 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6007, 8918de1b-d0ac-46c6-83a2-7ba4a0e5c1b0
+      param: --form solutionKitSelectByName="Internal, Endpoint to access the client persistence layer" --form solutionKitSelectByName="Internal, Endpoint to access the session persistence layer" --form solutionKitSelectByName="Internal, Endpoint to access the token persistence layer" --form solutionKitSelectByName="Internal, Portal"
+
+  # This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
+  # Credentials will be moved to a secret object in the next push..
+  management:
+    # Enable Restman, if DB backed this setting will persist until manually deleted via Policy Manager.
+    restman:
+      enabled: true
+
+  # Database configuration
+  database:
+    # DB Backed or ephemeral. True for DB Backed
+    enabled: true
+    # By default a MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+    #create: false
+    #jdbcURL: jdbc:mysql://mysql-server-1:3306,mysql-server-2:3306/ssg_db?failOverReadOnly=false
+    #username: gateway
+    #password: mypassword
+
+  # This mounts a bundle folder to the Gateway.
+  bundle:
+    enabled: true
+    path: "bundles/ssg-sts-install.bundle"
+
+  service:
+    #================== Example usage of LoadBalancer service type. There can only be one type.
+    # Service Type, ClusterIP, NodePort, LoadBalancer
+    type: LoadBalancer
+    # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
+    # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
+    annotations:
+      cloud.google.com/load-balancer-type: "Internal"
+    #================== Example usage of LoadBalancer service type. There can only be one type.
+
+  #    #================== Example usage of ClusterIP service type. There can only be one type.
+  #    type: ClusterIP
+  #  # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
+  #  # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
+  #  ingress:
+  #    # Set to true to create ingress object
+  #    enabled: true
+  #    class: nginx
+  #    # Ingress annotations
+  #    annotations:
+  #      # Ingress class
+  #      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  #      nginx.ingress.kubernetes.io/affinity: cookie
+  #      nginx.ingress.kubernetes.io/affinity-mode: persistent
+  #      nginx.ingress.kubernetes.io/session-cookie-name: route
+  #      nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+  #
+  #    # When the ingress is enabled, a host pointing to this will be created
+  #    # By default clusterHostname is used, only set this if you want to use a different host
+  #    hostname:
+  #    ## The port that you want to route to via ingress. This needs to be available via service.ports.
+  #    port: https
+  #    additionalHostnamesAndPorts:
+  #    test-server.net: management
+  #    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
+  #    tls: false
+  #    secretName:
+  #    #================== Example usage of ClusterIP service type. There can only be one type.
+
+  # mysql sub-sub-chart
+  mysql:
+    #================== Enable root user when configuring a db-backed STS Gateway
+    mysqlRootPassword: mypassword
+#    #================== Enable otk user when configuring an in-memory derby STS Gateway.
+#    #================== When using in-memory STS, be sure to change the user for running the liquibase command in the 'solutionKits' section
+#    mysqlUser: otk
+#    mysqlPassword: mypassword
+#    mysqlDatabase: otk_db
+
+  readinessProbe:
+    enabled: true
+  #  type: command
+  #  command: /opt/docker/rc.d/diagnostic/health_check.sh
+
+    type: httpGet
+    path: /apidocs/oauth/storage/swagger
+    port: 8443
+    scheme: HTTPS
+    initialDelaySeconds: 60
+    timeoutSeconds: 1
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10

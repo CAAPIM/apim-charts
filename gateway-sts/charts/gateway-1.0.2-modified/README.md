@@ -4,6 +4,8 @@ This Chart deploys the API Gateway with the following `optional` subcharts: haze
 
 It's targeted at Gateway v10.x onward.
 
+This Helm chart contains additional bundle files for the API Management Oauth Toolkit deployment
+
 # Install the Chart
 
 ## From this Repository

@@ -1,0 +1,358 @@
+<!-- As per these instructions https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/post-installation-tasks/post-installation-tasks-for-the-dual-gateway-scenario.html -->
+{{- if .Values.installSolutionKits.otkDmzPortalInstallBundleEnabled}}
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+        <l7:Item>
+            <l7:Name>OAuth</l7:Name>
+            <l7:Id>4432207d16a1b505e8a6ed59993eaa24</l7:Id>
+            <l7:Type>JDBC_CONNECTION</l7:Type>
+            <l7:TimeStamp>2020-08-20T20:20:20.020Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:JDBCConnection id="4432207d16a1b505e8a6ed59993eaa24">
+                    <l7:Name>OAuth</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Extension>
+                        <l7:DriverClass>empty</l7:DriverClass>
+                        <l7:JdbcUrl>empty</l7:JdbcUrl>
+                        <l7:ConnectionProperties>
+                            <l7:Property key="password">
+                                <l7:StringValue>empty</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="user">
+                                <l7:StringValue>empty</l7:StringValue>
+                            </l7:Property>
+                        </l7:ConnectionProperties>
+                    </l7:Extension>
+                </l7:JDBCConnection>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>OTK Client DB GET</l7:Name>
+            <l7:Id>b2cd2834ee129725e7964c77648e02d2</l7:Id>
+            <l7:Type>POLICY</l7:Type>
+            <l7:TimeStamp>2020-09-01T19:17:13.616Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:Policy guid="e7f216fe-9c97-4b66-9a3e-75fd9f4969c9" id="b2cd2834ee129725e7964c77648e02d2" version="0">
+                    <l7:PolicyDetail folderId="0000000000000000ffffffffffffec76" guid="e7f216fe-9c97-4b66-9a3e-75fd9f4969c9" id="b2cd2834ee129725e7964c77648e02d2" version="0">
+                        <l7:Name>OTK Client DB GET</l7:Name>
+                        <l7:PolicyType>Include</l7:PolicyType>
+                        <l7:Properties>
+                            <l7:Property key="hasRouting">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="revision">
+                                <l7:LongValue>1</l7:LongValue>
+                            </l7:Property>
+                            <l7:Property key="soap">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:PolicyDetail>
+                    <l7:Resources>
+                        <l7:ResourceSet tag="policy">
+                            <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+&lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+&lt;L7p:CommentAssertion&gt;
+    &lt;L7p:Comment stringValue=&quot;Policy Fragment: OTK Client DB GET&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;/wsp:All&gt;
+&lt;/wsp:Policy&gt;
+</l7:Resource>
+                        </l7:ResourceSet>
+                    </l7:Resources>
+                </l7:Policy>
+            </l7:Resource>
+        </l7:Item>
+		<l7:Item>
+			<l7:Name>OTK</l7:Name>
+			<l7:Id>e001cfd0c1c1ffaa18e187b5e72fc718</l7:Id>
+			<l7:Type>FOLDER</l7:Type>
+			<l7:TimeStamp>2020-09-01T19:29:46.609Z</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Folder folderId="0000000000000000ffffffffffffec76" id="e001cfd0c1c1ffaa18e187b5e72fc718" version="0">
+					<l7:Name>OTK</l7:Name>
+				</l7:Folder>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>Customizations</l7:Name>
+			<l7:Id>161861da3a78c5dcdc62696d16914781</l7:Id>
+			<l7:Type>FOLDER</l7:Type>
+			<l7:TimeStamp>2020-09-01T19:29:46.609Z</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Folder folderId="e001cfd0c1c1ffaa18e187b5e72fc718" id="161861da3a78c5dcdc62696d16914781" version="0">
+					<l7:Name>Customizations</l7:Name>
+				</l7:Folder>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>#OTK OVP Configuration</l7:Name>
+			<l7:Id>24e6fd7c5b6fb3a96690246c8ac492ec</l7:Id>
+			<l7:Type>POLICY</l7:Type>
+			<l7:TimeStamp>2020-09-01T19:29:46.609Z</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Policy guid="a4448be1-9b0e-417f-b498-8a268cadf8a5" id="24e6fd7c5b6fb3a96690246c8ac492ec" version="2">
+					<l7:PolicyDetail folderId="161861da3a78c5dcdc62696d16914781" guid="a4448be1-9b0e-417f-b498-8a268cadf8a5" id="24e6fd7c5b6fb3a96690246c8ac492ec" version="2">
+						<l7:Name>#OTK OVP Configuration</l7:Name>
+						<l7:PolicyType>Include</l7:PolicyType>
+						<l7:Properties>
+							<l7:Property key="hasRouting">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+							<l7:Property key="revision">
+								<l7:LongValue>3</l7:LongValue>
+							</l7:Property>
+							<l7:Property key="soap">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+						</l7:Properties>
+					</l7:PolicyDetail>
+					<l7:Resources>
+						<l7:ResourceSet tag="policy">
+							<l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+&lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK OVP Configuration&amp;quot;&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;=== Add any new Context Variables or extensions below ===&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:SetVariable&gt;
+	&lt;L7p:Base64Expression stringValue=&quot;{{ .Values.installSolutionKits.otkInternalServerUrl | b64enc }}&quot;/&gt;
+	&lt;L7p:VariableToSet stringValue=&quot;host_oauth_ovp_server&quot;/&gt;
+&lt;/L7p:SetVariable&gt;
+&lt;/wsp:All&gt;
+&lt;/wsp:Policy&gt;
+</l7:Resource>
+						</l7:ResourceSet>
+					</l7:Resources>
+				</l7:Policy>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>#OTK Storage Configuration</l7:Name>
+			<l7:Id>24e6fd7c5b6fb3a96690246c8ac49304</l7:Id>
+			<l7:Type>POLICY</l7:Type>
+			<l7:TimeStamp>2020-09-01T19:46:56.360Z</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Policy guid="cfa7239a-60e4-483a-9d45-c364f2fb673d" id="24e6fd7c5b6fb3a96690246c8ac49304" version="2">
+					<l7:PolicyDetail folderId="161861da3a78c5dcdc62696d16914781" guid="cfa7239a-60e4-483a-9d45-c364f2fb673d" id="24e6fd7c5b6fb3a96690246c8ac49304" version="2">
+						<l7:Name>#OTK Storage Configuration</l7:Name>
+						<l7:PolicyType>Include</l7:PolicyType>
+						<l7:Properties>
+							<l7:Property key="hasRouting">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+							<l7:Property key="revision">
+								<l7:LongValue>3</l7:LongValue>
+							</l7:Property>
+							<l7:Property key="soap">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+						</l7:Properties>
+					</l7:PolicyDetail>
+					<l7:Resources>
+						<l7:ResourceSet tag="policy">
+							<l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+&lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK Storage Configuration&amp;quot;&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:CommentAssertion&gt;
+	&lt;L7p:Comment stringValue=&quot;=== Add any new Context Variables or extensions below ===&quot;/&gt;
+&lt;/L7p:CommentAssertion&gt;
+&lt;L7p:SetVariable&gt;
+	&lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+		&lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;Token DB&quot;/&gt;
+			&lt;/L7p:entry&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/tokenstore is used on a remote gateway&quot;/&gt;
+			&lt;/L7p:entry&gt;
+		&lt;/L7p:Properties&gt;
+	&lt;/L7p:AssertionComment&gt;
+	&lt;L7p:Base64Expression stringValue=&quot;{{ .Values.installSolutionKits.otkInternalServerUrl | b64enc }}&quot;/&gt;
+	&lt;L7p:VariableToSet stringValue=&quot;host_oauth_tokenstore_server&quot;/&gt;
+&lt;/L7p:SetVariable&gt;
+&lt;L7p:SetVariable&gt;
+	&lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+		&lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;Client DB&quot;/&gt;
+			&lt;/L7p:entry&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/clientstore is used on a remote gateway&quot;/&gt;
+			&lt;/L7p:entry&gt;
+		&lt;/L7p:Properties&gt;
+	&lt;/L7p:AssertionComment&gt;
+	&lt;L7p:Base64Expression stringValue=&quot;{{ .Values.installSolutionKits.otkInternalServerUrl | b64enc }}&quot;/&gt;
+	&lt;L7p:VariableToSet stringValue=&quot;host_oauth_clientstore_server&quot;/&gt;
+&lt;/L7p:SetVariable&gt;
+&lt;L7p:SetVariable&gt;
+	&lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+		&lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;Session DB&quot;/&gt;
+			&lt;/L7p:entry&gt;
+			&lt;L7p:entry&gt;
+				&lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+				&lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/session is used on a remote gateway&quot;/&gt;
+			&lt;/L7p:entry&gt;
+		&lt;/L7p:Properties&gt;
+	&lt;/L7p:AssertionComment&gt;
+	&lt;L7p:Base64Expression stringValue=&quot;{{ .Values.installSolutionKits.otkInternalServerUrl | b64enc }}&quot;/&gt;
+	&lt;L7p:VariableToSet stringValue=&quot;host_oauth_session_server&quot;/&gt;
+&lt;/L7p:SetVariable&gt;
+&lt;/wsp:All&gt;
+&lt;/wsp:Policy&gt;
+</l7:Resource>
+						</l7:ResourceSet>
+					</l7:Resources>
+				</l7:Policy>
+			</l7:Resource>
+		</l7:Item>
+        <l7:Item>
+            <l7:Name>AutoTrustSslKey</l7:Name>
+            <l7:Id>3e78ab34ec0c862d97f49b3db1bcaf4a</l7:Id>
+            <l7:Type>TRUSTED_CERT</l7:Type>
+            <l7:TimeStamp>2020-08-24T00:41:40.652Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:TrustedCertificate id="3e78ab34ec0c862d97f49b3db1bcaf4a" version="0">
+                    <l7:Name>AutoTrustSslKey</l7:Name>
+                    <l7:CertificateData>
+                        <l7:IssuerName>delete</l7:IssuerName>
+                        <l7:SerialNumber>0</l7:SerialNumber>
+                        <l7:SubjectName>delete</l7:SubjectName>
+                        <l7:Encoded>MIICVTCCAb6gAwIBAgIBADANBgkqhkiG9w0BAQQFADAsMRQwEgYDVQQKEwtyb290LnNpZ25lcjEUMBIGA1UEAxMLcm9vdC5zaWduZXIwHhcNMDQwOTA4MjIwMzE4WhcNMTQwOTA2MjIwMzE4WjAsMRQwEgYDVQQKEwtyb290LnNpZ25lcjEUMBIGA1UEAxMLcm9vdC5zaWduZXIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMmo643E3S3PliomvxRcC4U7iiyCLYmfU1e+wZ5MXruiMvHnvkLSKkf8r+rSGwCZ4tFxB2SaquhzjEf/rntd2Gvw4yyinqeFJ7BJ6QhZ90SGJqffor0cZw28a4w6tDfry/SkS9t9z4AeIRk0D/ljVUaJSpTsA3csKx/JcnKNnrGNAgMBAAGjgYYwgYMwHQYDVR0OBBYEFL4wKZb68QkZ+ngaYbRNdKeDLZQKMFQGA1UdIwRNMEuAFL4wKZb68QkZ+ngaYbRNdKeDLZQKoTCkLjAsMRQwEgYDVQQKEwtyb290LnNpZ25lcjEUMBIGA1UEAxMLcm9vdC5zaWduZXKCAQAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQQFAAOBgQARksILNkjV2RzrAEKYxWi9DRPlFzNavP/NFCh6XBNdOGYglF0reZAWL8qJ8i5Ejm1Rq0IP2mKhou9bE9Y6xLd9a1T4VvhyAI1kWzZtJsc7VTwZz1jCAX3Wh2DYN0o4NyTJ0tFOO21ndWTrQ+/MlYWJaCfIMABAZODuJg/yOeGtbw==</l7:Encoded>
+                    </l7:CertificateData>
+                </l7:TrustedCertificate>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>AutoTrustSslKey-OtkDmzClient</l7:Name>
+            <l7:Id>3e78ab34ec0c862d97f49b3db1bcaf4b</l7:Id>
+            <l7:Type>TRUSTED_CERT</l7:Type>
+            <l7:TimeStamp>2020-08-24T00:41:40.652Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:TrustedCertificate id="3e78ab34ec0c862d97f49b3db1bcaf4b" version="0">
+                    <l7:Name>AutoTrustSslKey-OtkDmzClient</l7:Name>
+                    <l7:CertificateData>
+                        <l7:IssuerName>{{ .Values.installSolutionKits.otkDmzClientSslCertIssuerName }}</l7:IssuerName>
+                        <l7:SerialNumber>{{ .Values.installSolutionKits.otkDmzClientSslCertSerialNumber }}</l7:SerialNumber>
+                        <l7:SubjectName>{{ .Values.installSolutionKits.otkDmzClientSslCertSubjectName }}</l7:SubjectName>
+                        <l7:Encoded>{{ .Values.installSolutionKits.otkDmzClientSslCertEncoded }}</l7:Encoded>
+                    </l7:CertificateData>
+                    <l7:Properties>
+                        <l7:Property key="revocationCheckingEnabled">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustAnchor">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedAsSamlAttestingEntity">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedAsSamlIssuer">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSigningClientCerts">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSigningServerCerts">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSsl">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="verifyHostname">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:TrustedCertificate>
+            </l7:Resource>
+        </l7:Item>
+        <l7:Item>
+            <l7:Name>TrustedAnchor-OtkInternalServer</l7:Name>
+            <l7:Id>3e78ab34ec0c862d97f49b3db1bcf13d</l7:Id>
+            <l7:Type>TRUSTED_CERT</l7:Type>
+            <l7:TimeStamp>2020-08-24T00:41:40.652Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:TrustedCertificate id="3e78ab34ec0c862d97f49b3db1bcf13d" version="0">
+                    <l7:Name>TrustedAnchor-OtkInternalServer</l7:Name>
+                    <l7:CertificateData>
+                        <l7:IssuerName>{{ .Values.installSolutionKits.otkInternalServerSslCertIssuerName }}</l7:IssuerName>
+                        <l7:SerialNumber>{{ .Values.installSolutionKits.otkInternalServerSslCertSerialNumber }}</l7:SerialNumber>
+                        <l7:SubjectName>{{ .Values.installSolutionKits.otkInternalServerSslCertSubjectName }}</l7:SubjectName>
+                        <l7:Encoded>{{ .Values.installSolutionKits.otkInternalServerSslCertEncoded }}</l7:Encoded>
+                    </l7:CertificateData>
+                    <l7:Properties>
+                        <l7:Property key="revocationCheckingEnabled">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustAnchor">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedAsSamlAttestingEntity">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedAsSamlIssuer">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSigningClientCerts">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSigningServerCerts">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="trustedForSsl">
+                            <l7:BooleanValue>true</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="verifyHostname">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:TrustedCertificate>
+            </l7:Resource>
+        </l7:Item>
+    </l7:References>
+    <l7:Mappings>
+        <l7:Mapping action="NewOrExisting" srcId="4432207d16a1b505e8a6ed59993eaa24" type="JDBC_CONNECTION"/>
+        <l7:Mapping action="NewOrExisting" srcId="0000000000000000ffffffffffffec76" type="FOLDER">
+            <l7:Properties>
+                <l7:Property key="FailOnNew">
+                    <l7:BooleanValue>true</l7:BooleanValue>
+                </l7:Property>
+            </l7:Properties>
+        </l7:Mapping>
+        <l7:Mapping action="NewOrExisting" srcId="b2cd2834ee129725e7964c77648e02d2" type="POLICY"/>
+		<l7:Mapping action="NewOrExisting" srcId="e001cfd0c1c1ffaa18e187b5e72fc718" type="FOLDER"/>
+		<l7:Mapping action="NewOrExisting" srcId="161861da3a78c5dcdc62696d16914781" type="FOLDER"/>
+		<l7:Mapping action="NewOrExisting" srcId="24e6fd7c5b6fb3a96690246c8ac492ec" type="POLICY"/>
+		<l7:Mapping action="NewOrExisting" srcId="24e6fd7c5b6fb3a96690246c8ac49304" type="POLICY"/>
+        <l7:Mapping action="Delete" srcId="3e78ab34ec0c862d97f49b3db1bcaf4a" type="TRUSTED_CERT">
+            <l7:Properties>
+		        <l7:Property key="MapBy">
+                    <l7:StringValue>name</l7:StringValue>
+                </l7:Property>
+            </l7:Properties>
+        </l7:Mapping>
+		<l7:Mapping action="NewOrExisting" srcId="3e78ab34ec0c862d97f49b3db1bcaf4b" type="TRUSTED_CERT"/>
+		<l7:Mapping action="NewOrExisting" srcId="3e78ab34ec0c862d97f49b3db1bcf13d" type="TRUSTED_CERT"/>
+    </l7:Mappings>
+</l7:Bundle>
+{{- end }}

@@ -91,6 +91,7 @@ config:
 tls:
   customKey:
     enabled: false
+
   # when enabled, the pass cannot be empty. key value needs to be base64 encoded .p12
   # This key will become the default ssl key. Can only have one.
   # ex. DEMO_KEY=`cat demo-key.p12 | base64 --wrap=0`
@@ -100,17 +101,11 @@ tls:
     key:
     pass: mypassword
 
-# Install Gateway solution kit(s) using restman.
-#   Prerequisites:
-#     1) restman is enabled
-#     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
-#   Description of solution kit(s):
-#     1) OAuth Solution Kit: https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
 installSolutionKits:
   enabled: false
   restmanPort: 8443
-  restmanReadyWait: 150s
-  solutionKits:
+  restmanReadyWaitInterval: 30s
+  restmanReadyWaitMaxAttempt: 10
 
 #Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
@@ -147,7 +142,7 @@ service:
   ## Set the LoadBalancerIP
   ##
   # loadBalancerIP:
-
+  
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -168,11 +163,11 @@ ingress:
   # Set to true to create ingress object
   enabled: false
   class: nginx
-  # Ingress annotations
+  # Ingress annotations 
   annotations:
   # Ingress class
   #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-
+  
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
   hostname:
@@ -186,13 +181,6 @@ ingress:
 
 livenessProbe:
   enabled: true
-  type: command
-  command: /opt/docker/rc.d/diagnostic/health_check.sh
-
-# type: httpGet
-# path: /ssg/ping
-# port: 8443
-# scheme: HTTPS
   initialDelaySeconds: 60
   timeoutSeconds: 1
   periodSeconds: 10
@@ -201,13 +189,6 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
-  type: command
-  command: /opt/docker/rc.d/diagnostic/health_check.sh
-
-# type: httpGet
-# path: /ssg/ping
-# port: 8443
-# scheme: HTTPS
   initialDelaySeconds: 60
   timeoutSeconds: 1
   periodSeconds: 10
@@ -246,7 +227,7 @@ mysql:
     enabled: true
     size: 8Gi
     #storageClass:
-
+  
   configurationFiles:
     my.cnf: |-
       [mysqld]
@@ -313,4 +294,5 @@ grafana:
       fileName: gateway-service-metrics.json
   datasources:
     secretName: grafana-secret
+
 

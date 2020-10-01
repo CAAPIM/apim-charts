@@ -1,0 +1,34 @@
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+        <l7:Item>
+            <l7:Name>custom-http</l7:Name>
+            <l7:Id>6ca3e07b1d653bba1de5d5599b47dc12</l7:Id>
+            <l7:Type>SSG_CONNECTOR</l7:Type>
+            <l7:TimeStamp>2020-08-18T20:54:12.715Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:ListenPort id="6ca3e07b1d653bba1de5d5599b47dc12" version="0">
+                    <l7:Name>custom-http</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Protocol>HTTP</l7:Protocol>
+                    <l7:Port>8888</l7:Port>
+                    <l7:EnabledFeatures>
+                        <l7:StringValue>Published service message input</l7:StringValue>
+                        <l7:StringValue>Policy download service</l7:StringValue>
+                        <l7:StringValue>Ping service</l7:StringValue>
+                        <l7:StringValue>WS-Trust security token service</l7:StringValue>
+                        <l7:StringValue>WSDL download service</l7:StringValue>
+                        <l7:StringValue>SNMP Query service</l7:StringValue>
+                    </l7:EnabledFeatures>
+                    <l7:Properties>
+                        <l7:Property key="useExtendedFtpCommandSet">
+                            <l7:StringValue>false</l7:StringValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:ListenPort>
+            </l7:Resource>
+        </l7:Item>
+    </l7:References>
+    <l7:Mappings>
+        <l7:Mapping action="NewOrExisting" srcId="6ca3e07b1d653bba1de5d5599b47dc12" srcUri="https://ssg-7b69844cfc-hbztb:9443/restman/1.0/listenPorts/6ca3e07b1d653bba1de5d5599b47dc12" type="SSG_CONNECTOR"/>
+    </l7:Mappings>
+</l7:Bundle>

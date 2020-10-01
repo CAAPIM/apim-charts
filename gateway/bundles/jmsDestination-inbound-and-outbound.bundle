@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+	<l7:References>
+		<l7:Item>
+			<l7:Name>TC2_8_9_x</l7:Name>
+			<l7:Id>5ee90afe2f8913e76499fd3f1d1fda19</l7:Id>
+			<l7:Type>FOLDER</l7:Type>
+			<l7:TimeStamp>2017-05-04T15:57:23.547-07:00</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Folder folderId="0000000000000000ffffffffffffec76" id="5ee90afe2f8913e76499fd3f1d1fda19" version="0">
+					<l7:Name>TC2_8_9_x</l7:Name>
+				</l7:Folder>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>ssgautotestQueue1.out</l7:Name>
+			<l7:Id>5ee90afe2f8913e76499fd3f1d1fdaa2</l7:Id>
+			<l7:Type>JMS_ENDPOINT</l7:Type>
+			<l7:TimeStamp>2017-05-04T15:57:23.554-07:00</l7:TimeStamp>
+			<l7:Resource>
+				<l7:JMSDestination id="5ee90afe2f8913e76499fd3f1d1fdaa2" version="3">
+					<l7:JMSDestinationDetail id="5ee90afe2f8913e76499fd3f1d1fdaa2" version="3">
+						<l7:Name>ssgautotestQueue1.out</l7:Name>
+						<l7:DestinationName>ssgautotestQueue1.out</l7:DestinationName>
+						<l7:Inbound>false</l7:Inbound>
+						<l7:Enabled>true</l7:Enabled>
+						<l7:Template>false</l7:Template>
+						<l7:Properties>
+							<l7:Property key="inbound.maximumSize">
+								<l7:LongValue>-1</l7:LongValue>
+							</l7:Property>
+							<l7:Property key="outbound.MessageType">
+								<l7:StringValue>AUTOMATIC</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="replyType">
+								<l7:StringValue>NO_REPLY</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="type">
+								<l7:StringValue>Queue</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="useRequestCorrelationId">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+						</l7:Properties>
+					</l7:JMSDestinationDetail>
+					<l7:JMSConnection id="5ee90afe2f8913e76499fd3f1d1fdaa0" version="3">
+						<l7:ProviderType>TIBCO EMS</l7:ProviderType>
+						<l7:Template>false</l7:Template>
+						<l7:Properties>
+							<l7:Property key="jndi.initialContextFactoryClassname">
+								<l7:StringValue>com.tibco.tibjms.naming.TibjmsInitialContextFactory</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="jndi.providerUrl">
+								<l7:StringValue>tibjmsnaming://qatibco83mq.test.net:7222</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="queue.connectionFactoryName">
+								<l7:StringValue>QueueConnectionFactory</l7:StringValue>
+							</l7:Property>
+						</l7:Properties>
+						<l7:ContextPropertiesTemplate>
+							<l7:Property key="ConfirmCode">
+								<l7:StringValue>1234567890</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.contentType.source">
+								<l7:StringValue/>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.contentType.value">
+								<l7:StringValue/>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.hardwired.service.bool">
+								<l7:StringValue>false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.max.session.idle">
+								<l7:StringValue>8</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.session.pool.max.wait">
+								<l7:StringValue>5000</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.session.pool.size">
+								<l7:StringValue>8</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_auth_only">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_enable_verify_host">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_enable_verify_hostname">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.auth_only">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.enable_verify_host">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.enable_verify_hostname">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+						</l7:ContextPropertiesTemplate>
+					</l7:JMSConnection>
+				</l7:JMSDestination>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>EMS with SOAPAction</l7:Name>
+			<l7:Id>5ee90afe2f8913e76499fd3f1d1fda59</l7:Id>
+			<l7:Type>SERVICE</l7:Type>
+			<l7:TimeStamp>2017-05-04T15:57:23.556-07:00</l7:TimeStamp>
+			<l7:Resource>
+				<l7:Service id="5ee90afe2f8913e76499fd3f1d1fda59" version="3">
+					<l7:ServiceDetail folderId="5ee90afe2f8913e76499fd3f1d1fda19" id="5ee90afe2f8913e76499fd3f1d1fda59" version="3">
+						<l7:Name>EMS with SOAPAction</l7:Name>
+						<l7:Enabled>true</l7:Enabled>
+						<l7:ServiceMappings>
+							<l7:HttpMapping>
+								<l7:UrlPattern>/jmsService</l7:UrlPattern>
+								<l7:Verbs>
+									<l7:Verb>POST</l7:Verb>
+								</l7:Verbs>
+							</l7:HttpMapping>
+							<l7:SoapMapping>
+								<l7:Lax>false</l7:Lax>
+							</l7:SoapMapping>
+						</l7:ServiceMappings>
+						<l7:Properties>
+							<l7:Property key="internal">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+							<l7:Property key="policyRevision">
+								<l7:LongValue>5</l7:LongValue>
+							</l7:Property>
+							<l7:Property key="soap">
+								<l7:BooleanValue>true</l7:BooleanValue>
+							</l7:Property>
+							<l7:Property key="soapVersion">
+								<l7:StringValue>unspecified</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="tracingEnabled">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+							<l7:Property key="wssProcessingEnabled">
+								<l7:BooleanValue>true</l7:BooleanValue>
+							</l7:Property>
+						</l7:Properties>
+					</l7:ServiceDetail>
+					<l7:Resources>
+						<l7:ResourceSet tag="policy">
+							<l7:Resource type="policy" version="4">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+    &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+        &lt;L7p:AuditDetailAssertion&gt;
+            &lt;L7p:Detail stringValue=&quot;Before  11111111111111111111111111111111111111111111111111111111111111111111111111111111111&quot;/&gt;
+            &lt;L7p:Level stringValue=&quot;WARNING&quot;/&gt;
+            &lt;L7p:LoggingOnly booleanValue=&quot;true&quot;/&gt;
+        &lt;/L7p:AuditDetailAssertion&gt;
+        &lt;L7p:JmsRoutingAssertion&gt;
+            &lt;L7p:EndpointName stringValue=&quot;ssgautotestQueue1.out&quot;/&gt;
+            &lt;L7p:EndpointOid goidValue=&quot;5ee90afe2f8913e76499fd3f1d1fdaa2&quot;/&gt;
+            &lt;L7p:RequestJmsMessagePropertyRuleSet jmsMessagePropertyRuleSet=&quot;included&quot;&gt;
+                &lt;L7p:PassThruAll booleanValue=&quot;false&quot;/&gt;
+                &lt;L7p:Rules jmsMessagePropertyRuleArray=&quot;included&quot;&gt;
+                    &lt;L7p:item jmsMessagePropertyRule=&quot;included&quot;&gt;
+                        &lt;L7p:CustomPattern stringValue=&quot;1234567890&quot;/&gt;
+                        &lt;L7p:Name stringValue=&quot;ConfirmCode&quot;/&gt;
+                    &lt;/L7p:item&gt;
+                &lt;/L7p:Rules&gt;
+            &lt;/L7p:RequestJmsMessagePropertyRuleSet&gt;
+            &lt;L7p:ResponseJmsMessagePropertyRuleSet jmsMessagePropertyRuleSet=&quot;included&quot;&gt;
+                &lt;L7p:Rules jmsMessagePropertyRuleArray=&quot;included&quot;&gt;
+                    &lt;L7p:item jmsMessagePropertyRule=&quot;included&quot;&gt;
+                        &lt;L7p:Name stringValue=&quot;ConfirmCode&quot;/&gt;
+                        &lt;L7p:PassThru booleanValue=&quot;true&quot;/&gt;
+                    &lt;/L7p:item&gt;
+                &lt;/L7p:Rules&gt;
+            &lt;/L7p:ResponseJmsMessagePropertyRuleSet&gt;
+        &lt;/L7p:JmsRoutingAssertion&gt;
+        &lt;L7p:AuditDetailAssertion&gt;
+            &lt;L7p:Detail stringValue=&quot;After JMS message send to ssgautotestQueue1.out successfully  222222222222222222222222222222222222222222222222222222222222222222&quot;/&gt;
+            &lt;L7p:Level stringValue=&quot;WARNING&quot;/&gt;
+            &lt;L7p:LoggingOnly booleanValue=&quot;true&quot;/&gt;
+        &lt;/L7p:AuditDetailAssertion&gt;
+    &lt;/wsp:All&gt;
+&lt;/wsp:Policy&gt;
+							</l7:Resource>
+						</l7:ResourceSet>
+						<l7:ResourceSet rootUrl="http://192.168.1.197/EMS_soapAction_autotest.wsdl" tag="wsdl">
+							<l7:Resource sourceUrl="http://192.168.1.197/EMS_soapAction_autotest.wsdl" type="wsdl">&lt;wsdl:definitions targetNamespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; xmlns=&quot;http://schemas.xmlsoap.org/wsdl/&quot; xmlns:apachesoap=&quot;http://xml.apache.org/xml-soap&quot; xmlns:impl=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; xmlns:intf=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; xmlns:soapenc=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; xmlns:wsdl=&quot;http://schemas.xmlsoap.org/wsdl/&quot; xmlns:wsdljms=&quot;http://schemas.xmlsoap.org/wsdl/jms/&quot; xmlns:wsdlsoap=&quot;http://schemas.xmlsoap.org/wsdl/soap/&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+
+    &lt;wsdl:types&gt;
+        &lt;schema targetNamespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; xmlns=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+            &lt;import namespace=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot;/&gt;
+            &lt;complexType name=&quot;Header&quot;&gt;
+                &lt;sequence&gt;
+                    &lt;element name=&quot;productId&quot; type=&quot;xsd:long&quot;/&gt;
+                    &lt;element name=&quot;productName&quot; nillable=&quot;true&quot; type=&quot;xsd:string&quot;/&gt;
+                &lt;/sequence&gt;
+            &lt;/complexType&gt;
+            &lt;complexType name=&quot;Order&quot;&gt;
+                &lt;sequence&gt;
+                    &lt;element name=&quot;accountId&quot; type=&quot;xsd:long&quot;/&gt;
+                    &lt;element name=&quot;amount&quot; type=&quot;xsd:long&quot;/&gt;
+                    &lt;element name=&quot;confirmationId&quot; type=&quot;xsd:long&quot;/&gt;
+                    &lt;element name=&quot;date&quot; nillable=&quot;true&quot; type=&quot;xsd:dateTime&quot;/&gt;
+                    &lt;element name=&quot;price&quot; type=&quot;xsd:float&quot;/&gt;
+                    &lt;element name=&quot;productId&quot; type=&quot;xsd:long&quot;/&gt;
+                &lt;/sequence&gt;
+            &lt;/complexType&gt;
+            &lt;complexType name=&quot;ProductDetails&quot;&gt;
+                &lt;complexContent&gt;
+                    &lt;extension base=&quot;impl:Header&quot;&gt;
+                        &lt;sequence&gt;
+                            &lt;element name=&quot;description&quot; nillable=&quot;true&quot; type=&quot;xsd:string&quot;/&gt;
+                            &lt;element name=&quot;inStock&quot; type=&quot;xsd:boolean&quot;/&gt;
+                            &lt;element name=&quot;price&quot; type=&quot;xsd:float&quot;/&gt;
+                        &lt;/sequence&gt;
+                    &lt;/extension&gt;
+                &lt;/complexContent&gt;
+            &lt;/complexType&gt;
+            &lt;complexType name=&quot;ArrayOfHeaders&quot;&gt;
+                &lt;complexContent&gt;
+                    &lt;restriction base=&quot;soapenc:Array&quot;&gt;
+                        &lt;attribute ref=&quot;soapenc:arrayType&quot; wsdl:arrayType=&quot;impl:Header[]&quot;/&gt;
+                    &lt;/restriction&gt;
+                &lt;/complexContent&gt;
+            &lt;/complexType&gt;
+            &lt;complexType name=&quot;ArrayOfOrders&quot;&gt;
+                &lt;complexContent&gt;
+                    &lt;restriction base=&quot;soapenc:Array&quot;&gt;
+                        &lt;attribute ref=&quot;soapenc:arrayType&quot; wsdl:arrayType=&quot;impl:Order[]&quot;/&gt;
+                    &lt;/restriction&gt;
+                &lt;/complexContent&gt;
+            &lt;/complexType&gt;
+        &lt;/schema&gt;
+    &lt;/wsdl:types&gt;
+    &lt;wsdl:message name=&quot;listProductsResponse&quot;&gt;
+        &lt;wsdl:part name=&quot;listProductsReturn&quot; type=&quot;impl:ArrayOfHeaders&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;currentOrdersRequest&quot;&gt;
+        &lt;wsdl:part name=&quot;accountid&quot; type=&quot;xsd:long&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;getProductDetailsRequest&quot;&gt;
+        &lt;wsdl:part name=&quot;productid&quot; type=&quot;xsd:long&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;getProductDetailsResponse&quot;&gt;
+        &lt;wsdl:part name=&quot;getProductDetailsReturn&quot; type=&quot;impl:ProductDetails&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;currentOrdersResponse&quot;&gt;
+        &lt;wsdl:part name=&quot;currentOrdersReturn&quot; type=&quot;impl:ArrayOfOrders&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;listProductsRequest&quot;&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;placeOrderResponse&quot;&gt;
+        &lt;wsdl:part name=&quot;placeOrderReturn&quot; type=&quot;xsd:long&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:message name=&quot;placeOrderRequest&quot;&gt;
+        &lt;wsdl:part name=&quot;productid&quot; type=&quot;xsd:long&quot;/&gt;
+        &lt;wsdl:part name=&quot;amount&quot; type=&quot;xsd:long&quot;/&gt;
+        &lt;wsdl:part name=&quot;price&quot; type=&quot;xsd:float&quot;/&gt;
+        &lt;wsdl:part name=&quot;accountid&quot; type=&quot;xsd:long&quot;/&gt;
+    &lt;/wsdl:message&gt;
+    &lt;wsdl:portType name=&quot;awsporttype&quot;&gt;
+        &lt;wsdl:operation name=&quot;listProducts&quot;&gt;
+            &lt;wsdl:input message=&quot;impl:listProductsRequest&quot; name=&quot;listProductsRequest&quot;/&gt;
+            &lt;wsdl:output message=&quot;impl:listProductsResponse&quot; name=&quot;listProductsResponse&quot;/&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;getProductDetails&quot; parameterOrder=&quot;productid&quot;&gt;
+            &lt;wsdl:input message=&quot;impl:getProductDetailsRequest&quot; name=&quot;getProductDetailsRequest&quot;/&gt;
+            &lt;wsdl:output message=&quot;impl:getProductDetailsResponse&quot; name=&quot;getProductDetailsResponse&quot;/&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;placeOrder&quot; parameterOrder=&quot;productid amount price accountid&quot;&gt;
+            &lt;wsdl:input message=&quot;impl:placeOrderRequest&quot; name=&quot;placeOrderRequest&quot;/&gt;
+            &lt;wsdl:output message=&quot;impl:placeOrderResponse&quot; name=&quot;placeOrderResponse&quot;/&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;currentOrders&quot; parameterOrder=&quot;accountid&quot;&gt;
+            &lt;wsdl:input message=&quot;impl:currentOrdersRequest&quot; name=&quot;currentOrdersRequest&quot;/&gt;
+            &lt;wsdl:output message=&quot;impl:currentOrdersResponse&quot; name=&quot;currentOrdersResponse&quot;/&gt;
+        &lt;/wsdl:operation&gt;
+    &lt;/wsdl:portType&gt;
+
+    &lt;wsdl:binding name=&quot;awsportSoapBinding&quot; type=&quot;impl:awsporttype&quot;&gt;
+        &lt;wsdljms:binding type=&quot;ObjectMessage&quot;/&gt;
+        &lt;wsdlsoap:binding style=&quot;rpc&quot; transport=&quot;http://schemas.xmlsoap.org/soap/http&quot;/&gt;
+        &lt;wsdl:operation name=&quot;listProducts&quot;&gt;
+            &lt;wsdlsoap:operation soapAction=&quot;http://EmsServiceForAutotest.l7tech.com/ws/listProducts&quot;/&gt;
+            &lt;wsdl:input name=&quot;listProductsRequest&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:input&gt;
+            &lt;wsdl:output name=&quot;listProductsResponse&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:output&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;getProductDetails&quot;&gt;
+            &lt;wsdlsoap:operation soapAction=&quot;http://EmsServiceForAutotest.l7tech.com/ws/listProducts&quot;/&gt;
+            &lt;wsdl:input name=&quot;getProductDetailsRequest&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:input&gt;
+            &lt;wsdl:output name=&quot;getProductDetailsResponse&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:output&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;placeOrder&quot;&gt;
+            &lt;wsdlsoap:operation soapAction=&quot;http://EmsServiceForAutotest.l7tech.com/ws/listProducts&quot;/&gt;
+            &lt;wsdl:input name=&quot;placeOrderRequest&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:input&gt;
+            &lt;wsdl:output name=&quot;placeOrderResponse&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:output&gt;
+        &lt;/wsdl:operation&gt;
+        &lt;wsdl:operation name=&quot;currentOrders&quot;&gt;
+            &lt;wsdlsoap:operation soapAction=&quot;http://EmsServiceForAutotest.l7tech.com/ws/listProducts&quot;/&gt;
+            &lt;wsdl:input name=&quot;currentOrdersRequest&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:input&gt;
+            &lt;wsdl:output name=&quot;currentOrdersResponse&quot;&gt;
+                &lt;wsdlsoap:body encodingStyle=&quot;http://schemas.xmlsoap.org/soap/encoding/&quot; namespace=&quot;http://EmsServiceForAutotest.l7tech.com/ws&quot; use=&quot;encoded&quot;/&gt;
+            &lt;/wsdl:output&gt;
+        &lt;/wsdl:operation&gt;
+    &lt;/wsdl:binding&gt;
+
+    &lt;wsdl:service name=&quot;EMS with SOAPAction&quot;&gt;
+
+        &lt;wsdl:port binding=&quot;impl:awsportSoapBinding&quot; name=&quot;awsportJms&quot;&gt;
+            &lt;wsdljms:address destinationStyle=&quot;queue&quot; initialContextFactory=&quot;com.tibco.tibjms.naming.TibjmsInitialContextFactory&quot; jmsProviderDestinationName=&quot;testqueue&quot; jmsVendorURI=&quot;unused&quot; jndiConnectionFactoryName=&quot;JmsQueueConnectionFactory&quot; jndiDestinationName=&quot;testqueue&quot; jndiProviderURL=&quot;tibjmsnaming://qatibco83mq.test.net:7222&quot;/&gt;
+        &lt;/wsdl:port&gt;
+
+    &lt;/wsdl:service&gt;
+
+&lt;/wsdl:definitions&gt;</l7:Resource>
+						</l7:ResourceSet>
+					</l7:Resources>
+				</l7:Service>
+			</l7:Resource>
+		</l7:Item>
+		<l7:Item>
+			<l7:Name>ssgautotestQueue1.in</l7:Name>
+			<l7:Id>5ee90afe2f8913e76499fd3f1d1fda9c</l7:Id>
+			<l7:Type>JMS_ENDPOINT</l7:Type>
+			<l7:TimeStamp>2017-05-04T15:57:23.564-07:00</l7:TimeStamp>
+			<l7:Resource>
+				<l7:JMSDestination id="5ee90afe2f8913e76499fd3f1d1fda9c" version="3">
+					<l7:JMSDestinationDetail id="5ee90afe2f8913e76499fd3f1d1fda9c" version="3">
+						<l7:Name>ssgautotestQueue1.in</l7:Name>
+						<l7:DestinationName>ssgautotestQueue1.in</l7:DestinationName>
+						<l7:Inbound>true</l7:Inbound>
+						<l7:Enabled>true</l7:Enabled>
+						<l7:Template>false</l7:Template>
+						<l7:Properties>
+							<l7:Property key="inbound.acknowledgementType">
+								<l7:StringValue>AUTOMATIC</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="inbound.maximumSize">
+								<l7:LongValue>-1</l7:LongValue>
+							</l7:Property>
+							<l7:Property key="outbound.MessageType">
+								<l7:StringValue>AUTOMATIC</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="replyType">
+								<l7:StringValue>NO_REPLY</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="type">
+								<l7:StringValue>Queue</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="useRequestCorrelationId">
+								<l7:BooleanValue>false</l7:BooleanValue>
+							</l7:Property>
+						</l7:Properties>
+					</l7:JMSDestinationDetail>
+					<l7:JMSConnection id="5ee90afe2f8913e76499fd3f1d1fda9a" version="2">
+						<l7:ProviderType>TIBCO EMS</l7:ProviderType>
+						<l7:Template>false</l7:Template>
+						<l7:Properties>
+							<l7:Property key="jndi.initialContextFactoryClassname">
+								<l7:StringValue>com.tibco.tibjms.naming.TibjmsInitialContextFactory</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="jndi.providerUrl">
+								<l7:StringValue>tibjmsnaming://qatibco83mq.test.net:7222</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="queue.connectionFactoryName">
+								<l7:StringValue>QueueConnectionFactory</l7:StringValue>
+							</l7:Property>
+						</l7:Properties>
+						<l7:ContextPropertiesTemplate>
+							<l7:Property key="com.l7tech.server.jms.prop.contentType.source">
+								<l7:StringValue/>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.contentType.value">
+								<l7:StringValue/>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.dedicated.consumer.bool">
+								<l7:StringValue>true</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.dedicated.consumer.size">
+								<l7:StringValue>1</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.hardwired.service.bool">
+								<l7:StringValue>true</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.prop.hardwired.service.id">
+								<l7:StringValue>5ee90afe2f8913e76499fd3f1d1fda59</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.l7tech.server.jms.soapAction.msgPropName">
+								<l7:StringValue>SOAPJMS_soapAction</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_auth_only">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_enable_verify_host">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.naming.ssl_enable_verify_hostname">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.auth_only">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.enable_verify_host">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+							<l7:Property key="com.tibco.tibjms.ssl.enable_verify_hostname">
+								<l7:StringValue>com.l7tech.server.jms.prop.boolean.false</l7:StringValue>
+							</l7:Property>
+						</l7:ContextPropertiesTemplate>
+					</l7:JMSConnection>
+				</l7:JMSDestination>
+			</l7:Resource>
+		</l7:Item>
+	</l7:References>
+	<l7:Mappings>
+		<l7:Mapping action="NewOrExisting" srcId="5ee90afe2f8913e76499fd3f1d1fda19" srcUri="http://localhost:8080/restman/1.0/folders/5ee90afe2f8913e76499fd3f1d1fda19" type="FOLDER"/>
+		<l7:Mapping action="NewOrExisting" srcId="5ee90afe2f8913e76499fd3f1d1fdaa2" srcUri="http://localhost:8080/restman/1.0/jmsDestinations/5ee90afe2f8913e76499fd3f1d1fdaa2" type="JMS_ENDPOINT"/>
+		<l7:Mapping action="NewOrExisting" srcId="5ee90afe2f8913e76499fd3f1d1fda59" srcUri="http://localhost:8080/restman/1.0/services/5ee90afe2f8913e76499fd3f1d1fda59" type="SERVICE"/>
+		<l7:Mapping action="NewOrExisting" srcId="5ee90afe2f8913e76499fd3f1d1fda9c" srcUri="http://localhost:8080/restman/1.0/jmsDestinations/5ee90afe2f8913e76499fd3f1d1fda9c" type="JMS_ENDPOINT"/>
+	</l7:Mappings>
+</l7:Bundle>

@@ -1,0 +1,158 @@
+ssg:
+  # This OTK sample only works with a custom image (Refer to readme file)
+  image:
+    registry: docker.io
+    repository: caapim/gateway
+    tag: 10.0.00
+    pullPolicy: Always
+    # Will create a Registry secret and apply it to the Gateway
+    secretName: ####edge-release-name
+    credentials:
+      username:
+      password:
+      email:
+
+  # Cluster Hostname
+  clusterHostname: ####edge-release-name
+
+  tls:
+    # when enabled, the pass cannot be empty
+    customDefaultSslKey:
+      enabled: true
+      key:
+      pass: mypassword
+
+  config:
+    javaArgs:
+      - -Dcom.l7tech.server.audit.message.saveToInternal=false
+      - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+      - -Dcom.l7tech.server.audit.system.saveToInternal=false
+      - -Dcom.l7tech.server.audit.log.format=json
+      - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+      - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+      - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+
+  # Install Gateway solution kit(s) using restman.
+  #   Prerequisites:
+  #     1) restman is enabled
+  #     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
+  installSolutionKits:
+    enabled: true
+    restmanPort: 8443
+    restmanReadyWaitInterval: 30s
+    restmanReadyWaitMaxAttempt: 10
+
+    # Install bundle required for Dual Gateway - OTK for DMZ Gateway with API Portal Integration
+    otkDmzPortalInstallBundleEnabled: true
+    #   - OTK DMZ client settings
+    otkDmzClientSslCertIssuerName: CN%3D####edge-key-issuer
+    otkDmzClientSslCertSerialNumber: "####edge-key-serial"
+    otkDmzClientSslCertSubjectName: CN%3D####edge-key-subject
+    otkDmzClientSslCertEncoded: ####edge-key-cert
+    #   - OTK internal server settings
+    otkInternalServerUrl: https://####sts-release-name:8443
+    otkInternalServerSslCertIssuerName: CN%3D####sts-key-issuer
+    otkInternalServerSslCertSerialNumber: "####sts-key-serial"
+    otkInternalServerSslCertSubjectName: CN%3D####sts-key-subject
+    otkInternalServerSslCertEncoded: ####sts-key-cert
+
+    solutionKits:
+    # Dual Gateway - OTK for EDGE Gateway with API Portal Integration
+    #    https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit/install-otk-with-api-portal-integration.html
+    #     Prerequisite:
+    #       1) set bundle.enabled (in this file) to true and path to "bundles/ssg-edge-install.bundle" (to make the needed configuration to the Gateway)
+    #       2) separate install of some OTK sub-solution kits to avoid bug that requires Gateway restart (recommendation from OTK engineering team)
+    - dualGatewayDmzPortal1:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
+      param: --form solutionKitSelectByName="OTK Assertions"
+    - dualGatewayDmzPortal2:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001
+      param: --form solutionKitSelectByName="Shared OAuth Resources"
+    - dualGatewayDmzPortal3:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 0b0f9534-94f4-4cca-a05a-4c9e7776f8a9
+      param: --form solutionKitSelectByName="Shared Portal Resources"
+      postInstallCommand: sleep 10s
+    - dualGatewayDmzPortal4:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6003
+      param: --form solutionKitSelectByName="DMZ, OAuth 2.0 and OpenID Connect endpoints"
+
+  # This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
+  # Credentials will be moved to a secret object in the next push..
+  management:
+    # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
+    restman:
+      enabled: true
+
+  # Database configuration
+  database:
+    # DB Backed or ephemeral. True for DB Backed
+    enabled: true
+    # By default a MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+    #create: false
+    #jdbcURL: jdbc:mysql://mysql-server-1:3306,mysql-server-2:3306/ssg_db?failOverReadOnly=false
+    #username: gateway
+    #password: mypassword
+    #name: ssg_db
+
+  # This mounts a bundle folder to the Gateway.
+  bundle:
+    enabled: true
+    path: "bundles/ssg-edge-install.bundle"
+
+  service:
+    #================== Example usage of LoadBalancer service type. There can only be one type.
+    # Service Type, ClusterIP, NodePort, LoadBalancer
+    type: LoadBalancer
+    # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
+    # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
+    annotations:
+      cloud.google.com/load-balancer-type: "Internal"
+    #================== Example usage of LoadBalancer service type. There can only be one type.
+
+#    #================== Example usage of ClusterIP service type. There can only be one type.
+#    type: ClusterIP
+#  # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
+#  # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
+#  ingress:
+#    # Set to true to create ingress object
+#    enabled: true
+#    class: nginx
+#    # Ingress annotations
+#    annotations:
+#      # Ingress class
+#      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+#      nginx.ingress.kubernetes.io/affinity: cookie
+#      nginx.ingress.kubernetes.io/affinity-mode: persistent
+#      nginx.ingress.kubernetes.io/session-cookie-name: route
+#      nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+#
+#    # When the ingress is enabled, a host pointing to this will be created
+#    # By default clusterHostname is used, only set this if you want to use a different host
+#    hostname:
+#    ## The port that you want to route to via ingress. This needs to be available via service.ports.
+#    port: https
+#    additionalHostnamesAndPorts:
+#    test-server.net: management
+#    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
+#    tls: false
+#    secretName:
+#    #================== Example usage of ClusterIP service type. There can only be one type.
+
+  readinessProbe:
+    enabled: true
+  #  type: command
+  #  command: /opt/docker/rc.d/diagnostic/health_check.sh
+
+    type: httpGet
+    path: /apidocs/oauth/storage/swagger
+    port: 8443
+    scheme: HTTPS
+    initialDelaySeconds: 60
+    timeoutSeconds: 1
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10

@@ -1,0 +1,426 @@
+{{ if .Values.serviceMetrics.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-service-metrics-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  cwp.bundle: |
+    <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+        <l7:References>
+            <l7:Item>
+                <l7:Name>influxdb.url</l7:Name>
+                <l7:Id>efa6324d69c65f8cbcbf28a203829fb1</l7:Id>
+                <l7:Type>CLUSTER_PROPERTY</l7:Type>
+                <l7:Resource>
+                    <l7:ClusterProperty id="efa6324d69c65f8cbcbf28a203829fb1">
+                        <l7:Name>influxdb.url</l7:Name>
+                        {{ if .Values.serviceMetrics.external }}
+                        <l7:Value>{{ .Values.serviceMetrics.influxDbUrl }}</l7:Value>
+                        {{ else }}
+                         <l7:Value>http://{{ .Release.Name }}-influxdb.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.influxdb.service.port }}</l7:Value>
+                        {{ end }}
+                    </l7:ClusterProperty>
+                </l7:Resource>
+            </l7:Item>
+            <l7:Item>
+                <l7:Name>env.tags</l7:Name>
+                <l7:Id>efa6324d69c65f8cbcbf28a203829fb2</l7:Id>
+                <l7:Type>CLUSTER_PROPERTY</l7:Type>
+                <l7:Resource>
+                    <l7:ClusterProperty id="efa6324d69c65f8cbcbf28a203829fb2">
+                        <l7:Name>env.tags</l7:Name>
+                        <l7:Value>{{ .Values.serviceMetrics.tags }}</l7:Value>
+                    </l7:ClusterProperty>
+                </l7:Resource>
+            </l7:Item>
+        </l7:References>
+        <l7:Mappings>
+            <l7:Mapping action="NewOrUpdate" srcId="efa6324d69c65f8cbcbf28a203829fb1" type="CLUSTER_PROPERTY">
+                <l7:Properties>
+                    <l7:Property key="MapBy">
+                        <l7:StringValue>name</l7:StringValue>
+                    </l7:Property>
+                    <l7:Property key="MapTo">
+                        <l7:StringValue>influxdb.url</l7:StringValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:Mapping>
+            <l7:Mapping action="NewOrUpdate" srcId="efa6324d69c65f8cbcbf28a203829fb2" type="CLUSTER_PROPERTY">
+                <l7:Properties>
+                    <l7:Property key="MapBy">
+                        <l7:StringValue>name</l7:StringValue>
+                    </l7:Property>
+                    <l7:Property key="MapTo">
+                        <l7:StringValue>env.tags</l7:StringValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:Mapping>
+        </l7:Mappings>
+    </l7:Bundle>
+  influxdb.bundle: |
+    <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+        <l7:References>
+            <l7:Item>
+                <l7:Name>Root Node</l7:Name>
+                <l7:Id>0000000000000000ffffffffffffec76</l7:Id>
+                <l7:Type>FOLDER</l7:Type>
+                <l7:Resource>
+                    <l7:Folder id="0000000000000000ffffffffffffec76">
+                        <l7:Name>Root Node</l7:Name>
+                    </l7:Folder>
+                </l7:Resource>
+            </l7:Item>
+            <l7:Item>
+                <l7:Name>influxdb/</l7:Name>
+                <l7:Id>d3cbd426d2bd18560642e8ca917cc3c8</l7:Id>
+                <l7:Type>FOLDER</l7:Type>
+                <l7:Resource>
+                    <l7:Folder folderId="0000000000000000ffffffffffffec76" id="d3cbd426d2bd18560642e8ca917cc3c8">
+                        <l7:Name>influxdb</l7:Name>
+                    </l7:Folder>
+                </l7:Resource>
+            </l7:Item>
+            <l7:Item>
+                <l7:Name>influxdb/influxdb</l7:Name>
+                <l7:Id>d3cbd426d2bd18560642e8ca917cc3c7</l7:Id>
+                <l7:Type>POLICY</l7:Type>
+                <l7:Resource>
+                    <l7:Policy guid="efd63574-d652-41a9-ab34-142ac9831be5" id="d3cbd426d2bd18560642e8ca917cc3c7">
+                        <l7:PolicyDetail folderId="d3cbd426d2bd18560642e8ca917cc3c8" guid="efd63574-d652-41a9-ab34-142ac9831be5" id="d3cbd426d2bd18560642e8ca917cc3c7">
+                            <l7:Name>influxdb</l7:Name>
+                            <l7:PolicyType>Service Operation</l7:PolicyType>
+                            <l7:Properties>
+                                <l7:Property key="tag">
+                                    <l7:StringValue>com.l7tech.external.assertions.pbsmel.server.ServiceMetricsProcessor</l7:StringValue>
+                                </l7:Property>
+                                <l7:Property key="subtag">
+                                    <l7:StringValue>process</l7:StringValue>
+                                </l7:Property>
+                            </l7:Properties>
+                        </l7:PolicyDetail>
+                        <l7:Resources>
+                            <l7:ResourceSet tag="policy">
+                                <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+    &lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+        &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;********************************************************************************************************************&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* Off Box Service Metrics&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* Route the metrics message to InfluxDB.&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* &quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* Input: A JSON format message containing service metrics for single request (as ${metrics})&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* Output: API post of text format message containing data formatted into tags and values for Influx, space separated&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;* &quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;L7p:CommentAssertion&gt;
+                &lt;L7p:Comment stringValue=&quot;********************************************************************************************************************&quot;/&gt;
+            &lt;/L7p:CommentAssertion&gt;
+            &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;time&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;time&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;nodeId&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;nodeId&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;nodeName&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;nodeName&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:Regex&gt;
+                    &lt;L7p:AutoTarget booleanValue=&quot;false&quot;/&gt;
+                    &lt;L7p:CaseInsensitive booleanValue=&quot;true&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;nodeName.result&quot;/&gt;
+                    &lt;L7p:Regex stringValue=&quot;(\\| )&quot;/&gt;
+                    &lt;L7p:RegexName stringValue=&quot;Escape slash and spaces&quot;/&gt;
+                    &lt;L7p:Replace booleanValue=&quot;true&quot;/&gt;
+                    &lt;L7p:Replacement stringValue=&quot;\\$1&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                &lt;/L7p:Regex&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;nodeIp&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;nodeIp&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;serviceId&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;serviceId&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;serviceName&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;serviceName&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:Regex&gt;
+                    &lt;L7p:AutoTarget booleanValue=&quot;false&quot;/&gt;
+                    &lt;L7p:CaseInsensitive booleanValue=&quot;true&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;serviceName.result&quot;/&gt;
+                    &lt;L7p:Regex stringValue=&quot;(\\| )&quot;/&gt;
+                    &lt;L7p:RegexName stringValue=&quot;Escape slash and spaces&quot;/&gt;
+                    &lt;L7p:Replace booleanValue=&quot;true&quot;/&gt;
+                    &lt;L7p:Replacement stringValue=&quot;\\$1&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                &lt;/L7p:Regex&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;serviceUri&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;serviceUri&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;totalFrontendLatency&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;totalFrontendLatency&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;totalBackendLatency&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;totalBackendLatency&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;isPolicySuccessful&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;isPolicySuccessful&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;isPolicyViolation&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;isPolicyViolation&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+                &lt;L7p:EvaluateJsonPathExpression&gt;
+                    &lt;L7p:Expression stringValue=&quot;isRoutingFailure&quot;/&gt;
+                    &lt;L7p:OtherTargetMessageVariable stringValue=&quot;metrics&quot;/&gt;
+                    &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+                    &lt;L7p:VariablePrefix stringValue=&quot;isRoutingFailure&quot;/&gt;
+                &lt;/L7p:EvaluateJsonPathExpression&gt;
+            &lt;/wsp:All&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;JHtnYXRld2F5LmVudi50YWdzfQ==&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;env&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;JHtnYXRld2F5LmluZmx1eGRiLnVybH0=&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;influxdb-url&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;bm9kZUlkPSR7bm9kZUlkLnJlc3VsdH0sbm9kZU5hbWU9JHtub2RlTmFtZS5yZXN1bHR9LG5vZGVJcD0ke25vZGVJcC5yZXN1bHR9LHNlcnZpY2VJZD0ke3NlcnZpY2VJZC5yZXN1bHR9LHNlcnZpY2VOYW1lPSR7c2VydmljZU5hbWUucmVzdWx0fSxzZXJ2aWNlVXJpPSR7c2VydmljZVVyaS5yZXN1bHR9LGlzUG9saWN5U3VjY2Vzc2Z1bD0ke2lzUG9saWN5U3VjY2Vzc2Z1bC5yZXN1bHR9LGlzUG9saWN5VmlvbGF0aW9uPSR7aXNQb2xpY3lWaW9sYXRpb24ucmVzdWx0fSxpc1JvdXRpbmdGYWlsdXJlPSR7aXNSb3V0aW5nRmFpbHVyZS5yZXN1bHR9&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;tags&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;dG90YWxGcm9udGVuZExhdGVuY3k9JHt0b3RhbEZyb250ZW5kTGF0ZW5jeS5yZXN1bHR9LHRvdGFsQmFja2VuZExhdGVuY3k9JHt0b3RhbEJhY2tlbmRMYXRlbmN5LnJlc3VsdH0=&quot;/&gt;
+                &lt;L7p:LineBreak lineBreak=&quot;LF&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;measurement&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                    &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                        &lt;L7p:entry&gt;
+                            &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                            &lt;L7p:value stringValue=&quot;Add a unique value to timestamp so high performance APIs are counted accurately. &quot;/&gt;
+                        &lt;/L7p:entry&gt;
+                    &lt;/L7p:Properties&gt;
+                &lt;/L7p:AssertionComment&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;MDAwMDAwJHtnYXRld2F5LnJhbmRvbS4yLnVuc2lnbmVkfQ==&quot;/&gt;
+                &lt;L7p:LineBreak lineBreak=&quot;LF&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;unique&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:Regex&gt;
+                &lt;L7p:AutoTarget booleanValue=&quot;false&quot;/&gt;
+                &lt;L7p:OtherTargetMessageVariable stringValue=&quot;unique&quot;/&gt;
+                &lt;L7p:Regex stringValue=&quot;^.*([0-9]{6})$&quot;/&gt;
+                &lt;L7p:RegexName stringValue=&quot;Last chars&quot;/&gt;
+                &lt;L7p:Replace booleanValue=&quot;true&quot;/&gt;
+                &lt;L7p:Replacement stringValue=&quot;$1&quot;/&gt;
+                &lt;L7p:Target target=&quot;OTHER&quot;/&gt;
+            &lt;/L7p:Regex&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;cmVxdWVzdCwke3RhZ3N9LCR7ZW52fSAke21lYXN1cmVtZW50fSAke3RpbWUucmVzdWx0fSR7dW5pcXVlfQo=&quot;/&gt;
+                &lt;L7p:LineBreak lineBreak=&quot;LF&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;requestDataPointMsg&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+            &lt;L7p:BufferData&gt;
+                &lt;L7p:BufferName stringValue=&quot;buffer&quot;/&gt;
+                &lt;L7p:MaxAgeMillis longValue=&quot;5000&quot;/&gt;
+                &lt;L7p:MaxSizeBytes longValue=&quot;131072&quot;/&gt;
+                &lt;L7p:NewDataVarName stringValue=&quot;requestDataPointMsg&quot;/&gt;
+            &lt;/L7p:BufferData&gt;
+            &lt;wsp:OneOrMore wsp:Usage=&quot;Required&quot;&gt;
+                &lt;wsp:OneOrMore wsp:Usage=&quot;Required&quot;&gt;
+                    &lt;L7p:ComparisonAssertion&gt;
+                        &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                            &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                                &lt;L7p:entry&gt;
+                                    &lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+                                    &lt;L7p:value stringValue=&quot;Common case is buffer was not extracted&quot;/&gt;
+                                &lt;/L7p:entry&gt;
+                                &lt;L7p:entry&gt;
+                                    &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                                    &lt;L7p:value stringValue=&quot;This performs better and logs less. &quot;/&gt;
+                                &lt;/L7p:entry&gt;
+                            &lt;/L7p:Properties&gt;
+                        &lt;/L7p:AssertionComment&gt;
+                        &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                        &lt;L7p:Expression1 stringValue=&quot;${buffer.wasExtracted}&quot;/&gt;
+                        &lt;L7p:ExpressionIsVariable booleanValue=&quot;false&quot;/&gt;
+                        &lt;L7p:Operator operatorNull=&quot;null&quot;/&gt;
+                        &lt;L7p:Predicates predicates=&quot;included&quot;&gt;
+                            &lt;L7p:item dataType=&quot;included&quot;&gt;
+                                &lt;L7p:Type variableDataType=&quot;boolean&quot;/&gt;
+                            &lt;/L7p:item&gt;
+                            &lt;L7p:item binary=&quot;included&quot;&gt;
+                                &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                                &lt;L7p:RightValue stringValue=&quot;false&quot;/&gt;
+                            &lt;/L7p:item&gt;
+                        &lt;/L7p:Predicates&gt;
+                    &lt;/L7p:ComparisonAssertion&gt;
+                    &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                        &lt;L7p:HttpRoutingAssertion&gt;
+                            &lt;L7p:FailOnErrorStatus booleanValue=&quot;false&quot;/&gt;
+                            &lt;L7p:HttpMethod httpMethod=&quot;POST&quot;/&gt;
+                            &lt;L7p:ProtectedServiceUrl stringValue=&quot;${influxdb-url}/write?db={{.Values.serviceMetrics.influxDbDatabase}}&quot;/&gt;
+                            &lt;L7p:ProxyPassword stringValueNull=&quot;null&quot;/&gt;
+                            &lt;L7p:ProxyUsername stringValueNull=&quot;null&quot;/&gt;
+                            &lt;L7p:RequestHeaderRules httpPassthroughRuleSet=&quot;included&quot;&gt;
+                                &lt;L7p:ForwardAll booleanValue=&quot;true&quot;/&gt;
+                                &lt;L7p:Rules httpPassthroughRules=&quot;included&quot;&gt;
+                                    &lt;L7p:item httpPassthroughRule=&quot;included&quot;&gt;
+                                        &lt;L7p:Name stringValue=&quot;Cookie&quot;/&gt;
+                                    &lt;/L7p:item&gt;
+                                    &lt;L7p:item httpPassthroughRule=&quot;included&quot;&gt;
+                                        &lt;L7p:Name stringValue=&quot;SOAPAction&quot;/&gt;
+                                    &lt;/L7p:item&gt;
+                                &lt;/L7p:Rules&gt;
+                            &lt;/L7p:RequestHeaderRules&gt;
+                            &lt;L7p:RequestMsgSrc stringValue=&quot;buffer.extractedMessage&quot;/&gt;
+                            &lt;L7p:RequestParamRules httpPassthroughRuleSet=&quot;included&quot;&gt;
+                                &lt;L7p:ForwardAll booleanValue=&quot;true&quot;/&gt;
+                                &lt;L7p:Rules httpPassthroughRules=&quot;included&quot;/&gt;
+                            &lt;/L7p:RequestParamRules&gt;
+                            &lt;L7p:ResponseHeaderRules httpPassthroughRuleSet=&quot;included&quot;&gt;
+                                &lt;L7p:ForwardAll booleanValue=&quot;true&quot;/&gt;
+                                &lt;L7p:Rules httpPassthroughRules=&quot;included&quot;&gt;
+                                    &lt;L7p:item httpPassthroughRule=&quot;included&quot;&gt;
+                                        &lt;L7p:Name stringValue=&quot;Set-Cookie&quot;/&gt;
+                                    &lt;/L7p:item&gt;
+                                &lt;/L7p:Rules&gt;
+                            &lt;/L7p:ResponseHeaderRules&gt;
+                            &lt;L7p:SamlAssertionVersion intValue=&quot;2&quot;/&gt;
+                        &lt;/L7p:HttpRoutingAssertion&gt;
+                        &lt;wsp:OneOrMore wsp:Usage=&quot;Required&quot;&gt;
+                            &lt;L7p:ComparisonAssertion&gt;
+                                &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                                &lt;L7p:Expression1 stringValue=&quot;${httpRouting.reasonCode}&quot;/&gt;
+                                &lt;L7p:ExpressionIsVariable booleanValue=&quot;false&quot;/&gt;
+                                &lt;L7p:Operator operatorNull=&quot;null&quot;/&gt;
+                                &lt;L7p:Predicates predicates=&quot;included&quot;&gt;
+                                    &lt;L7p:item dataType=&quot;included&quot;&gt;
+                                        &lt;L7p:Type variableDataType=&quot;int&quot;/&gt;
+                                    &lt;/L7p:item&gt;
+                                    &lt;L7p:item binary=&quot;included&quot;&gt;
+                                        &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                                        &lt;L7p:RightValue stringValue=&quot;204&quot;/&gt;
+                                    &lt;/L7p:item&gt;
+                                &lt;/L7p:Predicates&gt;
+                            &lt;/L7p:ComparisonAssertion&gt;
+                            &lt;L7p:AuditDetailAssertion&gt;
+                                &lt;L7p:Detail stringValue=&quot;Error Sending Stats Code:[${httpRouting.reasoncode}]: Message: [${response.mainpart}]&quot;/&gt;
+                                &lt;L7p:LoggingOnly booleanValue=&quot;true&quot;/&gt;
+                            &lt;/L7p:AuditDetailAssertion&gt;
+                        &lt;/wsp:OneOrMore&gt;
+                    &lt;/wsp:All&gt;
+                &lt;/wsp:OneOrMore&gt;
+                &lt;L7p:TrueAssertion/&gt;
+            &lt;/wsp:OneOrMore&gt;
+        &lt;/wsp:All&gt;
+    &lt;/wsp:Policy&gt;
+    </l7:Resource>
+                            </l7:ResourceSet>
+                        </l7:Resources>
+                    </l7:Policy>
+                </l7:Resource>
+            </l7:Item>
+            <l7:Item>
+                <l7:Name>metrics</l7:Name>
+                <l7:Id>d3cbd426d2bd18560642e8ca917cc3c9</l7:Id>
+                <l7:Type>POLICY_BACKED_SERVICE</l7:Type>
+                <l7:Resource>
+                    <l7:PolicyBackedService id="d3cbd426d2bd18560642e8ca917cc3c9">
+                        <l7:Name>metrics</l7:Name>
+                        <l7:InterfaceName>com.l7tech.external.assertions.pbsmel.server.ServiceMetricsProcessor</l7:InterfaceName>
+                        <l7:PolicyBackedServiceOperations>
+                            <l7:PolicyBackedServiceOperation>
+                                <l7:PolicyId>d3cbd426d2bd18560642e8ca917cc3c7</l7:PolicyId>
+                                <l7:OperationName>process</l7:OperationName>
+                            </l7:PolicyBackedServiceOperation>
+                        </l7:PolicyBackedServiceOperations>
+                    </l7:PolicyBackedService>
+                </l7:Resource>
+            </l7:Item>
+        </l7:References>
+        <l7:Mappings>
+            <l7:Mapping action="NewOrExisting" srcId="0000000000000000ffffffffffffec76" type="FOLDER"/>
+            <l7:Mapping action="NewOrExisting" srcId="d3cbd426d2bd18560642e8ca917cc3c8" type="FOLDER">
+                <l7:Properties>
+                    <l7:Property key="MapBy">
+                        <l7:StringValue>path</l7:StringValue>
+                    </l7:Property>
+                    <l7:Property key="MapTo">
+                        <l7:StringValue>influxdb/</l7:StringValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:Mapping>
+            <l7:Mapping action="NewOrUpdate" srcId="d3cbd426d2bd18560642e8ca917cc3c7" type="POLICY">
+                <l7:Properties>
+                    <l7:Property key="MapBy">
+                        <l7:StringValue>path</l7:StringValue>
+                    </l7:Property>
+                    <l7:Property key="MapTo">
+                        <l7:StringValue>influxdb/influxdb</l7:StringValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:Mapping>
+            <l7:Mapping action="NewOrUpdate" srcId="d3cbd426d2bd18560642e8ca917cc3c9" type="POLICY_BACKED_SERVICE">
+                <l7:Properties>
+                    <l7:Property key="MapBy">
+                        <l7:StringValue>name</l7:StringValue>
+                    </l7:Property>
+                    <l7:Property key="MapTo">
+                        <l7:StringValue>metrics</l7:StringValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:Mapping>
+        </l7:Mappings>
+    </l7:Bundle>
+{{ end }}

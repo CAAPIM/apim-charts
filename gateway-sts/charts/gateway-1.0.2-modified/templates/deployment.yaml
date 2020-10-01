@@ -93,16 +93,9 @@ spec:
                 name: {{ template "gateway.fullname" . }}-secret
 {{ if .Values.livenessProbe.enabled }}
           livenessProbe:
-{{ if (eq .Values.livenessProbe.type "httpGet" ) }}
-            httpGet:
-              path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
-              port: {{ .Values.livenessProbe.port | default 8443 }}
-              scheme: {{ .Values.livenessProbe.scheme | default "HTTPS" }}
-{{ else }}
             exec:
               command:
-              - {{ .Values.livenessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+              - /opt/docker/rc.d/diagnostic/health_check.sh
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
@@ -111,16 +104,9 @@ spec:
 {{ end }}
 {{ if .Values.readinessProbe.enabled }}
           readinessProbe:
-{{ if (eq .Values.readinessProbe.type "httpGet" ) }}
-            httpGet:
-              path: {{ .Values.readinessProbe.path | default "/ssg/ping"}}
-              port: {{ .Values.readinessProbe.port | default 8443 }}
-              scheme: {{ .Values.readinessProbe.scheme | default "HTTPS" }}
-{{ else }}
             exec:
               command:
-              - {{ .Values.readinessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+              - /opt/docker/rc.d/diagnostic/health_check.sh
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
