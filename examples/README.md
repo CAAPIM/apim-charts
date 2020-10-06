@@ -15,4 +15,4 @@ Examples:
 
 ## Notes
 
-The samples deployment charts utilize the MySQL container without replication for demo purposes. For production deployment, an external MySQL server cluster should be created and managed seperately with replication and content backup.
+The sample deployment charts utilize the MySQL container without replication for demo purposes. For production deployment, an external MySQL server cluster should be created and managed seperately with replication and content backup.
