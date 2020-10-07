@@ -12,7 +12,7 @@ Learn [why](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-ap
 - gateway-sts: Helm Chart for deploying API Gateway - OAUTH TOOLKIT
 - gateway: Helm Chart for deploying API Gateway
 
-The ./examples contains individual readme file for each of the deployment scenario.
+The ./examples contain individual readme files for each deployment scenario.
 
 ## Note
 This Helm Chart was created by Layer7 Broadcom.
