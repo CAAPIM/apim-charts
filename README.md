@@ -14,6 +14,20 @@ Learn [why](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-ap
 
 The ./examples contain individual readme files for each deployment scenario.
 
+## Before You Start
+First we need to download the dependent charts.
+
+`$ helm dep up <path_to_the_gateway_chart>`
+
+You should see a commandline output similar to this,
+
+>Saving 4 charts<br/>
+>Downloading hazelcast from repo https://hazelcast-charts.s3.amazonaws.com/<br/>
+>Downloading influxdb from repo https://helm.influxdata.com/<br/>
+>Downloading grafana from repo https://charts.bitnami.com/bitnami<br/>
+>Downloading mysql from repo https://kubernetes-charts.storage.googleapis.com<br/>
+>
+
 ## Note
 This Helm Chart was created by Layer7 Broadcom.
 

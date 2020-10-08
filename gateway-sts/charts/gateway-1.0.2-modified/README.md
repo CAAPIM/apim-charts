@@ -7,7 +7,18 @@ It's targeted at Gateway v10.x onward.
 This Helm chart contains additional bundle files for the API Management Oauth Toolkit deployment
 
 # Install the Chart
+First we need to download the dependent charts.
 
+`$ helm dep up ../gateway-1.0.2-modified`
+
+You should see a commandline output similar to this,
+
+>Saving 4 charts<br/>
+>Downloading hazelcast from repo https://hazelcast-charts.s3.amazonaws.com/<br/>
+>Downloading influxdb from repo https://helm.influxdata.com/<br/>
+>Downloading grafana from repo https://charts.bitnami.com/bitnami<br/>
+>Downloading mysql from repo https://kubernetes-charts.storage.googleapis.com<br/>
+>
 ## From this Repository
 Install from this repository assuming you've downloaded/forked the Git Repo
 

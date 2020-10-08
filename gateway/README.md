@@ -5,6 +5,17 @@ This Chart deploys the API Gateway with the following `optional` subcharts: haze
 It's targeted at Gateway v10.x onward.
 
 # Install the Chart
+First we need to download the dependent charts.
+
+`$ helm dep up ../gateway`
+
+You should see a commandline output similar to this,
+
+>Saving 4 charts<br/>
+>Downloading hazelcast from repo https://hazelcast-charts.s3.amazonaws.com/<br/>
+>Downloading influxdb from repo https://helm.influxdata.com/<br/>
+>Downloading grafana from repo https://charts.bitnami.com/bitnami<br/>
+>Downloading mysql from repo https://kubernetes-charts.storage.googleapis.com<br/>
 
 ## From this Repository
 Install from this repository assuming you've downloaded/forked the Git Repo

@@ -3,6 +3,7 @@
 ## Prerequisite:
 1. A Gateway license (`LICENSE.xml`) in this directory
 2. OTK solution kit and Liquibase files to create OTK database schema must exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar and /tmp/otk-db-liquibase/)
+3. Download the dependent Charts.
 
 ## Usage:
 `apim-charts/examples/gateway> helm install -f ./ssg-single-otk-base-selection-values.yaml <release_name> ../../gateway-sts --set-file "ssg.license.value=./LICENSE.xml" --set "ssg.license.accept=true"`
