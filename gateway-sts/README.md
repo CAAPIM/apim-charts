@@ -7,7 +7,7 @@ It's targeted at Gateway v10.x onward.
 # Install the Chart
 First we need to download the dependent charts.
 
-`$ helm dep up gateway-1.0.2-modified`
+`$ helm dep up ./charts/gateway-1.0.2-modified`
 
 You should see a commandline output similar to this,
 
