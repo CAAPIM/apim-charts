@@ -178,6 +178,9 @@ ingress:
   hostname:
   ## The port that you want to route to via ingress. This needs to be available via service.ports.
   port: https
+  ## Define additional hostnames and ports as key-value pairs.
+  additionalHostnamesAndPorts:
+  #  managementhost.domain: management
   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls: false
   secretName:

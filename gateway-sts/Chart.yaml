@@ -1,8 +1,0 @@
-apiVersion: v2
-name: ssg-sample-otk
-version: 0.0.1
-appVersion: "10.0.00"
-description: This Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
-dependencies:
-  - name: ssg
-    version: 1.0.2-modified

@@ -1,5 +1,5 @@
 apiVersion: v2
-name: ssg
+name: gateway
 version: 1.0.2
 appVersion: "10.0.00"
 description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
