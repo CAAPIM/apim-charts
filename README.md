@@ -9,10 +9,11 @@ Learn [why](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-ap
 
 ## Helm Charts
 
-- gateway-sts: Helm Chart for deploying API Gateway - OAUTH TOOLKIT
 - gateway: Helm Chart for deploying API Gateway
+- gateway-otk: Helm Chart for deploying API Gateway with the OAUTH TOOLKIT
 
-The ./examples contain individual readme files for each deployment scenario.
+
+*** examples *** contains chart specific values files that you can apply to your Gateway deployment to achieve specific scenarios. Otk-scenarios is currently in an alpha state and will be updated in the coming weeks.
 
 ## Note
 This Helm Chart was created by Layer7 Broadcom.
