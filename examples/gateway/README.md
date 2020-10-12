@@ -16,9 +16,6 @@ files:
 
 The `<release_name>` can be any alphanumeric string, for example "ssg-grafana-service-metrics" or "ssg-metrics-01".
 
-
-
-
 # Hazelcast Example
 
 ## Connect Gateway to external Hazelcast 3.x Datastore
