@@ -1,5 +1,8 @@
 # OTK Gateway Deployment Examples
 
+## This Chart is currently in an alpha state
+Requires a custom Gateway image, more details to follow in the coming weeks.
+
 ## Prerequisite:
 1. A Gateway license (`LICENSE.xml`)
 2. OTK solution kit and Liquibase files to create OTK database schema must exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar and /tmp/otk-db-liquibase/)

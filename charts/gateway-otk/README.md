@@ -1,24 +1,25 @@
-# Layer7 API Gateway
+# Layer7 API Gateway - OAUTH TOOLKIT (NOTE: In Development)
 
-This Chart deploys the API Gateway with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
+This Chart deploys the API Gateway - OAUTH TOOLKIT with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
 
 It's targeted at Gateway v10.x onward.
 
-This Helm chart contains additional bundle files for the API Management Oauth Toolkit deployment
+## This Chart is currently in an alpha state
+Requires a custom Gateway image, more details to follow in the coming weeks.
 
 # Install the Chart
 
 ## From this Repository
 Install from this repository assuming you've downloaded/forked the Git Repo
 
-`$ helm install ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
+`$ helm install gateway-otk --set-file "license.value=path/to/license.xml" --set "license.accept=true" .`
 
 ## From the Layer7 Repository (Please read!)
 Install from the charts.brcmlabs.com Helm Repository, the ssg chart will require authentication until is made GA. Customers that have been invited to try the Chart out will receive credentials in a separate email. Please reach out to gary.vermeulen@broadcom.com if you haven't received these.
 
 `$ helm repo add layer7 https://charts.brcmlabs.com --username <username> --password <password>`
 
-`$ helm install ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/ssg`
+`$ helm install ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway-otk`
 
 ## Upgrade this Chart
 To upgrade the Gateway deployment
@@ -30,10 +31,8 @@ To delete Gateway installation
 
 `$ helm delete <release name> -n <release namespace>`
 
-## Rebuild Chart Dependencies
-To update the Charts dependencies
-
-`$ helm dep up`
+## OTK Deployment Examples:
+- refer to the apim-charts/examples for more details
 
 ## Custom values
 To make sure that your custom values don't get overwritten by a pull, create your own values.yaml (myvalues.yaml..) then specify -f myvalues.yaml when deploying/upgrading
