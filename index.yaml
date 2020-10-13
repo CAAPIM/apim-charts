@@ -1,0 +1,60 @@
+apiVersion: v1
+entries:
+  gateway:
+  - apiVersion: v2
+    appVersion: 10.0.00
+    created: "2020-10-13T20:51:41.280232017Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 3.4.6
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.7.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 3.1.1
+    - condition: database.create
+      name: mysql
+      repository: https://kubernetes-charts.storage.googleapis.com
+      version: ^1.6.2
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: 7376649d828dcc51f3e675fd925f650537cc2cfd9e33ad2d6b9a8c6175dc7b0f
+    maintainers:
+    - email: gary.vermeulen@broadcom.com
+      name: Gary Vermeulen
+    name: gateway
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-1.0.2/gateway-1.0.2.tgz
+    version: 1.0.2
+  gateway-otk:
+  - apiVersion: v2
+    appVersion: 10.0.00
+    created: "2020-10-13T20:51:41.381097638Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 3.4.6
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.7.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 3.1.1
+    - condition: database.create
+      name: mysql
+      repository: https://kubernetes-charts.storage.googleapis.com
+      version: ^1.6.2
+    description: This alpha Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
+    digest: 79b6378ef726d2e6e887c77161bf88e2d7d4804651f598987853f9b5070cbdbc
+    name: gateway-otk
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-otk-0.0.1/gateway-otk-0.0.1.tgz
+    version: 0.0.1
+generated: "2020-10-13T20:51:41.139049607Z"
