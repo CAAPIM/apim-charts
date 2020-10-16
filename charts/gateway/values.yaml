@@ -115,14 +115,12 @@ installSolutionKits:
 #Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
   key1: value
-
 # key1: value
 # key2: value
 
 #Additional Secret variables to be added to the Gateway Secret
 additionalSecret:
   key1: value
-
 # key1: value
 # key2: value
 
