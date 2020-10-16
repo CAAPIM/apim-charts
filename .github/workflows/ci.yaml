@@ -61,9 +61,9 @@ jobs:
         with:
           node_image: kindest/node:${{ matrix.k8s }}
       - name: Run chart-testing (install)
-        env:
-          SSG_LICENSE: ${{ .secrets.LICENSE }}
         uses: helm/chart-testing-action@master
+        env:
+          SSG_LICENSE: '${{ secrets.LICENSE }}'
         with:
           command: install
           config: .github/ct.yaml
