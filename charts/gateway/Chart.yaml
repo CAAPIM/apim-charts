@@ -3,9 +3,12 @@ name: gateway
 version: 1.0.4
 appVersion: "10.0.00"
 description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+home: https://github.com/CAAPIM/apim-charts
 maintainers:
-  - name: Gary Vermeulen
-    email: gary.vermeulen@broadcom.com
+  - email: gary.vermeulen@broadcom.com
+    name: Gary Vermeulen
+sources:
+  - https://github.com/CAAPIM/apim-charts
 dependencies:
   - name: hazelcast
     version: 3.4.6
