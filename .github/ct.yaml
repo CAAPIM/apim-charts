@@ -1,4 +1,4 @@
-helm-extra-args: --timeout 600s --dry-run
+helm-extra-args: --timeout 600s
 check-version-increment: true
 validate_maintainers: false
 debug: true
