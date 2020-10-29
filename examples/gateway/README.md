@@ -12,7 +12,7 @@ files:
 
 
 ## Usage:
-`apim-charts/gateway/examples/gateway> helm install  <release_name>  ~/apim-charts/gateway -f ./ssg-grafana-service-metrics.yaml --set-file "license.value=./LICENSE.xml" --set "license.accept=true"`
+`apim-charts/examples/gateway> helm install  <release_name>  ~/apim-charts/charts/gateway -f ./ssg-grafana-service-metrics.yaml --set-file "license.value=./LICENSE.xml" --set "license.accept=true"`
 
 The `<release_name>` can be any alphanumeric string, for example "ssg-grafana-service-metrics" or "ssg-metrics-01".
 
@@ -64,6 +64,6 @@ EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extensi
 
 
 ## Usage:
-`apim-charts/gateway/examples/gateway> helm install  <release_name>  ~/apim-charts/gateway  -f ./ssg-hazelcast-service-metrics.yaml --set-file "license.value=./LICENSE.xml" --set "license.accept=true"`
+`apim-charts/examples/gateway> helm install  <release_name>  ~/apim-charts/charts/gateway  -f ./ssg-hazelcast-service-metrics.yaml --set-file "license.value=./LICENSE.xml" --set "license.accept=true"`
 
 The `<release_name>` can be any alphanumeric string, for example "ssg-hazelcast-service-metrics" or "ssg-metrics-01".

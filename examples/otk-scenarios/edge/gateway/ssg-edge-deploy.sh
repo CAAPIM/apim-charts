@@ -58,4 +58,4 @@ sed -i "s/####sts-key-issuer/$STS_KEY_ISSUER/g" $EDGE_VALUES_YAML_FILE_REPLACED
 sed -i "s/####sts-key-serial/$STS_KEY_SERIAL/g" $EDGE_VALUES_YAML_FILE_REPLACED
 sed -i "s/####sts-key-subject/$STS_KEY_SUBJECT/g" $EDGE_VALUES_YAML_FILE_REPLACED
 sed -i "s/####sts-key-cert/$STS_KEY_CERT_ESCAPED/g" $EDGE_VALUES_YAML_FILE_REPLACED
-helm install -f $EDGE_VALUES_YAML_FILE_REPLACED $EDGE_RELEASE_NAME ../../../gateway-sts --set-file "ssg.license.value=./LICENSE.xml" --set "ssg.tls.customDefaultSslKey.key=$EDGE_KEY" --set "ssg.license.accept=true"
+helm install -f $EDGE_VALUES_YAML_FILE_REPLACED $EDGE_RELEASE_NAME ../../../../charts/gateway-otk --set-file "ssg.license.value=./LICENSE.xml" --set "ssg.tls.customDefaultSslKey.key=$EDGE_KEY" --set "ssg.license.accept=true"
