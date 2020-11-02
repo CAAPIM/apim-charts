@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.4
+  version: 1.0.0
 - name: mysql
   repository: https://kubernetes-charts.storage.googleapis.com/
   version: 1.6.4
@@ -11,5 +11,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 2.15.0
-digest: sha256:5a34d25157402d865bf0d667f381a850abb943f77f597aa5c9c9bc7ac99a43df
-generated: "2020-10-22T10:08:32.546435+01:00"
+digest: sha256:af612ab0b3e2c67cb590600f9153678ca815ea7ef94fb1de8276c886fb78f960
+generated: "2020-11-02T09:30:20.047675Z"

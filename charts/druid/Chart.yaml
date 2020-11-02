@@ -2,5 +2,10 @@ apiVersion: v2
 name: druid
 description: Broadcom APIM Portal Analytics Chart
 type: application
-version: 1.0.4
+home: https://github.com/CAAPIM/apim-charts
+maintainers:
+  - name: Gazza7205
+sources:
+  - https://github.com/CAAPIM/apim-charts
+version: 1.0.0
 appVersion: 0.17.0

@@ -9,15 +9,15 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-  databaseUsername: admin
-  # databasePassword: 7layer
+  databaseUsername: portal
+# databasePassword: 7layer
   databaseHost: mysql
   databasePort: 3306
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  # storageClass: "_"
-  # schedulerName:
+# storageClass: "_"
+# schedulerName:
     
 portal:
   domain: example.com
@@ -36,12 +36,12 @@ portal:
   # Internal SSG credentials - auto-generated on install
   internalSSG:
     secretName: ssg-secret
-    # username: admin
-    # password: M2NlY2RhZTMyZDZkNWMyZGI3
-  # Internal password for the Portal API - auto-generated on install
+  # username: admin
+  # password: M2NlY2RhZTMyZDZkNWMyZGI3
+# Internal password for the Portal API - auto-generated on install
   papi:
     secretName: papi-secret
-    #password: 7layer
+  # password: 7layer
   otk:
     port: 443
   # This loads the bintray imagePullSecret
@@ -100,7 +100,7 @@ ingress:
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
     - tenant1
-#    - tenant2
+#   - tenant2
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
 
@@ -126,7 +126,7 @@ telemetry:
 # Service Account for Portal services
 serviceAccount:
   create: true
-  # name:
+# name:
 rbac:
   create: true
 
@@ -147,17 +147,17 @@ analytics:
     limits:
       cpu: 1000m
       memory: 2000Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - analytics
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - analytics
+#       topologyKey: "kubernetes.io/hostname"
 
 apim:
   replicaCount: 2
@@ -175,17 +175,17 @@ apim:
     limits:
       cpu: 2000m
       memory: 6144Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - apim
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - apim
+#       topologyKey: "kubernetes.io/hostname"
 
 authenticator:
   replicaCount: 2
@@ -203,17 +203,17 @@ authenticator:
     limits:
       cpu: 750m
       memory: 1500Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - authenticator
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - authenticator
+#       topologyKey: "kubernetes.io/hostname"
 
 dispatcher:
   replicaCount: 2
@@ -231,17 +231,17 @@ dispatcher:
     limits:
       cpu: 500m
       memory: 1024Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - dispatcher
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - dispatcher
+#       topologyKey: "kubernetes.io/hostname"
 
 portalData:
   replicaCount: 2
@@ -259,17 +259,17 @@ portalData:
     limits:
       cpu: 1000m
       memory: 3072Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - portal-data
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - portal-data
+#       topologyKey: "kubernetes.io/hostname"
 
 portalEnterprise:
   replicaCount: 2
@@ -287,17 +287,17 @@ portalEnterprise:
     limits:
       cpu: 2000m
       memory: 3072Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - portal-enterprise
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - portal-enterprise
+#       topologyKey: "kubernetes.io/hostname"
 
 pssg:
   replicaCount: 2
@@ -315,17 +315,17 @@ pssg:
     limits:
       cpu: 2000m
       memory: 4608Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - pssg
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - pssg
+#       topologyKey: "kubernetes.io/hostname"
 
 
 solr:
@@ -344,7 +344,7 @@ solr:
     limits:
       cpu: 500m
       memory: 750Mi
-  #nodeSelector: {}
+# nodeSelector: {}
 
 tenantProvisioner:
   replicaCount: 1
@@ -362,17 +362,17 @@ tenantProvisioner:
     limits:
       cpu: 1000m
       memory: 1536Mi
-  #nodeSelector: {}
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app
-  #           operator: In
-  #           values:
-  #           - tenant-provisioner
-  #       topologyKey: "kubernetes.io/hostname"
+# nodeSelector: {}
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app
+#           operator: In
+#           values:
+#           - tenant-provisioner
+#       topologyKey: "kubernetes.io/hostname"
 
 image:
   dispatcher: dispatcher:5.0
@@ -401,7 +401,7 @@ druid:
   # Service Account for Druid services
   serviceAccount:
     create: true
-    #name:
+  # name:
   persistence:
     storage: 
       historical: 50Gi
@@ -417,8 +417,8 @@ druid:
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
-     # access_key: 
-     # secret_key:
+    # access_key: 
+    # secret_key:
     cloudStorage: false
     bucketName: api-metrics
 
@@ -449,17 +449,17 @@ druid:
         memory: 256Mi
       limits:
         memory: 256Mi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - minio
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - minio
+  #         topologyKey: kubernetes.io/hostname
 
   zookeeper:
     replicaCount: 3
@@ -470,17 +470,17 @@ druid:
         memory: 256Mi
       requests:
         memory: 256Mi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - zookeeper
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - zookeeper
+  #         topologyKey: kubernetes.io/hostname
 
 
   coordinator:
@@ -492,17 +492,17 @@ druid:
         memory: 512Mi
       requests:
         memory: 512Mi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - coordinator
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - coordinator
+  #         topologyKey: kubernetes.io/hostname
 
   kafka:
     replicaCount: 3
@@ -515,17 +515,17 @@ druid:
       limits:
         cpu: 1000m
         memory: 1.5Gi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - kafka
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - kafka
+  #         topologyKey: kubernetes.io/hostname
 
   broker:
     replicaCount: 2
@@ -536,17 +536,17 @@ druid:
         memory: 1Gi
       limits:
         memory: 2Gi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - broker
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - broker
+  #         topologyKey: kubernetes.io/hostname
 
   historical:
     replicaCount: 2
@@ -557,17 +557,17 @@ druid:
         memory: 2Gi
       limits:
         memory: 2Gi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - historical
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - historical
+  #         topologyKey: kubernetes.io/hostname
 
   ingestion:
     replicaCount: 2
@@ -581,20 +581,20 @@ druid:
       limits:
         cpu: 1000m
         memory: 1.5Gi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - ingestion-server
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - ingestion-server
+  #         topologyKey: kubernetes.io/hostname
 
   middlemanager:
-    replicaCount: 1
+    replicaCount: 2
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -602,17 +602,17 @@ druid:
         memory: 4Gi
       limits:
         memory: 4Gi
-    #nodeSelector: {}
-    # affinity:
-    #   podAntiAffinity:
-    #     requiredDuringSchedulingIgnoredDuringExecution:
-    #       - labelSelector:
-    #           matchExpressions:
-    #             - key: app
-    #               operator: In
-    #               values:
-    #                 - middlemanager
-    #         topologyKey: kubernetes.io/hostname
+  # nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchExpressions:
+  #             - key: app
+  #               operator: In
+  #               values:
+  #                 - middlemanager
+  #         topologyKey: kubernetes.io/hostname
 
   # image:
   #   zookeeper: zookeeper:5.0
@@ -637,27 +637,27 @@ rabbitmq:
       - broadcom-apim
   serviceAccount:
     create: true
-    #name:
+  # name:
   rbac:
     create: true
   persistence:
     enabled: true
-    #size: 8Gi
+  # size: 8Gi
   replicaCount: 3
 ## Affinity for pod assignment. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 ## This default will ensure that additional pods are scheduled onto different nodes in your k8s cluster
 ## For nodes in different availability zones, this means losing one does not impact on availability.
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #     - labelSelector:
-  #         matchExpressions:
-  #         - key: app.kubernetes.io/name
-  #           operator: In
-  #           values:
-  #           - rabbitmq
-  #       topologyKey: kubernetes.io/hostname
+# affinity:
+#   podAntiAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#     - labelSelector:
+#         matchExpressions:
+#         - key: app.kubernetes.io/name
+#           operator: In
+#           values:
+#           - rabbitmq
+#       topologyKey: kubernetes.io/hostname
 # If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true
   clustering:
     forceBoot: false
@@ -678,8 +678,8 @@ rabbitmq:
     existingPasswordSecret: rabbitmq-secret
     existingErlangSecret: rabbitmq-secret
     # Set username/password if you don't them to be randomly generated or if you're using an existing RabbitMQ installation.
-    #password: 7layereyal7
-    #erlangCookie: L7Secure
+  # password: 7layereyal7
+  # erlangCookie: L7Secure
   extraPlugins: "rabbitmq_web_mqtt"
   loadDefinition:
     enabled: true
@@ -701,7 +701,7 @@ ingress-nginx:
     enabled: true
   serviceAccount:
     create: true
-   # name:
+  # name:
   rbac:
     create: true
   controller: 
@@ -719,17 +719,17 @@ mysql:
   imageTag: "5.7.14"
   serviceAccount:
     create: true
-    #name:
-  #persistence:
-    #enabled: true
-    #size: 8Gi RW
-    #storageClass:
+  # name:
+# persistence:
+  # enabled: true
+  # size: 8Gi RW
+  # storageClass:
   existingSecret: database-secret
-  mysqlUser: admin
- # mysqlPassword: 7layer
+  mysqlUser: portal
+# mysqlPassword: 7layer
   initializationFiles:
     elevate-admin.sql: |-
-      GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES;
+      GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
   configurationFiles:
     my.cnf: |-
       [client]
@@ -737,7 +737,7 @@ mysql:
       [mysql]
       default-character-set=utf8
       [mysqld]
-      collation-server = utf8mb4_unicode_ci
+      collation-server = utf8_unicode_ci
       init-connect='SET NAMES utf8'
       character-set-server = utf8
       innodb_log_buffer_size=32M

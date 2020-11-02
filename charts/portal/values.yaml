@@ -9,7 +9,7 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-  databaseUsername: admin
+  databaseUsername: portal
   #databasePassword: 7layer
   databaseHost: mysql
   databasePort: 3306
@@ -25,7 +25,7 @@ portal:
   analytics:
     enabled: true
   # Please set analytics.replicaCount to a minimum of 2
-    aggregation: true
+    aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim and pssg
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
@@ -82,11 +82,11 @@ tls:
 
 # Kubernetes Ingress
 ingress:
-  # Use a kubernetes/openshift ingress
+# Use a kubernetes/openshift ingress
   type:
     kubernetes: true
     openshift: false
-  #existingSecret: 
+# existingSecret: 
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
@@ -142,13 +142,13 @@ analytics:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 250Mi
+    # cpu: 100m
+    # memory: 250Mi
     limits: {}
-      #cpu: 1000m
-      #memory: 2000Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 1000m
+    # memory: 2000Mi
+# nodeSelector: {}
+# affinity: {}
 
 apim:
   replicaCount: 1
@@ -161,13 +161,13 @@ apim:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 1000m
-      #memory: 4096Mi
+    # cpu: 1000m
+    # memory: 4096Mi
     limits: {}
-      #cpu: 2000m
-      #memory: 6144Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 2000m
+    # memory: 6144Mi
+# nodeSelector: {}
+# affinity: {}
 
 authenticator:
   replicaCount: 1
@@ -180,13 +180,13 @@ authenticator:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 250m
-      #memory: 250Mi
+    # cpu: 250m
+    # memory: 250Mi
     limits: {}
-      #cpu: 750m
-      #memory: 1500Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 750m
+    # memory: 1500Mi
+# nodeSelector: {}
+# affinity: {}
 
 dispatcher:
   replicaCount: 1
@@ -199,13 +199,13 @@ dispatcher:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 250Mi
+    # cpu: 100m
+    # memory: 250Mi
     limits: {}
-      #cpu: 500m
-      #memory: 1024Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 500m
+    # memory: 1024Mi
+# nodeSelector: {}
+# affinity: {}
 
 portalData:
   replicaCount: 1
@@ -218,13 +218,13 @@ portalData:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 1500Mi
+    # cpu: 100m
+    # memory: 1500Mi
     limits: {}
-      #cpu: 1000m
-      #memory: 3072Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 1000m
+    # memory: 3072Mi
+# nodeSelector: {}
+# affinity: {}
 
 portalEnterprise:
   replicaCount: 1
@@ -237,13 +237,13 @@ portalEnterprise:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 250m
-      #memory: 2300Mi
+    # cpu: 250m
+    # memory: 2300Mi
     limits: {}
-      #cpu: 2000m
-      #memory: 3072Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 2000m
+    # memory: 3072Mi
+# nodeSelector: {}
+# affinity: {}
 
 pssg:
   replicaCount: 1
@@ -256,14 +256,13 @@ pssg:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 2048Mi
+    # cpu: 100m
+    # memory: 2048Mi
     limits: {}
-      #cpu: 2000m
-      #memory: 4608Mi
-  #nodeSelector: {}
-  #affinity: {}
-
+    # cpu: 2000m
+    # memory: 4608Mi
+# nodeSelector: {}
+# affinity: {}
 
 solr:
   replicaCount: 1
@@ -276,12 +275,12 @@ solr:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 50m
-      #memory: 250Mi
+    # cpu: 50m
+    # memory: 250Mi
     limits: {}
-      #cpu: 500m
-      #memory: 750Mi
-  #nodeSelector: {}
+    # cpu: 500m
+    # memory: 750Mi
+# nodeSelector: {}
 
 tenantProvisioner:
   replicaCount: 1
@@ -294,13 +293,13 @@ tenantProvisioner:
       maxUnavailable: 0
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 250Mi
+    # cpu: 100m
+    # memory: 250Mi
     limits: {}
-      #cpu: 1000m
-      #memory: 1536Mi
-  #nodeSelector: {}
-  #affinity: {}
+    # cpu: 1000m
+    # memory: 1536Mi
+# nodeSelector: {}
+# affinity: {}
 
 image:
   dispatcher: dispatcher:5.0
@@ -329,7 +328,7 @@ druid:
   # Service Account for Druid services
   serviceAccount:
     create: true
-    #name:
+  # name:
   persistence:
     storage: 
       historical: 50Gi
@@ -374,11 +373,11 @@ druid:
 
     resources:
       requests: {}
-        #memory: 256Mi
+      # memory: 256Mi
       limits: {}
-        #memory: 256Mi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 256Mi
+  # nodeSelector: {}
+  # affinity: {}
 
   zookeeper:
     replicaCount: 1
@@ -386,11 +385,11 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       limits: {}
-        #memory: 256Mi
+      # memory: 256Mi
       requests: {}
-        #memory: 256Mi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 256Mi
+  # nodeSelector: {}
+  # affinity: {}
 
 
   coordinator:
@@ -399,11 +398,11 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       limits: {}
-        #memory: 512Mi
+      # memory: 512Mi
       requests: {}
-        #memory: 512Mi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 512Mi
+  # nodeSelector: {}
+  # affinity: {}
 
   kafka:
     replicaCount: 1
@@ -411,13 +410,13 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       requests: {}
-        #cpu: 100m
-        #memory: 750Mi
+      # cpu: 100m
+      # memory: 750Mi
       limits: {}
-        #cpu: 1000m
-        #memory: 1.5Gi
-    #nodeSelector: {}
-    #affinity: {}
+      # cpu: 1000m
+      # memory: 1.5Gi
+  # nodeSelector: {}
+  # affinity: {}
 
   broker:
     replicaCount: 1
@@ -425,11 +424,11 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       requests: {}
-        #memory: 1Gi
+      # memory: 1Gi
       limits: {}
-        #memory: 2Gi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 2Gi
+  # nodeSelector: {}
+  # affinity: {}
 
   historical:
     replicaCount: 1
@@ -437,11 +436,11 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       requests: {}
-        #memory: 2Gi
+      # memory: 2Gi
       limits: {}
-        #memory: 2Gi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 2Gi
+  # nodeSelector: {}
+  # affinity: {}
 
   ingestion:
     replicaCount: 1
@@ -450,13 +449,13 @@ druid:
     portName: ingestion-svc
     resources:
       requests: {}
-        #cpu: 100m
-        #memory: 512Mi
+      # cpu: 100m
+      # memory: 512Mi
       limits: {}
-        #cpu: 1000m
-        #memory: 1.5Gi
-    #nodeSelector: {}
-    #affinity: {}
+      # cpu: 1000m
+      # memory: 1.5Gi
+  # nodeSelector: {}
+  # affinity: {}
 
   middlemanager:
     replicaCount: 1
@@ -464,11 +463,11 @@ druid:
       pullPolicy: IfNotPresent
     resources:
       requests: {}
-        #memory: 4Gi
+      # memory: 4Gi
       limits: {}
-        #memory: 4Gi
-    #nodeSelector: {}
-    #affinity: {}
+      # memory: 4Gi
+  # nodeSelector: {}
+  # affinity: {}
 
   # image:
   #   zookeeper: zookeeper:5.0
@@ -493,22 +492,22 @@ rabbitmq:
       - broadcom-apim
   serviceAccount:
     create: true
-    #name:
+  # name:
   rbac:
     create: true
   persistence:
     enabled: true
-    #size: 8Gi
+  # size: 8Gi
   replicaCount: 1
 ## Affinity for pod assignment. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 ## This default will ensure that additional pods are scheduled onto different nodes in your k8s cluster
 ## For nodes in different availability zones, this means losing one does not impact on availability.
-  # affinity: {}
+# affinity: {}
 # If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true
   clustering:
     forceBoot: false
-  # MQTT Port.
+# MQTT Port.
   service:
     port: 5672
     extraPorts:
@@ -525,8 +524,8 @@ rabbitmq:
     existingPasswordSecret: rabbitmq-secret
     existingErlangSecret: rabbitmq-secret
     # Set username/password if you don't them to be randomly generated or if you're using an existing RabbitMQ installation.
-    #password: 7layereyal7
-    #erlangCookie: L7Secure
+  # password: 7layereyal7
+  # erlangCookie: L7Secure
   extraPlugins: "rabbitmq_web_mqtt"
   loadDefinition:
     enabled: true
@@ -536,11 +535,11 @@ rabbitmq:
     mqtt.exchange = portal-external
   resources:
     requests: {}
-      #cpu: 1000m
-      #memory: 2Gi
+    # cpu: 1000m
+    # memory: 2Gi
     limits: {}
-      #cpu: 1000m
-      #memory: 2Gi
+    # cpu: 1000m
+    # memory: 2Gi
 
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
@@ -549,7 +548,7 @@ ingress-nginx:
     enabled: true
   serviceAccount:
     create: true
-   # name:
+  # name:
   rbac:
     create: true
   controller: 
@@ -567,17 +566,17 @@ mysql:
   imageTag: "5.7.14"
   serviceAccount:
     create: true
-    #name:
-  #persistence:
-    #enabled: true
-    #size: 8Gi RW
-    #storageClass:
+  # name:
+# persistence:
+  # enabled: true
+  # size: 8Gi RW
+  # storageClass:
   existingSecret: database-secret
-  mysqlUser: admin
- # mysqlPassword: 7layer
+  mysqlUser: portal
+# mysqlPassword: 7layer
   initializationFiles:
     elevate-admin.sql: |-
-      GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES;
+      GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
   configurationFiles:
     my.cnf: |-
       [client]
@@ -585,7 +584,7 @@ mysql:
       [mysql]
       default-character-set=utf8
       [mysqld]
-      collation-server = utf8mb4_unicode_ci
+      collation-server = utf8_unicode_ci
       init-connect='SET NAMES utf8'
       character-set-server = utf8
       innodb_log_buffer_size=32M
