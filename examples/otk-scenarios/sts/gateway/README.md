@@ -5,7 +5,7 @@
 2. OTK solution kit and Liquibase files to create OTK database schema must exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar and /tmp/otk-db-liquibase/)
 
 ## Usage:
-`apim-charts/examples/gateway/sts-gateway> ./ssg-sts-deploy.sh`
+`apim-charts/examples/otk-scenarios/sts/gateway> ./ssg-sts-deploy.sh`
 
 ## Options:
 To change release name. Edit `ssg-sts-deploy.sh`:
