@@ -11,7 +11,7 @@ global:
   databaseSecret: database-secret
   databaseUsername: portal
 # databasePassword: 7layer
-  databaseHost: mysql
+  databaseHost:
   databasePort: 3306
   legacyHostnames: false
   legacyDatabaseNames: false
