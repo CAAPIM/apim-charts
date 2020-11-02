@@ -91,7 +91,7 @@ This guide covers migrating certificates the old Helm2 to the new Helm3 Chart. P
    - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
 
 ## Migrate Analytics
-The Portal makes use of Minio which acts as a S3 filestore providing a medium to different Cloud Storage solutions. This migration extracts the deep storage data from Minio. Analytics are written to deep storage on an hourly interval, it's important to note that the current hour will not be backed up.
+The Portal makes use of Minio which acts as a S3 filestore providing a medium to different Cloud Storage solutions. This migration extracts the deep storage data from Minio. Analytics are written to deep storage on an hourly interval. ***NOTE:*** the current hour is not backed up.
 
 ### Export Data
 
@@ -104,8 +104,8 @@ From your docker swarm node run the following and copy to a machine ***that has 
    - ```$ helm repo add portal https://caapim.github.io/apim-charts/```
    - ```$ helm repo update```
    - ```$ helm install <release-name> portal/portal --set-file "portal.license.value=/path/to/license.xml,portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml```
-3. Update Portal DNS records to point at the Kubernetes Portal
-   - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-5/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
+3. Update Portal DNS records to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
+   - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
 
 #### Helm 2.x
 1. Get your machines local IP Address

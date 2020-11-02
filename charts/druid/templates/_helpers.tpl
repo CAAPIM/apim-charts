@@ -95,7 +95,7 @@ Get "database-port" based on databaseType value
 Portal Docops page
 */}}
 {{- define "portal.help.page" -}}
-{{- printf "%s" "https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-5.html" -}}
+{{- printf "%s" "https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0.html" -}}
 {{- end -}}
 
 {{- define "minio.fullname" -}}
