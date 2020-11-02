@@ -7,13 +7,13 @@ global:
   portalRepository: caapim/
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
-  #setupDemoDatabase: true
+# setupDemoDatabase: true
   databaseType: mysql
   databaseHost: mysql
   databasePort: 3306
   databaseUsername: admin
   databaseSecret:
-  #databasePassword: 7layer
+# databasePassword: 7layer
 
 image:
   zookeeper: zookeeper:5.0
@@ -36,12 +36,12 @@ minio:
   auth:
     secretName: minio-secret
     # Auto-generated minio-auth
-    #access_key:
-    #secret_key:
+  # access_key:
+  # secret_key:
 # The minio bucket that holds historical data for your portal.
 # By default this is apim-data, if using AWS, GCP, Azure, this will need to match a bucket you have access to.
-  #bucketName: layer7-minio
-  #cloudStorage: false
+# bucketName: layer7-minio
+# cloudStorage: false
   s3gateway:
     enabled: false
     serviceEndpoint: ""
@@ -61,11 +61,11 @@ minio:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
-      #memory: 256Mi
+    # memory: 256Mi
     limits: {}
-      #memory: 256Mi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 256Mi
+# nodeSelector: {}
+# affinity:
   
 
 zookeeper:
@@ -76,11 +76,11 @@ zookeeper:
     pullPolicy: IfNotPresent
   resources:
     limits: {}
-      #memory: 256Mi
+    # memory: 256Mi
     requests: {}
-      #memory: 256Mi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 256Mi
+# nodeSelector: {}
+# affinity:
 
 middlemanager:
   replicaCount: 1
@@ -88,11 +88,11 @@ middlemanager:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
-      #memory: 4Gi
+    # memory: 4Gi
     limits: {}
-      #memory: 4Gi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 4Gi
+# nodeSelector: {}
+# affinity:
 
 broker:
   replicaCount: 1
@@ -100,11 +100,11 @@ broker:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
-      #memory: 1Gi
+    # memory: 1Gi
     limits: {}
-      #memory: 2Gi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 2Gi
+# nodeSelector: {}
+# affinity:
 
 coordinator: 
   hostname: coordinator
@@ -114,11 +114,11 @@ coordinator:
     pullPolicy: IfNotPresent
   resources:
     requests: {}     
-      #memory: 512Mi
+    # memory: 512Mi
     limits: {}
-      #memory: 512Mi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 512Mi
+# nodeSelector: {}
+# affinity:
 
 historical:
   replicaCount: 1
@@ -126,11 +126,11 @@ historical:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
-      #memory: 2Gi
+    # memory: 2Gi
     limits: {}
-      #memory: 2Gi
-  #nodeSelector: {}
-  #affinity:
+    # memory: 2Gi
+# nodeSelector: {}
+# affinity:
 
 kafka:
   replicaCount: 1
@@ -138,13 +138,13 @@ kafka:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 750Mi
+    # cpu: 100m
+    # memory: 750Mi
     limits: {}
-      #cpu: 1000m
-      #memory: 1.5Gi
-  #nodeSelector: {}
-  #affinity:
+    # cpu: 1000m
+    # memory: 1.5Gi
+# nodeSelector: {}
+# affinity:
 
 ingestion:
   replicaCount: 1
@@ -155,11 +155,10 @@ ingestion:
   portName: ingestion-server
   resources:
     requests: {}
-      #cpu: 100m
-      #memory: 512Mi
+    # cpu: 100m
+    # memory: 512Mi
     limits: {}
-      #cpu: 1000m
-      #memory: 1.5Gi
-  #nodeSelector: {}
-  #affinity:
- 
+    # cpu: 1000m
+    # memory: 1.5Gi
+# nodeSelector: {}
+# affinity:
