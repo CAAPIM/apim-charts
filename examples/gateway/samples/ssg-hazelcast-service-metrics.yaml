@@ -101,7 +101,7 @@ ingress:
 
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
-  hostname: hazelcast-ssg.app.test.net
+  hostname: my-ssg.app.test.net
   ## The port that you want to route to via ingress. This needs to be available via service.ports.
   port: https
   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
