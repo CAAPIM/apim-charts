@@ -303,6 +303,8 @@ grafana:
     password: password
   dashboardsProvider:
     enabled: true
+  customDashboard:
+    value:
   dashboardsConfigMaps:
     - configMapName: grafana-configmap
       fileName: gateway-service-metrics.json
