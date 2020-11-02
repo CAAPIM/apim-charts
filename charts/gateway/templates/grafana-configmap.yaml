@@ -14,6 +14,6 @@ data:
   {{ if .Values.grafana.customDashboard.value}}
   gateway-service-metrics.json: {{ .Values.grafana.customDashboard.value | toJson }}
   {{ else }}
-  gateway-service-metrics.json: {{ .Files.Get "gateway-service-metrics.json" | toJson }}
+  gateway-service-metrics.json: {{ .Files.Get "files/gateway-service-metrics.json" | toJson }}
   {{ end }}
 {{ end }}
