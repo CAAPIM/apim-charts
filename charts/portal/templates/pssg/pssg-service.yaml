@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pssg
+  labels:
+    app: pssg
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+    - port: 8443
+      targetPort: 8443
+      name: https
+    - port: 9446
+      targetPort: 9446
+      name: tssg-enroll
+    - port: 9447
+      targetPort: 9447
+      name: tssg-sync
+    - port: 9448
+      targetPort: 9448
+      name: tssg-sso
+  selector:
+    app: pssg
+  type: ClusterIP
+  sessionAffinity: ClientIP

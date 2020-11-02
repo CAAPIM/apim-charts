@@ -1,0 +1,107 @@
+{{- if not .Values.minio.cloudStorage }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minio
+  labels:
+    app: minio
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: minio
+  serviceName: minio
+  replicas: {{ .Values.minio.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.minio.affinity }}
+      affinity: {{- toYaml .Values.minio.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1010
+      containers:
+      {{ $address := print ".minio." .Release.Namespace ".svc.cluster.local/opt/data" }}
+      - command:
+        - /bin/sh
+        - -ce
+        {{ if gt .Values.minio.replicaCount 1.0 }}
+        - /usr/bin/docker-entrypoint.sh minio server  http://minio-{0...3}{{ $address }}
+        {{ else }}
+        - /usr/bin/docker-entrypoint.sh minio server /opt/data
+        {{ end }}
+        name: minio
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.minio }}"
+        imagePullPolicy: "{{ .Values.minio.image.pullPolicy }}"  
+        env:
+          - name: MINIO_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{  .Values.minio.auth.secretName }}
+                key: MINIO_ACCESS_KEY
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{  .Values.minio.auth.secretName }}
+                key: MINIO_SECRET_KEY
+        envFrom:
+        - configMapRef:
+            name: minio-config
+        ports:
+          - name: http
+            containerPort: 9000
+        {{- if .Values.minio.resources }}
+        resources: {{- toYaml .Values.minio.resources | nindent 12 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /minio/health/ready     
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 10
+        volumeMounts:
+        - name: minio-vol-claim
+          mountPath: /opt/data
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+  volumeClaimTemplates:
+    - metadata:
+        name: minio-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.minio }}
+{{- end }}

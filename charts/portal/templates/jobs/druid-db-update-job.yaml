@@ -1,0 +1,58 @@
+{{/*
+This will be updated to update the druid meta db to the bucketName specified if you're using a CloudProvider
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: druid-db-update
+  annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      containers:
+        - name: druid-db-update
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.dbUpgrade }}"
+          env:
+           - name: HOST
+         {{ if .Values.global.setupDemoDatabase }}
+             value: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+        {{ else }}
+             value: {{ .Values.global.databaseHost | quote }}
+        {{ end }}
+           - name: DATABASE_NAME
+             value: {{ include "portal-db-name" . | quote }}
+           - name: PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                 key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                 key: postgres-password
+            {{ end }}
+           - name: PORT
+             value: {{ include "database-port" . | quote }}
+           - name: LISTEN_PORT
+             value: "8080"
+           - name: USERNAME
+             value: {{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername | quote }}
+           - name: DATABASE_TYPE
+             value: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+           - name: CREATE_DATABASE
+             value: "true"
+           - name: TSSG_TENANT_ID
+             value: {{ include "default-tenant-id" . | quote }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: "OnFailure"
+
+*/}}

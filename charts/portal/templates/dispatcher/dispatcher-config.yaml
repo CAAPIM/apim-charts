@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcher-config
+  labels:
+    app: dispatcher
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  NSS_SDB_USE_CACHE: "no"
+  PORTAL_SUBDOMAIN: {{ required "Please fill in domain in values.yaml" .Values.portal.domain | quote }}
+  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
+  USE_PROXY_PROTOCOL: "false"

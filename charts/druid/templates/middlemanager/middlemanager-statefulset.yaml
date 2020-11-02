@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: middlemanager
+  labels:
+    app: middlemanager
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: middlemanager
+  serviceName: middlemanager
+  replicas: {{ .Values.middlemanager.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: middlemanager
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.middlemanager.affinity }}
+      affinity: {{- toYaml .Values.middlemanager.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.middlemanager.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.middlemanager.nodeSelector | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: middlemanager
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.middlemanager }}"
+          imagePullPolicy: "{{ .Values.middlemanager.image.pullPolicy }}"
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: MINIO_SECRET_KEY
+          envFrom:
+          - configMapRef:
+              name: middlemanager-config
+          readinessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          ports:
+            - containerPort: 8091
+          volumeMounts:
+          - mountPath: /opt/druid/conf/druid/middleManager/runtime.properties
+            name: runtime-properties
+            subPath: runtime.properties
+          {{- if .Values.middlemanager.resources }}
+          resources: {{- toYaml .Values.middlemanager.resources | nindent 12 }}
+          {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - configMap:
+          defaultMode: 444
+          items:
+          - key: runtime.properties
+            mode: 444
+            path: runtime.properties
+          name: middlemanager-config
+          optional: false
+        name: runtime-properties

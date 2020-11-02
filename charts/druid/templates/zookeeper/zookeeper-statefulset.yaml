@@ -1,0 +1,80 @@
+{{ $nodeCount := .Values.zookeeper.replicaCount | int }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: zookeeper
+  replicas: {{ .Values.zookeeper.replicaCount }}
+  selector:
+    matchLabels:
+      app: zookeeper
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 1800
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      {{- if .Values.zookeeper.affinity }}
+      affinity: {{- toYaml .Values.zookeeper.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.zookeeper.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.zookeeper.nodeSelector | nindent 12 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1010
+      containers:
+        - name: zookeeper
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.zookeeper }}"
+          imagePullPolicy: "{{ .Values.zookeeper.image.pullPolicy }}"
+          ports:
+          - containerPort: 2181
+          - containerPort: 2888
+          - containerPort: 3888
+          env:
+            - name: ZOOKEEPER_SERVERS
+              value:
+            {{- range $i := until $nodeCount }}
+                server.{{ add $i 1 }}=zookeeper-{{ $i }}
+            {{- end }}
+            - name: ZOOKEEPER_PORT
+              value: "2181"
+          {{- if .Values.zookeeper.resources }}
+          resources: {{- toYaml .Values.zookeeper.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: zookeeper-vol-claim
+              mountPath: /opt/zookeeper/data
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: config
+          configMap:
+            name: zookeeper-config
+            defaultMode: 0555
+  volumeClaimTemplates:
+    - metadata:
+        name: zookeeper-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.zookeeper }}

@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apim
+  labels:
+    app: apim
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.apim.strategy }}
+  strategy: {{- toYaml .Values.apim.strategy | nindent 12 }}
+  {{- end }}
+  replicas: {{ .Values.apim.replicaCount }}
+  selector:
+    matchLabels:
+      app: apim
+  template:
+    metadata:
+      labels:
+        app: apim
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.apim.affinity }}
+      affinity: {{- toYaml .Values.apim.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.apim.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.apim.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      initContainers:
+        - name: liquidbase-upgrade-portal
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'db-upgrade']
+        - name: liquidbase-upgrade-rbac
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'rbac-upgrade']
+      containers:
+        - name: apim
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.apim }}"
+          imagePullPolicy: {{ .Values.apim.image.pullPolicy | quote }}
+          env:
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+            - name: PAPI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-username
+            - name: PAPI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-password
+            - name: PSSG_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: PSSG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-password
+            - name: SSG_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: SSG_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-password
+            - name: SSG_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: SSG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-password
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: APIM_TPS_SSL_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-tps.crt
+                  optional: false
+            - name: APIM_SOLR_SSL_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-solr.crt
+                  optional: false
+            - name: DATALAKE_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-datalake.p12
+                  optional: false
+            - name: DSSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-dssg.p12
+                  optional: false
+            - name: PSSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: pssg-ssl.p12
+                  optional: false
+            - name: SSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.externalSecretName }}
+                  key: apim-ssl.p12
+                  optional: false
+            - name: DATALAKE_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: DSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: PSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: SSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.externalSecretName }}
+                  key: keypass.txt
+                  optional: false
+          envFrom:
+          - configMapRef:
+              name: apim-config
+          - secretRef:
+              name: apim-secret
+          readinessProbe:
+            httpGet:
+              path: /sys/probe/readinesscheck
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 35
+          livenessProbe:
+            exec:
+              command: [sh, /opt/docker/diagnostic/health_check.sh]
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 35
+          {{- if .Values.apim.resources }}
+          resources: {{- toYaml .Values.apim.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 8081
+            - containerPort: 8443
+            - containerPort: 9443
+            - containerPort: 9449
+            - containerPort: 1885
+            - containerPort: 9448
+          {{ if contains "4.5" .Chart.AppVersion }}
+          volumeMounts:
+            - name: {{.Values.portal.license.secretName}}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
+              subPath: license.xml
+          {{ end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      {{ if contains "4.5" .Chart.AppVersion }}
+      volumes:
+        - name: {{.Values.portal.license.secretName}}
+          secret:
+            secretName: {{.Values.portal.license.secretName}}
+            items:
+              - key: license
+                path: license.xml
+      {{ end }}

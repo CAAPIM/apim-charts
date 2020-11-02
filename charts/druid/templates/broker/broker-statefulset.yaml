@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: broker
+  labels:
+    app: broker
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: broker
+  serviceName: broker
+  replicas: {{ .Values.broker.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.broker.affinity }}
+      affinity: {{- toYaml .Values.broker.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.broker.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.broker.nodeSelector | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: broker
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.broker }}"
+          imagePullPolicy: "{{ .Values.broker.image.pullPolicy }}"
+          envFrom:
+          - configMapRef:
+              name: broker-config
+          readinessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          ports:
+            - containerPort: 8082
+          {{- if .Values.broker.resources }}
+          resources: {{- toYaml .Values.broker.resources | nindent 12 }}
+          {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60

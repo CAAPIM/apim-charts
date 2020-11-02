@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: solr-config
+  labels:
+    app: solr
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  JAVA_OPTS: -Xms512m -Xmx512m
+  NSS_SDB_USE_CACHE: "no"
+  SOLR_PORT: "8983"

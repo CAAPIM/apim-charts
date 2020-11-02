@@ -1,0 +1,128 @@
+{{- if .Values.ingress.type.openshift }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route
+  labels:
+    router: default
+spec:
+  host: {{ include "default-tenant-host" . | quote }}
+  port:
+    targetPort: portal-https
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: dispatcher
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pssg-enroll
+  labels:
+    router: default
+spec:
+  host: {{ include "pssg-enroll-host" . | quote }}
+  port:
+    targetPort: tssg-enroll
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: pssg
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: pssg-sync
+  labels:
+    router: default
+spec:
+  host: {{ include "pssg-sync-host" . | quote }}
+  port:
+    targetPort: tssg-sync
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: pssg
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-broker
+  labels:
+    router: default
+spec:
+  host: {{ include "broker-host" . | quote }}
+  port:
+    targetPort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-sso
+  labels:
+    router: default
+spec:
+  host: {{ include "pssg-sso-host" . | quote }}
+  port:
+    targetPort: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-tssg
+  labels:
+    router: default
+spec:
+  host: {{ include "tssg-public-host" . | quote }}
+  port:
+    targetPort: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: datalake-analytics
+  labels:
+    router: default
+spec:
+  host: {{ include "analytics-host" . | quote }}
+  port:
+    targetPort: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+{{- end }}

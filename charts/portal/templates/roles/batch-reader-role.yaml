@@ -1,0 +1,15 @@
+{{- if and .Values.rbac.create (not .Values.global.serviceAccountName) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "portal.fullname" . }}-batch-reader
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "describe"]
+{{- end }}

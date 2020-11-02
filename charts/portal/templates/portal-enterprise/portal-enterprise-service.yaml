@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal-enterprise
+  labels:
+    app: portal-enterprise
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: portal-enterprise-http
+  selector:
+    app: portal-enterprise
+  type: ClusterIP
+  sessionAffinity: ClientIP

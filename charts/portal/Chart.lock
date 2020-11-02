@@ -1,0 +1,15 @@
+dependencies:
+- name: druid
+  repository: file://../druid
+  version: 1.0.0
+- name: mysql
+  repository: https://charts.helm.sh/stable
+  version: 1.6.4
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 7.6.6
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx/
+  version: 2.15.0
+digest: sha256:c12175d024dc2ffa6a6913efff11d870d520e41e24145183577196d582cbced1
+generated: "2020-11-02T09:59:34.179782Z"

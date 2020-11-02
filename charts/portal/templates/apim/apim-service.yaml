@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apim
+  labels:
+    app: apim
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: apim-http
+    - port: 8443
+      targetPort: 8443
+      protocol: TCP
+      name: apim-https
+    - port: 9443
+      targetPort: 9443
+      protocol: TCP
+      name: apim-pm
+    - port: 8081
+      targetPort: 8081
+      protocol: TCP
+      name: apim-analytics
+    - port: 9449
+      targetPort: 9449
+      protocol: TCP
+      name: apim-datalake
+    - port: 1885
+      targetPort: 1885
+      protocol: TCP
+      name: apim-broker
+    - port: 9448
+      targetPort: 9448
+      protocol: TCP
+      name: apim-sso
+  selector:
+    app: apim
+  type: ClusterIP
+  sessionAffinity: ClientIP

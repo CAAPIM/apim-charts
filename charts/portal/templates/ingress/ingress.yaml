@@ -1,0 +1,72 @@
+{{ if .Values.ingress.type.kubernetes }}
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+ name: portal-ingress
+ labels:
+   app: {{ template "portal.name" . }}
+   chart: {{ template "portal.chart" . }}
+   release: {{ .Release.Name }}
+   heritage: {{ .Release.Service }}
+ annotations:
+{{- range $key, $val := .Values.ingress.annotations }}
+   {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  tls:
+  - secretName: {{ .Values.ingress.secretName }}
+    hosts:
+    - {{ include "get-ingress-hosts" . | quote }}
+  rules:
+  - host: {{ include "default-tenant-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: dispatcher
+          servicePort: portal-https
+  - host: {{ include "tssg-public-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: apim
+          servicePort: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
+  - host: {{ include "analytics-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: apim
+          servicePort: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
+  - host: {{ include "pssg-enroll-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: pssg
+          servicePort: tssg-enroll
+  - host: {{ include "pssg-sync-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: pssg
+          servicePort: tssg-sync
+  - host: {{ include "pssg-sso-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: apim
+          servicePort: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
+  - host: {{ include "broker-host" . | quote }}
+    http:
+      paths:
+      - backend:
+          serviceName: apim
+          servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
+  
+  {{- range .Values.ingress.tenantIds }}
+  - host: "{{ . }}.{{ $.Values.portal.domain }}"
+    http:
+      paths:
+      - backend:
+          serviceName: dispatcher
+          servicePort: portal-https
+    {{- end }}
+{{ end }}

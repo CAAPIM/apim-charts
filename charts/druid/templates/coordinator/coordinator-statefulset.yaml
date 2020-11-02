@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: coordinator
+  labels:
+    app: coordinator
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: coordinator
+  serviceName: coordinator
+  replicas: {{ .Values.coordinator.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: coordinator
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.coordinator.affinity }}
+      affinity: {{- toYaml .Values.coordinator.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.coordinator.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.coordinator.nodeSelector | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: coordinator
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.coordinator }}"
+          imagePullPolicy: "{{ .Values.coordinator.image.pullPolicy }}"
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minio.auth.secretName }}
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minio.auth.secretName }}
+                  key: MINIO_SECRET_KEY
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+          envFrom:
+          - configMapRef:
+              name: coordinator-config
+          - secretRef:
+              name: coordinator-secret
+          readinessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          ports:
+            - containerPort: 8081
+          {{- if .Values.coordinator.resources }}
+          resources: {{- toYaml .Values.coordinator.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /opt/druid/conf/druid/coordinator/runtime.properties
+            name: runtime-properties
+            subPath: runtime.properties
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - configMap:
+          defaultMode: 444
+          items:
+          - key: runtime.properties
+            mode: 444
+            path: runtime.properties
+          name: coordinator-config
+          optional: false
+        name: runtime-properties

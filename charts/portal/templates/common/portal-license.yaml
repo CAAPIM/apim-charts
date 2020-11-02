@@ -1,0 +1,14 @@
+{{ if contains "4.5" .Chart.AppVersion }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.portal.license.secretName}}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+type: Opaque
+data:
+  license: {{ template "portal.license" . }}
+{{ end }}

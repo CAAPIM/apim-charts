@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portal-enterprise-config
+  labels:
+    app: portal-enterprise
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{ if .Values.global.setupDemoDatabase}}
+  ENTERPRISE_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  RBAC_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  SEARCH_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+{{ else }}
+  ENTERPRISE_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+  RBAC_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+  SEARCH_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  ENTERPRISE_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
+  ENTERPRISE_DATABASE_PORT: {{ include "database-port" . | quote }}
+  ENTERPRISE_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
+  JAVA_OPTIONS: -Xms2048m -Xmx2048m
+  NSS_SDB_USE_CACHE: "no"
+  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
+  RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  RBAC_DATABASE_NAME: {{ include "rbac-db-name" . | quote }}
+  RBAC_DATABASE_PORT: {{ include "database-port" . | quote }}
+  RBAC_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  SEARCH_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
+  SEARCH_DATABASE_PORT: {{ include "database-port" . | quote }}
+  SEARCH_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
+  PAPI_INGRESS_TENANT: {{ include "default-tenant-id" . | quote }}
+  TSSG_TENANT_ID: {{ include "default-tenant-id" . | quote }}
+  {{- if .Values.portal.hostnameWhitelist }}
+  HOSTNAME_WHITELIST: {{ .Values.portal.hostnameWhitelist}}
+  {{- end }}
+  {{- if and .Values.portal.analytics.enabled  .Values.portal.analytics.aggregation }}
+  AGGR_ENABLED: {{ required "Please fill in portal.analytics.aggregation values.yaml" .Values.portal.analytics.aggregation | quote }}
+  {{- end}}

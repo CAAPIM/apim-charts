@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tenant-provisioner
+  labels:
+    app: tenant-provisioner
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - port: 9000
+      targetPort: 9000
+      name: http
+    - port: 9001
+      targetPort: 9001
+      name: health
+  selector:
+    app: tenant-provisioner
+  type: ClusterIP
+  sessionAffinity: ClientIP

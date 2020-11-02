@@ -1,0 +1,140 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-enterprise
+  labels:
+    app: portal-enterprise
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.portalEnterprise.strategy }}
+  strategy: {{- toYaml .Values.portalEnterprise.strategy | nindent 12 }}
+  {{- end }}
+  replicas: {{ .Values.portalEnterprise.replicaCount }}
+  selector:
+    matchLabels:
+      app: portal-enterprise
+  template:
+    metadata:
+      labels:
+        app: portal-enterprise
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.portalEnterprise.affinity }}
+      affinity: {{- toYaml .Values.portalEnterprise.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.portalEnterprise.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.portalEnterprise.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      initContainers:
+        - name: liquidbase-upgrade-portal
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'db-upgrade']
+        - name: liquidbase-upgrade-rbac
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'rbac-upgrade']
+      containers:
+        - name: portal-enterprise
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.enterprise }}"
+          imagePullPolicy: "{{ .Values.portalEnterprise.image.pullPolicy }}"
+          env:
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+            - name: RABBITMQ_ERLANG_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-erlang-cookie
+            - name: PAPI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-username
+            - name: PAPI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-password
+            - name: GATEWAY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: ENTERPRISE_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: RBAC_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: SEARCH_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: GATEWAY_PK
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: pssg-ssl.p12
+                  optional: false
+            - name: GATEWAY_PK_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+          envFrom:
+          - configMapRef:
+              name: portal-enterprise-config
+          - secretRef:
+              name: portal-enterprise-secret
+          readinessProbe:
+            exec:
+              command:
+                - livenesscheck
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command:
+                - livenesscheck
+            initialDelaySeconds: 180
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          {{- if .Values.portalEnterprise.resources }}
+          resources: {{- toYaml .Values.portalEnterprise.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60

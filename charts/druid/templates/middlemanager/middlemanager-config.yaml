@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: middlemanager-config
+  labels:
+    app: middlemanager
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  SERVICE_NAME: middleManager
+  ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
+  ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
+  MINIO_URL: http://minio:9000
+  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  runtime.properties: |-
+    druid.service=druid/middleManager
+    druid.plaintextPort=8091
+    
+    # Number of tasks per middleManager
+    druid.worker.capacity=3
+    
+    # Task launch parameters
+    druid.indexer.runner.javaOpts=-server -Xms1g -Xmx1g -Duser.timezone=UTC -Dfile.encoding=UTF-8 -XX:+ExitOnOutOfMemoryError -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+    druid.indexer.task.baseTaskDir=var/druid/task
+    
+    # HTTP server threads
+    druid.server.http.numThreads=30
+    
+    # Processing threads and buffers on Peons
+    druid.indexer.fork.property.druid.processing.buffer.sizeBytes=104857600
+    druid.indexer.fork.property.druid.processing.numThreads=5
+    druid.indexer.task.restoreTasksOnRestart=true
+    # Hadoop indexing
+    druid.indexer.task.hadoopWorkingPath=var/druid/hadoop-tmp
+    
+    druid.storage.bucket={{ .Values.minio.bucketName }}
