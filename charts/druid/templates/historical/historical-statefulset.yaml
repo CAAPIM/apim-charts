@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: historical
+  labels:
+    app: historical
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: historical
+  serviceName: historical
+  replicas: {{ .Values.historical.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: historical
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.historical.affinity }}
+      affinity: {{- toYaml .Values.historical.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.historical.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.historical.nodeSelector | nindent 12 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1010
+      containers:
+        - name: historical
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.historical }}"
+          imagePullPolicy: "{{ .Values.historical.image.pullPolicy }}"
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: MINIO_SECRET_KEY
+          envFrom:
+          - configMapRef:
+              name: historical-config
+          readinessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: [sh, /opt/diagnostic/health_check.sh]
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          ports:
+            - containerPort: 8083
+          {{- if .Values.historical.resources }}
+          resources: {{- toYaml .Values.historical.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          - mountPath: /opt/druid/conf/druid/historical/runtime.properties
+            name: runtime-properties
+            subPath: runtime.properties
+          - name: historical-vol-claim
+            mountPath: /var/druid/segments
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - configMap:
+          defaultMode: 444
+          items:
+          - key: runtime.properties
+            mode: 444
+            path: runtime.properties
+          name: historical-config
+          optional: false
+        name: runtime-properties
+  volumeClaimTemplates:
+    - metadata:
+        name: historical-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.historical }}

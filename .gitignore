@@ -6,3 +6,6 @@ gateway/my-values.yaml
 .idea/
 gateway/.idea
 .DS_Store
+utils/apim-tps.*
+utils/tenant_info.json
+utils/payload.json

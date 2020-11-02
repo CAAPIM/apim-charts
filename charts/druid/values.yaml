@@ -1,0 +1,165 @@
+# Analytics stack configuration - Apache Druid
+# This Chart is designed to be deployed as a SubChart of the
+# Broadcom API Developer Portal
+
+# Global values
+global:
+  portalRepository: caapim/
+  pullSecret: broadcom-apim
+  # these default to mysql settings above, change if connecting to an external database.
+  #setupDemoDatabase: true
+  databaseType: mysql
+  databaseHost: mysql
+  databasePort: 3306
+  databaseUsername: admin
+  databaseSecret:
+  #databasePassword: 7layer
+
+image:
+  zookeeper: zookeeper:5.0
+  broker: druid:5.0
+  coordinator: druid:5.0
+  middlemanager: druid:5.0
+  minio: minio:5.0
+  historical: druid:5.0
+  kafka: kafka:5.0
+  ingestion: ingestion-server:5.0
+
+persistence:
+  storage:
+    historical: 50Gi
+    minio: 40Gi
+    kafka: 10Gi
+    zookeeper: 10Gi
+
+minio:
+  auth:
+    secretName: minio-secret
+    # Auto-generated minio-auth
+    #access_key:
+    #secret_key:
+# The minio bucket that holds historical data for your portal.
+# By default this is apim-data, if using AWS, GCP, Azure, this will need to match a bucket you have access to.
+  #bucketName: layer7-minio
+  #cloudStorage: false
+  s3gateway:
+    enabled: false
+    serviceEndpoint: ""
+    accessKey: ""
+    secretKey: ""
+  gcsgateway:
+    enabled: false
+    # credential json file of service account key
+    gcsKeyJson: ""
+    # Google cloud project-id
+    projectId: ""
+  azuregateway:
+    enabled: false
+  replicaCount: 1
+  port: 9000
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+      #memory: 256Mi
+    limits: {}
+      #memory: 256Mi
+  #nodeSelector: {}
+  #affinity:
+  
+
+zookeeper:
+  hostname: zookeeper
+  port: 2181
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    limits: {}
+      #memory: 256Mi
+    requests: {}
+      #memory: 256Mi
+  #nodeSelector: {}
+  #affinity:
+
+middlemanager:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+      #memory: 4Gi
+    limits: {}
+      #memory: 4Gi
+  #nodeSelector: {}
+  #affinity:
+
+broker:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+      #memory: 1Gi
+    limits: {}
+      #memory: 2Gi
+  #nodeSelector: {}
+  #affinity:
+
+coordinator: 
+  hostname: coordinator
+  port: 8081
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}     
+      #memory: 512Mi
+    limits: {}
+      #memory: 512Mi
+  #nodeSelector: {}
+  #affinity:
+
+historical:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+      #memory: 2Gi
+    limits: {}
+      #memory: 2Gi
+  #nodeSelector: {}
+  #affinity:
+
+kafka:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+      #cpu: 100m
+      #memory: 750Mi
+    limits: {}
+      #cpu: 1000m
+      #memory: 1.5Gi
+  #nodeSelector: {}
+  #affinity:
+
+ingestion:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  config:
+    partitionCount: 1
+  portName: ingestion-server
+  resources:
+    requests: {}
+      #cpu: 100m
+      #memory: 512Mi
+    limits: {}
+      #cpu: 1000m
+      #memory: 1.5Gi
+  #nodeSelector: {}
+  #affinity:
+ 

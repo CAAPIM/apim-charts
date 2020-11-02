@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: historical-config
+  labels:
+    app: historical
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  SERVICE_NAME: historical
+  ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
+  ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
+  MINIO_URL: http://minio:9000
+  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  runtime.properties: |-
+    druid.service=druid/historical
+    druid.plaintextPort=8083
+
+    # HTTP server threads
+    druid.server.http.numThreads=30
+
+    # Processing threads and buffers
+    druid.processing.buffer.sizeBytes=104857600
+    druid.processing.numThreads=5
+
+    # Segment storage
+    druid.segmentCache.locations=[{"path":"/var/druid/segments","maxSize":130000000000}]
+    druid.server.maxSize=300000000000
+
+    # Query cache
+    druid.historical.cache.useCache=true
+    druid.historical.cache.populateCache=true
+    druid.cache.type=caffeine
+    druid.cache.sizeInBytes=10000000
+
+    druid.storage.bucket={{ .Values.minio.bucketName }}

@@ -1,0 +1,34 @@
+Thank you for installing the API Developer Portal v{{.Chart.AppVersion}} using Helm!
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+If this domain is not in your DNS records please add the following domains to your
+hosts file or DNS server.
+
+{{- if .Values.ingress.create }}
+Because you deployed an ingress controller as part of this Chart you can get the EXTERNAL-IP with the command below
+
+  $ kubectl get svc -n {{ .Release.Namespace }} | grep nginx
+{{- else}}
+  $ kubectl get svc -n <ingress-controller-namespace>
+{{- end }}
+
+After the all pods are successfully running you can access the portal at:
+default tenant url: {{ include "default-tenant-host" . }}
+papi url: {{ include "tssg-public-host" . }}
+enroll url: {{ include "pssg-enroll-host" . }}
+sync url: {{ include "pssg-sync-host" . }}
+sso url: {{ include "pssg-sso-host" . }}
+analytics url: {{ include "analytics-host" . }}
+broker url: {{ include "broker-host" . }}
+
+{{- if .Values.global.setupDemoDatabase }}
+
+The Demo Database is not suitable for Production environments.
+Please use an external MYSQL 5.6/7 database.
+{{- end }}
+
+For documentation about the portal, please visit:
+{{ include "portal.help.page" . }}

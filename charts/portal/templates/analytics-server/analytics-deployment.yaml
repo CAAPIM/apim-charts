@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-server
+  labels:
+    app: analytics-server
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.analytics.strategy }}
+  strategy: {{- toYaml .Values.analytics.strategy | nindent 12 }}
+  {{- end }}
+  {{- if and (eq .Values.portal.analytics.aggregation true) (lt .Values.analytics.replicaCount 2.0) }}
+  replicas: 2
+  {{- else}}
+  replicas: {{ .Values.analytics.replicaCount }}
+  {{- end}}
+  selector:
+    matchLabels:
+      app: analytics-server
+  template:
+    metadata:
+      labels:
+        app: analytics-server
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.analytics.affinity }}
+      affinity: {{- toYaml .Values.analytics.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.analytics.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.analytics.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      initContainers:
+        - name: liquidbase-upgrade-portal
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'db-upgrade']
+        - name: liquidbase-upgrade-rbac
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'rbac-upgrade']
+      containers:
+        - name: analytics-server
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.analytics }}"
+          imagePullPolicy: "{{ .Values.analytics.image.pullPolicy }}"
+          env:
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+            - name: PAPI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-username
+            - name: PAPI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-password
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+          envFrom:
+          - configMapRef:
+              name: analytics-server-config
+          - secretRef:
+              name: analytics-server-secret    
+          readinessProbe:
+            exec:
+              command: [sh, /opt/app/diagnostic/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: [sh, /opt/app/diagnostic/health_check.sh]
+            initialDelaySeconds: 300
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+
+          {{- if .Values.analytics.resources }}
+          resources: {{- toYaml .Values.analytics.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 9045
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

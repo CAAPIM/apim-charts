@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+  labels:
+    app: broker
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  clusterIP: None
+  ports:
+  - name: "8082"
+    port: 8082
+    targetPort: 8082
+  selector:
+    app: broker
+  sessionAffinity: ClientIP

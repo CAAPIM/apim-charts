@@ -1,0 +1,381 @@
+# Layer7 API Developer Portal (Beta Release - Development in Progress)
+The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and the API Gateway.
+
+## Introduction
+This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager
+
+## Prerequisites
+
+- Kubernetes 1.16+
+- Helm v3+
+- Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
+- ***docker secret.yaml*** from here ==> [CA API Developer Portal
+Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
+
+### Production
+- A dedicated MySQL 5.6/7 server [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
+- An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
+- 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
+- Access to a DNS Server
+- Signed SSL Server Certificate
+
+# Install the Chart
+When using this Chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
+Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart.
+
+```
+> $ helm repo add layer7 https://caapim.github.io/apim-charts/
+> $ helm repo update
+> $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+```
+
+## Upgrade this Chart
+To upgrade the Gateway deployment
+```
+> $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+```
+## Delete this Chart
+To delete Portal installation
+
+```
+> $ helm delete <release name> -n <release namespace>
+```
+
+*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion*
+
+## Additional Guides/Info
+* [Use/Replace Signed Certificates](#certificates)
+* [SMTP Settings](#smtp-parameters)
+* [Migrate from Docker Swarm/Previous Helm Chart](../../utils/portal-migration/README.md)
+* [Migrate from Helm2 Chart](../../utils/portal-migration/README.md)
+* [Upgrade this Chart](#upgrade-this-chart)
+* [Generate Self-Signed Certificates](#generate-self-signed-certificates)
+* [Cloud Deep Storage for Minio - see minio](#druid)
+
+# Configuration
+This section describes configurable parameters in **values.yaml** there is also ***production-values.yaml*** that represents the minimum recommended configuration for deploying the Portal with analytics (if enabled) and core services in an HA, fault tolerant configuration.
+
+### Global Parameters
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `global.portalRepository` | Image Repository | `caapim/` |
+| `global.pullSecret` | Image Pull Secret name | `broadcom-apim` |
+| `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
+| `global.databaseType` | Database type (mysql/postgres) | `mysql` |
+| `global.databaseSecret` | Database secret name | `database-secret` |
+| `global.databaseUsername` | Database username | `admin` |
+| `global.databasePassword` | Database password | `7layer` |
+| `global.databaseHost` | Database Host | `mysql` |
+| `global.databasePort` | Database Port | `3306` |
+| `global.legacyHostnames` | Legacy Hostnames | `false` |
+| `global.legacyDatabaseNames` | Legacy Database names | `false` |
+| `global.subdomainPrefix` | Subdomain Prefix | `dev-portal` |
+| `global.storageClass` | Global Storage Class | `_` |
+| `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
+
+### Portal Parameters
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `portal.domain` | The Portal Domain | `example.com` |
+| `portal.enrollNotificationEmail` | Notification email address | `noreply@example.com` |
+| `portal.analytics.enabled` | Enable/Disable the Druid Analytics stack | `true` |
+| `portal.analytics.aggregation` | Enable/Disable Aggregation, requires a min of 2 analytics.replicaCount | `false` |
+| `portal.license.secretName` | License secret name | `portal-license` |
+| `portal.license.value` | License value - ***Note: these are not required for Portal 5.x *** | `` |
+| `portal.internalSSG.secretName` | APIM/PSSG secret name | `ssg-secret` |
+| `portal.internalSSG.username` | APIM/PSSG username - auto-generated | `auto-generated` |
+| `portal.internalSSG.password` | APIM/PSSG password - auto-generated | `auto-generated` |
+| `portal.papi.secretName` | PAPI secret name | `papi-secret` |
+| `portal.papi.password` | PAPI password - auto-generated | `` |
+| `portal.otk.port` | OTK Port, update this to 9443 if migrating from Docker Swarm | `443` |
+| `portal.ssoDebug` | SSO Debugging | `false` |
+| `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `false` |
+| `portal.hostnameWhiteList` | Hostname whitelist | `false` |
+| `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. See [DNS Configuration](https://github.com/CAAPIM/portal-helm-charts/wiki/DNS-Configuration) for tenant ID character limitations.  | `apim` |
+
+### Certificates
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. | `true` |
+| `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments | `none` |
+| `tls.internalSecretName` | Internal Certificate secret name - change this if rotating internal/all certificates | `portal-internal-secret` |
+| `tls.externalSecretName` | External Certificate secret name - change this if rotating external/all certificates | `portal-external-secret` |
+| `tls.useSignedCertificates` | Use Signed Certificates for Public facing services, requires setting tls.crt,crtChain,key and optionally keyPass | `false` |
+| `tls.crt` | Signed Certificate in PEM format | `` |
+| `tls.crtChain` | Certificate Chain in PEM format | `` |
+| `tls.key` | Private Key in PEM format, if password protected supply .keyPass | `` |
+| `tls.keyPass` | Private Key Pass | `` |
+
+### Ingress Options
+
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
+| `ingress.type.openshift` | Create Openshift Services | `false` |
+| `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
+| `ingress.create` | Deploy the Nginx subchart as part of this deployment | `true` |
+| `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
+| `ingress.tenantIds` | A list of tenantIds that you plan to create on the Portal. | `[] - see values.yaml` |
+| `ingress.apiVersion` | added for future compatibility, extensions/v1beta1 will soon be deprecated, if you're running 1.18 this will be `networking.k8s.io/v1beta1`  | `extensions/v1beta1` |
+
+### SMTP Parameters
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `smtp.host` | SMTP Host | `notinstalled` |
+| `smtp.port` | SMTP Port | `notinstalled` |
+| `smtp.username` | SMTP Username | `notinstalled` |
+| `smtp.password` | SMTP Password | `notinstalled` |
+| `smtp.requireSSL` | Require SSL for the SMTP Server | `false` |
+| `smtp.cert` | SMTP Server certificate | `notinstalled` |
+
+
+### Container Deployment Configurations
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `analytics.replicaCount` | Number of analytics nodes | `1` |
+| `analytics.image.pullPolicy` | Analytics image pull policy | `IfNotPresent` |
+| `analytics.strategy` | Update strategy   | `{} evaluated as a template` |
+| `analytics.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `analytics.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
+| `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `apim.replicaCount` | Number of APIM nodes | `1` |
+| `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
+| `apim.strategy` | Update strategy   | `{} evaluated as a template` |
+| `apim.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `authenticator.replicaCount` | Number of authenticator nodes | `1` |
+| `authenticator.image.pullPolicy` | authenticator image pull policy | `IfNotPresent` |
+| `authenticator.strategy` | Update strategy   | `{} evaluated as a template` |
+| `authenticator.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `authenticator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `authenticator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `dispatcher.replicaCount` | Number of dispatcher nodes | `1` |
+| `dispatcher.image.pullPolicy` | Dispatcher image pull policy | `IfNotPresent` |
+| `dispatcher.strategy` | Update strategy   | `{} evaluated as a template` |
+| `dispatcher.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `dispatcher.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalData.replicaCount` | Number of portal data nodes | `1` |
+| `portalData.image.pullPolicy` | Portal-data image pull policy | `IfNotPresent` |
+| `portalData.strategy` | Update strategy   | `{} evaluated as a template` |
+| `portalData.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `portalData.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
+| `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
+| `portalEnterprise.image.pullPolicy` | Portal enterprise image pull policy | `IfNotPresent` |
+| `portalEnterprise.strategy` | Update strategy   | `{} evaluated as a template` |
+| `portalEnterprise.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `portalEnterprise.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `portalEnterprise.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `pssg.replicaCount` | Number of PSSG nodes | `1` |
+| `pssg.image.pullPolicy` | PSSG image pull policy | `IfNotPresent` |
+| `pssg.strategy` | Update strategy   | `{} evaluated as a template` |
+| `pssg.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `solr.replicaCount` | Number of Solr nodes | `1` |
+| `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
+| `solr.strategy` | Update strategy   | `{} evaluated as a template` |
+| `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
+| `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy | `IfNotPresent` |
+| `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
+| `tenantProvisioner.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `tenantProvisioner.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `tenantProvisioner.affinity ` | Affinity for pod assignment   | `{} evaluated as a template` |
+
+
+### RBAC Parameters (this does not apply to sub charts)
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `serviceAccount.create` | Enable creation of ServiceAccount for Portal Deployments | `true` |
+| `serviceAccount.name` | Name of the created serviceAccount | Generated using the `portal.fullname` template |
+| `rbac.create`| Create & use RBAC resources |`false`|
+| `druid.serviceAccount.create`| Enable creation of ServiceAccount for Druid |`false`|
+| `druid.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
+| `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`false`|
+| `rabbitmq.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
+| `rabbitmq.rbac.create`| Create & use RBAC resources |`false`|
+| `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`false`|
+| `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`false`|
+| `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
+| `ingress-nginx.rbac.create`| Create & use RBAC resources |`false`|
+
+### Telemetry Parameters
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `telemetry.plaEnabled` | For PLA customers: Set to true to turn on telemetry service as per your agreement, otherwise false. **Tip:** For more information on telemetry, see [Licensing and Telemetry](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-4/introduction-ca-api-developer-portal/licensing-and-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png) and [Configure Telemetry](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-4/install-configure-and-upgrade/install-portal-on-docker-swarm/install-and-configure-api-portal/configure-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png)  | `false` |
+| `telemetry.usageType` | The telemetry service behaviour | `PRODUCTION` |
+| `telemetry.domainName` | Domain name of telemetry service. | `` |
+| `telemetry.siteId` |  Site ID of the telemetry service | `` |
+| `telemetry.chargebackId` | Chargeback ID of the telemetry service | `_` |
+| `telemetry.proxy.url` |  Proxy URL, required if you're using a proxy to communicate with the telemetry service. | `_` |
+| `telemetry.proxy.username` | Proxy username | `_` |
+| `telemetry.proxy.password` | Proxy password | `_` |
+
+
+### Portal Images
+| Parameter                                 | Description                                                                                                          | Default                                                      |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `image.dispatcher` | dispatcher image | `dispatcher:<latest>` |
+| `image.pssg` | PSSG image | `pssg:<latest>` |
+| `image.apim` | APIM ingress image | `ingress:<latest>` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:<latest>` |
+| `image.data` | portal-data image | `portal-data:<latest>` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:<latest>` |
+| `image.solr` | Solr image | `solr:<latest>` |
+| `image.analytics` | Analytics image | `analytics-server:<latest>` |
+| `image.authenticator` | Authenticator image | `authenticator:<latest>` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:<latest>` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:<latest>` |
+| `image.upgradeVerify` | Upgrade verification image | `broadcomapim/upgrade-verify:<latest>` |
+
+## Subcharts
+For Production, please use an external MySQL Server.
+
+## Druid
+The following table lists the configured parameters of the Druid Subchart
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `druid.serviceAccount.create` | Enable creation of ServiceAccount for the Druid Chart   | `true` |
+| `druid.serviceAccount.name` |  Name of the created serviceAccount   | Generated using the `druid.fullname` template` |
+| `druid.persistence.storage.historical` | Historical PVC Size   | `50Gi` |
+| `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
+| `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
+| `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
+| `druid.minio.auth.replicaCount` | Number of minio nodes   | `1` |
+| `druid.minio.auth.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
+| `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
+| `druid.minio.auth.access_key` | Minio access key   | `auto-generated` |
+| `druid.minio.auth.secret_key` | Minio secret key   | `auto-generated` |
+| `druid.minio.cloudStorage` | Enable Cloud Storage for Minio. GCP, AWS, Azure   | `false` |
+| `druid.minio.bucketName` | Minio bucket name - make sure this is updated if using cloud storage. Minio will attempt to the create the bucket if it doesn't exist, it is recommended that you create the bucket in the relevant provider prior to installing this Chart.   | `layer7-analytics` |
+| `druid.minio.s3gateway.enabled` | Use minio as Amazon S3 (Simple Storage Service) gateway - https://docs.minio.io/docs/minio-gateway-for-s3   | `false` |
+| `druid.minio.s3gateway.serviceEndpoint` | AWS S3 service endpoint if required   | `nil` |
+| `druid.minio.s3gateway.accessKey` | AWS Access Key that has S3 access   | `nil` |
+| `druid.minio.s3gateway.secret_key` | AWS Secret Key that has S3 access    | `nil` |
+| `druid.minio.gcsgateway.enabled` | Use minio as GCS (Google Cloud Storage) gateway - https://docs.minio.io/docs/minio-gateway-for-gcs   | `false` |
+| `druid.minio.gcsgateway.gcsKeyJson` | Google credentials JSON   | `nil` |
+| `druid.minio.gcsgateway.projectId` | GCP Project ID   | `nil` |
+| `druid.minio.azuregateway.enabled` | Use minio as an azure blob gateway - https://docs.minio.io/docs/minio-gateway-for-azure   | `false` |
+| `druid.minio.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.minio.nodeSelector`| Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.zookeeper.replicaCount` | Number of zookeeper nodes   | `1` |
+| `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
+| `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.zookeeper.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.coordinator.replicaCount` | Number of coordinator nodes   | `1` |
+| `druid.coordinator.image.pullPolicy` | Coordinator image pull policy  | `IfNotPresent` |
+| `druid.coordinator.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.coordinator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.kafka.replicaCount` | Number of kafka nodes   | `1` |
+| `druid.kafka.image.pullPolicy` | Kafka image pull policy   | `IfNotPresent` |
+| `druid.kafka.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.kafka.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.broker.replicaCount` | Number of broker nodes   | `1` |
+| `druid.broker.image.pullPolicy` | Broker image pull policy   | `IfNotPresent` |
+| `druid.broker.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.broker.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.historical.replicaCount` | Number of historical nodes   | `1` |
+| `druid.historical.image.pullPolicy` | Historical image pull policy   | `IfNotPresent` |
+| `druid.historical.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.historical.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.ingestion.replicaCount` | Number of ingestion nodes   | `1` |
+| `druid.ingestion.image.pullPolicy` | Ingestion image pull policy   | `IfNotPresent` |
+| `druid.ingestion.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.ingestion.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.middlemanager.replicaCount` | Number of middle manager nodes   | `1` |
+| `druid.middlemanager.image.pullPolicy` | Middle manager image pull policy   | `IfNotPresent` |
+| `druid.middlemanager.resources` | Resource request/limits   | `{} evaluated as a template` |
+| `druid.middlemanager.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+
+## Druid Images
+The following table lists the configured parameters of the Druid Subchart
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:4.5` |
+| `druid.image.broker`                | Broker image   | `druid:4.5` |
+| `druid.image.coordinator`                | Coordinator  | `druid:4.5` |
+| `druid.image.middlemanager`                | Middlemanager image   | `druid:4.5` 
+| `druid.image.minio`                | Minio image   | `minio:4.5` |
+| `druid.image.historical`                | Historical image   | `druid:4.5` |
+| `druid.image.kafka`                | Kafka image   | `kafka:4.5` |
+| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:4.5` |
+
+## RabbitMQ
+The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `rabbitmq.enabled`                | Enable this subchart   | `true` |
+| `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
+| `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
+| `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
+| `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
+| `rabbitmq.rbac.create`       | Create & use RBAC resources   | `true` |
+| `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
+| `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
+| `rabbitmq.replicaCount`                | Number of Replicas  | `3` |
+| `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
+| `rabbitmq.service.port`                | RabbitMQ Port   | `5672` |
+| `rabbitmq.service.extraPorts`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
+| `rabbitmq.extraContainerPorts`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
+| `rabbitmq.auth.username`                | RabbitMQ username   | `see values.yaml` |
+| `rabbitmq.auth.secretName`                | RabbitMQ secret name   | `see values.yaml` |
+| `rabbitmq.auth.existingPasswordSecret`                | RabbitMQ existing password secret | `see values.yaml` |
+| `rabbitmq.auth.existingErlangSecret`                | RabbitMQ existing erlang secret   | `see values.yaml` |
+| `rabbitmq.extraPlugins`                | Extra enabled plugins | `see values.yaml` |
+| `rabbitmq.loadDefinition.enabled`                | Enable load definitions   | `see values.yaml` |
+| `rabbitmq.loadDefinition.existingSecret`                | Existing load definitions secret   | `see values.yaml` |
+| `rabbitmq.extraConfiguration`                | Extra configuration   | `see values.yaml` |
+
+## MySQL
+The following table lists the configured parameters of the MySQL Subchart - https://github.com/helm/charts/tree/master/stable/mysql
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `mysql.imageTag`                | MySQL Image to use   | `5.7.14` |
+| `mysql.serviceAccount.create`                |  Enable creation of ServiceAccount for MySQL  | `true` |
+| `mysql.serviceAccount.name`                | Name of the created serviceAccount   | `` |
+| `mysql.persistence.enabled`                | Enable persistence   | `true` |
+| `mysql.persistence.size`                | PVC size  | `8Gi` |
+| `mysql.persistence.storageClass`       | Storage Class   | `` |
+| `mysql.existingSecret`                | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
+| `mysql.mysqlUser`                | MySQL Username   | `admin` |
+| `mysql.mysqlPassword`                | MySQL User Password - auto-generated  | `7layer` |
+| `mysql.initializationFiles`                | SQL Files that are run on start up | `see values.yaml` |
+| `mysql.configurationFiles`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
+
+
+## Nginx-Ingress
+The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/helm/charts/tree/master/stable/nginx-ingress
+
+This represents minimal configuration of the Chart, this can be disabled in favour of your own ingress controller in the ingress settings.
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `nginx-ingress.podSecurityPolicy.enabled`                | Tell Nginx to read PSP   | `true` |
+| `nginx-ingress.rbac.create`                | Create & use RBAC resources   | `true` |
+| `nginx-ingress.controller.publishService.enabled`                | Enable Publish Service   | `true` |
+| `nginx-ingress.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
+
+
+## Disclaimer
+This repository is currently in Beta.
+
+## License
+Copyright (c) 2019 CA, A Broadcom Company. All rights reserved.
+
+This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/master/LICENSE) file for details.

@@ -1,0 +1,746 @@
+# Global values
+global:
+  portalRepository: caapim/
+  pullSecret: broadcom-apim
+  # these default to mysql settings above, change if connecting to an external database.
+  setupDemoDatabase: false
+  # A secret is created for mysql credentials
+  # If using the demo database mysql.xxx needs to match the values here
+  # By default a user called admin will be created and given admin rights
+  databaseType: mysql
+  databaseSecret: database-secret
+  databaseUsername: admin
+  # databasePassword: 7layer
+  databaseHost: mysql
+  databasePort: 3306
+  legacyHostnames: false
+  legacyDatabaseNames: false
+  subdomainPrefix: dev-portal
+  # storageClass: "_"
+  # schedulerName:
+    
+portal:
+  domain: example.com
+  enrollNotificationEmail: noreply@mail.example.com
+  analytics:
+    enabled: true
+  # Please set analytics.replicaCount to a minimum of 2
+    aggregation: true
+  # Specify a Gateway v9.x license file via set portal.license.value
+  # This bootstraps a license to apim and pssg
+  # To renew a license toggle license.secretName and specify your new license with helm upgrade
+  # i.e portal-license becomes portal-license-1
+  license:
+    secretName: portal-license
+    value:
+  # Internal SSG credentials - auto-generated on install
+  internalSSG:
+    secretName: ssg-secret
+    # username: admin
+    # password: M2NlY2RhZTMyZDZkNWMyZGI3
+  # Internal password for the Portal API - auto-generated on install
+  papi:
+    secretName: papi-secret
+    #password: 7layer
+  otk:
+    port: 443
+  # This loads the bintray imagePullSecret
+  registryCredentials:
+  ssoDebug: false
+  hostnameWhitelist:
+  defaultTenantId: apim
+
+tls:
+# Leave this blank to be auto-generated
+# For production use cases you will need to provide a public cert, cert chain and private key
+# These keys are applied to the dispatcher and APIM which have Public facing endpoints. 
+# The rest are managed automatically.
+# If you're migrating from a docker swarm environment and wish to keep your old internal certificates
+# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
+# The job will still run, but will not update anything.
+  job:
+    enabled: true
+# You may need to update the internal/external facing certificates, to do this set rotate
+# to one of the following and run the helm upgrade command.
+# Options: all, internal, external, none
+# Be sure to change it back to none afterwards to avoid certificates being rotated everytime you upgrade!
+    rotate: none
+# Change the internal/external secret name to match what you're updating.
+# These secrets are NOT Helm managed, you will need to clean them up manually.
+# This will force all of the deployments that use the secrets to upgrade
+# If you don't do this, you will have to perform a manual restart of each affected container
+  internalSecretName: portal-internal-secret
+  externalSecretName: portal-external-secret
+  useSignedCertificates: false
+  crt:
+  crtChain:
+  key:
+  keyPass:
+# Set an expiry time in days for internal certificates
+# Default 3 years
+  expiryInDays: 1095
+
+# Kubernetes Ingress
+ingress:
+  # Use a kubernetes/openshift ingress
+  type:
+    kubernetes: true
+    openshift: false
+  # existingSecret: 
+  secretName: dispatcher-tls
+  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
+  ## Using other ingress controllers will work as long as they support SSL Passthrough
+  create: true
+# Configure additional ingress controller specific annotations
+  annotations:
+     kubernetes.io/ingress.class: nginx
+     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+# A list of tenants that you have/will create.
+# This is for the ingress controller, it does not automatically create tenants
+  tenantIds:
+    - tenant1
+#    - tenant2
+# Added for backwards compatibility pre deprecation of this API in 1.18
+#  apiVersion: networking.k8s.io/v1beta1
+
+smtp:
+  host: notinstalled
+  port: notinstalled
+  username: notinstalled
+  password: notinstalled
+  requireSSL: false
+  cert: notinstalled
+
+telemetry:
+  plaEnabled: false
+  usageType: PRODUCTION
+  domainName:
+  siteId:
+  chargebackId:
+  proxy:
+    url:
+    username:
+    password:
+
+# Service Account for Portal services
+serviceAccount:
+  create: true
+  # name:
+rbac:
+  create: true
+
+# If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
+analytics:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 250Mi
+    limits:
+      cpu: 1000m
+      memory: 2000Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - analytics
+  #       topologyKey: "kubernetes.io/hostname"
+
+apim:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 2
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4096Mi
+    limits:
+      cpu: 2000m
+      memory: 6144Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - apim
+  #       topologyKey: "kubernetes.io/hostname"
+
+authenticator:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 250m
+      memory: 250Mi
+    limits:
+      cpu: 750m
+      memory: 1500Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - authenticator
+  #       topologyKey: "kubernetes.io/hostname"
+
+dispatcher:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 250Mi
+    limits:
+      cpu: 500m
+      memory: 1024Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - dispatcher
+  #       topologyKey: "kubernetes.io/hostname"
+
+portalData:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1500Mi
+    limits:
+      cpu: 1000m
+      memory: 3072Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - portal-data
+  #       topologyKey: "kubernetes.io/hostname"
+
+portalEnterprise:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 250m
+      memory: 2300Mi
+    limits:
+      cpu: 2000m
+      memory: 3072Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - portal-enterprise
+  #       topologyKey: "kubernetes.io/hostname"
+
+pssg:
+  replicaCount: 2
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 2048Mi
+    limits:
+      cpu: 2000m
+      memory: 4608Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - pssg
+  #       topologyKey: "kubernetes.io/hostname"
+
+
+solr:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 50m
+      memory: 250Mi
+    limits:
+      cpu: 500m
+      memory: 750Mi
+  #nodeSelector: {}
+
+tenantProvisioner:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 250Mi
+    limits:
+      cpu: 1000m
+      memory: 1536Mi
+  #nodeSelector: {}
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app
+  #           operator: In
+  #           values:
+  #           - tenant-provisioner
+  #       topologyKey: "kubernetes.io/hostname"
+
+image:
+  dispatcher: dispatcher:5.0
+  pssg: pssg:5.0
+  apim: ingress:5.0
+  enterprise: portal-enterprise:5.0
+  data: portal-data:5.0
+  tps: tenant-provisioning-service:5.0
+  solr: solr:5.0
+  analytics: analytics-server:5.0
+  authenticator: authenticator:5.0
+  dbUpgrade: db-upgrade-portal:5.0
+  rbacUpgrade: db-upgrade-rbac:5.0
+  upgradeVerify: upgrade-verify:5.0
+  tlsManager: tls-automator:5.0
+
+###############################################################################################
+##                                                                                           ##
+##                              Subchart Configuration                                       ##
+##                                                                                           ##
+###############################################################################################
+
+# Settings for Druid - this is a local sub chart
+druid:
+  enabled: true
+  # Service Account for Druid services
+  serviceAccount:
+    create: true
+    #name:
+  persistence:
+    storage: 
+      historical: 50Gi
+      minio: 40Gi
+      kafka: 10Gi
+      zookeeper: 10Gi
+
+  minio:
+    # consider changing to mode... standalone/distributed.
+    replicaCount: 4
+    image:
+      pullPolicy: IfNotPresent
+    auth:
+      secretName: minio-secret
+    # Leave access_key and secret_key empty to auto-generate values.
+     # access_key: 
+     # secret_key:
+    cloudStorage: false
+    bucketName: api-metrics
+
+## Use minio as Amazon S3 (Simple Storage Service) gateway
+## https://docs.minio.io/docs/minio-gateway-for-s3
+    s3gateway:
+      enabled: false
+      serviceEndpoint: ""
+      accessKey: ""
+      secretKey: ""
+
+## Use minio as GCS (Google Cloud Storage) gateway
+## https://docs.minio.io/docs/minio-gateway-for-gcs
+    gcsgateway:
+      enabled: false
+      # credential json file of service account key
+      gcsKeyJson: ""
+      # Google cloud project-id
+      projectId: ""
+
+## Use minio as an azure blob gateway
+## https://docs.minio.io/docs/minio-gateway-for-azure
+    azuregateway:
+      enabled: false
+
+    resources:
+      requests:
+        memory: 256Mi
+      limits:
+        memory: 256Mi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - minio
+    #         topologyKey: kubernetes.io/hostname
+
+  zookeeper:
+    replicaCount: 3
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        memory: 256Mi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - zookeeper
+    #         topologyKey: kubernetes.io/hostname
+
+
+  coordinator:
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        memory: 512Mi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - coordinator
+    #         topologyKey: kubernetes.io/hostname
+
+  kafka:
+    replicaCount: 3
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 750Mi
+      limits:
+        cpu: 1000m
+        memory: 1.5Gi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - kafka
+    #         topologyKey: kubernetes.io/hostname
+
+  broker:
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - broker
+    #         topologyKey: kubernetes.io/hostname
+
+  historical:
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: 2Gi
+      limits:
+        memory: 2Gi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - historical
+    #         topologyKey: kubernetes.io/hostname
+
+  ingestion:
+    replicaCount: 2
+    image:
+      pullPolicy: IfNotPresent
+    portName: ingestion-svc
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1.5Gi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - ingestion-server
+    #         topologyKey: kubernetes.io/hostname
+
+  middlemanager:
+    replicaCount: 1
+    image:
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: 4Gi
+      limits:
+        memory: 4Gi
+    #nodeSelector: {}
+    # affinity:
+    #   podAntiAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - middlemanager
+    #         topologyKey: kubernetes.io/hostname
+
+  # image:
+  #   zookeeper: zookeeper:5.0
+  #   broker: druid:5.0
+  #   coordinator: druid:5.0
+  #   middlemanager: druid:5.0
+  #   minio: minio:5.0
+  #   historical: druid:5.0
+  #   kafka: kafka:5.0
+  #   ingestion: ingestion-server:5.0
+
+# Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
+rabbitmq:
+  enabled: true
+  host: rabbitmq
+  fullnameOverride: rabbitmq
+  image:
+    registry: caapim
+    repository: message-broker-k8s
+    tag: "5.0"
+    pullSecrets:
+      - broadcom-apim
+  serviceAccount:
+    create: true
+    #name:
+  rbac:
+    create: true
+  persistence:
+    enabled: true
+    #size: 8Gi
+  replicaCount: 3
+## Affinity for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## This default will ensure that additional pods are scheduled onto different nodes in your k8s cluster
+## For nodes in different availability zones, this means losing one does not impact on availability.
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #     - labelSelector:
+  #         matchExpressions:
+  #         - key: app.kubernetes.io/name
+  #           operator: In
+  #           values:
+  #           - rabbitmq
+  #       topologyKey: kubernetes.io/hostname
+# If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true
+  clustering:
+    forceBoot: false
+  # MQTT Port.
+  service:
+    port: 5672
+    extraPorts:
+    - name: mqtt
+      port: 1883
+      targetPort: mqtt
+  extraContainerPorts:
+  - name: mqtt
+    containerPort: 1883
+  auth:
+    username: user
+    # creates a secret for RabbitMQ - this is a custom field
+    secretName: rabbitmq-secret
+    existingPasswordSecret: rabbitmq-secret
+    existingErlangSecret: rabbitmq-secret
+    # Set username/password if you don't them to be randomly generated or if you're using an existing RabbitMQ installation.
+    #password: 7layereyal7
+    #erlangCookie: L7Secure
+  extraPlugins: "rabbitmq_web_mqtt"
+  loadDefinition:
+    enabled: true
+    existingSecret: rabbitmq-load-definition
+  extraConfiguration: |-
+    management.load_definitions = /app/load_definition.json
+    mqtt.exchange = portal-external
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+
+# Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
+ingress-nginx:
+  podSecurityPolicy:
+    enabled: true
+  serviceAccount:
+    create: true
+   # name:
+  rbac:
+    create: true
+  controller: 
+    publishService:
+      enabled: true
+    extraArgs:
+      enable-ssl-passthrough: true
+#  tcp:
+#    9443: "<namespace>/dispatcher:9443"
+
+# We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
+# in any production environment.
+# MySQL Stable Chart values - https://github.com/helm/charts/tree/master/stable/mysql
+mysql:
+  imageTag: "5.7.14"
+  serviceAccount:
+    create: true
+    #name:
+  #persistence:
+    #enabled: true
+    #size: 8Gi RW
+    #storageClass:
+  existingSecret: database-secret
+  mysqlUser: admin
+ # mysqlPassword: 7layer
+  initializationFiles:
+    elevate-admin.sql: |-
+      GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%'; FLUSH PRIVILEGES;
+  configurationFiles:
+    my.cnf: |-
+      [client]
+      default-character-set=utf8
+      [mysql]
+      default-character-set=utf8
+      [mysqld]
+      collation-server = utf8mb4_unicode_ci
+      init-connect='SET NAMES utf8'
+      character-set-server = utf8
+      innodb_log_buffer_size=32M
+      innodb_log_file_size=80M
+      max_allowed_packet=8M
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"

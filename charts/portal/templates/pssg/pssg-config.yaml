@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pssg-config
+  labels:
+    app: pssg
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  BUSINESS_REPORTS_ENABLED: "false"
+  CONFIG_APIM_HOST: {{ include "tssg-public-host" . | quote }}
+  CONFIG_APIM_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_BROKER_HOST: {{ include "broker-host" . | quote }}
+  CONFIG_BROKER_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_DSSG_DATALAKE_HOST: {{ include "analytics-host" . | quote }}
+  CONFIG_DSSG_DATALAKE_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_ENROLL_NOTIFICATION_EMAIL: {{ required "Please fill in enrollNotificationEmail in values.yaml"  .Values.portal.enrollNotificationEmail }}
+  CONFIG_MAIL_SMTP_HOST: {{ required "Please fill in smtp.host in values.yaml" .Values.smtp.host }}
+  CONFIG_MAIL_SMTP_PORT: {{ required "Please fill in smtp.port in values.yaml" .Values.smtp.port | quote }}
+  CONFIG_MAIL_SMTP_REQUIRE_SSL: {{ required "Please fill in smtp.requireSSL in values.yaml" .Values.smtp.requireSSL | quote }}
+  CONFIG_PSSG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
+  CONFIG_PSSG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_PSSG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
+  CONFIG_PSSG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_PSSG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
+  CONFIG_PSSG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
+{{ if .Values.global.setupDemoDatabase}}
+  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+{{ else }}
+  DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  DATABASE_NAME: {{ include "portal-db-name" . | quote }}
+  DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_TYPE: {{ required "Please fill in databaseHost in values.yaml" .Values.global.databaseType | quote }}
+  NSS_SDB_USE_CACHE: "no"
+  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  SSG_JVM_HEAP: 4096m

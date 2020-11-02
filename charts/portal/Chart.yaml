@@ -1,0 +1,26 @@
+apiVersion: v2
+appVersion: "5.0.0"
+description: CA API Developer Portal
+name: portal
+version: 2.0.9
+type: application
+maintainers:
+  - name: Gary Vermeulen
+engine: gotpl
+dependencies:
+- name: druid
+  version: ^1.0.0
+  condition: portal.analytics.enabled
+  repository: "file://../druid"
+- name: mysql
+  version: 1.6.4
+  repository: "https://kubernetes-charts.storage.googleapis.com/"
+  condition: global.setupDemoDatabase
+- name: rabbitmq
+  version: 7.6.6
+  repository: "https://charts.bitnami.com/bitnami"
+  condition: rabbitmq.enabled
+- name: ingress-nginx
+  repository: "https://kubernetes.github.io/ingress-nginx/"
+  version: 2.15.0
+  condition: ingress.create

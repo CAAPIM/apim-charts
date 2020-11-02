@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authenticator-config
+  labels:
+    app: authenticator
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  CASSO_DEBUG_ENABLED: {{ required "Please fill in ssoDebug in values.yaml" .Values.portal.ssoDebug | quote}}
+  CASSO_ENABLED: "true"
+  {{ if .Values.global.setupDemoDatabase}}
+  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+{{ else }}
+  DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  DATABASE_NAME: {{ include "portal-db-name" . | quote }}
+  DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  JAVA_OPTIONS: -Xms1024m -Xmx1024m
+  NSS_SDB_USE_CACHE: "no"
+  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}

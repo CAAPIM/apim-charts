@@ -1,0 +1,21 @@
+{{if not .Values.ingress.existingSecret}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.ingress.secretName }}
+  labels:
+    app: dispatcher
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+type: kubernetes.io/tls
+data:
+{{ if not .Values.tls.useSignedCertificates}}
+{{ ( include "dispatcher-self-signed" . ) | indent 2 }}
+{{else}}
+  tls.crt: {{ include "dispatcher-ssl-crt" . | b64enc | quote }}
+  tls.key: {{ include "dispatcher-ssl-key" . | b64enc | quote }}
+{{ end }}
+{{ end }}
+
+  

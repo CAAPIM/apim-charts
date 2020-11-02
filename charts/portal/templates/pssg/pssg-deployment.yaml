@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pssg
+  labels:
+    app: pssg
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if .Values.pssg.strategy }}
+  strategy: {{- toYaml .Values.pssg.strategy | nindent 12 }}
+  {{- end }}
+  replicas: {{ .Values.pssg.replicaCount }}
+  selector:
+    matchLabels:
+      app: pssg
+  template:
+    metadata:
+      labels:
+        app: pssg
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.pssg.affinity }}
+      affinity: {{- toYaml .Values.pssg.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pssg.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.pssg.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      initContainers:
+        - name: liquidbase-upgrade-portal
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'db-upgrade']
+        - name: liquidbase-upgrade-rbac
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'rbac-upgrade']
+      containers:
+        - name: pssg
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.pssg }}"
+          imagePullPolicy: "{{ .Values.pssg.image.pullPolicy }}"
+          env:
+            - name: SSG_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: SSG_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-password
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: APIM_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.externalSecretName }}
+                  key: apim-ssl.p12
+                  optional: false
+            - name: DATALAKE_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-datalake.p12
+                  optional: false
+            - name: DSSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-dssg.p12
+                  optional: false
+            - name: SSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: pssg-ssl.p12
+                  optional: false
+            - name: DATALAKE_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: DSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: APIM_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.externalSecretName }}
+                  key: keypass.txt
+                  optional: false
+            - name: SSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+          envFrom:
+          - configMapRef:
+              name: pssg-config
+          - secretRef:
+              name: pssg-secret
+          readinessProbe:
+            exec:
+              command: [sh, /opt/docker/diagnostic/health_check.sh]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command: [sh, /opt/docker/diagnostic/health_check.sh]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 30
+          {{- if .Values.pssg.resources }}
+          resources: {{- toYaml .Values.pssg.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 8443
+            - containerPort: 9446
+            - containerPort: 9447
+            - containerPort: 9448
+          {{ if contains "4.5" .Chart.AppVersion }}
+          volumeMounts:
+            - name: {{.Values.portal.license.secretName}}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
+              subPath: license.xml
+          {{ end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      {{ if contains "4.5" .Chart.AppVersion }}
+      volumes:
+        - name: {{.Values.portal.license.secretName}}
+          secret:
+            secretName: {{.Values.portal.license.secretName}}
+            items:
+              - key: license
+                path: license.xml
+      {{ end }}

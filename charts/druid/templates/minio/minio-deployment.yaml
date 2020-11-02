@@ -1,0 +1,134 @@
+{{- if .Values.minio.cloudStorage }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  labels:
+    app: minio
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  replicas: {{ .Values.minio.replicaCount }}
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.minio.affinity }}
+      affinity: {{- toYaml .Values.minio.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      containers:
+        - name: minio
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.minio }}"
+          imagePullPolicy: "{{ .Values.minio.image.pullPolicy }}"  
+          {{- if .Values.minio.s3gateway.enabled }}
+          command: [ "/bin/sh",
+          "-ce",
+          "/usr/bin/docker-entrypoint.sh minio gateway s3 {{ .Values.minio.s3gateway.serviceEndpoint }}" ]
+          {{- else }}
+          {{- if .Values.minio.azuregateway.enabled }}
+          command: [ "/bin/sh",
+          "-ce",
+          "/usr/bin/docker-entrypoint.sh minio gateway azure" ]
+          {{- else }}
+          {{- if .Values.minio.gcsgateway.enabled }}
+          command: [ "/bin/sh",
+          "-ce",
+          "/usr/bin/docker-entrypoint.sh minio gateway gcs {{ .Values.minio.gcsgateway.projectId }}" ]
+          {{- else }}
+          {{- if .Values.minio.ossgateway.enabled }}
+          command: [ "/bin/sh",
+          "-ce",
+          "/usr/bin/docker-entrypoint.sh minio gateway oss {{ .Values.minio.ossgateway.endpointURL }}" ]
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.minio.gcsgateway.enabled }}
+            - name: minio-user
+              mountPath: "/etc/credentials"
+              readOnly: true
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 9000
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minio.auth.secretName }}
+                  key: MINIO_SECRET_KEY
+            {{- if .Values.minio.gcsgateway.enabled }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/credentials/gcs_key.json"
+            {{- end }}
+            {{- if .Values.minio.s3gateway.enabled -}}
+            {{- if .Values.minio.s3gateway.accessKey }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minio.auth.secretName }}
+                  key: awsAccessKeyId
+            {{- end }}
+            {{- if .Values.minio.s3gateway.secretKey }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{  .Values.minio.auth.secretName }}
+                  key: awsSecretAccessKey
+            {{- end }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 1
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /minio/health/ready     
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 6
+            successThreshold: 1
+            failureThreshold: 3
+          {{- if .Values.minio.resources }}
+          resources: {{- toYaml .Values.minio.resources | nindent 12 }}
+          {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      volumes:
+        - name: minio-user
+          secret:
+            secretName: {{  .Values.minio.auth.secretName }}
+{{- end }}

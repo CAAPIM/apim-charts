@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: broker-config
+  labels:
+    app: broker
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  SERVICE_NAME: broker
+  ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
+  ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}

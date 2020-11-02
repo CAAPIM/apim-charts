@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingestion-server-config
+  labels:
+    app: ingestion-server
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  SERVICE_NAME: ingestion-server
+  KAFKA_BROKERS: kafka:9092
+  BROKER_PORT: "8082"
+  OVERLORD_HOST: {{ .Values.coordinator.hostname }}
+  OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
+  COORDINATOR_HOST: {{ .Values.coordinator.hostname }}
+  COORDINATOR_PORT: {{ .Values.coordinator.port | quote }}
+  MINIO_URL: http://minio:9000
+  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
+  REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
+{{ if .Values.global.setupDemoDatabase}}
+  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+{{ else }}
+  DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  DATABASE_NAME: {{ include "portal-db-name" . | quote }}
+  DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}

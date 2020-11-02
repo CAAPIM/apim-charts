@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  serviceName: kafka
+  replicas: {{ .Values.kafka.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.kafka.affinity }}
+      affinity: {{- toYaml .Values.kafka.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.kafka.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.kafka.nodeSelector | nindent 12 }}
+      {{- end }}
+      securityContext:
+        fsGroup: 1010
+      containers:
+      - name: kafka
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: "{{ .Values.kafka.image.pullPolicy }}"
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+        readinessProbe:
+            exec:
+              command: [sh, /opt/ca/health_check.sh]
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+        livenessProbe:
+          exec:
+            command: [sh, /opt/ca/health_check.sh]
+          initialDelaySeconds: 120
+          timeoutSeconds: 1
+          periodSeconds: 15
+          successThreshold: 1
+        {{- if .Values.kafka.resources }}
+        resources: {{- toYaml .Values.kafka.resources | nindent 12 }}
+        {{- end }}
+        ports:
+        - containerPort: 9092
+        volumeMounts:
+        - name: kafka-vol-claim
+          mountPath: /opt/ca/kafka/kafka-logs
+          subPath: data/kafka/kafka-logs
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.kafka }}

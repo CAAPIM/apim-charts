@@ -1,0 +1,85 @@
+{{- if .Values.tls.job.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-tls-manager"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      restartPolicy: OnFailure
+      containers:
+      - name: {{ .Release.Name }}-tls-manager
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+        imagePullPolicy: Always
+        env:
+         - name: P12_INTERNAL_PASS
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: P12_INTERNAL_PASS
+         - name: P12_EXTERNAL_PASS
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: P12_EXTERNAL_PASS
+{{- if .Values.tls.useSignedCertificates }}
+         - name: CRT
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: CRT
+         - name: CRTCHAIN
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: CRTCHAIN
+         - name: PRIV_KEY
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: PRIV_KEY
+         - name: PRIV_KEY_PASS
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: PRIV_KEY_PASS
+{{- end }}
+         - name: EXPIRY_TIME
+           value: {{ .Values.tls.expiryInDays | quote }}
+         - name: NAMESPACE
+           value: {{ .Release.Namespace }}
+         - name: PORTAL_DOMAIN
+           value: {{ .Values.portal.domain | quote }}
+         - name: INTERNAL_SECRETNAME
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: INTERNAL_SECRETNAME 
+         - name: EXTERNAL_SECRETNAME
+           valueFrom:
+             secretKeyRef:
+               name: {{ template "portal.fullname" . }}-job-secret
+               key: EXTERNAL_SECRETNAME 
+         - name: HELM_ACTION
+           value: {{ .Release.IsInstall | quote }}
+         - name: ROTATE
+           value: {{ .Values.tls.job.rotate | quote }}
+        command: ["/bin/bash", "-c"]
+        args:
+          - /scripts/tls_manager.sh
+            /usr/bin/tail -f /dev/null;
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+{{- end }}

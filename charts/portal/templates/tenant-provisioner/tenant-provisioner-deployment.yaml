@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-provisioner
+  labels:
+    app: tenant-provisioner
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.tenantProvisioner.replicaCount }}
+  selector:
+    matchLabels:
+      app: tenant-provisioner
+  {{- if .Values.tenantProvisioner.strategy }}
+  strategy: {{- toYaml .Values.tenantProvisioner.strategy | nindent 12 }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: tenant-provisioner
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.tenantProvisioner.affinity }}
+      affinity: {{- toYaml .Values.tenantProvisioner.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.tenantProvisioner.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.tenantProvisioner.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      initContainers:
+        - name: liquidbase-upgrade-portal
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'db-upgrade']
+        - name: liquidbase-upgrade-rbac
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          args: ["job", 'rbac-upgrade']
+      containers:
+        - name: tenant-provisioner-service
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.tps }}"
+          imagePullPolicy: "{{ .Values.tenantProvisioner.image.pullPolicy }}"
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+            - containerPort: 9001
+              protocol: TCP
+          env:
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+            - name: PAPI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-username
+            - name: PAPI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.papi.secretName }}
+                  key: papi-password
+            - name: GATEWAY_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-username
+            - name: GATEWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.portal.internalSSG.secretName }}
+                  key: internal-ssg-password
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ else if eq .Values.global.databaseType "postgres" }}
+                  key: postgres-password
+            {{ end }}
+            - name: TPS_SSL_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: tps.crt
+                  optional: false
+            - name: TPS_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: tps.key
+                  optional: false
+            - name: TPS_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
+          envFrom:
+          - configMapRef:
+              name: tenant-provisioner-config
+          - secretRef:
+              name: tenant-provisioner-secret
+          readinessProbe:
+            exec:
+              command: ["sh", "/opt/app/healthcheck.sh"]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 20
+          livenessProbe:
+            exec:
+              command: ["sh", "/opt/app/healthcheck.sh"]
+            initialDelaySeconds: 60
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 20
+          {{- if .Values.tenantProvisioner.resources }}
+          resources: {{- toYaml .Values.tenantProvisioner.resources | nindent 12 }}
+          {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
