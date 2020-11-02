@@ -25,7 +25,7 @@ Next add the layer7 Helm Chart Repository if you haven't already
 * [Gateway with Ingress Controller (nginx)](#gateway-with-ingress-controller)
 
 
-### Gateway with Sub-Charts
+### Gateway with SubCharts
 Here we'll enable all of the Gateway sub-charts, you can pick and choose which you'd like to try.
 
 ***Note:*** Offboxing Service Metrics requires InfluxDb, Grafana and ServiceMetrics to be enabled. Hazelcast does not require any of these.
