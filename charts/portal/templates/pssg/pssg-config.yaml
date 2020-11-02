@@ -33,6 +33,8 @@ data:
   DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   DATABASE_PORT: {{ include "database-port" . | quote }}
   DATABASE_TYPE: {{ required "Please fill in databaseHost in values.yaml" .Values.global.databaseType | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   NSS_SDB_USE_CACHE: "no"
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   SSG_JVM_HEAP: 4096m

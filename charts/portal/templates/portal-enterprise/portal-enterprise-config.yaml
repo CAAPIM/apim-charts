@@ -32,6 +32,8 @@ data:
   SEARCH_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   SEARCH_DATABASE_PORT: {{ include "database-port" . | quote }}
   SEARCH_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   PAPI_INGRESS_TENANT: {{ include "default-tenant-id" . | quote }}
   TSSG_TENANT_ID: {{ include "default-tenant-id" . | quote }}
