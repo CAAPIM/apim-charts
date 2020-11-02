@@ -13,6 +13,9 @@ global:
   databasePort: 3306
   databaseUsername: admin
   databaseSecret:
+  subdomainPrefix: dev-portal
+  legacyHostnames: false
+  legacyDatabaseNames: false
 # databasePassword: 7layer
 
 image:
@@ -32,6 +35,11 @@ persistence:
     kafka: 10Gi
     zookeeper: 10Gi
 
+# Service Account for Druid services
+serviceAccount:
+  create: true
+# name:
+
 minio:
   auth:
     secretName: minio-secret
@@ -40,7 +48,7 @@ minio:
   # secret_key:
 # The minio bucket that holds historical data for your portal.
 # By default this is apim-data, if using AWS, GCP, Azure, this will need to match a bucket you have access to.
-# bucketName: layer7-minio
+  bucketName: api-metrics
 # cloudStorage: false
   s3gateway:
     enabled: false

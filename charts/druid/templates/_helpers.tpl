@@ -67,6 +67,31 @@ Get "druid" database name
 
 
 {{/*
+Get "portal" database name
+*/}}
+{{- define "portal-db-name" -}}
+    {{ if .Values.global.legacyDatabaseNames }}
+        {{- print "portal" }}
+    {{- else }}
+        {{- $f:= .Values.global.subdomainPrefix -}}
+        {{ if empty $f }}
+            {{- fail "Please define subdomainPrefix in values.yaml" }}
+        {{- else }}
+            {{- printf "%s_%s" $f "portal" | replace "-" "_" -}}
+        {{- end }}
+    {{- end }}
+{{- end -}}
+
+
+{{/*
+Get "database-port" based on databaseType value
+*/}}
+
+{{- define "database-port" -}}
+        {{- print .Values.global.databasePort -}}
+{{- end -}}
+
+{{/*
 Portal Docops page
 */}}
 {{- define "portal.help.page" -}}
