@@ -53,7 +53,7 @@ portal:
 tls:
 # Leave this blank to be auto-generated
 # For production use cases you will need to provide a public cert, cert chain and private key
-# These keys are applied to the dispatcher and APIM which have Public facing endpoints. 
+# These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
 # then follow the instructions here to load your certificates into secrets manually #### Link to doc.
@@ -389,11 +389,9 @@ image:
   upgradeVerify: upgrade-verify:5.0
   tlsManager: tls-automator:5.0
 
-###############################################################################################
-##                                                                                           ##
-##                              Subchart Configuration                                       ##
-##                                                                                           ##
-###############################################################################################
+##
+## Subchart Configuration
+##
 
 # Settings for Druid - this is a local sub chart
 druid:

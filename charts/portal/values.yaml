@@ -10,15 +10,15 @@ global:
   databaseType: mysql
   databaseSecret: database-secret
   databaseUsername: portal
-  #databasePassword: 7layer
+# databasePassword: 7layer
   databaseHost: mysql
   databasePort: 3306
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  #storageClass: "_"
-  #schedulerName:
-    
+# storageClass: "_"
+# schedulerName:
+
 portal:
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
@@ -36,12 +36,12 @@ portal:
   # Internal SSG credentials - auto-generated on install
   internalSSG:
     secretName: ssg-secret
-    #username: admin
-    #password: M2NlY2RhZTMyZDZkNWMyZGI3
+  # username: admin
+  # password: M2NlY2RhZTMyZDZkNWMyZGI3
   # Internal password for the Portal API - auto-generated on install
   papi:
     secretName: papi-secret
-    #password: 7layer
+  # password: 7layer
   otk:
     port: 443
   # This loads the bintray imagePullSecret
@@ -53,7 +53,7 @@ portal:
 tls:
 # Leave this blank to be auto-generated
 # For production use cases you will need to provide a public cert, cert chain and private key
-# These keys are applied to the dispatcher and APIM which have Public facing endpoints. 
+# These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
 # then follow the instructions here to load your certificates into secrets manually #### Link to doc.
@@ -86,16 +86,16 @@ ingress:
   type:
     kubernetes: true
     openshift: false
-# existingSecret: 
+# existingSecret:
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
   create: true
 # Configure additional ingress controller specific annotations
   annotations:
-     kubernetes.io/ingress.class: nginx
-     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
@@ -126,7 +126,7 @@ telemetry:
 # Service Account for Portal services
 serviceAccount:
   create: true
-  #name:
+# name:
 rbac:
   create: true
 
@@ -316,11 +316,9 @@ image:
   upgradeVerify: upgrade-verify:5.0
   tlsManager: tls-automator:5.0
 
-###############################################################################################
-##                                                                                           ##
-##                              Subchart Configuration                                       ##
-##                                                                                           ##
-###############################################################################################
+##
+## Subchart Configuration
+##
 
 # Settings for Druid - this is a local sub chart
 druid:
@@ -330,7 +328,7 @@ druid:
     create: true
   # name:
   persistence:
-    storage: 
+    storage:
       historical: 50Gi
       minio: 40Gi
       kafka: 10Gi
@@ -551,7 +549,7 @@ ingress-nginx:
   # name:
   rbac:
     create: true
-  controller: 
+  controller:
     publishService:
       enabled: true
     extraArgs:
