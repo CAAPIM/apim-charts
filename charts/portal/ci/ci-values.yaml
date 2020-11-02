@@ -1,5 +1,2 @@
 portal:
-  license:
-    value: supersecret
   registryCredentials: supersecret
-  
