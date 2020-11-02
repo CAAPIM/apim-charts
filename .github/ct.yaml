@@ -7,3 +7,5 @@ chart-repos:
   - influx=https://helm.influxdata.com/
   - stable=https://charts.helm.sh/stable
   - hazelcast=https://hazelcast-charts.s3.amazonaws.com/
+excluded-charts:
+  - druid
