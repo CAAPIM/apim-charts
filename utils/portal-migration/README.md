@@ -83,6 +83,10 @@ This guide covers migrating certificates the old Helm2 to the new Helm3 Chart. P
   - ```$ helm2 delete --purge <portal-release-name>```
 5. If you have exported your analytics and wish to run minio in distributed mode
   - ```$ kubectl delete pvc minio-vol-claim-minio-0 -n <namespace>``` ***WARNING: make sure $PWD/analytics is not empty!!***
+  - If you are migrating from Helm 2.x(non-HA deployment) to Helm 3.x(HA deployment i.e running Kafka, Zookepeer and other services in distributed mode), please do the following
+      - ```$ kubectl delete pvc kafka-vol-claim-kafka-0 -n <namespace>```
+      - ```$ kubectl delete pvc zookeeper-vol-claim-zookeeper-0 -n <namespace>```
+      - ```$ kubectl delete pvc historical-vol-claim-historical-0 -n <namespace>```
 6. Install the new Chart
    - ```$ helm repo add portal https://caapim.github.io/apim-charts/```
    - ```$ helm repo update```
