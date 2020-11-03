@@ -14,6 +14,7 @@ internal_secretname="portal-internal-secret"
 external_cert_location="certificates/external"
 external_secretname="portal-external-secret"
 certs=(apim-datalake.p12 apim-dssg.p12 apim-solr.p12 apim-tps.p12 pssg-ssl.p12 tps.p12 apim-ssl.p12 dispatcher-ssl.p12)
+os="$(uname -s)"
 ###############################################
 # Function to create corresponding secret Object in Kubernetes
 function create_k8s_secrets() {
@@ -27,7 +28,11 @@ function create_k8s_secrets() {
       printf ${certfile} >$tmp/${f##*/}
       fromfiles="${fromfiles} --from-file=$tmp/${f##*/}"
     else
+      if [[ $os == "Darwin" ]]; then
       certfile=$(cat ${f} | base64)
+      else
+      certfile=$(cat ${f} | base64 -w 0)
+      fi
       printf ${certfile} >$tmp/${f##*/}
       fromfiles="${fromfiles} --from-file=$tmp/${f##*/}"
     fi
