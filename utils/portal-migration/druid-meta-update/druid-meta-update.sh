@@ -111,7 +111,7 @@ function retrieve_build_files() {
      echo "Resources available locally"
    else
      echo "Getting resources from GitHub"
-     curl -s https://github.com/CAAPIM/apim-charts/blob/master/utils/portal-migration/druid-meta-update/resources.tar.gz?raw=true -o $PWD/resources.tar.gz
+     curl -s https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/druid-meta-update/resources.tar.gz?raw=true -o $PWD/resources.tar.gz
    fi
      tar -xvf $PWD/resources.tar.gz &>/dev/null
 }

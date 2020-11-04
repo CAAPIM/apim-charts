@@ -16,6 +16,6 @@ If migrating from Docker Swarm to Kubernetes, or on-prem analytics storage to Cl
 ## Usage
 
 ### On a machine that has Docker and access to the Portal MySQL database
-  - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/druid-meta-update/druid-meta-update.sh > druid-meta-update.sh```
+  - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/druid-meta-update/druid-meta-update.sh > druid-meta-update.sh```
   - ```$ chmod +x druid-meta-update.sh```
   - ```$ ./druid-meta-update.sh -h <mysql-host> -P <mysql-port> -u <mysql-username> -b <bucket-name> -d <database-name>|default druid```

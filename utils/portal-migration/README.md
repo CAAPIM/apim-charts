@@ -18,7 +18,7 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
 ***NOTE:*** tls.job.enabled must be set to false!!
 
 1. SSH into your Docker Swarm Portal Node
-   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/swarm/docker-swarm-migrate.sh > docker-swarm-migrate.sh```
+   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/swarm/docker-swarm-migrate.sh > docker-swarm-migrate.sh```
    - ```$ chmod +x docker-swarm-migrate.sh```
    - ```./docker-swarm-migrate.sh -p </path/to/portal/certs/folder/> -a certs```
    - ***this produces certificates.tar.gz***
@@ -27,7 +27,7 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
    - ```$ mkdir migration```
    - ```$ cd migration```
    - ```$ scp <username>@<swarm-ip>:/path/to/certificates.tar.gz .```
-   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/kubernetes/migrate-certificates.sh > migrate-certificates.sh```
+   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/kubernetes/migrate-certificates.sh > migrate-certificates.sh```
    - ```$ chmod +x migrate-certificates.sh```
    - ```$ ./migrate-certificates.sh -n <kubernetes-namespace>```
    - ***your certificates should now be in your kubernetes cluster*** 
@@ -60,7 +60,7 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
 This guide covers migrating certificates the old Helm2 to the new Helm3 Chart. Persistent volume naming conventions haven't changed so the transition is relatively simple.
 
 1. Load Certificates
-   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/kubernetes/migrate-certificates.sh > migrate-certificates.sh```
+   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/kubernetes/migrate-certificates.sh > migrate-certificates.sh```
    - ```$ chmod +x migrate-certificates.sh```
    - ```$ ./migrate-certificates.sh -n <kubernetes-namespace> -p /path/to/portal-helm-charts/files -k <certpass>```
 
@@ -168,7 +168,7 @@ We've exposed this Minio functionality in Kubernetes, if you'd like to use Amazo
    - Amazon S3 - this uses access/secret key of a user that has S3 permissions.
    - For more details see ==> https://docs.min.io/docs/
 4. Update Druid Metadata
-   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/druid-meta-update/druid-meta-update.sh > druid-meta-update.sh```
+   - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/druid-meta-update/druid-meta-update.sh > druid-meta-update.sh```
    - ```$ chmod +x druid-meta-update.sh```
    - ```$ ./druid-meta-update.sh -u <database-username> -p <database-password> -h <database-host> -d <database-name> -p <database-port> -b <bucket-name>```
 5. [Restart Analytics Services](#restart-analytics-services)
