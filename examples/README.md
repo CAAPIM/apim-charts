@@ -13,7 +13,7 @@ as an example to get a feel for what's possible and where to start when external
 
 Start by cloning [values.yaml](../charts/gateway/values.yaml) onto a machine that has Helm v3.x and kubectl installed with access to a kubernetes cluster. You can also use ```curl``` to do this
 
-```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/charts/gateway/values.yaml > my-values.yaml```
+```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/charts/gateway/values.yaml > my-values.yaml```
 
 Next add the layer7 Helm Chart Repository if you haven't already
 
