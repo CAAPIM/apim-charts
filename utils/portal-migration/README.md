@@ -15,6 +15,8 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
 
 ***Read Migrate Analytics before proceeding with installation!!***
 
+***NOTE:*** tls.job.enabled must be set to false!!
+
 1. SSH into your Docker Swarm Portal Node
    - ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/master/utils/portal-migration/swarm/docker-swarm-migrate.sh > docker-swarm-migrate.sh```
    - ```$ chmod +x docker-swarm-migrate.sh```
@@ -44,7 +46,8 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
       portal.domain: <domain> default example.com
       portal.enrollNotificationEmail: <enrollNotificationEmail> default noreply@mail.example.com
       ingress.tenantIds <list of existing tenants> default tenant1
-      portal.papi.port: 9443 default 443```
+      portal.papi.port: 9443 default 443
+      ```
   - uncomment and fill namespace in ingress-nginx
      ```
      #  tcp:
@@ -76,18 +79,18 @@ This guide covers migrating certificates the old Helm2 to the new Helm3 Chart. P
       ```
    - If you already have an ingress controller, then make sure that ingress.create is set to false.
    - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../README.md)
-3. Migrate analytics - see [Helm 2.x](#helm-2.x)
+3. Migrate analytics - see [Helm 2.x](#helm-2x)
    - if you'd like to skip migrating analytics update the following in <my-values.yaml>
       ```druid.minio.replicaCount: 1```
-4. Remove the old Portal Helm Chart ***Analytics volumes will be retained automatically***
-  - ```$ helm2 delete --purge <portal-release-name>```
+4. Remove the old Portal Helm Chart (using Helm2) ***Analytics volumes will be retained automatically***
+  - ```$ helm delete --purge <portal-release-name>```
 5. If you have exported your analytics and wish to run minio in distributed mode
   - ```$ kubectl delete pvc minio-vol-claim-minio-0 -n <namespace>``` ***WARNING: make sure $PWD/analytics is not empty!!***
   - If you are migrating from Helm 2.x(non-HA deployment) to Helm 3.x(HA deployment i.e running Kafka, Zookepeer and other services in distributed mode), please do the following
       - ```$ kubectl delete pvc kafka-vol-claim-kafka-0 -n <namespace>```
       - ```$ kubectl delete pvc zookeeper-vol-claim-zookeeper-0 -n <namespace>```
       - ```$ kubectl delete pvc historical-vol-claim-historical-0 -n <namespace>```
-6. Install the new Chart
+6. Install the new Chart (using Helm3)
    - ```$ helm repo add portal https://caapim.github.io/apim-charts/```
    - ```$ helm repo update```
    - ```$ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml>```
@@ -119,7 +122,7 @@ From your docker swarm node run the following and copy to a machine ***that has 
       ##### On Linux
       - ```$ hostname -I | awk '{print $1}'```
 2. Port-forward to your Kubernetes minio instance (on a separate shell)
-   - ```$ kubectl port-forward svc minio --address 0.0.0.0 9000 -n <namespace>```
+   - ```$ kubectl port-forward svc/minio --address 0.0.0.0 9000 -n <namespace>```
 3. Use Minio mc to copy your data to a local directory
    - ```$ docker run -e BUCKET_NAME=api-metrics -e ACCESS_KEY=minio -e SECRET_KEY=minio123 -e HOST_IP=$HOST_IP -v $PWD/analytics/api-metrics:/opt/api-metrics -it --entrypoint=/bin/sh minio/mc```
    - ```$ mc alias set portal http://$HOST_IP:9000 $ACCESS_KEY $SECRET_KEY```
@@ -142,7 +145,7 @@ This is the standard supported option, the production-values.yaml you started fr
       - ```$ hostname -I | awk '{print $1}'```
 
 2. Port-forward to your Kubernetes minio instance (on a separate shell)
-   - ```$ kubectl port-forward svc minio --address 0.0.0.0 9000 -n <namespace>```
+   - ```$ kubectl port-forward svc/minio --address 0.0.0.0 9000 -n <namespace>```
 
 3. Prepare analytics and use Minio mc to sync with your Kubernetes Portal
    - ```$ tar -xvf analytics.tar.gz``` ***Docker Swarm Only***

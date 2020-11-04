@@ -21,36 +21,36 @@ Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommende
 
 # Install the Chart
 When using this Chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
-Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart.
+Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart. For details on what you can change see [configuration](#configuration)
 
 ```
-> $ helm repo add layer7 https://caapim.github.io/apim-charts/
-> $ helm repo update
-> $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+ $ helm repo add layer7 https://caapim.github.io/apim-charts/
+ $ helm repo update
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 
 ## Upgrade this Chart
 To upgrade the Gateway deployment
 ```
-> $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+ $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 ## Delete this Chart
 To delete Portal installation
 
 ```
-> $ helm delete <release name> -n <release namespace>
+ $ helm delete <release name> -n <release namespace>
 ```
 
 *Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion*
 
 ## Additional Guides/Info
 * [Use/Replace Signed Certificates](#certificates)
+* [DNS Configuration](#dns-configuration)
 * [SMTP Settings](#smtp-parameters)
 * [Migrate from Docker Swarm/Previous Helm Chart](../../utils/portal-migration/README.md)
-* [Migrate from Helm2 Chart](../../utils/portal-migration/README.md)
 * [Upgrade this Chart](#upgrade-this-chart)
 * [Generate Self-Signed Certificates](#generate-self-signed-certificates)
-* [Cloud Deep Storage for Minio - see minio](#druid)
+* [Cloud Deep Storage for Minio](#druid)
 
 # Configuration
 This section describes configurable parameters in **values.yaml** there is also ***production-values.yaml*** that represents the minimum recommended configuration for deploying the Portal with analytics (if enabled) and core services in an HA, fault tolerant configuration.
@@ -91,7 +91,7 @@ This section describes configurable parameters in **values.yaml** there is also 
 | `portal.ssoDebug` | SSO Debugging | `false` |
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `false` |
 | `portal.hostnameWhiteList` | Hostname whitelist | `false` |
-| `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. See [DNS Configuration](https://github.com/CAAPIM/portal-helm-charts/wiki/DNS-Configuration) for tenant ID character limitations.  | `apim` |
+| `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
 
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -105,6 +105,8 @@ This section describes configurable parameters in **values.yaml** there is also 
 | `tls.crtChain` | Certificate Chain in PEM format | `` |
 | `tls.key` | Private Key in PEM format, if password protected supply .keyPass | `` |
 | `tls.keyPass` | Private Key Pass | `` |
+
+***To use a signed certificate make sure ```tls.useSignedCertifcates``` is set to true and specify tls.crt (public cert), tls.crtChain (intermediary) and tls.key using --set-file.***
 
 ### Ingress Options
 
@@ -206,7 +208,7 @@ This section describes configurable parameters in **values.yaml** there is also 
 ### Telemetry Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `telemetry.plaEnabled` | For PLA customers: Set to true to turn on telemetry service as per your agreement, otherwise false. **Tip:** For more information on telemetry, see [Licensing and Telemetry](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-4/introduction-ca-api-developer-portal/licensing-and-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png) and [Configure Telemetry](http://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/4-4/install-configure-and-upgrade/install-portal-on-docker-swarm/install-and-configure-api-portal/configure-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png)  | `false` |
+| `telemetry.plaEnabled` | For PLA customers: Set to true to turn on telemetry service as per your agreement, otherwise false. **Tip:** For more information on telemetry, see [Licensing and Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/introduction-layer7-api-developer-portal/licensing-and-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png) and [Configure Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/install-and-configure-api-portal/configure-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png)  | `false` |
 | `telemetry.usageType` | The telemetry service behaviour | `PRODUCTION` |
 | `telemetry.domainName` | Domain name of telemetry service. | `` |
 | `telemetry.siteId` |  Site ID of the telemetry service | `` |
@@ -305,14 +307,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:4.5` |
-| `druid.image.broker`                | Broker image   | `druid:4.5` |
-| `druid.image.coordinator`                | Coordinator  | `druid:4.5` |
-| `druid.image.middlemanager`                | Middlemanager image   | `druid:4.5` 
-| `druid.image.minio`                | Minio image   | `minio:4.5` |
-| `druid.image.historical`                | Historical image   | `druid:4.5` |
-| `druid.image.kafka`                | Kafka image   | `kafka:4.5` |
-| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:4.5` |
+| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:5.0` |
+| `druid.image.broker`                | Broker image   | `druid:5.0` |
+| `druid.image.coordinator`                | Coordinator  | `druid:5.0` |
+| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.0` 
+| `druid.image.minio`                | Minio image   | `minio:5.0` |
+| `druid.image.historical`                | Historical image   | `druid:5.0` |
+| `druid.image.kafka`                | Kafka image   | `kafka:5.0` |
+| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.0` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -371,6 +373,51 @@ This represents minimal configuration of the Chart, this can be disabled in favo
 | `nginx-ingress.controller.publishService.enabled`                | Enable Publish Service   | `true` |
 | `nginx-ingress.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
 
+
+## DNS Configuration
+To access the API Portal, configure the hostname resolution on your corporate DNS server.
+The hostnames must match the values you enter in your **values.yaml**. 
+
+> **IMPORTANT!** If you are migrating from a Docker Swarm deployment, utilize legacy hostnames to ensure continuity of business. For details, see [Migrate from Docker Swarm](../../utils/portal-migration/README.md).
+
+## Resolvable Hostnames
+
+API Portal requires the following hostnames to be resolvable:
+
+| Endpoint | Hostname | Legacy Hostname |
+| -------- | -------- | --------------- |
+| Default tenant homepage | `apim-<kubeNamespace>.<domain>` | `apim.<domain>` | 
+| Ingress SSG | `<kubeNamespace>-ssg.<domain>` | `ssg.<domain>` | 
+| Message broker | `<kubeNamespace>-broker.<domain>` | `broker.<domain>` | 
+| TSSG enrollment | `<kubeNamespace>-enroll.<domain>` | `enroll.<domain>` | 
+| TSSG sync | `<kubeNamespace>-sync.<domain>` | `sync.<domain>` | 
+| API analytics | `<kubeNamespace>-analytics.<domain>` | `analytics.<domain>` |
+
+## Hostname Restrictions
+```global.subdomainPrefix``` value observes the following restrictions:
+* Lowercase characters and numbers supported
+* Hyphens allowed
+* No other special characters
+
+## Example
+Based on the following default values:
+```
+global:
+  subdomainPrefix: dev-portal
+portal:
+  domain: example.com
+```
+
+Resulting hostnames:
+
+| Endpoint | Hostname | Legacy Hostname |
+| -------- | -------- | --------------- |
+| Default tenant homepage | `apim-dev-portal.example.com` | `apim.example.com` | 
+| Ingress SSG | `dev-portal-ssg.example.com` | `ssg.example.com` | 
+| Message broker | `dev-portal-broker.example.com` | `broker.example.com` | 
+| TSSG enrollment | `dev-portal-enroll.example.com` | `enroll.example.com` | 
+| TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` | 
+| API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Disclaimer
 This repository is currently in Beta.
