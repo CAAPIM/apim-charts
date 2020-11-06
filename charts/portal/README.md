@@ -427,7 +427,6 @@ Resulting hostnames:
 RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
 
 1. Remove RabbitMQ Replicas (scale to 0)
-
 ```
 $ kubectl get statefulset rabbitmq - take note of the total replicas, will likely be 1 or 3
 
