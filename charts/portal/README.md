@@ -1,19 +1,19 @@
 # Layer7 API Developer Portal (Beta Release - Development in Progress)
-The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and the API Gateway.
+The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and API Gateway.
 
 ## Introduction
-This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager
+This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
 ## Prerequisites
 
-- Kubernetes 1.16+
-- Helm v3+
+- Kubernetes 1.17+
+- Helm v3.1+
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
 - ***docker secret.yaml*** from here ==> [CA API Developer Portal
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
 
 ### Production
-- A dedicated MySQL 5.6/7 server [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
+- A dedicated MySQL 5.6/7 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
 - An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
@@ -21,7 +21,7 @@ Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommende
 
 # Install the Chart
 When using this Chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
-Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart. For details on what you can change see [configuration](#configuration)
+Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart. For details on what you can change see [configuration](#configuration).
 
 ```
  $ helm repo add layer7 https://caapim.github.io/apim-charts/
@@ -30,12 +30,12 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
 ```
 
 ## Upgrade this Chart
-To upgrade the Gateway deployment
+To upgrade API Potal deployment
 ```
  $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 ## Delete this Chart
-To delete Portal installation
+To delete API Portal installation
 
 ```
  $ helm delete <release name>
