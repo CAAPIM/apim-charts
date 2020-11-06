@@ -51,6 +51,7 @@ To delete Portal installation
 * [Upgrade this Chart](#upgrade-this-chart)
 * [Generate Self-Signed Certificates](#generate-self-signed-certificates)
 * [Cloud Deep Storage for Minio](#druid)
+* [Troubleshooting](#troubleshooting)
 
 # Configuration
 This section describes configurable parameters in **values.yaml** there is also ***production-values.yaml*** that represents the minimum recommended configuration for deploying the Portal with analytics (if enabled) and core services in an HA, fault tolerant configuration.
@@ -423,32 +424,33 @@ Resulting hostnames:
 
 ### RabbitMQ won't start
 
-* The Chart was deleted and re-installed
+#### The Chart was deleted and re-installed
 RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
 
-- Remove RabbitMQ Replicas (scale to 0)
+1. Remove RabbitMQ Replicas (scale to 0)
 
    $ kubectl get statefulset rabbitmq -n <namespace> (take note of the total replicas, will likely be 1 or 3)
+
    $ kubectl scale statefulset rabbitmq --replicas=0 -n <namespace>
+
    $ kubectl get pvc -n <namespace> | grep rabbitmq
 
-- For each data-rabbitmq-0|1|2 is returned
+2. For each data-rabbitmq-0|1|2 is returned
    
    $ kubectl kubectl delete pvc data-rabbitmq-0|1|2 -n <namespace>
 
-- Add RabbitMQ Replicas (scale to 1|3)
+3. Add RabbitMQ Replicas (scale to 1|3)
    
    $ kubectl scale statefulset rabbitmq --replicas=1|3 -n <namespace>
 
-* Your Kubernetes nodes failed or RabbitMQ crashed.
+#### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ nodes are stopped or removed out of order, there is a chance that it won't be restored correctly.
 
-- Set force boot to true
+1. Set force boot to true
 
 In your <my-values.yaml> file, set rabbitmq.```clustering.forceBoot:true```
 
-
-- Upgrade the Chart
+2. Upgrade the Chart
 
    $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 
