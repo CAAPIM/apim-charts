@@ -121,7 +121,7 @@ function retrieve_minio_bucket() {
     mkdir $PWD/$folder
     echo "Retrieving analytics data..."
     minio_container=$(docker ps -q --filter "name=portal_minio")
-    docker cp $minio_container:/opt/data/api-metrics $PWD/$folder/bucket
+    docker cp $minio_container:/opt/data/api-metrics $PWD/$folder/
 }
 
 function zip_migration() {
