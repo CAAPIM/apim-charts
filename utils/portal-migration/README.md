@@ -59,9 +59,9 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
       portal.domain: <domain> default example.com
       portal.enrollNotificationEmail: <enrollNotificationEmail> default noreply@mail.example.com
       ingress.tenantIds <list of existing tenants> default tenant1
-      portal.papi.port: 9443 default 443
+      portal.otk.port: 9443 default 443
       ```
-  - uncomment and fill namespace in ingress-nginx
+  - uncomment and fill namespace in ingress-nginx (if using your own Ingress Controller, then make sure 9443 is open with SSL Passthrough enabled.)
      ```
      #  tcp:
         # 9443: "<namespace>/dispatcher:9443"
