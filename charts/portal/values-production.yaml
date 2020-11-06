@@ -20,7 +20,7 @@ global:
   subdomainPrefix: dev-portal
 # storageClass: "_"
 # schedulerName:
-
+    
 portal:
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
@@ -88,7 +88,7 @@ ingress:
   type:
     kubernetes: true
     openshift: false
-  # existingSecret:
+  # existingSecret: 
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
@@ -403,7 +403,7 @@ druid:
     create: true
   # name:
   persistence:
-    storage:
+    storage: 
       historical: 50Gi
       minio: 40Gi
       kafka: 10Gi
@@ -417,7 +417,7 @@ druid:
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
-    # access_key:
+    # access_key: 
     # secret_key:
     cloudStorage: false
     bucketName: api-metrics
@@ -704,7 +704,7 @@ ingress-nginx:
   # name:
   rbac:
     create: true
-  controller:
+  controller: 
     publishService:
       enabled: true
     extraArgs:

@@ -76,7 +76,7 @@ minio:
     # memory: 256Mi
 # nodeSelector: {}
 # affinity:
-
+  
 
 zookeeper:
   hostname: zookeeper
@@ -116,14 +116,14 @@ broker:
 # nodeSelector: {}
 # affinity:
 
-coordinator:
+coordinator: 
   hostname: coordinator
   port: 8081
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   resources:
-    requests: {}
+    requests: {}     
     # memory: 512Mi
     limits: {}
     # memory: 512Mi
