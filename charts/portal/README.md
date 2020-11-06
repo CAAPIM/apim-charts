@@ -38,7 +38,7 @@ To upgrade the Gateway deployment
 To delete Portal installation
 
 ```
- $ helm delete <release name> -n <release namespace>
+ $ helm delete <release name>
 ```
 
 *Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion*
@@ -49,7 +49,6 @@ To delete Portal installation
 * [SMTP Settings](#smtp-parameters)
 * [Migrate from Docker Swarm/Previous Helm Chart](../../utils/portal-migration/README.md)
 * [Upgrade this Chart](#upgrade-this-chart)
-* [Generate Self-Signed Certificates](#generate-self-signed-certificates)
 * [Cloud Deep Storage for Minio](#druid)
 * [Troubleshooting](#troubleshooting)
 
@@ -387,12 +386,12 @@ API Portal requires the following hostnames to be resolvable:
 
 | Endpoint | Hostname | Legacy Hostname |
 | -------- | -------- | --------------- |
-| Default tenant homepage | `apim-<kubeNamespace>.<domain>` | `apim.<domain>` | 
-| Ingress SSG | `<kubeNamespace>-ssg.<domain>` | `ssg.<domain>` | 
-| Message broker | `<kubeNamespace>-broker.<domain>` | `broker.<domain>` | 
-| TSSG enrollment | `<kubeNamespace>-enroll.<domain>` | `enroll.<domain>` | 
-| TSSG sync | `<kubeNamespace>-sync.<domain>` | `sync.<domain>` | 
-| API analytics | `<kubeNamespace>-analytics.<domain>` | `analytics.<domain>` |
+| Default tenant homepage | `apim-<subdomainPrefix>.<domain>` | `apim.<domain>` | 
+| Ingress SSG | `<subdomainPrefix>-ssg.<domain>` | `ssg.<domain>` | 
+| Message broker | `<subdomainPrefix>-broker.<domain>` | `broker.<domain>` | 
+| TSSG enrollment | `<subdomainPrefix>-enroll.<domain>` | `enroll.<domain>` | 
+| TSSG sync | `<subdomainPrefix>-sync.<domain>` | `sync.<domain>` | 
+| API analytics | `<subdomainPrefix>-analytics.<domain>` | `analytics.<domain>` |
 
 ## Hostname Restrictions
 ```global.subdomainPrefix``` value observes the following restrictions:
@@ -428,32 +427,34 @@ Resulting hostnames:
 RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
 
 1. Remove RabbitMQ Replicas (scale to 0)
+```
+$ kubectl get statefulset rabbitmq - take note of the total replicas, will likely be 1 or 3
 
-   $ kubectl get statefulset rabbitmq -n <namespace> (take note of the total replicas, will likely be 1 or 3)
+$ kubectl scale statefulset rabbitmq --replicas=0
 
-   $ kubectl scale statefulset rabbitmq --replicas=0 -n <namespace>
-
-   $ kubectl get pvc -n <namespace> | grep rabbitmq
+$ kubectl get pvc | grep rabbitmq
+```
 
 2. For each data-rabbitmq-0|1|2 is returned
-   
-   $ kubectl kubectl delete pvc data-rabbitmq-0|1|2 -n <namespace>
+```
+$ kubectl kubectl delete pvc data-rabbitmq-0|1|2
+```
 
 3. Add RabbitMQ Replicas (scale to 1|3)
-   
-   $ kubectl scale statefulset rabbitmq --replicas=1|3 -n <namespace>
-
+```
+$ kubectl scale statefulset rabbitmq --replicas=1|3
+```
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ nodes are stopped or removed out of order, there is a chance that it won't be restored correctly.
 
 1. Set force boot to true
 
-In your <my-values.yaml> file, set rabbitmq.```clustering.forceBoot:true```
+  - In your <my-values.yaml> file, set ```rabbitmq.clustering.forceBoot:true```
 
 2. Upgrade the Chart
-
-   $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
-
+```
+$ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
+```
 
 ## Disclaimer
 This repository is currently in Beta.
