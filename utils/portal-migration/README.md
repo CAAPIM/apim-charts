@@ -13,9 +13,9 @@ This guide covers migrating certificates and analytics data from Docker Swarm to
 #### High Level
 ![alt text](../../media/high-level-migration-process.png)
 
-***Read Migrate Analytics before proceeding with installation!!***
+***Read [Migrate Analytics](#migrate-analytics) before proceeding with installation!!***
 
-***NOTE:*** tls.job.enabled must be set to false!!
+
 
 1. SSH into your Docker Swarm Portal Node
 ```
@@ -46,7 +46,7 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
 ```
 
 3. Configure Portal Pre-requisites
-   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart.
+   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to false!!
    - Update the following values in this file.
       ```
       global.legacyHostnames: true
@@ -66,7 +66,7 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
      #  tcp:
         # 9443: "<namespace>/dispatcher:9443"
      ```
-   - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../README.md)
+   - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../charts/portal/README.md)
  
 
 ## Migrate from Helm2
@@ -82,7 +82,7 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace> -p /path/to/portal-helm-ch
 ```
 
 2. Prepare your values.yaml file
-   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart.
+   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to false!!
    - Update the following values in this file.
       ```
       global.databaseHost: <host>
@@ -138,13 +138,17 @@ From your docker swarm node run the following and copy to a machine ***that has 
    
    ***this produces analytics.tar.gz***
    ```
-2. Proceed with Portal Installation.
+2. Shutdown portal docker swarm
+
+   ``` $ docker stack rm portal ```
+   
+3. Proceed with Portal Installation.
    ```
    $ helm repo add portal https://caapim.github.io/apim-charts/
    $ helm repo update
-   $ helm install <release-name> portal/portal --set-file "portal.license.value=/path/to/license.xml,portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml
+   $ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml
    ```
-3. Update Portal DNS records to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
+4. Update Portal DNS records to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
    - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
 
 #### Helm 2.x
@@ -257,8 +261,8 @@ ingress-nginx.serviceAccount.name: <true|false>
 ingress-nginx.rbac.create: <true|false>
 ```
 
-## Steps to update enrolled Gateways (TODO)
-1. Restart Portal Deployer if using the on-demand deployment type.
+## Steps to update enrolled Gateways
+1. Restart Portal Deployer.
    - Launch Policy Manager and connect to your enrolled API Gateway
    - Tasks ==> Global Settings ==> Manage Cluster-Wide Properties 
    - toggle portal.deployer.enabled ==> set to false, then to true
@@ -268,3 +272,13 @@ ingress-nginx.rbac.create: <true|false>
 This section will be updated as we encounter problems related to installing/migrating the Portal to this form factor
 - These guides do not currently include migrating MySQL/PostgresSQL databases
 - Please raise a support ticket with Broadcom if you encounter problems, raising a bug/feature request against this repository in parallel should result in faster turnaround.
+
+### Unable to initialize new alias
+``` mc: <ERROR> Unable to initialize new alias from the provided credentials. Get "http://<ipaddress>:9000/probe-bucket-sign-ira11pnec5j1/?location=": dial tcp <ipaddress>:9000: connect: no route to host. ```
+
+If you encounter above error while doing analytics data import (mc alias set portal)
+1. Verify that the port forward is still running.
+2. Verify that the minio user and password are valid.
+3. Verify that port 9000 is allowed by the firewall rules (firewalld)
+
+
