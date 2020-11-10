@@ -17,6 +17,11 @@ spec:
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       restartPolicy: OnFailure
+      securityContext:
+        fsGroup: 2000
+        runAsNonRoot: true
+        runAsGroup: 3000
+        runAsUser: 1000
       containers:
       - name: {{ .Release.Name }}-tls-manager
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
@@ -78,6 +83,8 @@ spec:
         args:
           - /scripts/tls_manager.sh
             /usr/bin/tail -f /dev/null;
+        securityContext:
+          allowPrivilegeEscalation: false
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
