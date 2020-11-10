@@ -53,7 +53,7 @@ To delete API Portal installation
 * [Troubleshooting](#troubleshooting)
 
 # Configuration
-This section describes configurable parameters in **values.yaml** there is also ***production-values.yaml*** that represents the minimum recommended configuration for deploying the Portal with analytics (if enabled) and core services in an HA, fault tolerant configuration.
+This section describes configurable parameters in **values.yaml**, there is also ***production-values.yaml*** that represents the minimum recommended configuration for deploying the Portal with analytics (if enabled) and core services in an HA, fault tolerant configuration.
 
 ### Global Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -61,11 +61,10 @@ This section describes configurable parameters in **values.yaml** there is also 
 | `global.portalRepository` | Image Repository | `caapim/` |
 | `global.pullSecret` | Image Pull Secret name | `broadcom-apim` |
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
-| `global.databaseType` | Database type (mysql/postgres) | `mysql` |
 | `global.databaseSecret` | Database secret name | `database-secret` |
 | `global.databaseUsername` | Database username | `admin` |
 | `global.databasePassword` | Database password | `7layer` |
-| `global.databaseHost` | Database Host | `mysql` |
+| `global.databaseHost` | Database Host | `` |
 | `global.databasePort` | Database Port | `3306` |
 | `global.legacyHostnames` | Legacy Hostnames | `false` |
 | `global.legacyDatabaseNames` | Legacy Database names | `false` |
@@ -89,8 +88,8 @@ This section describes configurable parameters in **values.yaml** there is also 
 | `portal.papi.password` | PAPI password - auto-generated | `` |
 | `portal.otk.port` | OTK Port, update this to 9443 if migrating from Docker Swarm | `443` |
 | `portal.ssoDebug` | SSO Debugging | `false` |
-| `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `false` |
-| `portal.hostnameWhiteList` | Hostname whitelist | `false` |
+| `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
+| `portal.hostnameWhiteList` | Hostname whitelist | `` |
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
 
 ### Certificates
@@ -105,6 +104,7 @@ This section describes configurable parameters in **values.yaml** there is also 
 | `tls.crtChain` | Certificate Chain in PEM format | `` |
 | `tls.key` | Private Key in PEM format, if password protected supply .keyPass | `` |
 | `tls.keyPass` | Private Key Pass | `` |
+| `tls.expiryInDays` | Certificate expiry in days | '1095' |
 
 ***To use a signed certificate make sure ```tls.useSignedCertifcates``` is set to true and specify tls.crt (public cert), tls.crtChain (intermediary) and tls.key using --set-file.***
 
@@ -194,22 +194,22 @@ This section describes configurable parameters in **values.yaml** there is also 
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `serviceAccount.create` | Enable creation of ServiceAccount for Portal Deployments | `true` |
 | `serviceAccount.name` | Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `rbac.create`| Create & use RBAC resources |`false`|
-| `druid.serviceAccount.create`| Enable creation of ServiceAccount for Druid |`false`|
+| `rbac.create`| Create & use RBAC resources |`true`|
+| `druid.serviceAccount.create`| Enable creation of ServiceAccount for Druid |`true`|
 | `druid.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`false`|
+| `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`true`|
 | `rabbitmq.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `rabbitmq.rbac.create`| Create & use RBAC resources |`false`|
-| `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`false`|
-| `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`false`|
+| `rabbitmq.rbac.create`| Create & use RBAC resources |`true`|
+| `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`true`|
+| `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
 | `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `ingress-nginx.rbac.create`| Create & use RBAC resources |`false`|
+| `ingress-nginx.rbac.create`| Create & use RBAC resources |`true`|
 
 ### Telemetry Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `telemetry.plaEnabled` | For PLA customers: Set to true to turn on telemetry service as per your agreement, otherwise false. **Tip:** For more information on telemetry, see [Licensing and Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/introduction-layer7-api-developer-portal/licensing-and-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png) and [Configure Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/install-and-configure-api-portal/configure-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png)  | `false` |
-| `telemetry.usageType` | The telemetry service behaviour | `PRODUCTION` |
+| `telemetry.plaEnabled` | (For PLA customers) Set to **true** to turn on telemetry service as per your agreement, otherwise **false**. **Tip:** For more information on telemetry, see [Licensing and Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/introduction-layer7-api-developer-portal/licensing-and-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png) and [Configure Telemetry](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/install-and-configure-api-portal/configure-telemetry.html) ![image](https://img.icons8.com/small/1x/external-link.png)  | `false` |
+| `telemetry.usageType` | The telemetry service behavior | `PRODUCTION` |
 | `telemetry.domainName` | Domain name of telemetry service. | `` |
 | `telemetry.siteId` |  Site ID of the telemetry service | `` |
 | `telemetry.chargebackId` | Chargeback ID of the telemetry service | `_` |
@@ -221,18 +221,19 @@ This section describes configurable parameters in **values.yaml** there is also 
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:<latest>` |
-| `image.pssg` | PSSG image | `pssg:<latest>` |
-| `image.apim` | APIM ingress image | `ingress:<latest>` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:<latest>` |
-| `image.data` | portal-data image | `portal-data:<latest>` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:<latest>` |
-| `image.solr` | Solr image | `solr:<latest>` |
-| `image.analytics` | Analytics image | `analytics-server:<latest>` |
-| `image.authenticator` | Authenticator image | `authenticator:<latest>` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:<latest>` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:<latest>` |
-| `image.upgradeVerify` | Upgrade verification image | `broadcomapim/upgrade-verify:<latest>` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.0` |
+| `image.pssg` | PSSG image | `pssg:5.0` |
+| `image.apim` | APIM ingress image | `ingress:5.0` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0` |
+| `image.data` | portal-data image | `portal-data:5.0` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0` |
+| `image.solr` | Solr image | `solr:5.0` |
+| `image.analytics` | Analytics image | `analytics-server:5.0` |
+| `image.authenticator` | Authenticator image | `authenticator:5.0` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.0` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.0` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.0` |
 
 ## Subcharts
 For Production, please use an external MySQL Server.
@@ -248,13 +249,13 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
 | `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
 | `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
-| `druid.minio.auth.replicaCount` | Number of minio nodes   | `1` |
-| `druid.minio.auth.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
+| `druid.minio.replicaCount` | Number of minio nodes   | `1` |
+| `druid.minio.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
 | `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
 | `druid.minio.auth.access_key` | Minio access key   | `auto-generated` |
 | `druid.minio.auth.secret_key` | Minio secret key   | `auto-generated` |
 | `druid.minio.cloudStorage` | Enable Cloud Storage for Minio. GCP, AWS, Azure   | `false` |
-| `druid.minio.bucketName` | Minio bucket name - make sure this is updated if using cloud storage. Minio will attempt to the create the bucket if it doesn't exist, it is recommended that you create the bucket in the relevant provider prior to installing this Chart.   | `layer7-analytics` |
+| `druid.minio.bucketName` | Minio bucket name - make sure this is updated if using cloud storage. Minio will attempt to the create the bucket if it doesn't exist, it is recommended that you create the bucket in the relevant provider prior to installing this Chart.   | `api-metrics` |
 | `druid.minio.s3gateway.enabled` | Use minio as Amazon S3 (Simple Storage Service) gateway - https://docs.minio.io/docs/minio-gateway-for-s3   | `false` |
 | `druid.minio.s3gateway.serviceEndpoint` | AWS S3 service endpoint if required   | `nil` |
 | `druid.minio.s3gateway.accessKey` | AWS Access Key that has S3 access   | `nil` |
@@ -323,6 +324,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.0` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
@@ -364,7 +366,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 ## Nginx-Ingress
 The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/helm/charts/tree/master/stable/nginx-ingress
 
-This represents minimal configuration of the Chart, this can be disabled in favour of your own ingress controller in the ingress settings.
+This represents minimal configuration of the Chart, this can be disabled in favor of your own ingress controller in the ingress settings.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -395,9 +397,9 @@ API Portal requires the following hostnames to be resolvable:
 
 ## Hostname Restrictions
 ```global.subdomainPrefix``` value observes the following restrictions:
-* Lowercase characters and numbers supported
-* Hyphens allowed
-* No other special characters
+* Lowercase characters and numbers are supported
+* Hyphens are allowed
+* No other special characters are supported
 
 ## Example
 Based on the following default values:
