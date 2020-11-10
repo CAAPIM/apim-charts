@@ -45,8 +45,8 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
 ***your certificates should now be in your kubernetes cluster***
 ```
 
-3. Configure Portal Pre-requisites
-   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to false!!
+3. Configure Portal Prerequisites
+   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of **values.yaml** that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to **false**!!
    - Update the following values in this file.
       ```
       global.legacyHostnames: true
@@ -70,7 +70,7 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
  
 
 ## Migrate from Helm2
-This guide covers migrating certificates the old Helm2 to the new Helm3 Chart. Persistent volume naming conventions haven't changed so the transition is relatively simple.
+This guide covers migrating certificates from the old Helm2 to the new Helm3 Chart. Persistent volume naming conventions have not changed so the transition is relatively simple.
 
 1. Load Certificates
 ```
@@ -81,8 +81,8 @@ $ chmod +x migrate-certificates.sh
 $ ./migrate-certificates.sh -n <kubernetes-namespace> -p /path/to/portal-helm-charts/files -k <certpass>
 ```
 
-2. Prepare your values.yaml file
-   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to false!!
+2. Prepare your **values.yaml** file
+   - Copy this [file](../../charts/portal/values-production.yaml) to your machine as <my-values.yaml> - contains a production version of values.yaml that will be applied to your portal when you install the Chart. ***NOTE:*** tls.job.enabled must be set to **false**!!
    - Update the following values in this file.
       ```
       global.databaseHost: <host>
@@ -95,19 +95,19 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace> -p /path/to/portal-helm-ch
       ingress.tenantIds <list of existing tenants> default tenant1
       ```
    - If you already have an ingress controller, then make sure that ingress.create is set to false.
-   - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../README.md)
+   - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../README.md).
 3. Migrate analytics - see [Helm 2.x](#helm-2x)
-   - if you'd like to skip migrating analytics update the following in <my-values.yaml>
+   - If you need to skip migrating analytics, update the following in <my-values.yaml>
       ```druid.minio.replicaCount: 1```
-4. Remove the old Portal Helm Chart (using Helm2) ***Analytics volumes will be retained automatically***
+4. Remove the old Portal Helm Chart (using Helm2) (***Analytics volumes will be retained automatically***)
 
    ```$ helm delete --purge <portal-release-name>```
 
-5. If you have exported your analytics and wish to run minio in distributed mode
+5. If you have exported your analytics and need to run minio in distributed mode
 
    ```$ kubectl delete pvc minio-vol-claim-minio-0 -n <namespace>``` ***WARNING: make sure $PWD/analytics is not empty!!***
 
-  - If you are migrating from Helm 2.x(non-HA deployment) to Helm 3.x(HA deployment i.e running Kafka, Zookepeer and other services in distributed mode), please do the following
+  - If you are migrating from Helm 2.x (non-HA deployment) to Helm 3.x (HA deployment i.e running Kafka, Zookepeer and other services in distributed mode), please do the following
 ```
 $ kubectl delete pvc kafka-vol-claim-kafka-0 -n <namespace>
 $ kubectl delete pvc zookeeper-vol-claim-zookeeper-0 -n <namespace>
@@ -121,16 +121,15 @@ $ helm repo update
 $ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml> -n <namespace>
 ```
 
-7. Update Portal DNS records to point at the Kubernetes Portal
-   - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
+7. [Update Portal DNS records](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html) to point at the Kubernetes Portal
 
 ## Migrate Analytics
-The Portal makes use of Minio which acts as a S3 filestore providing a medium to different Cloud Storage solutions. This migration extracts the deep storage data from Minio. Analytics are written to deep storage on an hourly interval. ***NOTE:*** the current hour is not backed up.
+API Portal makes use of Minio, which acts as a S3 filestore providing a medium to different Cloud Storage solutions. This migration extracts the deep storage data from Minio. Analytics are written to deep storage on an hourly interval. ***NOTE:*** the current hour is not backed up.
 
 ### Export Data
 
 #### Docker Swarm
-From your docker swarm node run the following and copy to a machine ***that has access via kubectl*** to the Kubernetes cluster you intend to deploy the Portal on
+From your docker swarm node, run the following and copy to a machine ***that has access via kubectl*** to the Kubernetes cluster you intend to deploy the Portal on
 
 1. Retrieve Analytics Data from Minio
    ```
@@ -142,18 +141,17 @@ From your docker swarm node run the following and copy to a machine ***that has 
 
    ``` $ docker stack rm portal ```
    
-3. Proceed with Portal Installation.
+3. Proceed with Portal Installation
    ```
    $ helm repo add portal https://caapim.github.io/apim-charts/
    $ helm repo update
    $ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml
    ```
-4. Update Portal DNS records to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
-   - [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html)
+4. [Update Portal DNS records](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html) to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
 
 #### Helm 2.x
 ***Note:*** the port-forward command may require you to open port 9000 on your kubernetes cluster.
-1. Get your machines local IP Address
+1. Get your machines local IP address
    ```export HOST_IP=<ip-address-of-your-machine>```
       ##### On a Macbook 
       ```$ ipconfig getifaddr en0```
@@ -212,10 +210,10 @@ $ mc mirror /opt/api-metrics portal/$BUCKET_NAME
 4. [Restart Analytics Services](#restart-analytics-services)
 
 ### Using Cloud Storage
-We've exposed this Minio functionality in Kubernetes, if you'd like to use Amazon S3, Google GCS or Azure Blob Storage then simply
-1. Go to your chosen cloud storage provider
-2. Create a storage bucket
-3. In your <my-values.yaml> file
+We have exposed this Minio functionality in Kubernetes, if you would like to use Amazon S3, Google GCS, or Azure Blob Storage then simply do the following tasks
+1. Go to your chosen cloud storage provider.
+2. Create a storage bucket.
+3. In your <my-values.yaml> file:
    - druid.minio.cloudStorage: true
    - druid.minio.bucketName: <name-of-the-bucket-you-created-on-the-storage-provider>
    - druid.minio.<gateway>.enabled
@@ -224,7 +222,7 @@ We've exposed this Minio functionality in Kubernetes, if you'd like to use Amazo
    - Google GCS - this uses an authentication file (json) and project name, for the json file use --set-file "druid.minio.gcsgateway.gcsKeyJson=/path/to/auth.json" or paste this in your <my-values>.yaml file in the correct format.
    - Amazon S3 - this uses access/secret key of a user that has S3 permissions.
    - For more details see ==> https://docs.min.io/docs/
-4. Update Druid Metadata
+4. Update Druid Metadata:
 ```
 $ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/utils/portal-migration/druid-meta-update/druid-meta-update.sh > druid-meta-update.sh
 
@@ -232,10 +230,10 @@ $ chmod +x druid-meta-update.sh
 
 $ ./druid-meta-update.sh -u <database-username> -p <database-password> -h <database-host> -d <database-name> -p <database-port> -b <bucket-name>
 ```
-5. [Restart Analytics Services](#restart-analytics-services)
+5. [Restart Analytics Services](#restart-analytics-services).
 
 ### Restart Analytics Services
-The Middle Manager and Coordinator services need to restarted.
+The Middle Manager and Coordinator services need to be restarted.
 ```
 $ kubectl rollout restart statefulset coordinator -n <namespace>
 
@@ -244,7 +242,7 @@ $ kubectl rollout restart statefulset middlemanager -n <namespace>
 
 
 ## RBAC Settings
-If you have RBAC enabled in your Kubernetes Cluster serviceAccounts can be set in <my-values.yaml>
+If you have RBAC enabled in your Kubernetes Cluster, serviceAccounts can be set in <my-values.yaml>
 
 ``` 
 serviceAccount.create: <true|false>
@@ -261,16 +259,16 @@ ingress-nginx.serviceAccount.name: <true|false>
 ingress-nginx.rbac.create: <true|false>
 ```
 
-## Steps to update enrolled Gateways
+## Steps to Update Enrolled Gateways
 1. Restart Portal Deployer.
    - Launch Policy Manager and connect to your enrolled API Gateway
    - Tasks ==> Global Settings ==> Manage Cluster-Wide Properties 
-   - toggle portal.deployer.enabled ==> set to false, then to true
-2. Confirm you are able to deploy APIs to your Gateway as expected.
+   - toggle portal.deployer.enabled ==> set to **false**, then to **true**
+2. Confirm that you are able to deploy APIs to your Gateway as expected.
 
 ## Troubleshooting
 This section will be updated as we encounter problems related to installing/migrating the Portal to this form factor
-- These guides do not currently include migrating MySQL/PostgresSQL databases
+- These guides do not currently include migrating MySQL/PostgresSQL databases.
 - Please raise a support ticket with Broadcom if you encounter problems, raising a bug/feature request against this repository in parallel should result in faster turnaround.
 
 ### Unable to initialize new alias
