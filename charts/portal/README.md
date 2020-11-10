@@ -189,7 +189,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.affinity ` | Affinity for pod assignment   | `{} evaluated as a template` |
 
 
-### RBAC Parameters (this does not apply to sub charts)
+### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `serviceAccount.create` | Enable creation of ServiceAccount for Portal Deployments | `true` |
