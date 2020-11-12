@@ -20,6 +20,8 @@ data:
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
 {{ end }}
   DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   DRUID_DATABASE_NAME: {{ include "druid-db-name" . | quote }}
   runtime.properties: |-
     druid.service=druid/coordinator

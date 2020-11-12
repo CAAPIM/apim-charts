@@ -22,7 +22,7 @@ global:
 # schedulerName:
 
 portal:
-  domain: example.com
+  domain: app.rancher-next.lvn.broadcom.net
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
@@ -50,7 +50,7 @@ portal:
   registryCredentials:
   ssoDebug: false
   hostnameWhitelist:
-  defaultTenantId: apim
+  defaultTenantId: apimmk2
 
 tls:
 # Leave this blank to be auto-generated
