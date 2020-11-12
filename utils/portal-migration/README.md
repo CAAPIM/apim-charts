@@ -278,5 +278,3 @@ If you encounter above error while doing analytics data import (mc alias set por
 1. Verify that the port forward is still running.
 2. Verify that the minio user and password are valid.
 3. Verify that port 9000 is allowed by the firewall rules (firewalld)
-
-
