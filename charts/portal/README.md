@@ -66,8 +66,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.databasePassword` | Database password | `7layer` |
 | `global.databaseHost` | Database Host | `` |
 | `global.databasePort` | Database Port | `3306` |
-| `global.databaseUseSSL` | use SSL when communicating with the Database | true |
-| `global.databaseRequireSSL` | require Database support of SSL connection if databaseUseSSL=true | false |
+| `global.databaseUseSSL` | Use SSL when communicating with the Database | `true` |
+| `global.databaseRequireSSL` | Require Database support of SSL connection if databaseUseSSL=true | `false` |
 | `global.legacyHostnames` | Legacy Hostnames | `false` |
 | `global.legacyDatabaseNames` | Legacy Database names | `false` |
 | `global.subdomainPrefix` | Subdomain Prefix | `dev-portal` |
