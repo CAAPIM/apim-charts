@@ -11,6 +11,8 @@ global:
   databaseType: mysql
   databaseHost: mysql
   databasePort: 3306
+  databaseUseSSL: true
+  databaseRequireSSL: false
   databaseUsername: admin
   databaseSecret:
   subdomainPrefix: dev-portal
