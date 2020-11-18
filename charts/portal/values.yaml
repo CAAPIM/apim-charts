@@ -13,6 +13,8 @@ global:
 # databasePassword: 7layer
   databaseHost: mysql
   databasePort: 3306
+  databaseUseSSL: true
+  databaseRequireSSL: false
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal

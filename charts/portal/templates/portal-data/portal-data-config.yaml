@@ -21,6 +21,8 @@ data:
   DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   DATABASE_PORT: {{ include "database-port" . | quote }}
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   FILE_REPOSITORY_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
   # TODO: Find out why this is hardcoded, can it be ommitted?? 
