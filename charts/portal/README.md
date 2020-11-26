@@ -461,6 +461,6 @@ $ helm upgrade <release-name> --set-file <values-from-install> --set <values-fro
 ```
 
 ## License
-Copyright (c) 2019 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2020 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
