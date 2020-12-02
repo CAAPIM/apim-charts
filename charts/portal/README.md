@@ -1,4 +1,4 @@
-# Layer7 API Developer Portal (Beta Release - Development in Progress)
+# Layer7 API Developer Portal
 The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and API Gateway.
 
 ## Introduction
