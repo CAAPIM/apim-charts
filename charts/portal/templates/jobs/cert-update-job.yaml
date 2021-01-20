@@ -19,7 +19,8 @@ spec:
       restartPolicy: Never
       containers:
       - name: {{ .Release.Name }}-tls-manager
-        image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+        image: "layer7api/tls-automator:5.0"
+        #image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
         imagePullPolicy: Always
         env:
          - name: P12_INTERNAL_PASS

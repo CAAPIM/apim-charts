@@ -175,6 +175,8 @@ apim:
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  otkDb:
+    name: otk_db
   strategy:
     type: RollingUpdate
     rollingUpdate:

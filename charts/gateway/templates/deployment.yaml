@@ -20,6 +20,7 @@ spec:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
     spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
 {{ if .Values.image.secretName }}
       imagePullSecrets:
         - name: {{ .Values.image.secretName | quote }}
@@ -27,7 +28,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
-          imagePullPolicy: {{ .Values.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.installSolutionKits.enabled}}
           lifecycle:
             postStart:
