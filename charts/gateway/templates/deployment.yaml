@@ -5,7 +5,6 @@ metadata:
   labels:
     app: {{ template "gateway.name" . }}
     chart: {{ template "gateway.chart" . }}
-    designation: {{ .Values.designation }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:

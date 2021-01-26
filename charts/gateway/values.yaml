@@ -18,7 +18,6 @@ image:
     password:
     email:
 
-designation: otk
 # Number of Edge Gateways to deploy
 replicas: 1
 # Update strategy
