@@ -89,7 +89,7 @@ config:
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
   cwp:
-    enabled: true
+    enabled: false
     properties:
       - name: io.httpsHostAllowWildcard
         value: true
@@ -102,18 +102,7 @@ config:
           com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-      - name: seanboc.has.completed.training
-        value: true
-      - name: concall.globalMaxConcurrency
-        value: 128
-      - name: christian.oberle
-        value: true
-  policy:
-    enabled: false
-    managed: false
-    bundles:
-      configuration: |
-
+  
 tls:
   customKey:
     enabled: false
