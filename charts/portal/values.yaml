@@ -223,6 +223,14 @@ dispatcher:
 # nodeSelector: {}
 # affinity: {}
 
+# Additional Environment variables to be added to the Dispatcher Configmap
+  additionalEnv:
+#    key1: value
+
+# Additional Secret variables to be added to the Dispatcher Secret
+  additionalSecret:
+#    key1: value
+
 portalData:
   replicaCount: 1
   image:

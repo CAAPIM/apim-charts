@@ -44,6 +44,24 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 {{- end -}}
 
+{{/*
+ Generate []16bit HEX
+ This creates Gateway ids for bundles  
+ */}}
+ {{- define "gateway.cwp.hex" -}}
+ {{ $hexArr := "" }}
+ {{- range .Values.config.cwp.properties }}
+ {{- $hex := randAlphaNum 16 }}
+ {{- join $hex (printf " %x" $hex) }}
+ {{- end -}}
+ {{- end -}}
+
+{{/*
+ Generate 16bit HEX 
+ #  {{ split " " $hexArr }}
+ #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
+ */}}
+ 
 
 
 {{/*

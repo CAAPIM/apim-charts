@@ -79,6 +79,10 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
               subPath: log-override.properties
 {{ end }}
+{{ if .Values.config.cwp.enabled }}
+            - name: {{ template "gateway.fullname" . }}-cwp-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/cwp
+{{ end }}
 {{ if .Values.bundle.enabled }}
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
@@ -155,6 +159,13 @@ spec:
             items:
             - key: log-override-properties
               path: log-override.properties
+{{ end }}
+{{ if .Values.config.cwp.enabled }}
+        - name: {{ template "gateway.fullname" . }}-cwp-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-cwp-configmap
 {{ end }}
 {{ if .Values.bundle.enabled }}
         - name: {{ template "gateway.fullname" . }}-bundle-configmap

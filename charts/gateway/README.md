@@ -67,6 +67,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
 | `config.log.override`          | Override the standard log configuration | `true`  |
 | `config.log.properties`          | Custom logging properties | `see values.yaml`  |
+| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false`  |
+| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml`  |
 | `tls.customKey.enabled`          | Not currently implemented | `false`  |
 | `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
 | `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
