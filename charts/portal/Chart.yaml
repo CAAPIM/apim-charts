@@ -16,8 +16,8 @@ dependencies:
   condition: portal.analytics.enabled
   repository: "file://../druid"
 - name: mysql
-  version: 1.6.4
-  repository: "https://charts.helm.sh/stable"
+  version: 8.2.5
+  repository: "https://charts.bitnami.com/bitnami"
   condition: global.setupDemoDatabase
 - name: rabbitmq
   version: 7.6.6
