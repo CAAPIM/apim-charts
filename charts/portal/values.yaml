@@ -561,28 +561,27 @@ ingress-nginx:
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
-# MySQL Stable Chart values - https://github.com/helm/charts/tree/master/stable/mysql
+# MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
-  imageTag: "5.7.14"
+  imageTag: "8.0.22-debian-10-r75"
   serviceAccount:
     create: true
-  # name:
+  auth:
+    username: portal
+    existingSecret: database-secret
+  primary:
 # persistence:
   # enabled: true
   # size: 8Gi RW
   # storageClass:
-  existingSecret: database-secret
-  mysqlUser: portal
-  securityContext:
+    podSecurityContext:
     enabled: true
     fsGroup: 999
     runAsUser: 999
-# mysqlPassword: 7layer
-  initializationFiles:
-    elevate-admin.sql: |-
+  initdbScripts:
+    elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
-  configurationFiles:
-    my.cnf: |-
+  configuration: |-
       [client]
       default-character-set=utf8
       [mysql]
