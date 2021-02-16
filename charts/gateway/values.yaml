@@ -10,7 +10,7 @@ image:
   registry: docker.io
   repository: caapim/gateway
   tag: 10.0.00
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # Will create a Registry secret and apply it to the Gateway
   secretName:
   credentials:

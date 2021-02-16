@@ -106,6 +106,7 @@ spec:
 {{ else }}
             exec:
               command:
+              - /bin/bash
               - {{ .Values.livenessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
 {{ end }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -124,6 +125,7 @@ spec:
 {{ else }}
             exec:
               command:
+              - /bin/bash
               - {{ .Values.readinessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
 {{ end }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
