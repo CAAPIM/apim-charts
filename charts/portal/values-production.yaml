@@ -32,6 +32,7 @@ portal:
   # This bootstraps a license to apim and pssg
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
   # i.e portal-license becomes portal-license-1
+  # Note: a license is not required for version 5.0 and above, these fields are ignored.
   license:
     secretName: portal-license
     value:
@@ -74,6 +75,15 @@ tls:
   internalSecretName: portal-internal-secret
   externalSecretName: portal-external-secret
   useSignedCertificates: false
+# crt, crtChain and key expect files, use --set-file or add them here
+# in pem format
+# crt: |+
+#   -----BEGIN CERTIFICATE-----
+#   MIIGwTCCBamgAwIBAgIMRue5sdNe8npAkHF6MA0GCSqGSIb3DQEBCwUAMEwxCzAJ
+#   BgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSIwIAYDVQQDExlB
+#   bHBoYVNTTCBDQSAtIFNIQTI1NiAtIEcyMB4XDTIwMTEwNjEwMzg1NloXDTIxMTIw
+#   RqJAZRd0jqW6yaOtQOyrMZ4XkqhZsTJSyWIN6xvoRmI47qm8dZXBLp0pD+ykD0do
+#   ..
   crt:
   crtChain:
   key:
@@ -671,6 +681,9 @@ rabbitmq:
   extraContainerPorts:
   - name: mqtt
     containerPort: 1883
+  # podSecurityContext:
+  #   fsGroup: 1025
+  #   runAsUser: 1025
   auth:
     username: user
     # creates a secret for RabbitMQ - this is a custom field
@@ -727,6 +740,10 @@ mysql:
   # enabled: true
   # size: 8Gi RW
   # storageClass:
+# securityContext:
+#   enabled: true
+#   fsGroup: 999
+#   runAsUser: 999
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;

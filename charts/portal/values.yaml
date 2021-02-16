@@ -32,6 +32,7 @@ portal:
   # This bootstraps a license to apim and pssg
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
   # i.e portal-license becomes portal-license-1
+  # Note: a license is not required for version 5.0 and above, these fields are ignored.
   license:
     secretName: portal-license
     value:
@@ -74,6 +75,15 @@ tls:
   internalSecretName: portal-internal-secret
   externalSecretName: portal-external-secret
   useSignedCertificates: false
+# crt, crtChain and key expect files, use --set-file or add them here
+# in pem format
+# crt: |+
+#   -----BEGIN CERTIFICATE-----
+#   MIIGwTCCBamgAwIBAgIMRue5sdNe8npAkHF6MA0GCSqGSIb3DQEBCwUAMEwxCzAJ
+#   BgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSIwIAYDVQQDExlB
+#   bHBoYVNTTCBDQSAtIFNIQTI1NiAtIEcyMB4XDTIwMTEwNjEwMzg1NloXDTIxMTIw
+#   RqJAZRd0jqW6yaOtQOyrMZ4XkqhZsTJSyWIN6xvoRmI47qm8dZXBLp0pD+ykD0do
+#   ..
   crt:
   crtChain:
   key:
@@ -102,7 +112,7 @@ ingress:
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
     - tenant1
-#    - tenant2
+#   - tenant2
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
 
@@ -344,8 +354,8 @@ druid:
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
-    #  access_key: minio
-    #  secret_key: minio1234
+    # access_key: 
+    # secret_key:
     cloudStorage: false
     bucketName: api-metrics
 
@@ -517,6 +527,9 @@ rabbitmq:
   extraContainerPorts:
   - name: mqtt
     containerPort: 1883
+  # podSecurityContext:
+  #   fsGroup: 1025
+  #   runAsUser: 1025
   auth:
     username: user
     # creates a secret for RabbitMQ - this is a custom field
@@ -534,10 +547,10 @@ rabbitmq:
     management.load_definitions = /app/load_definition.json
     mqtt.exchange = portal-external
   resources:
-    requests: {}
+    limits: {}
     # cpu: 1000m
     # memory: 2Gi
-    limits: {}
+    requests: {}
     # cpu: 1000m
     # memory: 2Gi
 
@@ -574,6 +587,10 @@ mysql:
   # enabled: true
   # size: 8Gi RW
   # storageClass:
+# securityContext:
+#   enabled: true
+#   fsGroup: 999
+#   runAsUser: 999
     podSecurityContext:
     enabled: true
     fsGroup: 999
