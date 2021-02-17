@@ -732,16 +732,9 @@ ingress-nginx:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   imageTag: "8.0.22-debian-10-r75"
-  serviceAccount:
-    create: true
   auth:
     username: portal
     existingSecret: database-secret
-  primary:
-# persistence:
-  # enabled: true
-  # size: 8Gi RW
-  # storageClass:
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
