@@ -175,6 +175,8 @@ apim:
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  otkDb:
+    name: otk_db
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -254,6 +256,14 @@ dispatcher:
 #           values:
 #           - dispatcher
 #       topologyKey: "kubernetes.io/hostname"
+
+# Additional Environment variables to be added to the Dispatcher Configmap
+  additionalEnv:
+#    key1: value
+
+# Additional Secret variables to be added to the Dispatcher Secret
+  additionalSecret:
+#    key1: value
 
 portalData:
   replicaCount: 2

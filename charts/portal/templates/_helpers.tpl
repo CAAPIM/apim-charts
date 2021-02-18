@@ -142,7 +142,7 @@ Get "otk" database name
         {{ if empty $f }}
             {{- fail "Please define subdomainPrefix in values.yaml" }}
         {{- else }}
-            {{- printf "%s_%s" $f "otk_db" | replace "-" "_" -}}
+            {{- printf "%s_%s" $f .Values.apim.otkDb.name | replace "-" "_" -}}
         {{- end }}
     {{- end }}
 {{- end -}}
@@ -241,8 +241,10 @@ Generate Ingress SSG endpoint based on configurations
 {{- define "tssg-public-host" -}}
     {{- if .Values.global.legacyHostnames }}
         {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "ssg" .Values.portal.domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "apim-ssg-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+         {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
     {{- end }}
 {{- end -}}
 
@@ -252,8 +254,10 @@ Generate Rabbit MQ endpoint based on configurations
 {{- define "broker-host" -}}
     {{- if .Values.global.legacyHostnames }}
         {{- printf "broker.%s" .Values.portal.domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "broker-apim-ssg-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-broker.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+         {{- printf "%s-broker.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
     {{- end }}
 {{- end -}}
 
@@ -264,7 +268,11 @@ Generate PSSG enrolment endpoint based on configurations
     {{- if .Values.global.legacyHostnames }}
         {{- printf "enroll.%s" .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-enroll.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- if .Values.global.saas }}
+      {{- printf "enroll-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+      {{- printf "%s-enroll.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}        
+    {{- end }}
     {{- end }}
 {{- end -}}
 
@@ -275,7 +283,11 @@ Generate PSSG sync endpoint based on configurations
     {{- if .Values.global.legacyHostnames }}
         {{- printf "sync.%s" .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-sync.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- if .Values.global.saas }}
+         {{- printf "sync-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-sync.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
     {{- end }}
 {{- end -}}
 
@@ -286,7 +298,11 @@ Generate PSSG SSO endpoint based on configurations
     {{- if .Values.global.legacyHostnames }}
         {{- printf "sso.%s" .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-sso.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- if .Values.global.saas }}
+         {{- printf "sso-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-sso.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
     {{- end }}
 {{- end -}}
 
@@ -297,7 +313,11 @@ Generate analytics endpoint based on configurations
     {{- if .Values.global.legacyHostnames }}
         {{- printf "analytics.%s" .Values.portal.domain -}}
     {{- else }}
-        {{- printf "%s-analytics.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- if .Values.global.saas }}
+         {{- printf "analytics-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-analytics.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
     {{- end }}
 {{- end -}}
 
