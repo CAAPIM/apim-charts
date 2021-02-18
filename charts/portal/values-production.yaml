@@ -387,19 +387,19 @@ tenantProvisioner:
 #       topologyKey: "kubernetes.io/hostname"
 
 image:
-  dispatcher: dispatcher:5.0
-  pssg: pssg:5.0
-  apim: ingress:5.0
-  enterprise: portal-enterprise:5.0
-  data: portal-data:5.0
-  tps: tenant-provisioning-service:5.0
-  solr: solr:5.0
-  analytics: analytics-server:5.0
-  authenticator: authenticator:5.0
-  dbUpgrade: db-upgrade-portal:5.0
-  rbacUpgrade: db-upgrade-rbac:5.0
+  dispatcher: dispatcher:5.0.cr1
+  pssg: pssg:5.0.cr1
+  apim: ingress:5.0.cr1
+  enterprise: portal-enterprise:5.0.cr1
+  data: portal-data:5.0.cr1
+  tps: tenant-provisioning-service:5.0.cr1
+  solr: solr:5.0.cr1
+  analytics: analytics-server:5.0.cr1
+  authenticator: authenticator:5.0.cr1
+  dbUpgrade: db-upgrade-portal:5.0.cr1
+  rbacUpgrade: db-upgrade-rbac:5.0.cr1
   upgradeVerify: upgrade-verify:5.0
-  tlsManager: tls-automator:5.0
+  tlsManager: tls-automator:unstable
 
 ##
 ## Subchart Configuration
@@ -624,15 +624,15 @@ druid:
   #                 - middlemanager
   #         topologyKey: kubernetes.io/hostname
 
-  # image:
-  #   zookeeper: zookeeper:5.0
-  #   broker: druid:5.0
-  #   coordinator: druid:5.0
-  #   middlemanager: druid:5.0
-  #   minio: minio:5.0
-  #   historical: druid:5.0
-  #   kafka: kafka:5.0
-  #   ingestion: ingestion-server:5.0
+  image:
+    zookeeper: zookeeper:5.0.cr1
+    broker: druid:5.0.cr1
+    coordinator: druid:5.0.cr1
+    middlemanager: druid:5.0.cr1
+    minio: minio:5.0.cr1
+    historical: druid:5.0.cr1
+    kafka: kafka:5.0.cr1
+    ingestion: ingestion-server:5.0.cr1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -738,16 +738,33 @@ mysql:
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
-  configuration: |-
+  primary:
+    configuration: |-
       [client]
-      default-character-set=utf8
-      [mysql]
-      default-character-set=utf8
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      collation-server = utf8_unicode_ci
-      init-connect='SET NAMES utf8'
-      character-set-server = utf8
+      default_authentication_plugin=mysql_native_password
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
       innodb_log_buffer_size=32M
       innodb_log_file_size=80M
       max_allowed_packet=8M
-      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid

@@ -27,7 +27,7 @@ broker url: {{ include "broker-host" . }}
 {{- if .Values.global.setupDemoDatabase }}
 
 The Demo Database is not suitable for Production environments.
-Please use an external MYSQL 5.6/7 database.
+Please use an external MYSQL 8 database.
 {{- end }}
 
 For documentation about the portal, please visit:
