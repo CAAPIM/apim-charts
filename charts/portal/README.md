@@ -78,6 +78,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
 | `global.databaseSecret` | Database secret name | `database-secret` |
 | `global.databaseUsername` | Database username | `admin` |
+| `global.demoDatabaseRootPassword` | Demo Database root password | `7layer`|
+| `global.demoDatabaseReplicationPassword` | Demo Database replication password | `7layer`|
 | `global.databasePassword` | Database password | `7layer` |
 | `global.databaseHost` | Database Host | `` |
 | `global.databasePort` | Database Port | `3306` |
@@ -428,21 +430,15 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.extraConfiguration`                | Extra configuration   | `see values.yaml` |
 
 ## MySQL
-The following table lists the configured parameters of the MySQL Subchart - https://github.com/helm/charts/tree/master/stable/mysql
+The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.imageTag`                | MySQL Image to use   | `5.7.14` |
-| `mysql.serviceAccount.create`                |  Enable creation of ServiceAccount for MySQL  | `true` |
-| `mysql.serviceAccount.name`                | Name of the created serviceAccount   | `` |
-| `mysql.persistence.enabled`                | Enable persistence   | `true` |
-| `mysql.persistence.size`                | PVC size  | `8Gi` |
-| `mysql.persistence.storageClass`       | Storage Class   | `` |
-| `mysql.existingSecret`                | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
-| `mysql.mysqlUser`                | MySQL Username   | `admin` |
-| `mysql.mysqlPassword`                | MySQL User Password - auto-generated  | `7layer` |
-| `mysql.initializationFiles`                | SQL Files that are run on start up | `see values.yaml` |
-| `mysql.configurationFiles`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
+| `mysql.imageTag`                | MySQL Image to use   | `8.0.22-debian-10-r75` |
+| `mysql.auth.username`           | MySQL Username   | `admin` |
+| `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
+| `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
+| `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
 
 
 ## Nginx-Ingress
@@ -507,7 +503,7 @@ Resulting hostnames:
 
 ### RabbitMQ won't start
 
-#### The Chart was deleted and re-installed
+#### The Chart was uninstalled and re-installed
 RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
 
 1. Remove RabbitMQ Replicas (scale to 0)
@@ -521,7 +517,7 @@ $ kubectl get pvc | grep rabbitmq
 
 2. For each data-rabbitmq-0|1|2 is returned
 ```
-$ kubectl kubectl delete pvc data-rabbitmq-0|1|2
+$ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 
 3. Add RabbitMQ Replicas (scale to 1|3)
@@ -538,6 +534,30 @@ If the RabbitMQ nodes are stopped or removed out of order, there is a chance tha
 2. Upgrade the Chart
 ```
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
+```
+
+### MySQL container in unhealthy state
+
+#### The Chart was uninstalled and re-installed
+MySQL container health check is failing as it is using credentials auto-generated during current installtion to access the database created during earlier installation. We have to recreate database with new credentials by deleting old volumes. This process causes loss of old data.
+
+1. Remove MySQL Replicas (scale to 0)
+```
+$ kubectl get statefulset <release-name>-mysql
+
+$ kubectl scale statefulset <release-name>-mysql --replicas=0
+
+$ kubectl get pvc | grep data-<release-name>-mysql
+```
+
+2. For each data-\<release-name\>-mysql-\<number\> is returned
+```
+$ kubectl delete pvc data-<release-name>-mysql-<number>
+```
+
+3. Restore MySQL Replicas
+```
+$ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
