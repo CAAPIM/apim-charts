@@ -11,6 +11,8 @@ global:
   databaseSecret: database-secret
   databaseUsername: portal
 # databasePassword: 7layer
+# demoDatabaseRootPassword: 7layer
+# demoDatabaseReplicationPassword: 7layer
   databaseHost:
   databasePort: 3306
   databaseUseSSL: true

@@ -63,6 +63,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
 | `global.databaseSecret` | Database secret name | `database-secret` |
 | `global.databaseUsername` | Database username | `admin` |
+| `global.demoDatabaseRootPassword` | Demo Database root password | `7layer`|
+| `global.demoDatabaseReplicationPassword` | Demo Database replication password | `7layer`|
 | `global.databasePassword` | Database password | `7layer` |
 | `global.databaseHost` | Database Host | `` |
 | `global.databasePort` | Database Port | `3306` |
