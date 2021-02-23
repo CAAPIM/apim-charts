@@ -13,6 +13,8 @@ global:
 # databasePassword: 7layer
   databaseHost: mysql
   databasePort: 3306
+  databaseUseSSL: true
+  databaseRequireSSL: false
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
@@ -571,6 +573,10 @@ mysql:
   # storageClass:
   existingSecret: database-secret
   mysqlUser: portal
+  securityContext:
+    enabled: true
+    fsGroup: 999
+    runAsUser: 999
 # mysqlPassword: 7layer
   initializationFiles:
     elevate-admin.sql: |-
