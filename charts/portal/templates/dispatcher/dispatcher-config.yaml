@@ -13,3 +13,8 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   USE_PROXY_PROTOCOL: "false"
+{{ if .Values.dispatcher.additionalEnv }}
+{{- range $key, $val := .Values.dispatcher.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}

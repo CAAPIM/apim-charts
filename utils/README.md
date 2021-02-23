@@ -45,6 +45,7 @@ Save the file as **payload.json**. A sample payload is shown next:
 }
 ```
 
+*Note: The tenant creation endpoint uses Mutual SSL/TLS, your Ingress Controller must support SSL/TLS Passthrough*
 
 ## Create Tenant
 This script takes in the following parameters
@@ -71,15 +72,19 @@ Please follow the rest of the instructions at TechDocs to enroll your gateway wi
 
 **Please check you've set the correct namespace and have the Chart installed.**
 ```
-- Make sure you're setting the correct namespace -n <namespace>
-- Verify the Chart is installed
- $ helm list -n <namespace>
+* Make sure the correct namespace is set -n <namespace>
+* Verify the Chart is installed
+$ helm list -n <namespace>
 ```
  **'portalHost' is not resolvable. Please make sure this points to your portal IP address.**
 ```
- - Verify that you have added the Portal endpoints to DNS or your hosts file and are able to resolve them
+* Verify that you have added the Portal endpoints to DNS or your hosts file and are able to resolve them
 ```
  **Please check you've set the correct key name, it should be portal-internal-secret, check tls.internalSecretName in your values file.**
  ```
- - Check tls.internalSecret name in your values.yaml file, if it doesn't match 'portal-internal-secret' then add -k <your-value>
+* Check tls.internalSecret name in your values.yaml file, if it doesn't match 'portal-internal-secret' then add -k <your-value>
+```
+***401/403 Authentication Error***
+```
+* Ensure that your Ingress Controller supports SSL/TLS Passthrough.
 ```

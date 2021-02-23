@@ -10,7 +10,7 @@ image:
   registry: docker.io
   repository: caapim/gateway
   tag: 10.0.00
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # Will create a Registry secret and apply it to the Gateway
   secretName:
   credentials:
@@ -88,6 +88,21 @@ config:
       java.util.logging.SimpleFormatter.format=
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
+  cwp:
+    enabled: false
+    properties:
+      - name: io.httpsHostAllowWildcard
+        value: true
+      - name: log.levels
+        value: |
+          com.l7tech.level = CONFIG
+          com.l7tech.server.policy.variable.ServerVariables.level = SEVERE
+          com.l7tech.external.assertions.odata.server.producer.jdbc.GenerateSqlQuery.level = SEVERE
+          com.l7tech.server.policy.assertion.ServerSetVariableAssertion.level = SEVERE
+          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
+      - name: audit.setDetailLevel.FINE
+        value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+  
 tls:
   customKey:
     enabled: false
@@ -98,7 +113,7 @@ tls:
   customDefaultSslKey:
     enabled: false
     key:
-    pass: mypassword
+    pass:
 
 # Install Gateway solution kit(s) using restman.
 #   Prerequisites:
@@ -192,11 +207,11 @@ livenessProbe:
 # path: /ssg/ping
 # port: 8443
 # scheme: HTTPS
-  initialDelaySeconds: 60
+  initialDelaySeconds: 40
   timeoutSeconds: 1
-  periodSeconds: 10
+  periodSeconds: 15
   successThreshold: 1
-  failureThreshold: 10
+  failureThreshold: 15
 
 readinessProbe:
   enabled: true
@@ -207,11 +222,11 @@ readinessProbe:
 # path: /ssg/ping
 # port: 8443
 # scheme: HTTPS
-  initialDelaySeconds: 60
+  initialDelaySeconds: 40
   timeoutSeconds: 1
-  periodSeconds: 10
+  periodSeconds: 15
   successThreshold: 1
-  failureThreshold: 10
+  failureThreshold: 15
 
 resources:
   # There are no resource limits set by default, this is a consicious choice for the user and
@@ -224,7 +239,9 @@ resources:
   #   cpu: 1000m
   #   memory: 2Gi
 
-# serviceAccount:
+serviceAccount:
+  # name:
+  create: true
 
 ##
 ## Subchart Configuration

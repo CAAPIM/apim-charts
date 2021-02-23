@@ -9,12 +9,12 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Kubernetes 1.17+
 - Helm v3.1+
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
+- An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
 - ***docker secret.yaml*** from here ==> [CA API Developer Portal
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
 
 ### Production
 - A dedicated MySQL 5.6/7 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
-- An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -29,9 +29,21 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 
+*Credentials for RabbitMQ are generated when this Chart is installed, to prevent loss after test/development use or accidental deletion
+retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion of the Chart.*
+
+```
+rabbitmq.auth.erlangCookie
+$ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-erlang-cookie" | base64decode }}' -n <release-namespace>
+
+rabbitmq.auth.password
+$ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-password" | base64decode }}' -n <release-namespace>
+```
+
 ## Upgrade this Chart
 To upgrade API Potal deployment
 ```
+ $ helm repo update
  $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 ## Delete this Chart
@@ -41,15 +53,18 @@ To delete API Portal installation
  $ helm delete <release name>
 ```
 
-*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion*
+*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion.* 
 
 ## Additional Guides/Info
 * [Use/Replace Signed Certificates](#certificates)
 * [DNS Configuration](#dns-configuration)
 * [SMTP Settings](#smtp-parameters)
+* [RBAC Parameters](#rbac-parameters)
+* [FS Permissions](#fs-permissions)
 * [Migrate from Docker Swarm/Previous Helm Chart](../../utils/portal-migration/README.md)
 * [Upgrade this Chart](#upgrade-this-chart)
 * [Cloud Deep Storage for Minio](#druid)
+* [Create New Tenant](../../utils)
 * [Troubleshooting](#troubleshooting)
 
 # Configuration
@@ -63,6 +78,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
 | `global.databaseSecret` | Database secret name | `database-secret` |
 | `global.databaseUsername` | Database username | `admin` |
+| `global.demoDatabaseRootPassword` | Demo Database root password | `7layer`|
+| `global.demoDatabaseReplicationPassword` | Demo Database replication password | `7layer`|
 | `global.databasePassword` | Database password | `7layer` |
 | `global.databaseHost` | Database Host | `` |
 | `global.databasePort` | Database Port | `3306` |
@@ -73,6 +90,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.subdomainPrefix` | Subdomain Prefix | `dev-portal` |
 | `global.storageClass` | Global Storage Class | `_` |
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
+| `global.saas` | Reserved | `not set` |
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -144,6 +162,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
 | `apim.replicaCount` | Number of APIM nodes | `1` |
 | `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
+| `apim.otkDb.name` | APIM OTK Database name | `otk_db` |
 | `apim.strategy` | Update strategy   | `{} evaluated as a template` |
 | `apim.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
@@ -206,6 +225,67 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
 | `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
 | `ingress-nginx.rbac.create`| Create & use RBAC resources |`true`|
+
+
+#### Roles Required
+If RBAC is required and a set service account is in use, the following roles will need to be bound to it.
+
+```
+...
+*batch-reader*
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "describe"]
+...
+*cert-update*
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "update"]
+...
+*rabbitmq*
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+```
+
+#### FS Permissions
+If a strict PodSecurityPolicy is enforced the following users/groups will need to be allowed.
+
+```
+Portal Core
+...
+*mysql*
+  securityContext:
+    enabled: true
+    fsGroup: 999
+    runAsUser: 999
+...
+*rabbitmq*
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    runAsUser: 1001
+...
+Portal Analytics
+
+*historical*
+  securityContext:
+    fsGroup: 1010
+*kafka*
+  securityContext:
+    fsGroup: 1010
+*minio*
+  securityContext:
+    fsGroup: 1010
+*zookeeper*
+  securityContext:
+    fsGroup: 1010
+```
 
 ### Telemetry Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -342,27 +422,23 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.auth.secretName`                | RabbitMQ secret name   | `see values.yaml` |
 | `rabbitmq.auth.existingPasswordSecret`                | RabbitMQ existing password secret | `see values.yaml` |
 | `rabbitmq.auth.existingErlangSecret`                | RabbitMQ existing erlang secret   | `see values.yaml` |
+| `rabbitmq.auth.password`                | RabbitMQ password   | `auto-generated on install - see values.yaml` |
+| `rabbitmq.auth.erlangCookie`                | RabbitMQ erlangCookie   | `auto-generated on install - see values.yaml` |
 | `rabbitmq.extraPlugins`                | Extra enabled plugins | `see values.yaml` |
 | `rabbitmq.loadDefinition.enabled`                | Enable load definitions   | `see values.yaml` |
 | `rabbitmq.loadDefinition.existingSecret`                | Existing load definitions secret   | `see values.yaml` |
 | `rabbitmq.extraConfiguration`                | Extra configuration   | `see values.yaml` |
 
 ## MySQL
-The following table lists the configured parameters of the MySQL Subchart - https://github.com/helm/charts/tree/master/stable/mysql
+The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.imageTag`                | MySQL Image to use   | `5.7.14` |
-| `mysql.serviceAccount.create`                |  Enable creation of ServiceAccount for MySQL  | `true` |
-| `mysql.serviceAccount.name`                | Name of the created serviceAccount   | `` |
-| `mysql.persistence.enabled`                | Enable persistence   | `true` |
-| `mysql.persistence.size`                | PVC size  | `8Gi` |
-| `mysql.persistence.storageClass`       | Storage Class   | `` |
-| `mysql.existingSecret`                | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
-| `mysql.mysqlUser`                | MySQL Username   | `admin` |
-| `mysql.mysqlPassword`                | MySQL User Password - auto-generated  | `7layer` |
-| `mysql.initializationFiles`                | SQL Files that are run on start up | `see values.yaml` |
-| `mysql.configurationFiles`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
+| `mysql.imageTag`                | MySQL Image to use   | `8.0.22-debian-10-r75` |
+| `mysql.auth.username`           | MySQL Username   | `admin` |
+| `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
+| `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
+| `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
 
 
 ## Nginx-Ingress
@@ -427,7 +503,7 @@ Resulting hostnames:
 
 ### RabbitMQ won't start
 
-#### The Chart was deleted and re-installed
+#### The Chart was uninstalled and re-installed
 RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
 
 1. Remove RabbitMQ Replicas (scale to 0)
@@ -441,7 +517,7 @@ $ kubectl get pvc | grep rabbitmq
 
 2. For each data-rabbitmq-0|1|2 is returned
 ```
-$ kubectl kubectl delete pvc data-rabbitmq-0|1|2
+$ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 
 3. Add RabbitMQ Replicas (scale to 1|3)
@@ -461,6 +537,7 @@ If the RabbitMQ nodes are stopped or removed out of order, there is a chance tha
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 ```
 
+
 ### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"
 If helm updgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", its becasue of limitaion in kubernetes where a job can not be update.
 
@@ -473,6 +550,31 @@ $ kubectl get jobs -n  <nameSpace>
 ```
 kubectl delete job db-upgrade -n <nameSpace>
 kubectl delete job rbac-upgrade -n <nameSpace>
+```
+
+
+### MySQL container in unhealthy state
+
+#### The Chart was uninstalled and re-installed
+MySQL container health check is failing as it is using credentials auto-generated during current installtion to access the database created during earlier installation. We have to recreate database with new credentials by deleting old volumes. This process causes loss of old data.
+
+1. Remove MySQL Replicas (scale to 0)
+```
+$ kubectl get statefulset <release-name>-mysql
+
+$ kubectl scale statefulset <release-name>-mysql --replicas=0
+
+$ kubectl get pvc | grep data-<release-name>-mysql
+```
+
+2. For each data-\<release-name\>-mysql-\<number\> is returned
+```
+$ kubectl delete pvc data-<release-name>-mysql-<number>
+```
+
+3. Restore MySQL Replicas
+```
+$ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
