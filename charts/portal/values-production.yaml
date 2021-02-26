@@ -410,8 +410,8 @@ image:
   authenticator: authenticator:5.0.cr1
   dbUpgrade: db-upgrade-portal:5.0.cr1
   rbacUpgrade: db-upgrade-rbac:5.0.cr1
-  upgradeVerify: upgrade-verify:5.0
-  tlsManager: tls-automator:unstable
+  upgradeVerify: upgrade-verify:5.0.cr1
+  tlsManager: tls-automator:5.0.cr1
 
 ##
 ## Subchart Configuration
@@ -654,7 +654,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker-k8s
-    tag: "5.0"
+    tag: "5.0.cr1"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
