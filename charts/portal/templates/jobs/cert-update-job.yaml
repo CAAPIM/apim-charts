@@ -17,11 +17,6 @@ spec:
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       restartPolicy: Never
-      securityContext:
-        fsGroup: 2000
-        runAsNonRoot: true
-        runAsGroup: 3000
-        runAsUser: 1001
       containers:
       - name: {{ .Release.Name }}-tls-manager
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
@@ -81,7 +76,7 @@ spec:
            value: {{ .Values.tls.job.rotate | quote }}
         command: ["/bin/bash", "-c"]
         args:
-          - /scripts/tls_manager.sh
+          - /opt/tls_manager.sh
             /usr/bin/tail -f /dev/null;
         securityContext:
           allowPrivilegeEscalation: false

@@ -1,4 +1,4 @@
-gateway/my-values.yaml
+*my-values.yaml
 /examples/gateway/edge-gateway/*-replaced.yaml
 /examples/sts-gateway/*-replaced.yaml
 
