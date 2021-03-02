@@ -259,7 +259,7 @@ If a strict PodSecurityPolicy is enforced the following users/groups will need t
 ```
 Portal Core
 ...
-mysql
+*mysql*
   podSecurityContext:
     enabled: true
     fsGroup: 100
