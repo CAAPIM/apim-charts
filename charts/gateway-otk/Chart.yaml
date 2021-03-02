@@ -1,6 +1,6 @@
 apiVersion: v2
 name: gateway-otk
-version: 0.0.1
+version: 0.0.2
 appVersion: "10.0.00"
 description: This alpha Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
 dependencies:

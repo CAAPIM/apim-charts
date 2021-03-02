@@ -9,6 +9,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Kubernetes 1.17+
 - Helm v3.1+
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
+- An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
 - ***docker secret.yaml*** from here ==> [CA API Developer Portal
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
 
@@ -29,9 +30,21 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 
+*Credentials for RabbitMQ are generated when this Chart is installed, to prevent loss after test/development use or accidental deletion
+retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion of the Chart.*
+
+```
+rabbitmq.auth.erlangCookie
+$ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-erlang-cookie" | base64decode }}' -n <release-namespace>
+
+rabbitmq.auth.password
+$ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-password" | base64decode }}' -n <release-namespace>
+```
+
 ## Upgrade this Chart
 To upgrade API Potal deployment
 ```
+ $ helm repo update
  $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 ## Delete this Chart
@@ -41,15 +54,18 @@ To delete API Portal installation
  $ helm delete <release name>
 ```
 
-*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion*
+*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion.* 
 
 ## Additional Guides/Info
 * [Use/Replace Signed Certificates](#certificates)
 * [DNS Configuration](#dns-configuration)
 * [SMTP Settings](#smtp-parameters)
+* [RBAC Parameters](#rbac-parameters)
+* [FS Permissions](#fs-permissions)
 * [Migrate from Docker Swarm/Previous Helm Chart](../../utils/portal-migration/README.md)
 * [Upgrade this Chart](#upgrade-this-chart)
 * [Cloud Deep Storage for Minio](#druid)
+* [Create New Tenant](../../utils)
 * [Troubleshooting](#troubleshooting)
 
 # Configuration
@@ -75,6 +91,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.subdomainPrefix` | Subdomain Prefix | `dev-portal` |
 | `global.storageClass` | Global Storage Class | `_` |
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
+| `global.saas` | Reserved | `not set` |
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -146,6 +163,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
 | `apim.replicaCount` | Number of APIM nodes | `1` |
 | `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
+| `apim.otkDb.name` | APIM OTK Database name | `otk_db` |
 | `apim.strategy` | Update strategy   | `{} evaluated as a template` |
 | `apim.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
@@ -208,6 +226,67 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
 | `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
 | `ingress-nginx.rbac.create`| Create & use RBAC resources |`true`|
+
+
+#### Roles Required
+If RBAC is required and a set service account is in use, the following roles will need to be bound to it.
+
+```
+...
+*batch-reader*
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "describe"]
+...
+*cert-update*
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "update"]
+...
+*rabbitmq*
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+```
+
+#### FS Permissions
+If a strict PodSecurityPolicy is enforced the following users/groups will need to be allowed.
+
+```
+Portal Core
+...
+*mysql*
+  securityContext:
+    enabled: true
+    fsGroup: 999
+    runAsUser: 999
+...
+*rabbitmq*
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+    runAsUser: 1001
+...
+Portal Analytics
+
+*historical*
+  securityContext:
+    fsGroup: 1010
+*kafka*
+  securityContext:
+    fsGroup: 1010
+*minio*
+  securityContext:
+    fsGroup: 1010
+*zookeeper*
+  securityContext:
+    fsGroup: 1010
+```
 
 ### Telemetry Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -344,6 +423,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.auth.secretName`                | RabbitMQ secret name   | `see values.yaml` |
 | `rabbitmq.auth.existingPasswordSecret`                | RabbitMQ existing password secret | `see values.yaml` |
 | `rabbitmq.auth.existingErlangSecret`                | RabbitMQ existing erlang secret   | `see values.yaml` |
+| `rabbitmq.auth.password`                | RabbitMQ password   | `auto-generated on install - see values.yaml` |
+| `rabbitmq.auth.erlangCookie`                | RabbitMQ erlangCookie   | `auto-generated on install - see values.yaml` |
 | `rabbitmq.extraPlugins`                | Extra enabled plugins | `see values.yaml` |
 | `rabbitmq.loadDefinition.enabled`                | Enable load definitions   | `see values.yaml` |
 | `rabbitmq.loadDefinition.existingSecret`                | Existing load definitions secret   | `see values.yaml` |
@@ -444,6 +525,7 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
+
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ nodes are stopped or removed out of order, there is a chance that it won't be restored correctly.
 
@@ -455,6 +537,22 @@ If the RabbitMQ nodes are stopped or removed out of order, there is a chance tha
 ```
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 ```
+
+
+### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"
+If helm updgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", its becasue of limitaion in kubernetes where a job can not be update.
+
+1. List the jobs in the namespace.
+```
+$ kubectl get jobs -n  <nameSpace>
+```
+
+2. Delete jobs
+```
+kubectl delete job db-upgrade -n <nameSpace>
+kubectl delete job rbac-upgrade -n <nameSpace>
+```
+
 
 ### MySQL container in unhealthy state
 
