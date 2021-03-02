@@ -259,6 +259,14 @@ If a strict PodSecurityPolicy is enforced the following users/groups will need t
 ```
 Portal Core
 ...
+mysql
+  podSecurityContext:
+    enabled: true
+    fsGroup: 100
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+...
 *rabbitmq*
   podSecurityContext:
     enabled: true
