@@ -595,12 +595,13 @@ mysql:
   auth:
     username: portal
     existingSecret: database-secret
-  # podSecurityContext:
-  #   enabled: true
-  #   fsGroup: 100
-  # containerSecurityContext:
-  #   enabled: true
-  #   runAsUser: 1001
+  # primary:
+  #   podSecurityContext:
+  #     enabled: true
+  #     fsGroup: 100
+  #   containerSecurityContext:
+  #     enabled: true
+  #     runAsUser: 1001
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
