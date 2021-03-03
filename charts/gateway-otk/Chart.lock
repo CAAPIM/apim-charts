@@ -9,7 +9,7 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
   version: 3.1.1
 - name: mysql
-  repository: https://charts.helm.sh/stable
-  version: 1.6.7
-digest: sha256:862e28aa89c20f7abdfac6c8077ef0089d89480535e6c0a20034b34bf0c17b7e
-generated: "2021-03-03T13:08:29.050801Z"
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: ^1.6.2
+digest: sha256:b7915fd9fa6a1ed62dbfd20ffb79ee4a3242e2a4bf63dac0340cbba938830276
+generated: "2020-08-03T15:36:19.267317+01:00"
