@@ -1,0 +1,57 @@
+{{ if .Values.config.cwp.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-cwp-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- $hexArr := splitList " " (include "gateway.cwp.hex" .) }}
+data:
+  cwp.bundle: |
+    <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+{{ range $i, $v := $hexArr }}
+{{ if ne $i 0 }}
+{{ with index $.Values.config.cwp.properties (sub $i 1 )}}
+    <l7:Item>
+        <l7:Name>{{ .name }}</l7:Name>
+        <l7:Id>{{ $v }}</l7:Id>
+        <l7:Type>CLUSTER_PROPERTY</l7:Type>
+          <l7:Resource>
+           <l7:ClusterProperty id="{{ $v }}">
+           <l7:Name>{{ .name }}</l7:Name>
+{{ if contains "\\n" (.value | quote)}}
+           <l7:Value>{{ .value | trim | indent 4 | trim }}</l7:Value>
+{{ else }}
+           <l7:Value>{{ .value }}</l7:Value>
+{{ end }}
+           </l7:ClusterProperty>
+        </l7:Resource>
+    </l7:Item>
+{{ end }}
+{{ end }}
+{{ end }}
+    </l7:References>
+       <l7:Mappings>
+{{ range $i, $v := $hexArr }}
+{{ if ne $i 0 }}
+{{ with index $.Values.config.cwp.properties (sub $i 1 ) }}
+        <l7:Mapping action="NewOrUpdate" srcId="{{ $v }}" type="CLUSTER_PROPERTY">
+            <l7:Properties>
+                <l7:Property key="MapBy">
+                    <l7:StringValue>name</l7:StringValue>
+                </l7:Property>
+                <l7:Property key="MapTo">
+                    <l7:StringValue>{{ .name }}</l7:StringValue>
+                </l7:Property>
+            </l7:Properties>
+        </l7:Mapping>
+{{ end }}
+{{ end }}
+{{ end }}
+    </l7:Mappings>
+    </l7:Bundle>
+{{ end }} 

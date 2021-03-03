@@ -206,9 +206,9 @@ resources:
   #   cpu: 1000m
   #   memory: 2Gi
 
-#serviceAccount:
-
-
+serviceAccount:
+  # name:
+  create: true
 
 ###############################################################################################
 ##                                                                                           ##
