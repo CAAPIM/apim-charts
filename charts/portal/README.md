@@ -41,7 +41,7 @@ $ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-pas
 ```
 
 ## Upgrade this Chart
-> ** :information_source: Important **  
+> :information_source: **Important** <br>
 > If you use demo database in Kubernetes environment and you need to retain the data, back up the database and migrate the data to an external MySQL server and point Portal to that database. If an external database is not used, then Portal creates a new instance of MySQL 8.0 database and use that instance during upgrade.
 
 To upgrade API Potal deployment
