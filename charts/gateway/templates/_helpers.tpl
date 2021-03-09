@@ -31,6 +31,39 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+
+
+{{/*
+ Set the service account name for the Gateway
+ */}}
+{{- define "gateway.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "gateway.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Generate []16bit HEX
+ This creates Gateway ids for bundles  
+ */}}
+ {{- define "gateway.cwp.hex" -}}
+ {{ $hexArr := "" }}
+ {{- range .Values.config.cwp.properties }}
+ {{- $hex := randAlphaNum 16 }}
+ {{- join $hex (printf " %x" $hex) }}
+ {{- end -}}
+ {{- end -}}
+
+{{/*
+ Generate 16bit HEX 
+ #  {{ split " " $hexArr }}
+ #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
+ */}}
+ 
+
+
 {{/*
 Create java args to apply.
 */}}

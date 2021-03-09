@@ -20,6 +20,7 @@ spec:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
     spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
 {{ if .Values.image.secretName }}
       imagePullSecrets:
         - name: {{ .Values.image.secretName | quote }}
@@ -27,7 +28,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
-          imagePullPolicy: {{ .Values.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.installSolutionKits.enabled}}
           lifecycle:
             postStart:
@@ -78,6 +79,10 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
               subPath: log-override.properties
 {{ end }}
+{{ if .Values.config.cwp.enabled }}
+            - name: {{ template "gateway.fullname" . }}-cwp-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/cwp
+{{ end }}
 {{ if .Values.bundle.enabled }}
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
@@ -101,6 +106,7 @@ spec:
 {{ else }}
             exec:
               command:
+              - /bin/bash
               - {{ .Values.livenessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
 {{ end }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -119,6 +125,7 @@ spec:
 {{ else }}
             exec:
               command:
+              - /bin/bash
               - {{ .Values.readinessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
 {{ end }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
@@ -154,6 +161,13 @@ spec:
             items:
             - key: log-override-properties
               path: log-override.properties
+{{ end }}
+{{ if .Values.config.cwp.enabled }}
+        - name: {{ template "gateway.fullname" . }}-cwp-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-cwp-configmap
 {{ end }}
 {{ if .Values.bundle.enabled }}
         - name: {{ template "gateway.fullname" . }}-bundle-configmap

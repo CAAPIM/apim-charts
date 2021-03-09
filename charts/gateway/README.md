@@ -6,21 +6,21 @@ It's targeted at Gateway v10.x onward.
 
 # Install the Chart
 ```
-> $ helm repo add layer7 https://caapim.github.io/apim-charts/
-> $ helm repo update
-> $ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
+$ helm repo add layer7 https://caapim.github.io/apim-charts/
+$ helm repo update
+$ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
 
 ## Upgrade this Chart
 To upgrade the Gateway deployment
 ```
-> $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
 ## Delete this Chart
 To delete Gateway installation
 
 ```
-> $ helm delete <release name> -n <release namespace>
+$ helm delete <release name> -n <release namespace>
 ```
 
 ## Custom values
@@ -38,7 +38,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
 | `image.tag`          | Image tag | `10.0.00`  |
-| `image.pullPolicy`          | Image Pull Policy | `Always`  |
+| `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `image.secretName`          | Creates an imagePullSecrets | `nil`  |
 | `image.credentials.username`          | Registry Username | `nil`  |
 | `image.credentials.password`          | Registry Password | `nil`  |
@@ -67,6 +67,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
 | `config.log.override`          | Override the standard log configuration | `true`  |
 | `config.log.properties`          | Custom logging properties | `see values.yaml`  |
+| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false`  |
+| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml`  |
 | `tls.customKey.enabled`          | Not currently implemented | `false`  |
 | `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
 | `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
@@ -150,6 +152,15 @@ More info on the JDBC URL:
 - Connection URL syntax: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-url-format.html
 - Failover config: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-config-failover.html
 - Configuration properties: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html
+
+Configuring SSL/TLS: the following parameters can be added to enable secure communication between the Gateway and an external MySQL Database
+- useSSL=true
+- requireSSL=true
+- verifyServerCertificate=false
+
+```
+jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=true&requireSSL=true&verifyServerCertificate=false
+```
 
 In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
 
