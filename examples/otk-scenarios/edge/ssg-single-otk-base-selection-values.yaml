@@ -26,7 +26,7 @@ ssg:
     otkJdbcDriver: com.mysql.jdbc.Driver
     #   - WARNING 1: MySQL deployed by this example is for DEVELOPMENT ONLY OTK database.
     #                For production, an EXTERNALLY managed PERSISTENT deployment is recommended (along with using non-ROOT database/JDBC user).
-    #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase"
+    #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar"
     #   - The host part of jdbc url in this example is determined by the release name used to install. E.g. for "helm install ssg-otk ..." use "ssg-otk-mysql"
     otkJdbcUrl: jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db
     otkJdbcUser: root
