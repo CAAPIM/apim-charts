@@ -55,7 +55,7 @@ ssg:
     otkJdbcDriver: com.mysql.jdbc.Driver
     #   - WARNING 1: MySQL deployed by this example is for DEVELOPMENT ONLY OTK database.
     #                For production, an EXTERNALLY managed PERSISTENT deployment is recommended (along with using non-ROOT database/JDBC user).
-    #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase"
+    #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar"
     #   - The host part of jdbc url in this example is determined by the release name used to install. E.g. for "helm install ssg-otk-internal ..." use "ssg-otk-internal-mysql"
     otkJdbcUrl: jdbc:mysql://####sts-release-name-mysql:3306/otk_db
     # use root credentials for DB Backed STS. Change to 'otk' credentials when using in-memory STS
@@ -70,7 +70,7 @@ ssg:
     #       2) separate install of some OTK sub-solution kits to avoid bug that requires Gateway restart (recommendation from OTK engineering team)
     #       3) Liquibase files to create OTK database schema (/tmp/otk-db-liquibase/)
     - dualGatewayInternalPortal1:
-      preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase-3.2.2.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://####sts-release-name-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
+      preInstallCommand: java -jar /opt/SecureSpan/Gateway/runtime/lib/liquibase-3.10.1.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://####sts-release-name-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
       file: OAuthSolutionKit-4.4.1-4425.sskar
       # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
       param: --form solutionKitSelectByName="OTK Assertions"
