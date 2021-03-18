@@ -41,7 +41,7 @@ ssg:
       #       3) Liquibase files to create OTK database schema (/tmp/otk-db-liquibase/)
       - otkBaseSelect1:
         file: OAuthSolutionKit-4.4.1-4425.sskar
-        preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase-3.2.2.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
+        preInstallCommand: java -jar /opt/SecureSpan/Gateway/runtime/lib/liquibase-3.10.1.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
         # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
         param: --form solutionKitSelectByName="OTK Assertions"
       - otkBaseSelect2:
