@@ -102,7 +102,7 @@ config:
           com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-  
+
 tls:
   customKey:
     enabled: false
@@ -265,7 +265,7 @@ mysql:
       character-set-server = utf8
       innodb_log_buffer_size = 32M
       innodb_log_file_size = 80M
-      max_allowed_packet = 8M
+      max_allowed_packet = 20M
       default-authentication-plugin=mysql_native_password
       log-bin-trust-function-creators=1
 
