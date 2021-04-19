@@ -4,6 +4,7 @@ metadata:
   name: rbac-upgrade
   annotations:
     chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": pre-install
   labels:
     app: {{ template "portal.name" . }}
     chart: {{ template "portal.chart" . }}
