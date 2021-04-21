@@ -712,6 +712,7 @@ rabbitmq:
   extraConfiguration: |-
     management.load_definitions = /app/load_definition.json
     mqtt.exchange = portal-external
+    mqtt.subscription_ttl = 86400000
   resources:
     limits:
       cpu: 1000m
