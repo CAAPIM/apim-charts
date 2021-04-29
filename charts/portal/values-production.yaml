@@ -410,7 +410,7 @@ image:
   authenticator: authenticator:5.0.cr1
   dbUpgrade: db-upgrade-portal:5.0.cr1
   rbacUpgrade: db-upgrade-rbac:5.0.cr1
-  upgradeVerify: upgrade-verify:5.0.cr1
+  upgradeVerify: upgrade-verify:5.0.cr2
   tlsManager: tls-automator:5.0.cr1
 
 ##
