@@ -368,7 +368,7 @@ druid:
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
-    # access_key: 
+    # access_key:
     # secret_key:
     cloudStorage: false
     bucketName: api-metrics
@@ -560,6 +560,8 @@ rabbitmq:
   extraConfiguration: |-
     management.load_definitions = /app/load_definition.json
     mqtt.exchange = portal-external
+    mqtt.subscription_ttl = 86400000
+    mqtt.prefetch = 1
     disk_free_limit.absolute = 2GB
   resources:
     limits: {}
