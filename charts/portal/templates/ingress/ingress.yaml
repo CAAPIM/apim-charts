@@ -1,5 +1,5 @@
 {{ if .Values.ingress.type.kubernetes }}
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
  name: portal-ingress
@@ -21,52 +21,83 @@ spec:
   - host: {{ include "default-tenant-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: dispatcher
-          servicePort: portal-https
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: dispatcher
+            port:
+              name: portal-https
   - host: {{ include "tssg-public-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: apim
-          servicePort: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
   - host: {{ include "analytics-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: apim
-          servicePort: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
   - host: {{ include "pssg-enroll-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: pssg
-          servicePort: tssg-enroll
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: pssg
+            port:
+              name: tssg-enroll
   - host: {{ include "pssg-sync-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: pssg
-          servicePort: tssg-sync
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: pssg
+            port:
+              name: tssg-sync
   - host: {{ include "pssg-sso-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: apim
-          servicePort: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
   - host: {{ include "broker-host" . | quote }}
     http:
       paths:
-      - backend:
-          serviceName: apim
-          servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
-  
-  {{- range .Values.ingress.tenantIds }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
+{{- range .Values.ingress.tenantIds }}
   - host: "{{ . }}.{{ $.Values.portal.domain }}"
     http:
       paths:
-      - backend:
-          serviceName: dispatcher
-          servicePort: portal-https
-    {{- end }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: dispatcher
+            port:
+              name: portal-https
+  {{- end }}
 {{ end }}
