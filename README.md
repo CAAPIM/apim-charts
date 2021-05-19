@@ -21,7 +21,7 @@ Then, you can install the charts by:
 ## Helm Charts
 
 - [Gateway](./charts/gateway):Helm Chart for deploying API Gateway
-- [Portal](./charts/portal): Helm Chart for deploy the API Developer Portal (Beta)
+- [Portal](./charts/portal): Helm Chart for deploy the API Developer Portal
 - [Gateway-OTK](./charts/gateway-otk): Helm Chart for deploying API Gateway with the OAUTH TOOLKIT (Alpha)
 
 ***Examples*** contains chart specific values files that you can apply to your Gateway deployment to achieve specific scenarios. OTK-scenarios are currently in an alpha state and will be updated in the coming weeks.
