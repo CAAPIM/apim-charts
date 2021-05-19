@@ -399,19 +399,19 @@ tenantProvisioner:
 #       topologyKey: "kubernetes.io/hostname"
 
 image:
-  dispatcher: dispatcher:latest
-  pssg: pssg:latest
-  apim: ingress:latest
-  enterprise: portal-enterprise:latest
-  data: portal-data:latest
-  tps: tenant-provisioning-service:latest
-  solr: solr:latest
-  analytics: analytics-server:latest
-  authenticator: authenticator:latest
-  dbUpgrade: db-upgrade-portal:latest
-  rbacUpgrade: db-upgrade-rbac:latest
-  upgradeVerify: upgrade-verify:latest
-  tlsManager: tls-automator:latest
+  dispatcher: dispatcher:5.0.2
+  pssg: pssg:5.0.2
+  apim: ingress:5.0.2
+  enterprise: portal-enterprise:5.0.2
+  data: portal-data:5.0.2
+  tps: tenant-provisioning-service:5.0.2
+  solr: solr:5.0.2
+  analytics: analytics-server:5.0.2
+  authenticator: authenticator:5.0.2
+  dbUpgrade: db-upgrade-portal:5.0.2
+  rbacUpgrade: db-upgrade-rbac:5.0.2
+  upgradeVerify: upgrade-verify:5.0.2
+  tlsManager: tls-automator:5.0.2
 
 ##
 ## Subchart Configuration
@@ -637,14 +637,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:latest
-    broker: druid:latest
-    coordinator: druid:latest
-    middlemanager: druid:latest
-    minio: minio:latest
-    historical: druid:latest
-    kafka: kafka:latest
-    ingestion: ingestion-server:latest
+    zookeeper: zookeeper:5.0.2
+    broker: druid:5.0.2
+    coordinator: druid:5.0.2
+    middlemanager: druid:5.0.2
+    minio: minio:5.0.2
+    historical: druid:5.0.2
+    kafka: kafka:5.0.2
+    ingestion: ingestion-server:5.0.2
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -654,7 +654,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "latest"
+    tag: "5.0.2"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
