@@ -511,7 +511,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "latest"
+    tag: "5.0.2"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
