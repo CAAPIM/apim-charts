@@ -24,6 +24,9 @@ spec:
       {{- if .Values.solr.nodeSelector }}
       nodeSelector: {{- toYaml .Values.solr.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.solr.tolerations }}
+      tolerations: {{- toYaml .Values.solr.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}

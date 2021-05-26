@@ -164,6 +164,7 @@ analytics:
     # cpu: 1000m
     # memory: 2000Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 apim:
@@ -185,6 +186,7 @@ apim:
     # cpu: 2000m
     # memory: 6144Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 authenticator:
@@ -204,6 +206,7 @@ authenticator:
     # cpu: 750m
     # memory: 1500Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 dispatcher:
@@ -223,6 +226,7 @@ dispatcher:
     # cpu: 500m
     # memory: 1024Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 # Additional Environment variables to be added to the Dispatcher Configmap
@@ -250,6 +254,7 @@ portalData:
     # cpu: 1000m
     # memory: 3072Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 portalEnterprise:
@@ -269,6 +274,7 @@ portalEnterprise:
     # cpu: 2000m
     # memory: 3072Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 pssg:
@@ -288,6 +294,7 @@ pssg:
     # cpu: 2000m
     # memory: 4608Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 solr:
@@ -307,6 +314,7 @@ solr:
     # cpu: 500m
     # memory: 750Mi
 # nodeSelector: {}
+# tolerations: {}
 
 tenantProvisioner:
   replicaCount: 1
@@ -325,6 +333,7 @@ tenantProvisioner:
     # cpu: 1000m
     # memory: 1536Mi
 # nodeSelector: {}
+# tolerations: {}
 # affinity: {}
 
 image:
@@ -401,6 +410,7 @@ druid:
       limits: {}
       # memory: 256Mi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   zookeeper:
@@ -413,6 +423,7 @@ druid:
       requests: {}
       # memory: 256Mi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
 
@@ -426,6 +437,7 @@ druid:
       requests: {}
       # memory: 512Mi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   kafka:
@@ -440,6 +452,7 @@ druid:
       # cpu: 1000m
       # memory: 1.5Gi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   broker:
@@ -452,6 +465,7 @@ druid:
       limits: {}
       # memory: 2Gi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   historical:
@@ -464,6 +478,7 @@ druid:
       limits: {}
       # memory: 2Gi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   ingestion:
@@ -479,6 +494,7 @@ druid:
       # cpu: 1000m
       # memory: 1.5Gi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   middlemanager:
@@ -491,6 +507,7 @@ druid:
       limits: {}
       # memory: 4Gi
   # nodeSelector: {}
+  # tolerations: {}
   # affinity: {}
 
   image:

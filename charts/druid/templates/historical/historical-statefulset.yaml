@@ -28,6 +28,9 @@ spec:
       {{- if .Values.historical.nodeSelector }}
       nodeSelector: {{- toYaml .Values.historical.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.historical.tolerations }}
+      tolerations: {{- toYaml .Values.historical.tolerations | nindent 12 }}
+      {{- end }}
       securityContext:
         fsGroup: 1010
       containers:

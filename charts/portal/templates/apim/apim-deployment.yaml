@@ -27,6 +27,9 @@ spec:
       {{- if .Values.apim.nodeSelector }}
       nodeSelector: {{- toYaml .Values.apim.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.apim.tolerations }}
+      tolerations: {{- toYaml .Values.apim.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}

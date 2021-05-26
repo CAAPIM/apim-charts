@@ -28,6 +28,9 @@ spec:
       {{- if .Values.middlemanager.nodeSelector }}
       nodeSelector: {{- toYaml .Values.middlemanager.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.middlemanager.tolerations }}
+      tolerations: {{- toYaml .Values.middlemanager.tolerations | nindent 12 }}
+      {{- end }}
       containers:
         - name: middlemanager
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.middlemanager }}"

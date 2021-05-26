@@ -28,6 +28,9 @@ spec:
       {{- if .Values.broker.nodeSelector }}
       nodeSelector: {{- toYaml .Values.broker.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.broker.tolerations }}
+      tolerations: {{- toYaml .Values.broker.tolerations | nindent 12 }}
+      {{- end }}
       containers:
         - name: broker
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.broker }}"

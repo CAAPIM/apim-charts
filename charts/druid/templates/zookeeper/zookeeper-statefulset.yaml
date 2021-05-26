@@ -32,6 +32,9 @@ spec:
       {{- if .Values.zookeeper.nodeSelector }}
       nodeSelector: {{- toYaml .Values.zookeeper.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.zookeeper.tolerations }}
+      tolerations: {{- toYaml .Values.zookeeper.tolerations | nindent 12 }}
+      {{- end }}
       securityContext:
         fsGroup: 1010
       containers:

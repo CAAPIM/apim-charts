@@ -29,6 +29,9 @@ spec:
       {{- if .Values.minio.nodeSelector }}
       nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.minio.tolerations }}
+      tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
+      {{- end }}
       securityContext:
         fsGroup: 1010
       containers:

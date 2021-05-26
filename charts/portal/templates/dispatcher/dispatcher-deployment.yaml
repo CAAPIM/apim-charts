@@ -27,6 +27,9 @@ spec:
       {{- if .Values.dispatcher.nodeSelector }}
       nodeSelector: {{- toYaml .Values.dispatcher.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.dispatcher.tolerations }}
+      tolerations: {{- toYaml .Values.dispatcher.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}

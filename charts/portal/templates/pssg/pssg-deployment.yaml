@@ -27,6 +27,9 @@ spec:
       {{- if .Values.pssg.nodeSelector }}
       nodeSelector: {{- toYaml .Values.pssg.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.pssg.tolerations }}
+      tolerations: {{- toYaml .Values.pssg.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
