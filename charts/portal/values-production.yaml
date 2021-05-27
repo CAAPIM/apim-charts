@@ -162,7 +162,7 @@ analytics:
       cpu: 1000m
       memory: 2000Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -193,7 +193,7 @@ apim:
       cpu: 2000m
       memory: 6144Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -222,7 +222,7 @@ authenticator:
       cpu: 750m
       memory: 1500Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -251,7 +251,7 @@ dispatcher:
       cpu: 500m
       memory: 1024Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -288,7 +288,7 @@ portalData:
       cpu: 1000m
       memory: 3072Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -317,7 +317,7 @@ portalEnterprise:
       cpu: 2000m
       memory: 3072Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -346,7 +346,7 @@ pssg:
       cpu: 2000m
       memory: 4608Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -376,7 +376,7 @@ solr:
       cpu: 500m
       memory: 750Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 
 tenantProvisioner:
   replicaCount: 1
@@ -395,7 +395,7 @@ tenantProvisioner:
       cpu: 1000m
       memory: 1536Mi
 # nodeSelector: {}
-# tolerations: {}
+# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -481,7 +481,7 @@ druid:
       limits:
         memory: 256Mi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -503,7 +503,7 @@ druid:
       requests:
         memory: 256Mi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -526,7 +526,7 @@ druid:
       requests:
         memory: 512Mi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -550,7 +550,7 @@ druid:
         cpu: 1000m
         memory: 1.5Gi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -572,7 +572,7 @@ druid:
       limits:
         memory: 2Gi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -594,7 +594,7 @@ druid:
       limits:
         memory: 2Gi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -619,7 +619,7 @@ druid:
         cpu: 1000m
         memory: 1.5Gi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -641,7 +641,7 @@ druid:
       limits:
         memory: 4Gi
   # nodeSelector: {}
-  # tolerations: {}
+  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
