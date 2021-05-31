@@ -94,7 +94,7 @@ zookeeper:
 
 middlemanager:
   replicaCount: 1
-  loglevel: INFO
+  loglevel: WARN
   image:
     pullPolicy: IfNotPresent
   resources:
@@ -107,7 +107,7 @@ middlemanager:
 
 broker:
   replicaCount: 1
-  loglevel: INFO
+  loglevel: WARN
   image:
     pullPolicy: IfNotPresent
   resources:
@@ -120,7 +120,7 @@ broker:
 
 coordinator: 
   hostname: coordinator
-  loglevel: INFO
+  loglevel: WARN
   port: 8081
   replicaCount: 1
   image:
@@ -135,7 +135,7 @@ coordinator:
 
 historical:
   replicaCount: 1
-  loglevel: INFO
+  loglevel: WARN
   image:
     pullPolicy: IfNotPresent
   resources:
