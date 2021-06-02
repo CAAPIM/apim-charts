@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: pssg
+      {{ if .Values.pssg.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.pssg.affinity }}

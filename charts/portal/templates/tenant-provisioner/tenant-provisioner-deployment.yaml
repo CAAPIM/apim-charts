@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: tenant-provisioner
+      {{ if .Values.tenantProvisioner.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.tenantProvisioner.affinity }}

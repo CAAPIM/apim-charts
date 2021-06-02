@@ -148,6 +148,7 @@ rbac:
 
 # If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
 analytics:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -167,6 +168,7 @@ analytics:
 # affinity: {}
 
 apim:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -188,6 +190,7 @@ apim:
 # affinity: {}
 
 authenticator:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -207,6 +210,7 @@ authenticator:
 # affinity: {}
 
 dispatcher:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -234,6 +238,7 @@ dispatcher:
 #    key1: value
 
 portalData:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -253,6 +258,7 @@ portalData:
 # affinity: {}
 
 portalEnterprise:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -272,6 +278,7 @@ portalEnterprise:
 # affinity: {}
 
 pssg:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -291,6 +298,7 @@ pssg:
 # affinity: {}
 
 solr:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -309,6 +317,7 @@ solr:
 # nodeSelector: {}
 
 tenantProvisioner:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -361,6 +370,7 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    forceRedeploy: false
     # consider changing to mode... standalone/distributed.
     replicaCount: 1
     image:
@@ -404,6 +414,7 @@ druid:
   # affinity: {}
 
   zookeeper:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -415,8 +426,8 @@ druid:
   # nodeSelector: {}
   # affinity: {}
 
-
   coordinator:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -429,6 +440,7 @@ druid:
   # affinity: {}
 
   kafka:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -443,6 +455,7 @@ druid:
   # affinity: {}
 
   broker:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -455,6 +468,7 @@ druid:
   # affinity: {}
 
   historical:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -467,6 +481,7 @@ druid:
   # affinity: {}
 
   ingestion:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -482,6 +497,7 @@ druid:
   # affinity: {}
 
   middlemanager:
+    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent

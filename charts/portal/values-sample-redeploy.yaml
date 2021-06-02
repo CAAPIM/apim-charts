@@ -1,0 +1,62 @@
+global:
+  portalRepository: apim-docker-release-local.artifactory-lvn.broadcom.net/apim-portal/
+  pullSecret: artifactory
+  subdomainPrefix: scott-portal
+portal:
+  registryCredentials: ./docker-secret.yaml
+  domain: app.apim-rancher-ironforge.lvn.broadcom.net
+  enrollNotificationEmail: scott.chang@broadcom.com
+  defaultTenantId: scott
+ingress:
+  create: false
+ingress-nginx:
+  serviceAccount:
+    create: false
+  rbac:
+    create: false
+druid:
+  serviceAccount: 
+    create: false
+  persistence:
+    storage: 
+      historical: 3Gi
+      minio: 3Gi
+      kafka: 3Gi
+      zookeeper: 2Gi
+  minio:
+    forceRedeploy: true
+  zookeeper:
+    forceRedeploy: true
+  coordinator:
+    forceRedeploy: true
+  kafka:
+    forceRedeploy: true
+  broker:
+    forceRedeploy: true
+  historical:
+    forceRedeploy: true
+  ingestion:
+    forceRedeploy: true
+  middlemanager:
+    forceRedeploy: true
+rabbitmq:
+  image:
+    registry: apim-docker-release-local.artifactory-lvn.broadcom.net/apim-portal
+analytics:
+  forceRedeploy: true
+apim:
+  forceRedeploy: true
+authenticator:
+  forceRedeploy: true
+dispatcher:
+  forceRedeploy: true
+portalData:
+  forceRedeploy: true
+portalEnterprise:
+  forceRedeploy: true
+pssg:
+  forceRedeploy: true
+solr:
+  forceRedeploy: true
+tenantProvisioner:
+  forceRedeploy: true
