@@ -358,6 +358,7 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
+  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
@@ -370,7 +371,6 @@ druid:
       zookeeper: 10Gi
 
   minio:
-    forceRedeploy: false
     # consider changing to mode... standalone/distributed.
     replicaCount: 1
     image:
@@ -414,7 +414,6 @@ druid:
   # affinity: {}
 
   zookeeper:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -427,7 +426,6 @@ druid:
   # affinity: {}
 
   coordinator:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -440,7 +438,6 @@ druid:
   # affinity: {}
 
   kafka:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -455,7 +452,6 @@ druid:
   # affinity: {}
 
   broker:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -468,7 +464,6 @@ druid:
   # affinity: {}
 
   historical:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -481,7 +476,6 @@ druid:
   # affinity: {}
 
   ingestion:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -497,7 +491,6 @@ druid:
   # affinity: {}
 
   middlemanager:
-    forceRedeploy: false
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent

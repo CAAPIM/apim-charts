@@ -15,6 +15,7 @@ ingress-nginx:
   rbac:
     create: false
 druid:
+  forceRedeploy: true
   serviceAccount: 
     create: false
   persistence:
@@ -23,22 +24,6 @@ druid:
       minio: 3Gi
       kafka: 3Gi
       zookeeper: 2Gi
-  minio:
-    forceRedeploy: true
-  zookeeper:
-    forceRedeploy: true
-  coordinator:
-    forceRedeploy: true
-  kafka:
-    forceRedeploy: true
-  broker:
-    forceRedeploy: true
-  historical:
-    forceRedeploy: true
-  ingestion:
-    forceRedeploy: true
-  middlemanager:
-    forceRedeploy: true
 rabbitmq:
   image:
     registry: apim-docker-release-local.artifactory-lvn.broadcom.net/apim-portal
