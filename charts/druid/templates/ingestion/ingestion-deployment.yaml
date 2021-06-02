@@ -21,7 +21,7 @@ spec:
     metadata:
       labels:
         app: ingestion-server
-      {{ if .Values.ingestion.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

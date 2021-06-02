@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: middlemanager
-      {{ if .Values.middlemanager.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: kafka
-      {{ if .Values.kafka.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

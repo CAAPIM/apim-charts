@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: historical
-      {{ if .Values.historical.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

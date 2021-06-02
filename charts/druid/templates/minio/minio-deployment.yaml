@@ -22,7 +22,7 @@ spec:
     metadata:
       labels:
         app: minio
-      {{ if .Values.minio.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

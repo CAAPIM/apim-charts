@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: zookeeper
-      {{ if .Values.zookeeper.forceRedeploy }}
+      {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}
