@@ -43,6 +43,7 @@ serviceAccount:
 # name:
 
 minio:
+  forceRedeploy: false
   auth:
     secretName: minio-secret
     # Auto-generated minio-auth
@@ -79,6 +80,7 @@ minio:
   
 
 zookeeper:
+  forceRedeploy: false
   hostname: zookeeper
   port: 2181
   replicaCount: 1
@@ -93,6 +95,7 @@ zookeeper:
 # affinity:
 
 middlemanager:
+  forceRedeploy: false
   replicaCount: 1
   loglevel: WARN
   image:
@@ -106,6 +109,7 @@ middlemanager:
 # affinity:
 
 broker:
+  forceRedeploy: false
   replicaCount: 1
   loglevel: WARN
   image:
@@ -118,7 +122,8 @@ broker:
 # nodeSelector: {}
 # affinity:
 
-coordinator: 
+coordinator:
+  forceRedeploy: false
   hostname: coordinator
   loglevel: WARN
   port: 8081
@@ -134,6 +139,7 @@ coordinator:
 # affinity:
 
 historical:
+  forceRedeploy: false
   replicaCount: 1
   loglevel: WARN
   image:
@@ -147,6 +153,7 @@ historical:
 # affinity:
 
 kafka:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -161,6 +168,7 @@ kafka:
 # affinity:
 
 ingestion:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent

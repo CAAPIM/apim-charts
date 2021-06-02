@@ -20,6 +20,10 @@ spec:
     metadata:
       labels:
         app: kafka
+      {{ if .Values.kafka.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.kafka.affinity }}

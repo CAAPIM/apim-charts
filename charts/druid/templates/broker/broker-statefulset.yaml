@@ -20,6 +20,10 @@ spec:
     metadata:
       labels:
         app: broker
+      {{ if .Values.broker.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.broker.affinity }}

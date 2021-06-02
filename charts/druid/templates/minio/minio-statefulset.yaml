@@ -21,6 +21,10 @@ spec:
     metadata:
       labels:
         app: minio
+      {{ if .Values.minio.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.minio.affinity }}

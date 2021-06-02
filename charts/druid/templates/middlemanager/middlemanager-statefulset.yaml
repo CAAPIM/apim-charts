@@ -20,6 +20,10 @@ spec:
     metadata:
       labels:
         app: middlemanager
+      {{ if .Values.middlemanager.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.middlemanager.affinity }}
