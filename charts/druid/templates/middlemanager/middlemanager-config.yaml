@@ -15,6 +15,7 @@ data:
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
   CONTAINER_LOG_LEVEL: {{ .Values.middlemanager.loglevel }}
   runtime.properties: |-
+    druid.indexer.runner.startPort={{ .Values.middlemanager.task.startport }}
     druid.service=druid/middleManager
     druid.plaintextPort=8091
     
