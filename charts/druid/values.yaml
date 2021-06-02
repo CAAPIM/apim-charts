@@ -95,8 +95,9 @@ zookeeper:
 middlemanager:
   replicaCount: 1
   loglevel: WARN
-  task:
-    startport: 8100
+  indexer:
+    startPort: 8100
+    endPort: 65535
   image:
     pullPolicy: IfNotPresent
   resources:
