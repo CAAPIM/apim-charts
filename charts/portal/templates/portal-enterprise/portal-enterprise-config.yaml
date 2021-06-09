@@ -42,4 +42,9 @@ data:
   {{- end }}
   {{- if and .Values.portal.analytics.enabled  .Values.portal.analytics.aggregation }}
   AGGR_ENABLED: {{ required "Please fill in portal.analytics.aggregation values.yaml" .Values.portal.analytics.aggregation | quote }}
-  {{- end}}
+  {{- end }}
+{{ if .Values.portalEnterprise.additionalEnv }}
+{{- range $key, $val := .Values.portalEnterprise.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}

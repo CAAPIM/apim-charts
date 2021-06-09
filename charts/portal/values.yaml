@@ -328,19 +328,19 @@ tenantProvisioner:
 # affinity: {}
 
 image:
-  dispatcher: dispatcher:5.0.cr1
-  pssg: pssg:5.0.cr1
-  apim: ingress:5.0.cr1
-  enterprise: portal-enterprise:5.0.cr1
-  data: portal-data:5.0.cr1
-  tps: tenant-provisioning-service:5.0.cr1
-  solr: solr:5.0.cr1
-  analytics: analytics-server:5.0.cr1
-  authenticator: authenticator:5.0.cr1
-  dbUpgrade: db-upgrade-portal:5.0.cr1
-  rbacUpgrade: db-upgrade-rbac:5.0.cr1
-  upgradeVerify: upgrade-verify:5.0.cr1
-  tlsManager: tls-automator:5.0.cr1
+  dispatcher: dispatcher:5.0.2
+  pssg: pssg:5.0.2
+  apim: ingress:5.0.2
+  enterprise: portal-enterprise:5.0.2
+  data: portal-data:5.0.2
+  tps: tenant-provisioning-service:5.0.2
+  solr: solr:5.0.2
+  analytics: analytics-server:5.0.2
+  authenticator: authenticator:5.0.2
+  dbUpgrade: db-upgrade-portal:5.0.2
+  rbacUpgrade: db-upgrade-rbac:5.0.2
+  upgradeVerify: upgrade-verify:5.0.2
+  tlsManager: tls-automator:5.0.2
 
 ##
 ## Subchart Configuration
@@ -368,7 +368,7 @@ druid:
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
-    # access_key: 
+    # access_key:
     # secret_key:
     cloudStorage: false
     bucketName: api-metrics
@@ -494,14 +494,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.0.cr1
-    broker: druid:5.0.cr1
-    coordinator: druid:5.0.cr1
-    middlemanager: druid:5.0.cr1
-    minio: minio:5.0.cr1
-    historical: druid:5.0.cr1
-    kafka: kafka:5.0.cr1
-    ingestion: ingestion-server:5.0.cr1
+    zookeeper: zookeeper:5.0.2
+    broker: druid:5.0.2
+    coordinator: druid:5.0.2
+    middlemanager: druid:5.0.2
+    minio: minio:5.0.2
+    historical: druid:5.0.2
+    kafka: kafka:5.0.2
+    ingestion: ingestion-server:5.0.2
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -510,8 +510,8 @@ rabbitmq:
   fullnameOverride: rabbitmq
   image:
     registry: caapim
-    repository: message-broker-k8s
-    tag: "5.0.cr1"
+    repository: message-broker
+    tag: "5.0.2"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
@@ -560,6 +560,9 @@ rabbitmq:
   extraConfiguration: |-
     management.load_definitions = /app/load_definition.json
     mqtt.exchange = portal-external
+    mqtt.subscription_ttl = 86400000
+    mqtt.prefetch = 1
+    disk_free_limit.absolute = 2GB
   resources:
     limits: {}
     # cpu: 1000m

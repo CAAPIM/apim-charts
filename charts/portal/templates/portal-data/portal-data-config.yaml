@@ -52,3 +52,8 @@ data:
   TELEMETRY_PLA_ENABLED: {{ .Values.telemetry.plaEnabled | quote }}
   TELEMETRY_USAGE_TYPE: {{ .Values.telemetry.usageType | quote }}
   {{- end }}
+  {{ if .Values.portalData.additionalEnv }}
+{{- range $key, $val := .Values.portalData.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}
