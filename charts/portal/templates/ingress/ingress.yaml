@@ -1,5 +1,10 @@
+{{- $kubeTargetVersion := .Capabilities.KubeVersion.GitVersion }}
 {{ if .Values.ingress.type.kubernetes }}
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else -}}
 apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
  name: portal-ingress
@@ -21,52 +26,131 @@ spec:
   - host: {{ include "default-tenant-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: dispatcher
+            port:
+              name: portal-https
+{{- else }}
       - backend:
           serviceName: dispatcher
           servicePort: portal-https
+{{- end }}
   - host: {{ include "tssg-public-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
+{{- else }}
       - backend:
           serviceName: apim
           servicePort: {{ printf "%s-https" .Values.portal.defaultTenantId | quote }}
+{{- end }}
   - host: {{ include "analytics-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
+{{- else }}
       - backend:
           serviceName: apim
           servicePort: {{ printf "%s-datalake" .Values.portal.defaultTenantId | quote }}
+{{- end }}
   - host: {{ include "pssg-enroll-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: pssg
+            port:
+              name: tssg-enroll
+{{- else }}
       - backend:
           serviceName: pssg
           servicePort: tssg-enroll
+{{- end }}
   - host: {{ include "pssg-sync-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: pssg
+            port:
+              name: tssg-sync
+{{- else }}
       - backend:
           serviceName: pssg
           servicePort: tssg-sync
+{{- end }}
   - host: {{ include "pssg-sso-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
+{{- else }}
       - backend:
           serviceName: apim
           servicePort: {{ printf "%s-sso" .Values.portal.defaultTenantId | quote }}
+{{- end }}
   - host: {{ include "broker-host" . | quote }}
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
+{{- else }}
       - backend:
           serviceName: apim
           servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
-  
-  {{- range .Values.ingress.tenantIds }}
+{{- end }}
+{{- range .Values.ingress.tenantIds }}
   - host: "{{ . }}.{{ $.Values.portal.domain }}"
     http:
       paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: dispatcher
+            port:
+              name: portal-https
+{{- else }}
       - backend:
           serviceName: dispatcher
           servicePort: portal-https
-    {{- end }}
+{{- end }}
+{{- end }}
 {{ end }}
