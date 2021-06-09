@@ -47,6 +47,11 @@ spec:
                 name: {{ .Values.tls.externalSecretName }}
                 key: keypass.txt
                 optional: false
+          - name: RABBITMQ_DEFAULT_PASS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rabbitmq.auth.secretName }}
+                key: rabbitmq-password
           envFrom:
           - configMapRef:
               name: dispatcher-config

@@ -28,3 +28,8 @@ data:
   TENANT_ID: {{ include "default-tenant-id" . | quote }}
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   TSSG_PUBLIC_PORT: {{ .Values.portal.otk.port | quote }}
+{{ if .Values.apim.additionalEnv }}
+{{- range $key, $val := .Values.apim.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}

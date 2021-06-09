@@ -142,7 +142,7 @@ service:
   ## Set the LoadBalancerIP
   ##
   # loadBalancerIP:
-  
+
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -163,11 +163,11 @@ ingress:
   # Set to true to create ingress object
   enabled: false
   class: nginx
-  # Ingress annotations 
+  # Ingress annotations
   annotations:
   # Ingress class
   #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-  
+
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
   hostname:
@@ -227,14 +227,14 @@ mysql:
     enabled: true
     size: 8Gi
     #storageClass:
-  
+
   configurationFiles:
     my.cnf: |-
       [mysqld]
       character-set-server = utf8
       innodb_log_buffer_size = 32M
       innodb_log_file_size = 80M
-      max_allowed_packet = 8M
+      max_allowed_packet = 20M
       default-authentication-plugin=mysql_native_password
       log-bin-trust-function-creators=1
 
@@ -294,5 +294,3 @@ grafana:
       fileName: gateway-service-metrics.json
   datasources:
     secretName: grafana-secret
-
-

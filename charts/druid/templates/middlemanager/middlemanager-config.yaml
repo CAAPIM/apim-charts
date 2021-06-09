@@ -13,7 +13,10 @@ data:
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
   MINIO_URL: http://minio:9000
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  CONTAINER_LOG_LEVEL: {{ .Values.middlemanager.loglevel }}
   runtime.properties: |-
+    druid.indexer.runner.startPort={{ .Values.middlemanager.indexer.startPort }}
+    druid.indexer.runner.endPort={{ .Values.middlemanager.indexer.endPort }}
     druid.service=druid/middleManager
     druid.plaintextPort=8091
     

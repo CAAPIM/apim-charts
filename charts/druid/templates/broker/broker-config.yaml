@@ -11,3 +11,4 @@ data:
   SERVICE_NAME: broker
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
+  CONTAINER_LOG_LEVEL: {{ .Values.broker.loglevel }}

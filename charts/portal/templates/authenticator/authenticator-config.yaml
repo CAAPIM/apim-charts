@@ -24,3 +24,8 @@ data:
   NSS_SDB_USE_CACHE: "no"
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+{{ if .Values.authenticator.additionalEnv }}
+{{- range $key, $val := .Values.authenticator.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}
