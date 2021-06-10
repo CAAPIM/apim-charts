@@ -13,6 +13,7 @@ data:
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
   MINIO_URL: http://minio:9000
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  CONTAINER_LOG_LEVEL: {{ .Values.historical.loglevel }}
   runtime.properties: |-
     druid.service=druid/historical
     druid.plaintextPort=8083
