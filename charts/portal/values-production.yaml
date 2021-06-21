@@ -146,6 +146,7 @@ rbac:
 
 # If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
 analytics:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -175,6 +176,7 @@ analytics:
 #       topologyKey: "kubernetes.io/hostname"
 
 apim:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -206,6 +208,7 @@ apim:
 #       topologyKey: "kubernetes.io/hostname"
 
 authenticator:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -235,6 +238,7 @@ authenticator:
 #       topologyKey: "kubernetes.io/hostname"
 
 dispatcher:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -272,6 +276,7 @@ dispatcher:
 #    key1: value
 
 portalData:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -301,6 +306,7 @@ portalData:
 #       topologyKey: "kubernetes.io/hostname"
 
 portalEnterprise:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -330,6 +336,7 @@ portalEnterprise:
 #       topologyKey: "kubernetes.io/hostname"
 
 pssg:
+  forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
@@ -360,6 +367,7 @@ pssg:
 
 
 solr:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -379,6 +387,7 @@ solr:
 # tolerations: []
 
 tenantProvisioner:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -429,6 +438,7 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
+  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true

@@ -20,6 +20,10 @@ spec:
     metadata:
       labels:
         app: zookeeper
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       terminationGracePeriodSeconds: 1800

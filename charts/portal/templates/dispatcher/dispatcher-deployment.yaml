@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: dispatcher
+      {{ if .Values.dispatcher.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.dispatcher.affinity }}

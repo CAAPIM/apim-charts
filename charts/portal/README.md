@@ -6,8 +6,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Prerequisites
 
-- Kubernetes 1.17+
-- Helm v3.1+
+- Kubernetes 1.20.x
+- Helm v3.5.x
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
 - An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
 - ***docker secret.yaml*** from here ==> [CA API Developer Portal
@@ -157,6 +157,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Container Deployment Configurations
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `analytics.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `analytics.replicaCount` | Number of analytics nodes | `1` |
 | `analytics.image.pullPolicy` | Analytics image pull policy | `IfNotPresent` |
 | `analytics.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -164,6 +165,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
 | `analytics.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `apim.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `apim.replicaCount` | Number of APIM nodes | `1` |
 | `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
 | `apim.otkDb.name` | APIM OTK Database name | `otk_db` |
@@ -172,6 +174,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `apim.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `authenticator.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `authenticator.replicaCount` | Number of authenticator nodes | `1` |
 | `authenticator.image.pullPolicy` | authenticator image pull policy | `IfNotPresent` |
 | `authenticator.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -179,6 +182,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `authenticator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `authenticator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `dispatcher.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `dispatcher.replicaCount` | Number of dispatcher nodes | `1` |
 | `dispatcher.image.pullPolicy` | Dispatcher image pull policy | `IfNotPresent` |
 | `dispatcher.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -186,6 +190,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalData.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalData.replicaCount` | Number of portal data nodes | `1` |
 | `portalData.image.pullPolicy` | Portal-data image pull policy | `IfNotPresent` |
 | `portalData.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -193,6 +198,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
 | `portalData.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalEnterprise.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
 | `portalEnterprise.image.pullPolicy` | Portal enterprise image pull policy | `IfNotPresent` |
 | `portalEnterprise.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -200,6 +206,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `pssg.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `pssg.replicaCount` | Number of PSSG nodes | `1` |
 | `pssg.image.pullPolicy` | PSSG image pull policy | `IfNotPresent` |
 | `pssg.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -207,12 +214,14 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `solr.replicaCount` | Number of Solr nodes | `1` |
 | `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
 | `solr.strategy` | Update strategy   | `{} evaluated as a template` |
 | `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `solr.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
+| `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy | `IfNotPresent` |
 | `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -317,19 +326,19 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.0` |
-| `image.pssg` | PSSG image | `pssg:5.0` |
-| `image.apim` | APIM ingress image | `ingress:5.0` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0` |
-| `image.data` | portal-data image | `portal-data:5.0` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0` |
-| `image.solr` | Solr image | `solr:5.0` |
-| `image.analytics` | Analytics image | `analytics-server:5.0` |
-| `image.authenticator` | Authenticator image | `authenticator:5.0` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.0` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.0` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.0` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.0.2` |
+| `image.pssg` | PSSG image | `pssg:5.0.2` |
+| `image.apim` | APIM ingress image | `ingress:5.0.2` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0.2` |
+| `image.data` | portal-data image | `portal-data:5.0.2` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0.2` |
+| `image.solr` | Solr image | `solr:5.0.2` |
+| `image.analytics` | Analytics image | `analytics-server:5.0.2` |
+| `image.authenticator` | Authenticator image | `authenticator:5.0.2` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0.2` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.0.2` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.0.2` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.0.2` |
 
 ## Subcharts
 For Production, please use an external MySQL Server.
@@ -339,6 +348,7 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `druid.forceRedeploy` | Force redeployment (all druid components) during helm upgrade whether there is a change or not | `false` |
 | `druid.serviceAccount.create` | Enable creation of ServiceAccount for the Druid Chart   | `true` |
 | `druid.serviceAccount.name` |  Name of the created serviceAccount   | Generated using the `druid.fullname` template` |
 | `druid.persistence.storage.historical` | Historical PVC Size   | `50Gi` |
@@ -412,14 +422,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:5.0` |
-| `druid.image.broker`                | Broker image   | `druid:5.0` |
-| `druid.image.coordinator`                | Coordinator  | `druid:5.0` |
-| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.0` 
-| `druid.image.minio`                | Minio image   | `minio:5.0` |
-| `druid.image.historical`                | Historical image   | `druid:5.0` |
-| `druid.image.kafka`                | Kafka image   | `kafka:5.0` |
-| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.0` |
+| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:5.0.2` |
+| `druid.image.broker`                | Broker image   | `druid:5.0.2` |
+| `druid.image.coordinator`                | Coordinator  | `druid:5.0.2` |
+| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.0.2` 
+| `druid.image.minio`                | Minio image   | `minio:5.0.2` |
+| `druid.image.historical`                | Historical image   | `druid:5.0.2` |
+| `druid.image.kafka`                | Kafka image   | `kafka:5.0.2` |
+| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.0.2` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -428,7 +438,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.0` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.0.2` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |

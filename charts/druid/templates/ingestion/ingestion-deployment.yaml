@@ -21,6 +21,10 @@ spec:
     metadata:
       labels:
         app: ingestion-server
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.ingestion.affinity }}
