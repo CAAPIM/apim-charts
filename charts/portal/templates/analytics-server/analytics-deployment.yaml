@@ -23,6 +23,10 @@ spec:
     metadata:
       labels:
         app: analytics-server
+      {{ if .Values.analytics.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.analytics.affinity }}

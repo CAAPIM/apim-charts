@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: solr
+      {{ if .Values.solr.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.solr.nodeSelector }}

@@ -148,6 +148,7 @@ rbac:
 
 # If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
 analytics:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -167,6 +168,7 @@ analytics:
 # affinity: {}
 
 apim:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -188,6 +190,7 @@ apim:
 # affinity: {}
 
 authenticator:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -207,6 +210,7 @@ authenticator:
 # affinity: {}
 
 dispatcher:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -234,6 +238,7 @@ dispatcher:
 #    key1: value
 
 portalData:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -253,6 +258,7 @@ portalData:
 # affinity: {}
 
 portalEnterprise:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -272,6 +278,7 @@ portalEnterprise:
 # affinity: {}
 
 pssg:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -291,6 +298,7 @@ pssg:
 # affinity: {}
 
 solr:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -309,6 +317,7 @@ solr:
 # nodeSelector: {}
 
 tenantProvisioner:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -349,6 +358,7 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
+  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
@@ -414,7 +424,6 @@ druid:
       # memory: 256Mi
   # nodeSelector: {}
   # affinity: {}
-
 
   coordinator:
     replicaCount: 1
