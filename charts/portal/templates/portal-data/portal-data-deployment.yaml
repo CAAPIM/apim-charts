@@ -31,6 +31,9 @@ spec:
       {{- if .Values.portalData.nodeSelector }}
       nodeSelector: {{- toYaml .Values.portalData.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.portalData.tolerations }}
+      tolerations: {{- toYaml .Values.portalData.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
