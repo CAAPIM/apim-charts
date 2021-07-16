@@ -1,0 +1,14 @@
+{{ if .Values.cassandra.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  otk.cql: |
+   CREATE KEYSPACE otk_db WITH replication = {'class' : {{ .Values.otk.cassandra.strategy }}, 'replication_factor' : {{ .Values.otk.cassandra.replicationFactor }}};
+{{ end }}

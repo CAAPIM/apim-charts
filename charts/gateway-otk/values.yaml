@@ -39,7 +39,7 @@ management:
   enabled: true
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
-    enabled: false
+    enabled: true
   username: admin
   password: mypassword
 
@@ -87,7 +87,7 @@ config:
       com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
       java.util.logging.SimpleFormatter.format=
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
-      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
+      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = FINE
 tls:
   customKey:
     enabled: false
@@ -100,12 +100,69 @@ tls:
     enabled: false
     key:
     pass: mypassword
+otk:
+  cassandra:
+    strategy: 'SimpleStrategy'
+    replicationFactor: 1
 
 installSolutionKits:
-  enabled: false
+  enabled: true
   restmanPort: 8443
   restmanReadyWaitInterval: 30s
   restmanReadyWaitMaxAttempt: 10
+
+  # OTK JDBC connection
+  otkJdbcEnabled: true
+  otkJdbcDriver: com.mysql.jdbc.Driver
+  #   - WARNING 1: MySQL deployed by this example is for DEVELOPMENT ONLY OTK database.
+  #                For production, an EXTERNALLY managed PERSISTENT deployment is recommended (along with using non-ROOT database/JDBC user).
+  #   - WARNING 2: jdbc url, user & password are also configured elsewhere, search "preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase"
+  #   - The host part of jdbc url in this example is determined by the release name used to install. E.g. for "helm install ssg-otk ..." use "ssg-otk-mysql"
+  otkJdbcUrl: jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db
+  otkJdbcUser: gateway
+  otkJdbcPassword: mypassword
+
+  solutionKits:
+    # 1: OTK Base Selection
+    #   https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
+    #     Prerequisite:
+    #       1) set bundle.enabled in (this file) to true (this is to generate the JDBC connection on the Gateway to the OTK MySQL database)
+    #       2) separate install of some OTK sub-solution kits to avoid bug that requires Gateway restart (recommendation from OTK engineering team)
+    #       3) Liquibase files to create OTK database schema (/tmp/otk-db-liquibase/)
+    - otkBaseSelect1:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase-3.2.2.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
+      # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
+      param: --form solutionKitSelectByName="OTK Assertions"
+    - otkBaseSelect2:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001
+      param: --form solutionKitSelectByName="Shared OAuth Resources"
+    - otkBaseSelect3:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 0b0f9534-94f4-4cca-a05a-4c9e7776f8a9
+      param: --form solutionKitSelectByName="Shared Portal Resources"
+      postInstallCommand: sleep 10s
+    - otkBaseSelect4:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 082be2e3-6399-4d51-8aad-a87715364537
+      param: --form solutionKitSelectByName="Persistence Layer%3A MySQL or Oracle"
+    - otkBaseSelect5:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 39efbb1d-4c10-4a88-9774-ece574845c94
+      param: --form solutionKitSelectByName="Portal Persistence Layer%3A MySQL or Oracle"
+    - otkBaseSelect6:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6008
+      param: -form solutionKitSelectByName="Internal, Server Tools"
+    - otkBaseSelect7:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6003
+      param: --form solutionKitSelectByName="DMZ, OAuth 2.0 and OpenID Connect endpoints"
+    - otkBaseSelect8:
+      file: OAuthSolutionKit-4.4.1-4425.sskar
+      # solutionKitID: 8918de1b-d0ac-46c6-83a2-7ba4a0e5c1b0
+      param: --form solutionKitSelectByName="Internal, Portal"
 
 #Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
@@ -123,8 +180,8 @@ additionalSecret:
 
 # This mounts a bundle folder to the Gateway.
 bundle:
-  enabled: false
-  path: "bundles/*.bundle"
+  enabled: true
+  path: "bundles/jdbc-connection-oauth.bundle"
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
@@ -222,7 +279,7 @@ mysql:
   mysqlUser: gateway
   mysqlPassword: mypassword
   mysqlDatabase: ssg
-  #mysqlRootPassword: mypassword
+  mysqlRootPassword: mypassword
   persistence:
     enabled: true
     size: 8Gi
@@ -294,3 +351,11 @@ grafana:
       fileName: gateway-service-metrics.json
   datasources:
     secretName: grafana-secret
+cassandra:
+  enabled: true
+  image:
+    tag: "3"
+  dbUser:
+    user: admin
+    password: password
+  initDBConfigMap: cassandra-configmap

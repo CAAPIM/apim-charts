@@ -47,7 +47,7 @@ spec:
                     done
                     {{- range .Values.installSolutionKits.solutionKits }}
                     {{ .preInstallCommand }}
-                    curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
+                    curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} --insecure -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
                     {{ .postInstallCommand }}
                     {{- end }}
           {{- end }}
@@ -86,6 +86,10 @@ spec:
 {{ if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
+{{ end }}
+{{ if .Values.installSolutionKits.otkJdbcEnabled }}
+            - name: {{ template "gateway.fullname" . }}-otk-artifacts
+              mountPath: /tmp/
 {{ end }}
           envFrom:
             - configMapRef:
@@ -159,4 +163,9 @@ spec:
 {{ if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
+{{ end }}
+{{ if .Values.installSolutionKits.otkJdbcEnabled }}
+        - name: {{ template "gateway.fullname" . }}-otk-artifacts
+          hostPath:
+            path: /home/docker/otk-artifacts
 {{ end }}
