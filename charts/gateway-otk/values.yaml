@@ -77,17 +77,18 @@ config:
     - -Dcom.l7tech.server.audit.admin.saveToInternal=false
     - -Dcom.l7tech.server.audit.system.saveToInternal=false
     - -Dcom.l7tech.server.audit.log.format=json
+    - -Dcom.l7tech.logging.debug=true
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
   log:
     override: true
     properties: |-
-      handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
-      com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
-      java.util.logging.SimpleFormatter.format=
-      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
-      com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = FINE
+      handlers = com.l7tech.server.log.GatewayRootLoggingHandler
+      com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.ConfigurableLogFormatter
+      com.l7tech.server.log.GatewayRootLoggingHandler.formatter.format = %1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL%1$tz %2$-7s %5$d %3$s: %4$s%n
+      java.util.logging.FileHandler.formatter = com.l7tech.util.ConfigurableLogFormatter
+      java.util.logging.FileHandler.formatter.format = %1$tY-%1$tm-%1$tdT%1$tH:%1$tM:%1$tS.%1$tL%1$tz %2$-7s %5$d %3$s: %4$s%n
 tls:
   customKey:
     enabled: false
@@ -138,31 +139,6 @@ installSolutionKits:
       file: OAuthSolutionKit-4.4.1-4425.sskar
       # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001
       param: --form solutionKitSelectByName="Shared OAuth Resources"
-    - otkBaseSelect3:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 0b0f9534-94f4-4cca-a05a-4c9e7776f8a9
-      param: --form solutionKitSelectByName="Shared Portal Resources"
-      postInstallCommand: sleep 10s
-    - otkBaseSelect4:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 082be2e3-6399-4d51-8aad-a87715364537
-      param: --form solutionKitSelectByName="Persistence Layer%3A MySQL or Oracle"
-    - otkBaseSelect5:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 39efbb1d-4c10-4a88-9774-ece574845c94
-      param: --form solutionKitSelectByName="Portal Persistence Layer%3A MySQL or Oracle"
-    - otkBaseSelect6:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6008
-      param: -form solutionKitSelectByName="Internal, Server Tools"
-    - otkBaseSelect7:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6003
-      param: --form solutionKitSelectByName="DMZ, OAuth 2.0 and OpenID Connect endpoints"
-    - otkBaseSelect8:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      # solutionKitID: 8918de1b-d0ac-46c6-83a2-7ba4a0e5c1b0
-      param: --form solutionKitSelectByName="Internal, Portal"
 
 #Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
@@ -264,7 +240,7 @@ resources:
   #   memory: 2Gi
 
 serviceAccount:
-  # name:
+  #name:
   create: true
 
 ###############################################################################################
@@ -352,10 +328,23 @@ grafana:
   datasources:
     secretName: grafana-secret
 cassandra:
-  enabled: true
+  enabled: false
   image:
-    tag: "3"
+    tag: "2.2.19"
   dbUser:
     user: admin
     password: password
   initDBConfigMap: cassandra-configmap
+  persistence:
+    enabled: false
+  resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    limits:
+       cpu: 1200m
+       memory: 4Gi
+    requests:
+       cpu: 200m
+       memory: 3Gi

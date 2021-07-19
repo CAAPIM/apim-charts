@@ -20,7 +20,7 @@ spec:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . }}      
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
 {{ if .Values.image.secretName }}
       imagePullSecrets:
         - name: {{ .Values.image.secretName | quote }}
@@ -88,8 +88,10 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
 {{ if .Values.installSolutionKits.otkJdbcEnabled }}
-            - name: {{ template "gateway.fullname" . }}-otk-artifacts
-              mountPath: /tmp/
+            - name: {{ template "gateway.fullname" . }}-otk-db-liquibase
+              mountPath: /tmp/otk-db-liquibase
+            - name: {{ template "gateway.fullname" . }}-otk-sskar
+              mountPath: /tmp/OAuthSolutionKit-4.4.1-4425.sskar
 {{ end }}
           envFrom:
             - configMapRef:
@@ -165,7 +167,11 @@ spec:
           emptyDir: {}
 {{ end }}
 {{ if .Values.installSolutionKits.otkJdbcEnabled }}
-        - name: {{ template "gateway.fullname" . }}-otk-artifacts
+        - name: {{ template "gateway.fullname" . }}-otk-db-liquibase
           hostPath:
-            path: /home/docker/otk-artifacts
+            path: /home/docker/otk-artifacts/otk-db-liquibase
+        - name: {{ template "gateway.fullname" . }}-otk-sskar
+          hostPath:
+            path: /home/docker/otk-artifacts/OAuthSolutionKit-4.4.1-4425.sskar
+            type: File
 {{ end }}
