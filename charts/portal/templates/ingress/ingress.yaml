@@ -135,6 +135,24 @@ spec:
           serviceName: apim
           servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
 {{- end }}
+{{- range .Values.ingress.customRoutes }}
+  - host: "{{ .subdomain }}.{{ $.Values.portal.domain }}"
+    http:
+      paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: {{ .service.name }}
+            port:
+              name: {{ .service.port }}
+{{- else }}
+      - backend:
+          serviceName: {{ .service.name }}
+          servicePort: {{ .service.port }}
+{{- end }}
+{{- end }}
 {{- range .Values.ingress.tenantIds }}
   - host: "{{ . }}.{{ $.Values.portal.domain }}"
     http:

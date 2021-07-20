@@ -134,8 +134,14 @@ spec:
           {{- if .Values.portalEnterprise.resources }}
           resources: {{- toYaml .Values.portalEnterprise.resources | nindent 12 }}
           {{- end }}
+          {{- if .Values.global.enableMetricEndpoints }}
           ports:
             - containerPort: 8080
+            - containerPort: 9999
+          {{ else }}
+          ports:
+            - containerPort: 8080
+          {{ end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"

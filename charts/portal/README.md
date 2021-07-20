@@ -91,6 +91,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.legacyHostnames` | Legacy Hostnames | `false` |
 | `global.legacyDatabaseNames` | Legacy Database names | `false` |
 | `global.subdomainPrefix` | Subdomain Prefix | `dev-portal` |
+| `global.helpPage` | Documentation Help Page | `https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/` |
 | `global.storageClass` | Global Storage Class | `_` |
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
@@ -174,6 +175,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
 | `authenticator.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `authenticator.replicaCount` | Number of authenticator nodes | `1` |
+| `authenticator.javaOptions` | Java Options to pass in | `-Xms1g -Xmx1g` |
 | `authenticator.image.pullPolicy` | authenticator image pull policy | `IfNotPresent` |
 | `authenticator.strategy` | Update strategy   | `{} evaluated as a template` |
 | `authenticator.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -188,6 +190,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `portalData.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalData.replicaCount` | Number of portal data nodes | `1` |
+| `portalData.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
 | `portalData.image.pullPolicy` | Portal-data image pull policy | `IfNotPresent` |
 | `portalData.strategy` | Update strategy   | `{} evaluated as a template` |
 | `portalData.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -195,6 +198,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
+| `portalEnterprise.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
 | `portalEnterprise.image.pullPolicy` | Portal enterprise image pull policy | `IfNotPresent` |
 | `portalEnterprise.strategy` | Update strategy   | `{} evaluated as a template` |
 | `portalEnterprise.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -209,12 +213,14 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `solr.replicaCount` | Number of Solr nodes | `1` |
+| `solr.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
 | `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
 | `solr.strategy` | Update strategy   | `{} evaluated as a template` |
 | `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
+| `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy | `IfNotPresent` |
 | `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
 | `tenantProvisioner.resources` | Resource request/limits   | `{} evaluated as a template` |
