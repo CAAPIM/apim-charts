@@ -48,7 +48,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.0.00`  |
+| `image.tag`          | Image tag | `10.1.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `Always`  |
 | `image.secretName`          | Creates an imagePullSecrets | `nil`  |
 | `image.credentials.username`          | Registry Username | `nil`  |
