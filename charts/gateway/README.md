@@ -4,6 +4,11 @@ This Chart deploys the API Gateway with the following `optional` subcharts: haze
 
 It's targeted at Gateway v10.x onward.
 
+# Java 11
+API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.0.
+
+Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
+
 # Install the Chart
 ```
 $ helm repo add layer7 https://caapim.github.io/apim-charts/
@@ -37,7 +42,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.0.00`  |
+| `image.tag`          | Image tag | `10.1.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `image.secretName`          | Creates an imagePullSecrets | `nil`  |
 | `image.credentials.username`          | Registry Username | `nil`  |

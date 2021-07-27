@@ -7,6 +7,12 @@ It's targeted at Gateway v10.x onward.
 ## This Chart is currently in an alpha state
 Requires a custom Gateway image, more details to follow in the coming weeks.
 
+# Java 11
+
+API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway-OTK chart's version has been incremented to 1.0.0.
+
+Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
+
 # Install the Chart
 
 ## From this Repository
@@ -48,7 +54,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.0.00`  |
+| `image.tag`          | Image tag | `10.1.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `Always`  |
 | `image.secretName`          | Creates an imagePullSecrets | `nil`  |
 | `image.credentials.username`          | Registry Username | `nil`  |
