@@ -33,6 +33,9 @@ spec:
       {{- if .Values.ingestion.nodeSelector }}
       nodeSelector: {{- toYaml .Values.ingestion.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.ingestion.tolerations }}
+      tolerations: {{- toYaml .Values.ingestion.tolerations | nindent 12 }}
+      {{- end }}
       containers:
         - name: ingestion-server
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.ingestion }}"

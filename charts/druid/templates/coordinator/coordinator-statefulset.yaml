@@ -32,6 +32,9 @@ spec:
       {{- if .Values.coordinator.nodeSelector }}
       nodeSelector: {{- toYaml .Values.coordinator.nodeSelector | nindent 12 }}
       {{- end }}
+      {{- if .Values.coordinator.tolerations }}
+      tolerations: {{- toYaml .Values.coordinator.tolerations | nindent 12 }}
+      {{- end }}
       containers:
         - name: coordinator
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.coordinator }}"

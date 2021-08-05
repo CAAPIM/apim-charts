@@ -164,6 +164,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.strategy` | Update strategy   | `{} evaluated as a template` |
 | `analytics.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `analytics.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
+| `analytics.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
 | `apim.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `apim.replicaCount` | Number of APIM nodes | `1` |
@@ -172,6 +173,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.strategy` | Update strategy   | `{} evaluated as a template` |
 | `apim.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `apim.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
 | `authenticator.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `authenticator.replicaCount` | Number of authenticator nodes | `1` |
@@ -180,6 +182,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.strategy` | Update strategy   | `{} evaluated as a template` |
 | `authenticator.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `authenticator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `authenticator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `authenticator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `dispatcher.replicaCount` | Number of dispatcher nodes | `1` |
@@ -187,6 +190,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.strategy` | Update strategy   | `{} evaluated as a template` |
 | `dispatcher.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `dispatcher.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `dispatcher.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `portalData.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalData.replicaCount` | Number of portal data nodes | `1` |
@@ -195,6 +199,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.strategy` | Update strategy   | `{} evaluated as a template` |
 | `portalData.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `portalData.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
+| `portalData.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
@@ -203,6 +208,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.strategy` | Update strategy   | `{} evaluated as a template` |
 | `portalEnterprise.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `portalEnterprise.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `portalEnterprise.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `pssg.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `pssg.replicaCount` | Number of PSSG nodes | `1` |
@@ -210,6 +216,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.strategy` | Update strategy   | `{} evaluated as a template` |
 | `pssg.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `solr.replicaCount` | Number of Solr nodes | `1` |
@@ -218,6 +225,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `solr.strategy` | Update strategy   | `{} evaluated as a template` |
 | `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `solr.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
@@ -225,6 +233,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
 | `tenantProvisioner.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `tenantProvisioner.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `tenantProvisioner.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.affinity ` | Affinity for pod assignment   | `{} evaluated as a template` |
 
 
@@ -369,41 +378,49 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.minio.azuregateway.enabled` | Use minio as an azure blob gateway - https://docs.minio.io/docs/minio-gateway-for-azure   | `false` |
 | `druid.minio.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.minio.nodeSelector`| Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.replicaCount` | Number of zookeeper nodes   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.zookeeper.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.replicaCount` | Number of coordinator nodes   | `1` |
 | `druid.coordinator.image.pullPolicy` | Coordinator image pull policy  | `IfNotPresent` |
 | `druid.coordinator.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.coordinator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.replicaCount` | Number of kafka nodes   | `1` |
 | `druid.kafka.image.pullPolicy` | Kafka image pull policy   | `IfNotPresent` |
 | `druid.kafka.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.kafka.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.replicaCount` | Number of broker nodes   | `1` |
 | `druid.broker.image.pullPolicy` | Broker image pull policy   | `IfNotPresent` |
 | `druid.broker.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.broker.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.replicaCount` | Number of historical nodes   | `1` |
 | `druid.historical.image.pullPolicy` | Historical image pull policy   | `IfNotPresent` |
 | `druid.historical.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.historical.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.replicaCount` | Number of ingestion nodes   | `1` |
 | `druid.ingestion.image.pullPolicy` | Ingestion image pull policy   | `IfNotPresent` |
 | `druid.ingestion.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.ingestion.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.replicaCount` | Number of middle manager nodes   | `1` |
 | `druid.middlemanager.image.pullPolicy` | Middle manager image pull policy   | `IfNotPresent` |
 | `druid.middlemanager.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.middlemanager.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
+| `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 
 ## Druid Images
