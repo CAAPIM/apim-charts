@@ -8,6 +8,6 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  JAVA_OPTS: -Xms512m -Xmx512m
+  JAVA_OPTIONS: {{ .Values.solr.javaOptions | default "-Xms512m -Xmx512m" | quote }}
   NSS_SDB_USE_CACHE: "no"
   SOLR_PORT: "8983"

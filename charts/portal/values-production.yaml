@@ -20,6 +20,7 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/
 # storageClass: "_"
 # schedulerName:
 
@@ -210,6 +211,7 @@ apim:
 authenticator:
   forceRedeploy: false
   replicaCount: 2
+  javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -278,6 +280,7 @@ dispatcher:
 portalData:
   forceRedeploy: false
   replicaCount: 2
+  javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -308,6 +311,7 @@ portalData:
 portalEnterprise:
   forceRedeploy: false
   replicaCount: 2
+  javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -369,6 +373,7 @@ pssg:
 solr:
   forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -389,6 +394,7 @@ solr:
 tenantProvisioner:
   forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
   strategy:
