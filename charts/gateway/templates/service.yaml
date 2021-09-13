@@ -33,4 +33,8 @@ spec:
       port: {{ .external }}
       targetPort: {{ .internal }}
       name: {{ .name | quote }}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
 {{- end }}
