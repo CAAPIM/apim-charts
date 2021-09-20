@@ -154,8 +154,11 @@ service:
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
-#    cloud.google.com/load-balancer-type: "Internal"
-
+    # cloud.google.com/load-balancer-type: "Internal"
+  
+  # Set the value to true will enable client IP session affinity
+  enableSessionAffinity: false
+  
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
