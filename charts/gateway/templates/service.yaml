@@ -28,13 +28,15 @@ spec:
   externalIPs: {{- toYaml .Values.service.externalIPs | nindent 4 }}
   {{- end }}
   ports:
-{{- range .Values.service.ports }}
+  {{- range .Values.service.ports }}
     - protocol: TCP
       port: {{ .external }}
       targetPort: {{ .internal }}
       name: {{ .name | quote }}
-{{- end }}
+  {{- end }}
+  {{- if .Values.service.enableSessionAffinity }}
   sessionAffinity: ClientIP
   sessionAffinityConfig:
     clientIP:
       timeoutSeconds: 10800
+  {{- end }}
