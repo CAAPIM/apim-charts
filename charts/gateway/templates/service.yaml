@@ -34,9 +34,9 @@ spec:
       targetPort: {{ .internal }}
       name: {{ .name | quote }}
   {{- end }}
-  {{- if .Values.service.enableSessionAffinity }}
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800
+  {{- if .Values.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.service.sessionAffinityConfig | nindent 4 }}
   {{- end }}
