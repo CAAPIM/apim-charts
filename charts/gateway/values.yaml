@@ -173,7 +173,7 @@ service:
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
     # cloud.google.com/load-balancer-type: "Internal"
-  
+
   # Uncomment the following section to enable session affinity
   # sessionAffinity: ClientIP
   # sessionAffinityConfig:
