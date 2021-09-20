@@ -5,7 +5,7 @@ This Chart deploys the API Gateway with the following `optional` subcharts: haze
 It's targeted at Gateway v10.x onward.
 
 # Java 11
-API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.0.
+API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.1.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
 
