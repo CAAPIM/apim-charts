@@ -1,12 +1,13 @@
-helm-extra-args: --timeout 600s
-check-version-increment: true
-validate_maintainers: false
 debug: true
+charts:
+  - charts/portal
+  - charts/gateway
 chart-repos:
   - bitnami=https://charts.bitnami.com/bitnami
   - influx=https://helm.influxdata.com/
   - stable=https://charts.helm.sh/stable
   - hazelcast=https://hazelcast-charts.s3.amazonaws.com/
   - nginx=https://kubernetes.github.io/ingress-nginx/
+  - layer7=https://caapim.github.io/apim-charts/
 excluded-charts:
   - druid
