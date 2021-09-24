@@ -1,7 +1,7 @@
 nameOverride: ""
 fullnameOverride: ""
 global:
-  schedulerName: 
+  schedulerName:
 
 # Use set file to place a Gateway license here
 license:
