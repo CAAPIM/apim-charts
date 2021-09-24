@@ -7,7 +7,7 @@ global:
 license:
   value:
   accept: true
-  #existingSecretName: ssg-license
+  # existingSecretName: ssg-license
 
 image:
   registry: docker.io
@@ -19,7 +19,7 @@ image:
 # Alternatively, leave this disabled and reference a service account that has the image pull secret associated with it.
 imagePullSecret:
   enabled: false
-  #existingSecretName: private-registry-secret
+  # existingSecretName: private-registry-secret
   username:
   password:
 
@@ -251,7 +251,7 @@ ingress:
   # Ingress class
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
