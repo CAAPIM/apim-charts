@@ -23,7 +23,6 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 - You can now reference existing bundles stored in configMaps/Secrets
 - NodeSelector and Affinity settings for the Gateway Deployment
 - Resources values updated to reflect minimum recommended configuration
-- license.accept now defaults to true
 
 ## Upgrading to 2.0.2
 ### If you are using the demo database in a previous version of this Chart this upgrade will remove it. If you wish to keep your data you will need to perform a backup.
@@ -33,20 +32,20 @@ $ helm show values layer7/gateway > gateway-values.yaml
 
 Inspect and update the new gateway-values.yaml
 
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" -f ./gateway-values.yaml  layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
 ```
 
 # Install the Chart
 ```
 $ helm repo add layer7 https://caapim.github.io/apim-charts/
 $ helm repo update
-$ helm install my-ssg --set-file "license.value=path/to/license.xml" layer7/gateway
+$ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
 
 ## Upgrade this Chart
 To upgrade the Gateway deployment
 ```
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
 ## Remove this Chart
 To delete Gateway installation

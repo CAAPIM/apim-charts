@@ -6,7 +6,7 @@ global:
 # Use set file to place a Gateway license here
 license:
   value:
-  accept: true
+  accept: false
   # existingSecretName: ssg-license
 
 image:
