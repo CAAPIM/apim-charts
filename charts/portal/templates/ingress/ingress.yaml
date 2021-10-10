@@ -13,6 +13,9 @@ metadata:
    chart: {{ template "portal.chart" . }}
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
+   {{- range $key, $val := .Values.ingress.additionalLabels }}
+   {{ $key }}: "{{ $val }}"
+   {{- end }}
  annotations:
 {{- range $key, $val := .Values.ingress.annotations }}
    {{ $key }}: "{{ $val }}"
