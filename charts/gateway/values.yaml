@@ -1,24 +1,33 @@
 nameOverride: ""
 fullnameOverride: ""
+global:
+  schedulerName:
 
 # Use set file to place a Gateway license here
 license:
   value:
   accept: false
+  # existingSecretName: ssg-license
 
 image:
   registry: docker.io
   repository: caapim/gateway
   tag: 10.1.00
   pullPolicy: IfNotPresent
-  # Will create a Registry secret and apply it to the Gateway
-  secretName:
-  credentials:
-    username:
-    password:
-    email:
 
-# Number of Edge Gateways to deploy
+# Set this if you would like to add an image pull secret directly to the Gateway deployment
+# Alternatively, leave this disabled and reference a service account that has the image pull secret associated with it.
+imagePullSecret:
+  enabled: false
+  # existingSecretName: private-registry-secret
+  username:
+  password:
+
+serviceAccount:
+  # name:
+  create: true
+
+# Number of Gateways to deploy
 replicas: 1
 # Update strategy
 updateStrategy:
@@ -30,6 +39,19 @@ updateStrategy:
 # Cluster Hostname
 clusterHostname: my.localdomain
 
+## Reference an existing secret for sensitive Gateway fields
+## Note that additionalSecret will no longer take effect when existingGatewaySecret is true.
+
+# existingGatewaySecretName: ssg-secret
+
+## The folllowing must be included
+  # SSG_ADMIN_USERNAME
+  # SSG_ADMIN_PASSWORD
+  # SSG_CLUSTER_PASSWORD
+## If using a Database
+  # SSG_DATABASE_USER
+  # SSG_DATABASE_PASSWORD
+
 # Cluster Password
 clusterPassword: mypassword
 
@@ -40,6 +62,7 @@ management:
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
     enabled: false
+  # This is the username/password used for Policy Manager/Gateway Management
   username: admin
   password: mypassword
 
@@ -50,12 +73,25 @@ database:
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.<settings> if you change this
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
   username: gateway
   password: mypassword
   name: ssg
 
-## Beta - enable/disable the background metrics processing task
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
+## Demo - enable/disable the background metrics processing task
 ## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
 ## Disabling on upgrade will have no effect on the deployed policy
 ## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
@@ -102,18 +138,14 @@ config:
           com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-
-tls:
-  customKey:
-    enabled: false
-  # when enabled, the pass cannot be empty. key value needs to be base64 encoded .p12
-  # This key will become the default ssl key. Can only have one.
-  # ex. DEMO_KEY=`cat demo-key.p12 | base64 --wrap=0`
-  # use with helm command: --set "tls.customDefaultSslKey.key=$DEMO_KEY"
-  customDefaultSslKey:
-    enabled: false
-    key:
-    pass:
+  systemProperties: |-
+    # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
+    # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
+    com.safelogic.cryptocomply.rsa.allow_multi_use=true
+    # Specifies the type of Trust Store (JKS/PKCS12) provided by AdoptOpenJDK that is used by Gateway.
+    # Must be set correctly when Gateway is running in FIPS mode. If not specified it will default to PKCS12.
+    javax.net.ssl.trustStoreType=jks
+    # Additional properties go here
 
 # Install Gateway solution kit(s) using restman.
 #   Prerequisites:
@@ -139,10 +171,38 @@ additionalSecret:
 # key1: value
 # key2: value
 
-# This mounts a bundle folder to the Gateway.
+# This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
+# Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
+# Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
+# We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
 bundle:
   enabled: false
   path: "bundles/*.bundle"
+
+# This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+# When creating these secrets/configmaps the format should be
+# key: bundle1.bundle value: <xml value>
+# Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+existingBundle:
+  enabled: false
+  configMaps:
+  - mybundle1
+  - mybundle2
+  secrets:
+  - mysecretbundle1
+  - mysecretbundle2
+
+# Configure custom hosts
+customHosts:
+  enabled: false
+  hostAliases:
+  - hostnames:
+    - "dev.ca.com"
+    - "dev1.ca.com"
+    ip: "0.0.0.0"
+  - hostnames:
+    - "example.ca.com"
+    ip: "0.0.0.0"
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
@@ -186,23 +246,28 @@ service:
 ingress:
   # Set to true to create ingress object
   enabled: false
-  class: nginx
   # Ingress annotations
   annotations:
   # Ingress class
-  #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
-  hostname:
+   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
+
+  # TLS Secret Name - this must present in your Kubernetes Cluster.
+  secretName: tls-secret
+  # Array of Hostnames that the certificate is valid for - must contain at least one.
+  hostname: dev.ca.com
+  tlsHostnames:
+  - dev.ca.com
+  - dev1.ca.com
   ## The port that you want to route to via ingress. This needs to be available via service.ports.
-  port: https
+  port: 8443
   ## Define additional hostnames and ports as key-value pairs.
   additionalHostnamesAndPorts:
-  #  managementhost.domain: management
-  ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
-  tls: false
-  secretName:
+    dev1.ca.com: 9443
 
 livenessProbe:
   enabled: true
@@ -239,42 +304,62 @@ resources:
   # increases the chance of these running on environments with fewer resources available
   # Remove the curly braces and uncomment cpu/memory to set.
   limits: {}
-  #   cpu: 1000m
-  #   memory: 2Gi
+  #   cpu: 2000m
+  #   memory: 4Gi
   requests: {}
-  #   cpu: 1000m
-  #   memory: 2Gi
+  #   cpu: 2000m
+  #   memory: 4Gi
 
-serviceAccount:
-  # name:
-  create: true
+# nodeSelector: {}
+# affinity: {}
 
 ##
 ## Subchart Configuration
 ##
 
-# MySQL stable chart - this is not scalable nor will be in this format.
+# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
-  imageTag: "8"
-  mysqlUser: gateway
-  mysqlPassword: mypassword
-  mysqlDatabase: ssg
-  # mysqlRootPassword: mypassword
-  persistence:
-    enabled: true
-    size: 8Gi
-    # storageClass:
-
-  configurationFiles:
-    my.cnf: |-
+  image:
+    tag: "8.0.22-debian-10-r75"
+  auth:
+    username: gateway
+    password: mypassword
+    database: ssg
+    rootPassword: mypassword
+  primary:
+    # persistence:
+    #   enabled: true
+    #   size: 8Gi
+    configuration: |-
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      character-set-server = utf8
-      innodb_log_buffer_size = 32M
-      innodb_log_file_size = 80M
-      max_allowed_packet = 20M
-      default-authentication-plugin=mysql_native_password
+      default_authentication_plugin=mysql_native_password
       log-bin-trust-function-creators=1
-
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
+      innodb_log_buffer_size=32M
+      innodb_log_file_size=80M
+      max_allowed_packet=20M
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 3.x servers

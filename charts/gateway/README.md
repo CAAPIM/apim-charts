@@ -5,9 +5,35 @@ This Chart deploys the API Gateway with the following `optional` subcharts: haze
 It's targeted at Gateway v10.x onward.
 
 # Java 11
-API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.1.
+API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
+
+## Changes that will affect you if upgrading from 2.0.1 and below
+- MySQL Stable Chart is deprecated - the demo database subChart has been changed to Bitnami MySQL - if your database is NOT externalised you will lose any policy/configuration you have there.
+- tls.customKey ==> tls.useSignedCertificates tls.key tls.pass tls.existingSecretName
+
+## 2.0.2 Updates to Secret Management
+- You can now specify existing secrets for Gateway Configuration, DefaultSSLKey (tls) and bundles
+
+## 2.0.2 General Updates
+- Ingress Definition updated to reflect the new API Version, additional configuration added.
+- HostAliases applies to /etc/hosts for dns names that aren't available on a dns server.
+- System.properties is now mounted to the Gateway Container, default values have been applied.
+- You can now reference existing bundles stored in configMaps/Secrets
+- NodeSelector and Affinity settings for the Gateway Deployment
+- Resources values updated to reflect minimum recommended configuration
+
+## Upgrading to 2.0.2
+### If you are using the demo database in a previous version of this Chart this upgrade will remove it. If you wish to keep your data you will need to perform a backup.
+```
+$ helm repo update
+$ helm show values layer7/gateway > gateway-values.yaml
+
+Inspect and update the new gateway-values.yaml
+
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
+```
 
 # Install the Chart
 ```
@@ -21,15 +47,25 @@ To upgrade the Gateway deployment
 ```
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
-## Delete this Chart
+## Remove this Chart
 To delete Gateway installation
 
 ```
-$ helm delete <release name> -n <release namespace>
+$ helm uninstall <release name> -n <release namespace>
 ```
 
 ## Custom values
 To make sure that your custom values don't get overwritten by a pull, create your own values.yaml (myvalues.yaml..) then specify -f myvalues.yaml when deploying/upgrading
+
+## Note on custom values
+You only need to include the values you wish to change in your myvalues.yaml
+
+For example, you wish to deploy the Gateway Chart as is without a database. Your myvalues.yaml would then contain the following
+```
+database:
+  enabled: false
+  create: false
+```
 
 ## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
@@ -38,20 +74,23 @@ The following table lists the configurable parameters of the Gateway chart and t
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `nameOverride`                | Name override   | `nil` |
 | `fullnameOverride`                      | Full name override                       | `nil`                                                     |
+| `global.schedulerName`                      | Override the default scheduler | `nil` |
 | `license.value`          | Gateway license file | `nil`  |
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
 | `image.tag`          | Image tag | `10.1.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `image.secretName`          | Creates an imagePullSecrets | `nil`  |
-| `image.credentials.username`          | Registry Username | `nil`  |
-| `image.credentials.password`          | Registry Password | `nil`  |
+| `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
+| `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
+| `imagePullSecret.username`          | Registry Username | `nil`  |
+| `imagePullSecret.password`          | Registry Password | `nil`  |
 | `replicas`                   | Number of Gateway replicas        | `1`                                                          |
 | `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
 | `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
 | `updateStrategy.rollingUpdate.maxUnavailable`             | Rolling Update Max Unavailable                       | `0`                                              |
 | `clusterHostname`          | Gateway Cluster Hostname  | `my.localdomain`  |
+| `existingGatewaySecretName`          | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out`  |
 | `clusterPassword`          | Cluster Password, used if db backed  | `mypassword`  |
 | `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
 | `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
@@ -62,6 +101,10 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.username`          | Database Username | `gateway`  |
 | `database.password`          | Database Password | `mypassword`  |
 | `database.name`          | Database name | `ssg`  |
+| `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false`  |
+| `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out`  |
+| `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
+| `tls.pass`          | p12 container password - this cannot be empty | `nil`  |
 | `serviceMetrics.enabled`          | Enable the background metrics processing task | `false`  |
 | `serviceMetrics.external`          | Point to an external influx database. Set influxDbUrl if true | `false`  |
 | `serviceMetrics.influxDbUrl`          | InfluxDB URL | `http://influxdb`  |
@@ -74,22 +117,27 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `config.log.properties`          | Custom logging properties | `see values.yaml`  |
 | `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false`  |
 | `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml`  |
-| `tls.customKey.enabled`          | Not currently implemented | `false`  |
+| `config.sytemProperties`          | Configure the Gateway's system.properties file | `see values.yaml`  |
 | `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
 | `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
-| `bundle.enabled`          | Create and mount an empty configMap that you can use to load policy bundles onto your Gateway | `false`  |
+| `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false`  |
 | `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`  |
+| `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false`  |
+| `existingBundle.configMaps`          | Array of configMap names that will be mounted to the Gateway's bootstrap folder | `see values.yaml`  |
+| `existingBundle.secrets`          | Array of Secret names that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`  |
+| `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
+| `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
 | `service.type`    | Service Type               | `LoadBalancer` |
 | `service.loadbal..`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
-| `ingress.class`    | Ingress Class               | `nginx` |
 | `ingress.annotations`    | Additional ingress annotations               | `{}` |
-| `ingress.hostname`    | Override clusterHostname               | `nil` |
-| `ingress.port`    | The Gateway Port number/name to route to               | `https` |
-| `ingress.tls`    | Use TLS on the Ingress resource              | `false` |
-| `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `nil` |
+| `ingress.hostname`    | Sets Ingress Hostname  | `nil` |
+| `ingress.port`    | The Gateway Port number/name to route to  | `8443` |
+| `ingress.tlsHostnames`    | Register additional Hostnames for the TLS Certificate  | `see values.yaml` |
+| `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `tls-secret` |
+| `ingress.additionalHostnamesAndPorts`    | key/value pairs of hostname:port that will be added to the ingress object  | `see values.yaml` |
 | `livenessProbe.enabled`    | Enable/Disable               | `true` |
 | `livenessProbe.initialDelaySeconds`    | Initial delay               | `60` |
 | `livenessProbe.timeoutSeconds`    | Timeout               | `1` |
@@ -175,19 +223,19 @@ MySQL doesn't have a tried and tested K8's production deployment so it's best to
 reference implementation coming soon...
 
 ## MySQL
-The following table lists the configured parameters of the MySQL Subchart - see the following for more detail https://github.com/helm/charts/tree/master/stable/mysql
+The following table lists the configured parameters of the MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.imageTag`                | MySQL Image to use   | `8` |
-| `mysql.mysqlUser`                | MySQL Username   | `gateway` |
-| `mysql.mysqlPassword`                | MySQL User Password   | `mypassword` |
-| `mysql.mysqlDatabase`                | Database to create   | `ssg` |
-| `mysql.mysqlRootPassword`                | MySQL root password, not set by default   | `nil` |
-| `mysql.persistence.enabled`                | Enable/Disable Persistence   | `true` |
-| `mysql.persistence.size`                | Persistent Volume Size   | `8Gi` |
-| `mysql.persistence.storageClass`                | Storage class to use   | `nil` |
-| `mysql.configurationFiles`                | Name overrid   | `see values.yaml` |
+| `mysql.image.tag`                | MySQL Image to use   | `8` |
+| `mysql.auth.username`                | MySQL Username   | `gateway` |
+| `mysql.auth.password`                | MySQL User Password   | `mypassword` |
+| `mysql.auth.database`                | Database to create   | `ssg` |
+| `mysql.auth.rootPassword`                | MySQL root password, not set by default   | `mypassword` |
+| `mysql.primary.persistence.enabled`                | Enable/Disable Persistence   | `true` |
+| `mysql.primary.persistence.size`                | Persistent Volume Size   | `8Gi` |
+| `mysql.primary.persistence.storageClass`                | Storage class to use   | `nil` |
+| `mysql.primary.configuration`                | MySQL Configuration   | `see values.yaml` |
 
 
 ## Hazelcast
@@ -244,6 +292,6 @@ The API Gateway containers are configured to output logs and audits as JSON even
 
 ### Subcharts
 *  Hazelcast (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
-*  MySQL (default: enabled)  ==> https://github.com/helm/charts/tree/master/stable/mysql
+*  MySQL (default: enabled)  ==> https://github.com/bitnami/charts/tree/master/bitnami/mysql
 *  InfluxDb (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
 *  Grafana (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
