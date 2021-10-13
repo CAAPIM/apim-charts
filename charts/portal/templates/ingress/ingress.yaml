@@ -13,6 +13,12 @@ metadata:
    chart: {{ template "portal.chart" . }}
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
+   {{- if .Values.global.saas }}
+   res_owner_email: {{ .Values.global.resOwnerEmail | quote }}
+   productteam: {{ .Values.global.productTeam | quote }}
+   kubernetes_namespace: {{ .Values.global.kubernetesNamespace | quote }}
+   environment: {{ .Values.global.environment | quote }}
+   {{- end }}
    {{- range $key, $val := .Values.ingress.additionalLabels }}
    {{ $key }}: "{{ $val }}"
    {{- end }}
