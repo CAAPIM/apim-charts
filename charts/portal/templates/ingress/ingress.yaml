@@ -7,25 +7,22 @@ apiVersion: networking.k8s.io/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
- name: portal-ingress
- labels:
-   app: {{ template "portal.name" . }}
-   chart: {{ template "portal.chart" . }}
-   release: {{ .Release.Name }}
-   heritage: {{ .Release.Service }}
-   {{- if .Values.global.saas }}
-   res_owner_email: {{ .Values.global.resOwnerEmail | quote }}
-   productteam: {{ .Values.global.productTeam | quote }}
-   kubernetes_namespace: {{ .Values.global.kubernetesNamespace | quote }}
-   environment: {{ .Values.global.environment | quote }}
-   {{- end }}
-   {{- range $key, $val := .Values.ingress.additionalLabels }}
-   {{ $key }}: "{{ $val }}"
-   {{- end }}
- annotations:
-{{- range $key, $val := .Values.ingress.annotations }}
-   {{ $key }}: "{{ $val }}"
-{{- end }}
+  name: portal-ingress
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+     {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   tls:
   - secretName: {{ .Values.ingress.secretName }}
