@@ -4,12 +4,12 @@ dependencies:
   version: 1.0.4
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 8.2.5
+  version: 8.8.8
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 7.6.6
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 2.15.0
-digest: sha256:59c0d0df3d4e452d9e77d47d812fb4e8f0a896382c8e181ca37dd030bf704100
-generated: "2021-06-02T11:25:24.430137+05:30"
+digest: sha256:a9a9bfbcab5b938383c5a5af77c20437ccdf8b71f6d64c634b1e7a1b5d4b1d1c
+generated: "2021-10-15T10:02:33.011143-07:00"
