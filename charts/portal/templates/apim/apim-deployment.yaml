@@ -109,12 +109,6 @@ spec:
                   name: {{ .Values.tls.internalSecretName }}
                   key: apim-tps.crt
                   optional: false
-            - name: APIM_SOLR_SSL_CERT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.tls.internalSecretName }}
-                  key: apim-solr.crt
-                  optional: false
             - name: DATALAKE_SSL_KEY
               valueFrom:
                 secretKeyRef:

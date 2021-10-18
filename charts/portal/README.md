@@ -218,14 +218,6 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `solr.replicaCount` | Number of Solr nodes | `1` |
-| `solr.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
-| `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
-| `solr.strategy` | Update strategy   | `{} evaluated as a template` |
-| `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `solr.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
@@ -338,7 +330,6 @@ Portal Analytics
 | `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0.2` |
 | `image.data` | portal-data image | `portal-data:5.0.2` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0.2` |
-| `image.solr` | Solr image | `solr:5.0.2` |
 | `image.analytics` | Analytics image | `analytics-server:5.0.2` |
 | `image.authenticator` | Authenticator image | `authenticator:5.0.2` |
 | `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0.2` |
