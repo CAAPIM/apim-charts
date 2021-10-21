@@ -104,6 +104,11 @@ spec:
                   name: {{ .Values.tls.internalSecretName }}
                   key: keypass.txt
                   optional: false
+            # test only variables
+            - name: RBAC_CLIENT_CACHE_EXPIRY
+              value: "{{ .Values.portalEnterprise.RBAC_CLIENT_CACHE_EXPIRY }}"
+            - name: THEME_CACHE_EXPIRY
+              value: "{{ .Values.portalEnterprise.THEME_CACHE_EXPIRY }}"
           envFrom:
           - configMapRef:
               name: portal-data-config
