@@ -95,6 +95,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.storageClass` | Global Storage Class | `_` |
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
+| `global.additionalLabels` | A list of custom key: value labels applied to all components | `not set` |
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -115,6 +116,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
 | `portal.hostnameWhiteList` | Hostname whitelist | `` |
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
+| `portal.jobs.additionalLabels` | A list of custom key: value labels applied to jobs | `not set` |
 
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -143,6 +145,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
 | `ingress.tenantIds` | A list of tenantIds that you plan to create on the Portal. | `[] - see values.yaml` |
 | `ingress.apiVersion` | added for future compatibility, extensions/v1beta1 will soon be deprecated, if you're running 1.18 this will be `networking.k8s.io/v1beta1`  | `extensions/v1beta1` |
+| `ingress.additionalLabels` | A list of custom key: value labels | `not set` |
 
 ### SMTP Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -166,6 +169,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
 | `analytics.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `analytics.additionalLabels` | A list of custom key: value labels | `not set` |
 | `apim.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `apim.replicaCount` | Number of APIM nodes | `1` |
 | `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
@@ -175,6 +179,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `apim.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
+| `apim.additionalLabels` | A list of custom key: value labels | `not set` |
 | `authenticator.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `authenticator.replicaCount` | Number of authenticator nodes | `1` |
 | `authenticator.javaOptions` | Java Options to pass in | `-Xms1g -Xmx1g` |
@@ -184,6 +189,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `authenticator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `authenticator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `authenticator.additionalLabels` | A list of custom key: value labels | `not set` |
 | `dispatcher.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `dispatcher.replicaCount` | Number of dispatcher nodes | `1` |
 | `dispatcher.image.pullPolicy` | Dispatcher image pull policy | `IfNotPresent` |
@@ -192,6 +198,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `dispatcher.additionalLabels` | A list of custom key: value labels | `not set` |
 | `portalData.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalData.replicaCount` | Number of portal data nodes | `1` |
 | `portalData.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
@@ -201,6 +208,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
 | `portalData.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalData.additionalLabels` | A list of custom key: value labels | `not set` |
 | `portalEnterprise.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
 | `portalEnterprise.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
@@ -210,6 +218,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `portalEnterprise.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `portalEnterprise.additionalLabels` | A list of custom key: value labels | `not set` |
 | `pssg.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `pssg.replicaCount` | Number of PSSG nodes | `1` |
 | `pssg.image.pullPolicy` | PSSG image pull policy | `IfNotPresent` |
@@ -218,6 +227,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `pssg.additionalLabels` | A list of custom key: value labels | `not set` |
 | `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `solr.replicaCount` | Number of Solr nodes | `1` |
 | `solr.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
@@ -226,6 +236,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `solr.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
+| `solr.additionalLabels` | A list of custom key: value labels | `not set` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
@@ -235,6 +246,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.affinity ` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `tenantProvisioner.additionalLabels` | A list of custom key: value labels | `not set` |
 
 
 ### RBAC Parameters
@@ -380,48 +392,56 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.minio.nodeSelector`| Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.zookeeper.replicaCount` | Number of zookeeper nodes   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.zookeeper.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.coordinator.replicaCount` | Number of coordinator nodes   | `1` |
 | `druid.coordinator.image.pullPolicy` | Coordinator image pull policy  | `IfNotPresent` |
 | `druid.coordinator.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.coordinator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.kafka.replicaCount` | Number of kafka nodes   | `1` |
 | `druid.kafka.image.pullPolicy` | Kafka image pull policy   | `IfNotPresent` |
 | `druid.kafka.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.kafka.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.broker.replicaCount` | Number of broker nodes   | `1` |
 | `druid.broker.image.pullPolicy` | Broker image pull policy   | `IfNotPresent` |
 | `druid.broker.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.broker.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.historical.replicaCount` | Number of historical nodes   | `1` |
 | `druid.historical.image.pullPolicy` | Historical image pull policy   | `IfNotPresent` |
 | `druid.historical.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.historical.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.ingestion.replicaCount` | Number of ingestion nodes   | `1` |
 | `druid.ingestion.image.pullPolicy` | Ingestion image pull policy   | `IfNotPresent` |
 | `druid.ingestion.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.ingestion.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
 | `druid.middlemanager.replicaCount` | Number of middle manager nodes   | `1` |
 | `druid.middlemanager.image.pullPolicy` | Middle manager image pull policy   | `IfNotPresent` |
 | `druid.middlemanager.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.middlemanager.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `druid.middlemanager.additionalLabels` | A list of custom key: value labels | `not set` |
 
 ## Druid Images
 The following table lists the configured parameters of the Druid Subchart
@@ -466,6 +486,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.loadDefinition.enabled`                | Enable load definitions   | `see values.yaml` |
 | `rabbitmq.loadDefinition.existingSecret`                | Existing load definitions secret   | `see values.yaml` |
 | `rabbitmq.extraConfiguration`                | Extra configuration   | `see values.yaml` |
+| `rabbitmq.statefulsetLabels` | RabbitMQ statefulset labels. Evaluated as a template | `{}` |
 
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
@@ -490,7 +511,7 @@ This represents minimal configuration of the Chart, this can be disabled in favo
 | `nginx-ingress.rbac.create`                | Create & use RBAC resources   | `true` |
 | `nginx-ingress.controller.publishService.enabled`                | Enable Publish Service   | `true` |
 | `nginx-ingress.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
-
+| `nginx-ingress.deploymentLabels` | Ingress controller labels. Evaluated as a template | `{}` |
 
 ## DNS Configuration
 To access the API Portal, configure the hostname resolution on your corporate DNS server.

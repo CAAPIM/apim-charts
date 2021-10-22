@@ -12,6 +12,9 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+    {{- range $key, $val := .Values.portal.jobs.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   backoffLimit: 2
   template:
