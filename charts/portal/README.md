@@ -116,7 +116,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
 | `portal.hostnameWhiteList` | Hostname whitelist | `` |
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
-| `portal.jobs.additionalLabels` | A list of custom key: value labels applied to jobs | `not set` |
+| `portal.jobsLabels` | A list of custom key: value labels applied to jobs | `not set` |
 
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |

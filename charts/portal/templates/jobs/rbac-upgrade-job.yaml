@@ -12,7 +12,7 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-    {{- range $key, $val := .Values.portal.jobs.additionalLabels }}
+    {{- range $key, $val := .Values.portal.jobsLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
