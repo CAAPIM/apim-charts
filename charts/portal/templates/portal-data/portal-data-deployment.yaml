@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.portalData.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   {{- if .Values.portalData.strategy }}
   strategy: {{- toYaml .Values.portalData.strategy | nindent 12 }}
