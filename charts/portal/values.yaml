@@ -21,7 +21,7 @@ global:
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/
-  # storageClass: "_"
+# storageClass: "_"
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
@@ -604,7 +604,7 @@ ingress-nginx:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.22-debian-10-r75"
+    tag: "8.0.26-debian-10-r78"
   auth:
     username: portal
     existingSecret: database-secret
@@ -623,7 +623,7 @@ mysql:
       [client]
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8
+      default-character-set=utf8mb4
       plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
       default_authentication_plugin=mysql_native_password
@@ -635,11 +635,12 @@ mysql:
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       datadir=/bitnami/mysql/data
       tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8_general_ci
-      character-set-server=UTF8
+      collation-server=utf8mb4_0900_ai_ci
+      character-set-server=utf8mb4
       innodb_log_buffer_size=32M
       innodb_log_file_size=80M
       max_allowed_packet=8M
+      group_concat_max_len=512000
       sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
       bind-address=0.0.0.0
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
