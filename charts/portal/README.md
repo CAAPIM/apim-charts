@@ -227,6 +227,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
+| `pssg.additionalLabels` | A list of custom key: value labels | `not set` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
