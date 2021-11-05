@@ -9,6 +9,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.portal.jobsLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   backoffLimit: 2
   template:
