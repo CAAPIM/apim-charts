@@ -228,15 +228,6 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `pssg.additionalLabels` | A list of custom key: value labels | `not set` |
-| `solr.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `solr.replicaCount` | Number of Solr nodes | `1` |
-| `solr.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
-| `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
-| `solr.strategy` | Update strategy   | `{} evaluated as a template` |
-| `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `solr.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `solr.additionalLabels` | A list of custom key: value labels | `not set` |
 | `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |

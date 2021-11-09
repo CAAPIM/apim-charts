@@ -36,7 +36,6 @@ function copy_certs() {
 
     rm $folder/*.p8
     rm $folder/smtp-internal.*
-    rm $folder/solr*
     rm $folder/analytics*
 
     mv $folder/apim.pem $internal_path/apim-tps.pem
@@ -62,7 +61,6 @@ function format_certs() {
     externalKeyPass=$(openssl rand -base64 18)
 
     convert_mtls_key $internalKeyPass
-    gen_solr_cert $internalKeyPass
     for pass in $passArr; do
         pass=(${pass//=/ })
         case $pass in
@@ -102,18 +100,6 @@ function convert_mtls_key() {
     openssl pkcs12 -in $internal_path/apim-tps.p12 -nocerts -nodes -passin pass:$1 | openssl pkcs8 -nocrypt -out $internal_path/apim-tps.key
     openssl pkcs12 -in $internal_path/apim-tps.p12 -nokeys -nodes -passin pass:$1 | openssl x509 -out $internal_path/apim-tps.crt
     rm $internal_path/apim-tps.pem
-}
-
-function gen_solr_cert() {
-    openssl genrsa -des3 -out "$internal_path/apim-solr.key" -passout pass:"$1" 2048 &>/dev/null
-
-    openssl req -new -x509 -key "$internal_path/apim-solr.key" \
-        -subj "/CN=apim-solr" \
-        -out "$internal_path/apim-solr.crt" \
-        -passin pass:"$1" -days $((365 * 3)) &>/dev/null
-
-    openssl pkcs12 -export -inkey "$internal_path/apim-solr.key" -in "$internal_path/apim-solr.crt" \
-        -out "$internal_path/apim-solr.p12" -passin pass:"$1" -passout pass:"$1" &>/dev/null
 }
 
 function retrieve_minio_bucket() {

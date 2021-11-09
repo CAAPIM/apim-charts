@@ -369,28 +369,6 @@ pssg:
 #           - pssg
 #       topologyKey: "kubernetes.io/hostname"
 
-
-solr:
-  forceRedeploy: false
-  replicaCount: 1
-  javaOptions: -Xms512m -Xmx512m
-  image:
-    pullPolicy: IfNotPresent
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  resources:
-    requests:
-      cpu: 50m
-      memory: 250Mi
-    limits:
-      cpu: 500m
-      memory: 750Mi
-# nodeSelector: {}
-# tolerations: []
-
 tenantProvisioner:
   forceRedeploy: false
   replicaCount: 1
@@ -429,7 +407,6 @@ image:
   enterprise: portal-enterprise:5.0.2
   data: portal-data:5.0.2
   tps: tenant-provisioning-service:5.0.2
-  solr: solr:5.0.2
   analytics: analytics-server:5.0.2
   authenticator: authenticator:5.0.2
   dbUpgrade: db-upgrade-portal:5.0.2
