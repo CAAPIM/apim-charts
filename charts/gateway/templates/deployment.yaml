@@ -21,9 +21,18 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
-{{ if .Values.image.secretName }}
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+{{ if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
-        - name: {{ .Values.image.secretName | quote }}
+        - name: {{ template "gateway.imagePullSecret" . }}
 {{ end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -58,13 +67,12 @@ spec:
             - containerPort: {{ .internal }}
             {{- end }}
           volumeMounts:
-{{ if  .Values.tls.customKey.enabled }}
-            - name: {{ template "gateway.fullname" . }}-ssl
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/config/privateKeys
-{{ end }}
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
+            - name: {{ template "gateway.fullname" . }}-system-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
+              subPath: system.properties
 {{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
@@ -91,11 +99,26 @@ spec:
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
+{{ if .Values.existingBundle.enabled }}
+           {{- range .Values.existingBundle.configMaps }}
+            - name: {{ . }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ . }}
+           {{- end }}
+           {{- range .Values.existingBundle.secrets }}
+            - name: {{ . }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ . }}
+           {{- end }}
+{{ end }}
+
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
             - secretRef:
-                name: {{ template "gateway.fullname" . }}-secret
+                name: {{ template "gateway.secretName" . }}
+{{ if .Values.tls.useSignedCertificates }}
+            - secretRef:
+                name: {{ template "gateway.tlsSecretName" . }}
+{{ end }}
 {{ if .Values.livenessProbe.enabled }}
           livenessProbe:
 {{ if (eq .Values.livenessProbe.type "httpGet" ) }}
@@ -133,19 +156,24 @@ spec:
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
+{{ if .Values.customHosts.enabled }}
+      hostAliases:
+{{ toYaml .Values.customHosts.hostAliases | indent 12 }}
+{{ end }}
 {{ end }}
       volumes:
-{{ if  .Values.tls.customKey.enabled }}
-        - name: {{ template "gateway.fullname" . }}-ssl
-          secret:
-            secretName: {{ template "gateway.fullname" . }}-ssl
-{{ end }}
         - name: {{ template "gateway.fullname" . }}-license-xml
           secret:
-            secretName: {{ template "gateway.fullname" .}}-license
+            secretName: {{ template "gateway.license" . }}
             items:
             - key: license
               path: license.xml
+        - name: {{ template "gateway.fullname" . }}-system-properties
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: system-properties
+              path: system.properties
 {{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:
@@ -186,4 +214,18 @@ spec:
 {{ if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
+{{ end }}
+{{ if .Values.existingBundle.enabled }}
+     {{- range .Values.existingBundle.configMaps }}
+        - name: {{ . }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ . }}
+     {{- end }}
+     {{- range .Values.existingBundle.secrets }}
+        - name: {{ . }}
+          secret:
+            secretName: {{ . }}
+     {{- end }}
 {{ end }}

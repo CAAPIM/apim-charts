@@ -18,7 +18,6 @@ data:
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
   {{ end }}
 {{ end }}
-
 {{ if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
   hazelcast-xml: |+
@@ -44,14 +43,21 @@ data:
 {{ else }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}
 {{ end }}
-
 {{ if .Values.additionalEnv }}
 {{- range $key, $val := .Values.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
 {{- end }}
 {{ end }}
-
 {{ if .Values.config.log.override }}
   log-override-properties: |-
 {{ .Values.config.log.properties | indent 4 }}
+{{ end }}
+{{ if .Values.config.systemProperties }}
+  system-properties: |-
+    # Default Gateway system properties
+    # Configuration properties for shared state extensions.
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+    com.l7tech.server.extension.sharedCounterProvider=ssgdb
+    com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
+{{ .Values.config.systemProperties | indent 4 }}
 {{ end }}

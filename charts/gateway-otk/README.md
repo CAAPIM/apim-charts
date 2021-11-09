@@ -9,7 +9,7 @@ Requires a custom Gateway image, more details to follow in the coming weeks.
 
 # Java 11
 
-API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway-OTK chart's version has been incremented to 1.0.0.
+API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway-OTK chart's version has been incremented to 1.0.1.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
 
