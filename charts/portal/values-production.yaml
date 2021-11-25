@@ -268,7 +268,6 @@ dispatcher:
 #           values:
 #           - dispatcher
 #       topologyKey: "kubernetes.io/hostname"
-
 # If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
 # If none specified, default HTTP GET request is used for both readiness and liveness probe 
   # readinessProbe:

@@ -159,85 +159,87 @@ This section describes configurable parameters in **values.yaml**, there is also
 
 
 ### Container Deployment Configurations
-| Parameter                                 | Description                                                                                                          | Default                                                      |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `analytics.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `analytics.replicaCount` | Number of analytics nodes | `1` |
-| `analytics.image.pullPolicy` | Analytics image pull policy | `IfNotPresent` |
-| `analytics.strategy` | Update strategy   | `{} evaluated as a template` |
-| `analytics.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `analytics.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
-| `analytics.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `analytics.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
-| `analytics.additionalLabels` | A list of custom key: value labels | `not set` |
-| `apim.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `apim.replicaCount` | Number of APIM nodes | `1` |
-| `apim.image.pullPolicy` | APIM image pull policy | `IfNotPresent` |
-| `apim.otkDb.name` | APIM OTK Database name | `otk_db` |
-| `apim.strategy` | Update strategy   | `{} evaluated as a template` |
-| `apim.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `apim.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `apim.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `apim.affinity` | Affinity for pod assignment  | `{} evaluated as a template` |
-| `apim.additionalLabels` | A list of custom key: value labels | `not set` |
-| `authenticator.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `authenticator.replicaCount` | Number of authenticator nodes | `1` |
-| `authenticator.javaOptions` | Java Options to pass in | `-Xms1g -Xmx1g` |
-| `authenticator.image.pullPolicy` | authenticator image pull policy | `IfNotPresent` |
-| `authenticator.strategy` | Update strategy   | `{} evaluated as a template` |
-| `authenticator.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `authenticator.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `authenticator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `authenticator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `authenticator.additionalLabels` | A list of custom key: value labels | `not set` |
-| `dispatcher.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `dispatcher.replicaCount` | Number of dispatcher nodes | `1` |
-| `dispatcher.image.pullPolicy` | Dispatcher image pull policy | `IfNotPresent` |
-| `dispatcher.strategy` | Update strategy   | `{} evaluated as a template` |
-| `dispatcher.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `dispatcher.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `dispatcher.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `dispatcher.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `dispatcher.additionalLabels` | A list of custom key: value labels | `not set` |
-| `portalData.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `portalData.replicaCount` | Number of portal data nodes | `1` |
-| `portalData.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
-| `portalData.image.pullPolicy` | Portal-data image pull policy | `IfNotPresent` |
-| `portalData.strategy` | Update strategy   | `{} evaluated as a template` |
-| `portalData.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `portalData.nodeSelector` | Node labels for pod assignment | `{} evaluated as a template` |
-| `portalData.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `portalData.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `portalData.additionalLabels` | A list of custom key: value labels | `not set` |
-| `portalEnterprise.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `portalEnterprise.replicaCount` | Number of portal-enterprise nodes | `1` |
-| `portalEnterprise.javaOptions` | Java Options to pass in | `-Xms2g -Xmx2g` |
-| `portalEnterprise.image.pullPolicy` | Portal enterprise image pull policy | `IfNotPresent` |
-| `portalEnterprise.strategy` | Update strategy   | `{} evaluated as a template` |
-| `portalEnterprise.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `portalEnterprise.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `portalEnterprise.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `portalEnterprise.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `portalEnterprise.additionalLabels` | A list of custom key: value labels | `not set` |
-| `pssg.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `pssg.replicaCount` | Number of PSSG nodes | `1` |
-| `pssg.image.pullPolicy` | PSSG image pull policy | `IfNotPresent` |
-| `pssg.strategy` | Update strategy   | `{} evaluated as a template` |
-| `pssg.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `pssg.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `pssg.additionalLabels` | A list of custom key: value labels | `not set` |
-| `tenantProvisioner.forceRedeploy` | Force redeployment during helm upgrade whether there is a change or not | `false` |
-| `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
-| `tenantProvisioner.javaOptions` | Java Options to pass in | `-Xms512m -Xmx512m` |
-| `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy | `IfNotPresent` |
-| `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
-| `tenantProvisioner.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `tenantProvisioner.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
-| `tenantProvisioner.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
-| `tenantProvisioner.affinity ` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `tenantProvisioner.additionalLabels` | A list of custom key: value labels | `not set` |
+| Parameter                            | Description                                                  | Default                                                      |
+| ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `analytics.forceRedeploy`            | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `analytics.replicaCount`             | Number of analytics nodes                                    | `1`                                                          |
+| `analytics.image.pullPolicy`         | Analytics image pull policy                                  | `IfNotPresent`                                               |
+| `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
+| `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `analytics.tolerations`              | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `analytics.affinity`                 | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `analytics.additionalLabels`         | A list of custom key: value labels                           | `not set`                                                    |
+| `apim.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `apim.replicaCount`                  | Number of APIM nodes                                         | `1`                                                          |
+| `apim.image.pullPolicy`              | APIM image pull policy                                       | `IfNotPresent`                                               |
+| `apim.otkDb.name`                    | APIM OTK Database name                                       | `otk_db`                                                     |
+| `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
+| `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `apim.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `apim.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `apim.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `authenticator.forceRedeploy`        | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `authenticator.replicaCount`         | Number of authenticator nodes                                | `1`                                                          |
+| `authenticator.javaOptions`          | Java Options to pass in                                      | `-Xms1g -Xmx1g`                                              |
+| `authenticator.image.pullPolicy`     | authenticator image pull policy                              | `IfNotPresent`                                               |
+| `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
+| `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `authenticator.tolerations`          | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `authenticator.affinity`             | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `authenticator.additionalLabels`     | A list of custom key: value labels                           | `not set`                                                    |
+| `dispatcher.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | `1`                                                          |
+| `dispatcher.image.pullPolicy`        | Dispatcher image pull policy                                 | `IfNotPresent`                                               |
+| `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
+| `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `dispatcher.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` by |
+| `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
+| `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
+| `portalData.image.pullPolicy`        | Portal-data image pull policy                                | `IfNotPresent`                                               |
+| `portalData.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
+| `portalData.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `portalData.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `portalEnterprise.replicaCount`      | Number of portal-enterprise nodes                            | `1`                                                          |
+| `portalEnterprise.javaOptions`       | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
+| `portalEnterprise.image.pullPolicy`  | Portal enterprise image pull policy                          | `IfNotPresent`                                               |
+| `portalEnterprise.strategy`          | Update strategy                                              | `{} evaluated as a template`                                 |
+| `portalEnterprise.resources`         | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `portalEnterprise.nodeSelector`      | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
+| `pssg.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `pssg.replicaCount`                  | Number of PSSG nodes                                         | `1`                                                          |
+| `pssg.image.pullPolicy`              | PSSG image pull policy                                       | `IfNotPresent`                                               |
+| `pssg.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
+| `pssg.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `pssg.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `pssg.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `pssg.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `pssg.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `tenantProvisioner.forceRedeploy`    | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
+| `tenantProvisioner.replicaCount`     | Number of tenant provisioner nodes                           | `1`                                                          |
+| `tenantProvisioner.javaOptions`      | Java Options to pass in                                      | `-Xms512m -Xmx512m`                                          |
+| `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy                         | `IfNotPresent`                                               |
+| `tenantProvisioner.strategy`         | Update strategy                                              | `{} evaluated as a template`                                 |
+| `tenantProvisioner.resources`        | Resource request/limits                                      | `{} evaluated as a template`                                 |
+| `tenantProvisioner.nodeSelector `    | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
+| `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
 
 
 ### RBAC Parameters
