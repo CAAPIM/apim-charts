@@ -260,7 +260,7 @@ dispatcher:
 
 # Additional Secret variables to be added to the Dispatcher Secret
   additionalSecret:
-  #  key1: value
+#    key1: value
 
 portalData:
   forceRedeploy: false

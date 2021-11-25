@@ -199,7 +199,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
-| `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` by |
+| `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
