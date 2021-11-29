@@ -32,7 +32,6 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
-      terminationGracePeriodSeconds: 1800
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
