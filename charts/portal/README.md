@@ -117,6 +117,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.hostnameWhiteList` | Hostname whitelist | `` |
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
 | `portal.jobsLabels` | A list of custom key: value labels applied to jobs | `not set` |
+| `portal.image.registry.enabled` | Configures Portal Deployment to use custom registry, this is option is only evaluated only when portal.registryCredentials option is not used | `false` |
+| `portal.image.registry.source`          | Custom image registry value | `nil`  |
+| `portal.image.registry.username`          | Custom registry Username | `nil`  |
+| `portal.image.registry.password`          | Custom registry Password | `nil`  |
+
 
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
