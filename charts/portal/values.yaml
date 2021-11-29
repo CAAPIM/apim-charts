@@ -57,6 +57,13 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
+  #Configuration to use custom registries to pull the container images with appropriate credentials.
+  image:
+    registry:
+      enabled: false
+      source:
+      username:
+      password:
 
 tls:
 # Leave this blank to be auto-generated
