@@ -241,6 +241,25 @@ dispatcher:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
+# If none specified, default HTTP GET request is used for both readiness and liveness probe 
+  # readinessProbe:
+  #   exec:
+  #     command: [sh, /opt/diagnostic/health_check.sh]
+  #   initialDelaySeconds: 90
+  #   timeoutSeconds: 1
+  #   periodSeconds: 15
+  #   successThreshold: 1
+  # livenessProbe:
+  #   httpGet:
+  #     path: /nginx_status
+  #     port: 8443
+  #     scheme: HTTPS
+  #   initialDelaySeconds: 30
+  #   timeoutSeconds: 5
+  #   periodSeconds: 15
+  #   successThreshold: 1
+  #   failureThreshold: 20
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
