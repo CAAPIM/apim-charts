@@ -97,6 +97,9 @@ tls:
 
 # Kubernetes Ingress
 ingress:
+  class:
+    name: nginx
+    enabled: true
   # Use a kubernetes/openshift ingress
   type:
     kubernetes: true
@@ -108,7 +111,7 @@ ingress:
   create: true
 # Configure additional ingress controller specific annotations
   annotations:
-     kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.class: nginx
      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
@@ -747,6 +750,11 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
+   #ingressClassResource:
+   #  name: nginx
+   #  enabled: true
+   #  default: false
+   #  controllerValue: "k8s.io/ingress-nginx"
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
 
