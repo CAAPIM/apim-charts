@@ -70,6 +70,9 @@ spec:
               name: dispatcher-config
           - secretRef:
               name: dispatcher-secret
+          {{- if .Values.dispatcher.readinessProbe }}
+          readinessProbe: {{- toYaml .Values.dispatcher.readinessProbe | nindent 12 }}
+          {{- else }}
           readinessProbe:
              httpGet:
                 path: /nginx_status
@@ -80,6 +83,10 @@ spec:
              periodSeconds: 15
              successThreshold: 1
              failureThreshold: 20
+          {{- end }}
+          {{- if .Values.dispatcher.livenessProbe }}
+          livenessProbe: {{- toYaml .Values.dispatcher.livenessProbe | nindent 12 }}
+          {{- else }}
           livenessProbe:
              httpGet:
                 path: /nginx_status
@@ -90,6 +97,7 @@ spec:
              periodSeconds: 15
              successThreshold: 1
              failureThreshold: 20
+          {{- end}}
           {{- if .Values.dispatcher.resources }}
           resources: {{- toYaml .Values.dispatcher.resources | nindent 12 }}
           {{- end }}
