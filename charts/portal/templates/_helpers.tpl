@@ -360,7 +360,7 @@ Get "database-port" based on databaseType value
 Create Image Pull Secret
 */}}
 {{- define "imagePullSecret" }}
-{{- if .Values.portal.image.registry.enabled }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.portal.image.registry.source .Values.portal.image.registry.username .Values.portal.image.registry.password (printf "%s:%s" .Values.portal.image.registry.username .Values.portal.image.registry.password | b64enc) | b64enc }}
+{{- if and (not .Values.portal.useExistingPullSecret) (.Values.portal.imagePullSecret.enabled) }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password (printf "%s:%s" .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
