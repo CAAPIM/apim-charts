@@ -102,7 +102,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `portal.domain` | The Portal Domain | `example.com` |
 | `portal.enrollNotificationEmail` | Notification email address | `noreply@example.com` |
-| `portal.analytics.enabled` | Enable/Disable the Druid Analytics stack. Ensure to apply the minio-secret manually if the flag is set to true during 'helm upgrade', sample 'minio-secret.yml' is provided in apim-charts/utils, use 'kubectl apply -f ../../utils/minio-secret.yml' to create minio-secret  | `true` |
+| `portal.analytics.enabled` | Enable/Disable the Druid Analytics stack. Ensure to apply the minio-secret manually if the flag is set to true during 'helm upgrade'. A sample **minio-secret.yml** is provided in apim-charts/utils, use **kubectl apply -f ../../utils/minio-secret.yml** to create minio-secret  | `true` |
 | `portal.analytics.aggregation` | Enable/Disable Aggregation, requires a min of 2 analytics.replicaCount | `false` |
 | `portal.license.secretName` | License secret name | `portal-license` |
 | `portal.license.value` | License value - ***Note: these are not required for Portal 5.x *** | `` |
