@@ -52,11 +52,19 @@ portal:
   # password: 7layer
   otk:
     port: 443
-  # This loads the bintray imagePullSecret
-  registryCredentials:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
+  #Configuration to use custom registries to pull the container images with appropriate credentials.
+  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  registryCredentials:
+  #Set this to true if there is already an existing pull secret available. 
+  useExistingPullSecret: false
+  #Set this if you would like to add an image pull secret directly to the Portal deployment.
+  imagePullSecret:
+    enabled: false
+    username:
+    password:
 
 tls:
 # Leave this blank to be auto-generated
