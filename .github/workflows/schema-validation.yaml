@@ -19,8 +19,8 @@ jobs:
           - v1.19.13
           - v1.20.9
           - v1.21.3
-          # - v1.22.0
-          # - v1.22.1
+          - v1.22.0
+          - v1.22.1
     steps:
       - name: Set up Helm
         uses: azure/setup-helm@v1
