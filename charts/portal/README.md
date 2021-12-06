@@ -6,7 +6,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.2.0 General Updates
 - The demo database Bitnami MySQL sub chart supports MySQL 8.0.26, so the relavent helm chart version is updated to  8.8.8.
-- Portal 5.1 no longer require Solr component, so all the references of Solr has been removed.
+- Portal 5.1 no longer requires Solr components, so all the references to Solr have been removed.
 - Nginx-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22 version.
 - Ability to configure existing imagePullSecrets or external registries to pull the images.
 - Liveness and readiness probe of dispatcher component can be configurable.
