@@ -678,8 +678,8 @@ mysql:
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
     persistence:
       annotations:
-        helm.sh/hook: pre-install
+        helm.sh/hook: post-install
         helm.sh/hook-weight: "-10"
   commonAnnotations:
-    helm.sh/hook: pre-install
+    helm.sh/hook: post-install
     helm.sh/hook-weight: "-10"
