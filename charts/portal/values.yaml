@@ -58,6 +58,7 @@ portal:
   defaultTenantId: apim
 
 tls:
+# This should be set to true in saas environments to use external certificates for dispatcher.
   saas: false
 # Leave this blank to be auto-generated
 # For production use cases you will need to provide a public cert, cert chain and private key
