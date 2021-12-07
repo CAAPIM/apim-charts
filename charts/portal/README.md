@@ -373,7 +373,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
 | `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
 | `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
-| `druid.minio.replicaCount` | Number of minio nodes   | `1` |
+| `druid.minio.replicaCount` | Number of minio nodes. Minio replication count cannot be changed after Portal is installed.  | `1` |
 | `druid.minio.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
 | `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
 | `druid.minio.auth.access_key` | Minio access key   | `auto-generated` |
@@ -393,7 +393,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
-| `druid.zookeeper.replicaCount` | Number of zookeeper nodes   | `1` |
+| `druid.zookeeper.replicaCount` | Number of zookeeper nodes. It should maintain a quorum. Preferred for HA is 3 or odd counts.   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.zookeeper.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
@@ -471,7 +471,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.rbac.create`       | Create & use RBAC resources   | `true` |
 | `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
 | `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
-| `rabbitmq.replicaCount`                | Number of Replicas  | `3` |
+| `rabbitmq.replicaCount`                | Number of Replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
+| `rabbitmq.clustering.forceBoot`                | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true  | `false` |
 | `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
 | `rabbitmq.service.port`                | RabbitMQ Port   | `5672` |
 | `rabbitmq.service.extraPorts`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
@@ -568,7 +569,8 @@ Resulting hostnames:
 ### RabbitMQ won't start
 
 #### The Chart was uninstalled and re-installed
-RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
+RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created and for peer sync. So with re-install, rabbitmq nodes will not be able to connect to the existing volumes. Please run below steps for rabbitmq to start
+Note: It is recommended to do a helm upgrade rather than uninstall and install. 
 
 1. Remove RabbitMQ Replicas (scale to 0)
 ```
@@ -588,9 +590,10 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
+Once the rabbitmq is running make a note of its credentials as specified in above Install Chart section 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
-If the RabbitMQ nodes are stopped or removed out of order, there is a chance that it won't be restored correctly.
+If the RabbitMQ cluster is stopped or removed out of order: for instance if the entire cluster loses power, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
 
 1. Set force boot to true
 

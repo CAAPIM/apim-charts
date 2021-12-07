@@ -395,6 +395,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
+    # Once Portal is installed, it is not recommented to scale up/down the minio replicas
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent

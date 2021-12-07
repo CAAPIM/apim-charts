@@ -465,6 +465,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
+    # Once Portal is installed, it is not recommented to scale up/down the minio replicas
     replicaCount: 4
     image:
       pullPolicy: IfNotPresent
@@ -517,6 +518,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   zookeeper:
+    # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
@@ -705,6 +707,7 @@ rabbitmq:
   persistence:
     enabled: true
   # size: 8Gi
+  # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
   replicaCount: 3
 ## Affinity for pod assignment. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
