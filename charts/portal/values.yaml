@@ -55,12 +55,12 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
-  #Configuration to use custom registries to pull the container images with appropriate credentials.
-  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  # Configuration to use custom registries to pull the container images with appropriate credentials.
+  # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
-  #Set this to true if there is already an existing pull secret available. 
+  # Set this to true if there is already an existing pull secret available. 
   useExistingPullSecret: false
-  #Set this if you would like to add an image pull secret directly to the Portal deployment.
+  # Set this if you would like to add an image pull secret directly to the Portal deployment.
   imagePullSecret:
     enabled: false
     username:
@@ -121,7 +121,7 @@ ingress:
   create: true
 # Configure additional ingress controller specific annotations
   annotations:
-    #kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
@@ -245,8 +245,8 @@ dispatcher:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
-# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
-# If none specified, default HTTP GET request is used for both readiness and liveness probe 
+# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update.
+# If none specified, default HTTP GET request is used for both readiness and liveness probe
   # readinessProbe:
   #   exec:
   #     command: [sh, /opt/diagnostic/health_check.sh]
