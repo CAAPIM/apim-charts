@@ -572,7 +572,7 @@ With the deployment of Portal, PersistentVolumeClaim (PVC) are created for compo
 
 Below are for Analytics:
 
-- Kafka - Kafka is responsible to stream analytics data to druid cluster. From Ingress, Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If analytics containers are not available, Kafka also act as a message store and retains Analytics data upto 6hrs. 
+- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If analytics containers are not available, Kafka also act as a message store and retains Analytics data upto 6hrs. 
 
 - Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on zokeeper for sync and coordination within their respective clusters.
 
