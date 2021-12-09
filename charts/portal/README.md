@@ -568,17 +568,17 @@ Resulting hostnames:
 ## Persistent Volumes
 With the deployment of Portal, PersistentVolumeClaim (PVC) are created for componennt as below:
 
-RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
+- RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
 
 Below are for Analytics:
-Kafka - Ingestion server streams data to Kafka from Ingress, which is then ingested by druid processes. Kafka is responsible to stream analytics data to druid cluster. 
-Kafka act as message store upto 6hrs if analytics containers are not available.
 
-Zookeeper - Zookeeper is a very critical container as it is a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depende on zokeeper with sync and coordination within their respective clusters.
+- Kafka - Ingestion server streams data to Kafka from Ingress, which is then ingested by druid processes. Kafka is responsible to stream analytics data to druid cluster. Kafka act as message store upto 6hrs if analytics containers are not available.
 
-Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
+- Zookeeper - Zookeeper is a very critical container as it is a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depende on zokeeper with sync and coordination within their respective clusters.
 
-Historical - Historical serves data for Analytics querying.
+- Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
+
+- Historical - Historical serves data for Analytics querying.
 
 
 ## Troubleshooting
