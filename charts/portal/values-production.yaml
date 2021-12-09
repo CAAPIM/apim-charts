@@ -72,6 +72,13 @@ tls:
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
 # then follow the instructions here to load your certificates into secrets manually #### Link to doc.
 # The job will still run, but will not update anything.
+# During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
+# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
+## if tls.job.enabled is 'false', no new certs are created whatever be the value for 'tls.job.rotate'
+## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
+## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
   job:
     enabled: true
 # You may need to update the internal/external facing certificates, to do this set rotate

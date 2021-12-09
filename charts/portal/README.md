@@ -127,8 +127,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. | `true` |
-| `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments | `none` |
+| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. During Upgrade ensure to set this value to 'false', or else depending on 'tls.job.rotate' value, certificates are recreated | `true` |
+| `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments. This field is considered only when 'tls.job.enabled' is true and helm action is 'upgrade' | `none` |
 | `tls.internalSecretName` | Internal Certificate secret name - change this if rotating internal/all certificates | `portal-internal-secret` |
 | `tls.externalSecretName` | External Certificate secret name - change this if rotating external/all certificates | `portal-external-secret` |
 | `tls.useSignedCertificates` | Use Signed Certificates for Public facing services, requires setting tls.crt,crtChain,key and optionally keyPass | `false` |
@@ -566,19 +566,19 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Persistent Volumes
-With the deployment of Portal, PersistentVolumeClaim (PVC) are created for componennt as below:
+With the deployment of Portal, PersistentVolumeClaim (PVC) are created for components as below:
 
 - RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
 
 Below are for Analytics:
 
-- Kafka - Ingestion server streams data to Kafka from Ingress, which is then ingested by druid processes. Kafka is responsible to stream analytics data to druid cluster. Kafka act as message store upto 6hrs if analytics containers are not available.
+- Kafka - Kafka is responsible to stream analytics data to druid cluster. From Ingress, Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If analytics containers are not available, Kafka also act as a message store and retains Analytics data upto 6hrs. 
 
-- Zookeeper - Zookeeper is a very critical container as it is a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depende on zokeeper with sync and coordination within their respective clusters.
+- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on zokeeper for sync and coordination within their respective clusters.
 
 - Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
 
-- Historical - Historical serves data for Analytics querying.
+- Historical - Historical serves data for Analytics querying. If this in not available, Analytics reports are not loaded in Portal UI.
 
 
 ## Troubleshooting
