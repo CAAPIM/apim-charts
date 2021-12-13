@@ -574,7 +574,7 @@ Below are for Analytics:
 
 - Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If analytics containers are not available, Kafka also act as a message store and retains Analytics data upto 6hrs. 
 
-- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on zokeeper for sync and coordination within their respective clusters.
+- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
 
 - Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
 
@@ -610,7 +610,7 @@ $ kubectl scale statefulset rabbitmq --replicas=1|3
 Once the rabbitmq is running make a note of its credentials as specified in above Install Chart section 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
-If the RabbitMQ cluster is stopped or removed out of order: for instance if the entire cluster loses power, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
+If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
 
 1. Set force boot to true
 

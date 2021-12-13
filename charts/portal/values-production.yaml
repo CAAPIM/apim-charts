@@ -70,8 +70,8 @@ tls:
 # These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
-# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
-# The job will still run, but will not update anything.
+# then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
+# The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
 # During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
 # If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates. 
 # Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
@@ -472,7 +472,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
-    # Once Portal is installed, it is not recommented to scale up/down the minio replicas
+    # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 4
     image:
       pullPolicy: IfNotPresent
