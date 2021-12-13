@@ -291,7 +291,7 @@ pssg:
 # affinity: {}
 
 solr:
-  replicaCount: 1
+  replicaCount: 0
   image:
     pullPolicy: IfNotPresent
   strategy:
