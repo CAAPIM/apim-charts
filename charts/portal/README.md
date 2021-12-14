@@ -601,22 +601,6 @@ If the RabbitMQ nodes are stopped or removed out of order, there is a chance tha
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 ```
 
-
-### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"
-If helm updgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", its becasue of limitaion in kubernetes where a job can not be update.
-
-1. List the jobs in the namespace.
-```
-$ kubectl get jobs -n  <nameSpace>
-```
-
-2. Delete jobs
-```
-kubectl delete job db-upgrade -n <nameSpace>
-kubectl delete job rbac-upgrade -n <nameSpace>
-```
-
-
 ### MySQL container in unhealthy state
 
 #### The Chart was uninstalled and re-installed
