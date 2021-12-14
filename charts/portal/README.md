@@ -147,6 +147,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment | `true` |
+| `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
+| `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
 | `ingress.tenantIds` | A list of tenantIds that you plan to create on the Portal. | `[] - see values.yaml` |
 | `ingress.apiVersion` | added for future compatibility, extensions/v1beta1 will soon be deprecated, if you're running 1.18 this will be `networking.k8s.io/v1beta1`  | `extensions/v1beta1` |
@@ -502,6 +504,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/helm/charts/tree/master/stable/nginx-ingress
 
 This represents minimal configuration of the Chart, this can be disabled in favor of your own ingress controller in the ingress settings.
+IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -510,6 +513,10 @@ This represents minimal configuration of the Chart, this can be disabled in favo
 | `nginx-ingress.controller.publishService.enabled`                | Enable Publish Service   | `true` |
 | `nginx-ingress.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
 | `nginx-ingress.deploymentLabels` | Ingress controller labels. Evaluated as a template | `{}` |
+| `nginx-ingress.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
+| `nginx-ingress.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
+| `nginx-ingress.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
+| `nginx-ingress.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
 To access the API Portal, configure the hostname resolution on your corporate DNS server.
