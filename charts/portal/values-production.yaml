@@ -70,8 +70,15 @@ tls:
 # These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
-# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
-# The job will still run, but will not update anything.
+# then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
+# The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
+# During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
+# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
+## if tls.job.enabled is 'false', irrespective of 'tls.job.rotate' value no new certs are created.
+## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
+## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
   job:
     enabled: true
 # You may need to update the internal/external facing certificates, to do this set rotate
@@ -465,6 +472,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
+    # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 4
     image:
       pullPolicy: IfNotPresent
@@ -517,6 +525,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   zookeeper:
+    # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
@@ -705,6 +714,7 @@ rabbitmq:
   persistence:
     enabled: true
   # size: 8Gi
+  # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
   replicaCount: 3
 ## Affinity for pod assignment. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
@@ -837,3 +847,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"

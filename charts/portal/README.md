@@ -36,8 +36,9 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 
-*Credentials for RabbitMQ are generated when this Chart is installed, to prevent loss after test/development use or accidental deletion
-retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion of the Chart.*
+> :information_source: **Important** <br>
+> **Credentials for RabbitMQ** are generated when this Chart is installed. To prevent loss after test/development use or accidental deletion,
+retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion or uninstall of the Chart.
 
 ```
 rabbitmq.auth.erlangCookie
@@ -75,6 +76,7 @@ To delete API Portal installation
 * [Upgrade this Chart](#upgrade-this-chart)
 * [Cloud Deep Storage for Minio](#druid)
 * [Create New Tenant](../../utils)
+* [Persistent Volumes](#persistent-volumes)
 * [Troubleshooting](#troubleshooting)
 
 # Configuration
@@ -133,8 +135,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. | `true` |
-| `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments | `none` |
+| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. During Upgrade ensure to set this value to 'false', or else depending on 'tls.job.rotate' value, certificates are recreated | `true` |
+| `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments. This field is considered only when 'tls.job.enabled' is true and helm action is 'upgrade' | `none` |
 | `tls.internalSecretName` | Internal Certificate secret name - change this if rotating internal/all certificates | `portal-internal-secret` |
 | `tls.externalSecretName` | External Certificate secret name - change this if rotating external/all certificates | `portal-external-secret` |
 | `tls.useSignedCertificates` | Use Signed Certificates for Public facing services, requires setting tls.crt,crtChain,key and optionally keyPass | `false` |
@@ -380,7 +382,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
 | `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
 | `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
-| `druid.minio.replicaCount` | Number of minio nodes   | `1` |
+| `druid.minio.replicaCount` | Number of minio nodes. Minio replication count cannot be changed after Portal is installed.  | `1` |
 | `druid.minio.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
 | `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
 | `druid.minio.auth.access_key` | Minio access key   | `auto-generated` |
@@ -400,7 +402,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
-| `druid.zookeeper.replicaCount` | Number of zookeeper nodes   | `1` |
+| `druid.zookeeper.replicaCount` | Number of zookeeper nodes. It should maintain a quorum. Preferred for HA is 3 or odd counts.   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `druid.zookeeper.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
@@ -478,7 +480,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.rbac.create`       | Create & use RBAC resources   | `true` |
 | `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
 | `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
-| `rabbitmq.replicaCount`                | Number of Replicas  | `3` |
+| `rabbitmq.replicaCount`                | Number of Replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
+| `rabbitmq.clustering.forceBoot`                | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true  | `false` |
 | `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
 | `rabbitmq.service.port`                | RabbitMQ Port   | `5672` |
 | `rabbitmq.service.extraPorts`                | MySQL Configuration equivalent to my.cnf   | `see values.yaml` |
@@ -570,12 +573,29 @@ Resulting hostnames:
 | TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` | 
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
+## Persistent Volumes
+With the deployment of Portal, PersistentVolumeClaim (PVC) are created for components as below:
+
+- RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
+
+Below are for Analytics:
+
+- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If druid containers are not available, Kafka also act as a message store and retains analytics-data upto 6hrs. 
+
+- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
+
+- Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
+
+- Historical - Historical serves data for Analytics querying. If this in not available, Analytics reports are not loaded in Portal UI.
+
+
 ## Troubleshooting
 
 ### RabbitMQ won't start
 
 #### The Chart was uninstalled and re-installed
-RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created.
+RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created and for peer sync. So with re-install, rabbitmq nodes will not be able to connect to the existing volumes. Please run below steps for rabbitmq to start
+Note: It is recommended to do a helm upgrade rather than uninstall and install. 
 
 1. Remove RabbitMQ Replicas (scale to 0)
 ```
@@ -595,9 +615,10 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
+Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](https://github.com/CAAPIM/apim-charts/blob/rabbitmq-doc-changes/charts/portal/README.md#install-the-chart) 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
-If the RabbitMQ nodes are stopped or removed out of order, there is a chance that it won't be restored correctly.
+If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
 
 1. Set force boot to true
 

@@ -55,12 +55,12 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
-  #Configuration to use custom registries to pull the container images with appropriate credentials.
-  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  # Configuration to use custom registries to pull the container images with appropriate credentials.
+  # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
-  #Set this to true if there is already an existing pull secret available. 
+  # Set this to true if there is already an existing pull secret available. 
   useExistingPullSecret: false
-  #Set this if you would like to add an image pull secret directly to the Portal deployment.
+  # Set this if you would like to add an image pull secret directly to the Portal deployment.
   imagePullSecret:
     enabled: false
     username:
@@ -72,8 +72,15 @@ tls:
 # These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
-# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
+# then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
 # The job will still run, but will not update anything.
+# During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
+# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
+## if tls.job.enabled is 'false', irrespective of 'tls.job.rotate' value no new certs are created.
+## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created. 
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
+## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
   job:
     enabled: true
 # You may need to update the internal/external facing certificates, to do this set rotate
@@ -121,7 +128,7 @@ ingress:
   create: true
 # Configure additional ingress controller specific annotations
   annotations:
-    #kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
@@ -245,8 +252,8 @@ dispatcher:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
-# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
-# If none specified, default HTTP GET request is used for both readiness and liveness probe 
+# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update.
+# If none specified, default HTTP GET request is used for both readiness and liveness probe
   # readinessProbe:
   #   exec:
   #     command: [sh, /opt/diagnostic/health_check.sh]
@@ -395,6 +402,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
+    # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -684,3 +692,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"
