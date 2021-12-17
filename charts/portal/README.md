@@ -12,7 +12,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Nginx-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22 version.
 - Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret
 - Liveness and readiness probe of dispatcher component can be configurable.
-- Added troubleshooting section related to [RabbitMQ boot-up issues](https://github.com/CAAPIM/apim-charts/tree/ stable/charts/portal/README.md#rabbitmq-wont-start)
+- Added troubleshooting section related to [RabbitMQ boot-up issues](https://github.com/CAAPIM/apim-charts/tree/stable/charts/portal/README.md#rabbitmq-wont-start)
 - Updated documentation for Persistent Volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
 
 ## Prerequisites
