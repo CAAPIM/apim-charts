@@ -31,7 +31,7 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
 
 > :information_source: **Important** <br>
 > **Credentials for RabbitMQ** are generated when this Chart is installed. To prevent loss after test/development use or accidental deletion,
-retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion of the Chart.
+retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion or uninstall of the Chart.
 
 ```
 rabbitmq.auth.erlangCookie
