@@ -5,11 +5,15 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
 ## 2.2.0 General Updates
-- The demo database Bitnami MySQL sub chart supports MySQL 8.0.26, so the relavent helm chart version is updated to  8.8.8.
+- This new version of the chart supports Portal 5.1
+- The demo database Bitnami MySQL sub chart supports MySQL 8.0.27, so the relavent helm chart version is updated to  8.8.16.
+- Portal upgrade jobs are moved to pre-install and pre-upgrade stage, this means no manual deletion of jobs are required during upgrade. This change ensures overall bootup time remains same as previous version even though helm install takes additional time to show-up completion.
 - Portal 5.1 no longer requires Solr components, so all the references to Solr have been removed.
 - Nginx-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22 version.
-- Ability to configure existing imagePullSecrets or external registries to pull the images.
+- Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret
 - Liveness and readiness probe of dispatcher component can be configurable.
+- Added troubleshooting section related to [RabbitMQ boot-up issues](https://github.com/CAAPIM/apim-charts/tree/ stable/charts/portal/README.md#rabbitmq-wont-start)
+- Updated documentation for Persistent Volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
 
 ## Prerequisites
 
