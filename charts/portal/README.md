@@ -29,7 +29,8 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
 
-*Credentials for RabbitMQ are generated when this Chart is installed, to prevent loss after test/development use or accidental deletion
+> :information_source: **Important** <br>
+> * **Credentials for RabbitMQ ** are generated when this Chart is installed. To prevent loss after test/development use or accidental deletion,
 retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion of the Chart.*
 
 ```
@@ -572,7 +573,7 @@ With the deployment of Portal, PersistentVolumeClaim (PVC) are created for compo
 
 Below are for Analytics:
 
-- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If analytics containers are not available, Kafka also act as a message store and retains Analytics data upto 6hrs. 
+- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If druid containers are not available, Kafka also act as a message store and retains analytics-data upto 6hrs. 
 
 - Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
 
@@ -607,7 +608,7 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
-Once the rabbitmq is running make a note of its credentials as specified in above Install Chart section 
+Once the rabbitmq is running make a note of its credentials as specified above in Install Chart section 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
