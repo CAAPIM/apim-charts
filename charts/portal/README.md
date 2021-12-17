@@ -608,7 +608,7 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
-Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart](https://github.com/CAAPIM/apim-charts/blob/rabbitmq-doc-changes/charts/portal/README.md#install-the-chart) section - Credentials for Rabbitmq 
+Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](https://github.com/CAAPIM/apim-charts/blob/rabbitmq-doc-changes/charts/portal/README.md#install-the-chart) 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
