@@ -12,7 +12,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Nginx-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22 version.
 - Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret
 - Liveness and readiness probe of dispatcher component can be configurable.
-- Added troubleshooting section related to [RabbitMQ boot-up issues](https://github.com/CAAPIM/apim-charts/tree/stable/charts/portal/README.md#rabbitmq-wont-start)
+- Added troubleshooting section related to [RabbitMQ boot-up issues](#rabbitmq-wont-start)
 - Updated documentation for Persistent Volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
 
 ## Prerequisites
@@ -617,7 +617,7 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
-Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](https://github.com/CAAPIM/apim-charts/blob/rabbitmq-doc-changes/charts/portal/README.md#install-the-chart) 
+Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](#install-the-chart) 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
