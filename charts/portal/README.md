@@ -5,10 +5,10 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
 ## 2.2.0 General Updates
-- This new version of the chart supports Portal 5.1
-- The demo database Bitnami MySQL sub chart supports MySQL 8.0.27, so the relavent helm chart version is updated to  8.8.16.
-- Portal upgrade jobs are moved to pre-install and pre-upgrade stage, this means no manual deletion of jobs are required during upgrade. This change ensures overall bootup time remains same as previous version even though helm install takes additional time to show-up completion.
-- Portal 5.1 no longer requires Solr components, so all the references to Solr have been removed.
+- This new version of the chart supports API Portal 5.1
+- Demo database Bitnami MySQL subchart version is updated to 8.8.16.
+- Upgrade jobs are moved to pre-install and pre-upgrade stage.This eliminates manual deletion of jobs during upgrade.This change ensures overall bootup time remains the same as previous version upgrades, even though helm install takes additional time to show-up completion.
+- API Portal 5.1 no longer requires Solr components, used to provide auto-suggest search history from the Portal dashboard.All the references to Solr have been removed.
 - Nginx-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22 version.
 - Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret
 - Liveness and readiness probe of dispatcher component can be configurable.
@@ -21,11 +21,11 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Helm v3.7.x
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
 - An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
-- ***docker secret.yaml*** from here ==> [CA API Developer Portal
-Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
+- ***docker secret.yaml*** available from the [CA API Developer Portal
+Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page
 
 ### Production
-- A dedicated MySQL 5.7/8.0.26 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
+- A dedicated MySQL 8.0.26 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -53,8 +53,6 @@ $ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-pas
 ```
 
 ## Upgrade this Chart
-> :information_source: **Important** <br>
-> If you use demo database in Kubernetes environment and you need to retain the data, back up the database and migrate the data to an external MySQL server and point Portal to that database. If an external database is not used, then Portal creates a new instance of MySQL 8.0 database and use that instance during upgrade.
 
 To upgrade API Potal deployment
 ```
@@ -507,7 +505,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.imageTag`                | MySQL Image to use   | `8.0.22-debian-10-r75` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.26-debian-10-r78` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
@@ -578,19 +576,19 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Persistent Volumes
-With the deployment of Portal, PersistentVolumeClaim (PVC) are created for components as below:
+With the deployment of API Portal, PersistentVolumeClaim (PVC) are created for components as below:
 
-- RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
+- RabbitMQ - Used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
 
-Below are for Analytics:
+Analytics components:
 
-- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If druid containers are not available, Kafka also act as a message store and retains analytics-data upto 6hrs. 
+- Kafka - Responsible to stream analytics data to druid cluster. Ingestion server streams data to Kafka, which is then ingested into druid processes. If druid containers are not available, Kafka also acts as a message store and retains analytics data up to 6hrs. 
 
-- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
+- Zookeeper - A critical container in Druid cluster. When not available, it becomes a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
 
-- Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
+- Minio - Data store for persisting analytics data. Downtime of Minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
 
-- Historical - Historical serves data for Analytics querying. If this in not available, Analytics reports are not loaded in Portal UI.
+- Historical - Serves data for analytics querying. If this is not available, analytics reports are not loaded in the API Portal UI.
 
 
 ## Troubleshooting
