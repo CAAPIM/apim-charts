@@ -504,22 +504,22 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 
 ## Nginx-Ingress
-The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/helm/charts/tree/master/stable/nginx-ingress
+The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/kubernetes/ingress-nginx
 
 This represents minimal configuration of the Chart, this can be disabled in favor of your own ingress controller in the ingress settings.
 IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `nginx-ingress.podSecurityPolicy.enabled`                | Tell Nginx to read PSP   | `true` |
-| `nginx-ingress.rbac.create`                | Create & use RBAC resources   | `true` |
-| `nginx-ingress.controller.publishService.enabled`                | Enable Publish Service   | `true` |
-| `nginx-ingress.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
-| `nginx-ingress.deploymentLabels` | Ingress controller labels. Evaluated as a template | `{}` |
-| `nginx-ingress.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
-| `nginx-ingress.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
-| `nginx-ingress.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
-| `nginx-ingress.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
+| `ingress-nginx.podSecurityPolicy.enabled`                | Tell Nginx to read PSP   | `true` |
+| `ingress-nginx.rbac.create`                | Create & use RBAC resources   | `true` |
+| `ingress-nginx.controller.publishService.enabled`                | Enable Publish Service   | `true` |
+| `ingress-nginx.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
+| `ingress-nginx.deploymentLabels` | Ingress controller labels. Evaluated as a template | `{}` |
+| `ingress-nginx.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
+| `ingress-nginx.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
+| `ingress-nginx.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
+| `ingress-nginx.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
 To access the API Portal, configure the hostname resolution on your corporate DNS server.
