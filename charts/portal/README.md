@@ -503,8 +503,8 @@ The following table lists the configured parameters of the MySQL Subchart - http
 | `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
 
 
-## Nginx-Ingress
-The following table lists the configured parameters of the Nginx-Ingress Subchart - https://github.com/kubernetes/ingress-nginx
+## Ingress-Nginx
+The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx
 
 This represents minimal configuration of the Chart, this can be disabled in favor of your own ingress controller in the ingress settings.
 IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
