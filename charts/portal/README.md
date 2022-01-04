@@ -514,12 +514,11 @@ IngressClass resources are supported since k8s >= 1.18 and required since k8s >=
 | `ingress-nginx.podSecurityPolicy.enabled`                | Tell Nginx to read PSP   | `true` |
 | `ingress-nginx.rbac.create`                | Create & use RBAC resources   | `true` |
 | `ingress-nginx.controller.publishService.enabled`                | Enable Publish Service   | `true` |
-| `ingress-nginx.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
-| `ingress-nginx.deploymentLabels` | Ingress controller labels. Evaluated as a template | `{}` |
-| `ingress-nginx.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
-| `ingress-nginx.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
-| `ingress-nginx.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
-| `ingress-nginx.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
+| `ingress-nginx.controller.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
+| `ingress-nginx.controller.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
+| `ingress-nginx.controller.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
+| `ingress-nginx.controller.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
+| `ingress-nginx.controller.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
 To access the API Portal, configure the hostname resolution on your corporate DNS server.
