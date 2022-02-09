@@ -10,7 +10,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - Subchart version 4+ is required for kubernetes 1.22+ due to change in ingress class api.
   - Depending on the platform and the ingress setup in your environment, you will need to configure ingress, ingress class, and ingress controller values accordingly, by following [ingress-nginx's community documentations](https://kubernetes.github.io/ingress-nginx/#getting-started).
   - If not using the subchart and to support backward compatibility use 'ingress.class' annotation.
-  - [Learn more about configuring multiple ingress controllers in one cluster] (https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
+  - [Learn more about configuring multiple ingress controllers in one cluster](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
 - Demo database Bitnami MySQL subchart version is updated to 8.8.16.
 - Upgrade jobs are moved to pre-install and pre-upgrade stage.This eliminates manual deletion of jobs during upgrade > 5.1.This change ensures overall bootup time remains the same as previous version upgrades, even though helm install takes additional time to show-up completion.
 - API Portal 5.1 no longer requires Solr components, used to provide auto-suggest search history from the Portal dashboard.All the references to Solr have been removed.
