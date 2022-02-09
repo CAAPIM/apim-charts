@@ -83,11 +83,11 @@ Stop the Running portal
  $ helm uninstall <release name> -n <namespace>
 ```
 
-Upgrade MYSQL 5.7 to 8.0.26 using the steps available at section - Perform the Upgrade (https://techdocs-author.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+Upgrade MYSQL 5.7 to 8.0.26 using the steps available at section - **Perform the Upgrade** (https://techdocs-author.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
-Once MySQL upgrade is done and ensuring we could connect to it, start the portal with MySQL 8.0.26
+Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26
 ```
- Before starting portal Install with upgraded MySQL, ensure in **values.yaml** the value of tls.job.enabled must be set to **false**
+ Before starting of portal to use the upgraded MySQL, ensure in **values.yaml** the value of tls.job.enabled must be set to **false**
  Use the older release name and Install the chart 
  $ helm install <release name> -n <namespace>
 ```
