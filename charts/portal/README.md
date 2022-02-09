@@ -64,30 +64,35 @@ MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1+. This
 
 Before starting upgrade of Database follow the sections **Before You Begin** and **Check Database Compatibility** from (https://techdocs-author.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
+
 Persist Analytics Data into Druid Database
 ```
  Connect the coordinator pod(s) and run below com
  $ kubectl exec -it coordinator-0|1 -n <namespace> sh
+
  Run the following curl command to persists Analytics data
  $ curl --location --request POST 'localhost:8081/druid/indexer/v1/supervisor/terminateAll'
+
  Run the below curl commands and wait until the runningTasks response is empty and the supervisor response is empty before proceeding with other steps.
  $ curl localhost:8081/druid/indexer/v1/runningTasks
  $ curl localhost:8081/druid/indexer/v1/supervisor
 ```
 
+
 Stop the Running portal
 ```
  Get the Release name
  $ helm list -n <namespace>
+
  Uninstall the chart
  $ helm uninstall <release name> -n <namespace>
 ```
 
 Upgrade MYSQL 5.7 to 8.0.26 using the steps available at section - **Perform the Upgrade** (https://techdocs-author.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
-Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26
+Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26.
+Ensure in ***values.yaml** the value of tls.job.enabled must be set to **false**
 ```
- Before starting of portal to use the upgraded MySQL, ensure in **values.yaml** the value of tls.job.enabled must be set to **false**
  Use the older release name and Install the chart 
  $ helm install <release name> -n <namespace>
 ```
