@@ -60,7 +60,7 @@ To delete API Portal installation
 *Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion.* 
 
 ## Upgrade External Portal Database to MySQL 8.0
-MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1+. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
+MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
 
 Before starting upgrade of Database follow the sections **Before You Begin** and **Check Database Compatibility** from (https://techdocs-author.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
