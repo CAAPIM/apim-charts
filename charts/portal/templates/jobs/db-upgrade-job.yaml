@@ -25,6 +25,7 @@ spec:
       containers:
         - name: db-upgrade
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.dbUpgrade }}"
+          imagePullPolicy: IfNotPresent
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
