@@ -6,18 +6,18 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.2.0 General Updates
 - This new version of the chart supports API Portal 5.1
-- NGINX-Ingress Subchart has been upgraded to chart version 4.0.9 to support K8s 1.22+ version. 
-  - Subchart version 4+ is required for kubernetes 1.22+ due to change in ingress class api.
-  - Depending on the platform and the ingress setup in your environment, you will need to configure ingress, ingress class, and ingress controller values accordingly, by following [ingress-nginx's community documentations](https://kubernetes.github.io/ingress-nginx/#getting-started).
-  - If not using the subchart and to support backward compatibility use 'ingress.class' annotation.
+- NGINX-Ingress Subchart has been upgraded to version 4.0.9 to support K8s 1.22+ version.
+  - Subchart version 4+ is required for kubernetes 1.22+ due to change in Ingress class API.
+  - Depending on the platform and the Ingress setup in your environment, you will need to configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentations](https://kubernetes.github.io/ingress-nginx/#getting-started).
+  - If not using the subchart and to support backward compatibility use 'kubernetes.io/ingress.class' annotation.
   - [Learn more about configuring multiple ingress controllers in one cluster](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
-- Demo database Bitnami MySQL subchart version is updated to 8.8.16.
-- Upgrade jobs are moved to pre-install and pre-upgrade stage.This eliminates manual deletion of jobs during upgrade > 5.1.This change ensures overall bootup time remains the same as previous version upgrades, even though helm install takes additional time to show-up completion.
-- API Portal 5.1 no longer requires Solr components, used to provide auto-suggest search history from the Portal dashboard.All the references to Solr have been removed.
-- Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret
-- Liveness and readiness probe of dispatcher component can be configurable.
+- The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
+- Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
+- API Portal 5.1 no longer requires Solr components, used to provide auto-suggest search history from the Portal dashboard. All the references to Solr have been removed.
+- Ability to configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
+- Liveness and readiness probe of dispatcher component can now be configurable.
 - Added troubleshooting section related to [RabbitMQ boot-up issues](#rabbitmq-wont-start)
-- Updated documentation for Persistent Volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
+- Updated documentation for persistent volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
 
 ## Prerequisites
 
