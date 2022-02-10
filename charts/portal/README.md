@@ -4,24 +4,39 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.0 General Updates
+- This new version of the chart supports API Portal 5.1.
+- NGINX-Ingress Subchart is upgraded to version 4.0.9 to support K8s 1.22+ version.
+  - Subchart version 4+ is required for kubernetes 1.22+ due to change in Ingress class API.
+  - Depending on the platform and the Ingress setup in your environment, configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentation](https://kubernetes.github.io/ingress-nginx/#getting-started).
+  - If you are not using the subchart use 'kubernetes.io/ingress.class' annotation to support backward compatibility.
+  - [Learn more about configuring multiple ingress controllers in one cluster.](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
+- The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
+- Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
+- API Portal 5.1 no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
+- You can now configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
+- You can configure liveness and readiness probe of dispatcher component.
+- Added troubleshooting section related to [RabbitMQ boot-up issues.](#rabbitmq-wont-start)
+- Updated documentation for persistent volumes and 'tls.job.enabled' and tls.job.rotate' properties regarding certificates.
+
 ## Prerequisites
 
-- Kubernetes 1.20.x
-- Helm v3.5.x
+- Kubernetes 1.22.x
+- Helm v3.7.x
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
 - An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
-- ***docker secret.yaml*** from here ==> [CA API Developer Portal
-Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
+- ***docker secret.yaml*** available on the [CA API Developer Portal
+Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
 
 # Install the Chart
-When using this Chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
-Adding ```-f <my-values.yaml>``` to the commands below will apply your configuration to the Chart. For details on what you can change see [configuration](#configuration).
+When using this chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
+Adding ```-f <my-values.yaml>``` to the following commands below will apply your configuration to the chart. For details on what you can change, see [configuration](#configuration).
 
 ```
  $ helm repo add layer7 https://caapim.github.io/apim-charts/
@@ -30,8 +45,8 @@ Adding ```-f <my-values.yaml>``` to the commands below will apply your configura
 ```
 
 > :information_source: **Important** <br>
-> **Credentials for RabbitMQ** are generated when this Chart is installed. To prevent loss after test/development use or accidental deletion,
-retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and or manually remove the volumes following deletion or uninstall of the Chart.
+> **Credentials for RabbitMQ** are generated when this chart is installed. To prevent loss after test/development use or accidental deletion,
+retrieve and store them in values.yaml for subsequent releases. You can also turn off persistent storage for RabbitMQ and/or manually remove the volumes following deletion or uninstall of the chart.
 
 ```
 rabbitmq.auth.erlangCookie
@@ -41,31 +56,29 @@ rabbitmq.auth.password
 $ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-password" | base64decode }}' -n <release-namespace>
 ```
 
-## Upgrade this Chart
-> :information_source: **Important** <br>
-> If you use demo database in Kubernetes environment and you need to retain the data, back up the database and migrate the data to an external MySQL server and point Portal to that database. If an external database is not used, then Portal creates a new instance of MySQL 8.0 database and use that instance during upgrade.
+## Upgrade the Chart
 
-To upgrade API Potal deployment
+To upgrade API Portal deployment, run the following commands:
 ```
  $ helm repo update
  $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
 ```
-## Delete this Chart
-To delete API Portal installation
+## Delete the Chart
+To delete API Portal installation, run the following command:
 
 ```
  $ helm delete <release name>
 ```
 
-*Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion.* 
+*Manually clean up additional resources such as PVCs and Secrets. This protects your data if deleted accidentally.* 
 
 ## Upgrade External Portal Database to MySQL 8.0
-MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
+MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
 
-Before starting upgrade of Database follow the sections **Before You Begin** and **Check Database Compatibility** from [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+1) Before upgrading the Database, see **Before You Begin** and **Check Database Compatibility** in [TechDocs.](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
 
-Persist Analytics Data into Druid Database
+2) Persist Analytics Data into Druid Database
 ```
  Connect the coordinator pod(s) and run below com
  $ kubectl exec -it coordinator-0|1 -n <namespace> sh
@@ -78,7 +91,7 @@ Persist Analytics Data into Druid Database
  $ curl localhost:8081/druid/indexer/v1/supervisor
 ```
 
-Stop the Running portal
+3) Stop the running portal
 ```
  Get the Release name
  $ helm list -n <namespace>
@@ -87,12 +100,12 @@ Stop the Running portal
  $ helm uninstall <release name> -n <namespace>
 ```
 
-Upgrade MYSQL 5.7 to 8.0.26 using the steps available at section - **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+4) Upgrade MySQL 5.7 to 8.0.26. For more information, see **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
-Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26.
-Ensure in **values.yaml** the value of **tls.job.enabled** must be set to **false**
+5) After MySQL is upgraded, ensure that you can connect to it and then follow the below steps to start the portal with MySQL 8.0.26.
+Ensure that the value of **tls.job.enabled** is set to **false** in **values.yaml**
 ```
- Use the older release name and Install the chart 
+Install the chart again
  $ helm install <release name> -n <namespace>
 ```
 
@@ -165,7 +178,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Certificates
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you've migrated certificates over from a previous installation and wish to keep them then set this to false. During Upgrade ensure to set this value to 'false', or else depending on 'tls.job.rotate' value, certificates are recreated | `true` |
+| `tls.job.enabled` | Enable or disable the TLS Pre-install/upgrade job - if you migrated certificates over from a previous installation and want to keep them then set this to false. During upgrade ensure to set this value to 'false', or else depending on 'tls.job.rotate' value, certificates are recreated | `true` |
 | `tls.job.rotate` | One of all, internal, external, none. This rotates the selected set of certificates and upgrades the relevant deployments. This field is considered only when 'tls.job.enabled' is true and helm action is 'upgrade' | `none` |
 | `tls.internalSecretName` | Internal Certificate secret name - change this if rotating internal/all certificates | `portal-internal-secret` |
 | `tls.externalSecretName` | External Certificate secret name - change this if rotating external/all certificates | `portal-external-secret` |
@@ -293,7 +306,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `serviceAccount.create` | Enable creation of ServiceAccount for Portal Deployments | `true` |
 | `serviceAccount.name` | Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `rbac.create`| Create & use RBAC resources |`true`|
+| `rbac.create`| Create and use RBAC resources |`true`|
 | `druid.serviceAccount.create`| Enable creation of ServiceAccount for Druid |`true`|
 | `druid.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
 | `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`true`|
@@ -306,7 +319,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 
 
 #### Roles Required
-If RBAC is required and a set service account is in use, the following roles will need to be bound to it.
+If RBAC is required and a set service account is in use, the following roles must be bound to it.
 
 ```
 ...
@@ -332,7 +345,7 @@ rules:
 ```
 
 #### FS Permissions
-If a strict PodSecurityPolicy is enforced the following users/groups will need to be allowed.
+If a strict PodSecurityPolicy is enforced, the following users/groups must be allowed.
 
 ```
 Portal Core
@@ -397,10 +410,10 @@ Portal Analytics
 | `image.tlsManager` | TLS manager image | `tls-automator:5.1` |
 
 ## Subcharts
-For Production, please use an external MySQL Server.
+For Production, use an external MySQL Server.
 
 ## Druid
-The following table lists the configured parameters of the Druid Subchart
+The following table lists the configured parameters of the Druid Subchart:
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -417,7 +430,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.minio.auth.access_key` | Minio access key   | `auto-generated` |
 | `druid.minio.auth.secret_key` | Minio secret key   | `auto-generated` |
 | `druid.minio.cloudStorage` | Enable Cloud Storage for Minio. GCP, AWS, Azure   | `false` |
-| `druid.minio.bucketName` | Minio bucket name - make sure this is updated if using cloud storage. Minio will attempt to the create the bucket if it doesn't exist, it is recommended that you create the bucket in the relevant provider prior to installing this Chart.   | `api-metrics` |
+| `druid.minio.bucketName` | Minio bucket name - ensure that this is updated if using cloud storage. Minio will attempt to create the bucket if it doesnot exist, it is recommended that you create the bucket in the relevant provider prior to installing this chart.   | `api-metrics` |
 | `druid.minio.s3gateway.enabled` | Use minio as Amazon S3 (Simple Storage Service) gateway - https://docs.minio.io/docs/minio-gateway-for-s3   | `false` |
 | `druid.minio.s3gateway.serviceEndpoint` | AWS S3 service endpoint if required   | `nil` |
 | `druid.minio.s3gateway.accessKey` | AWS Access Key that has S3 access   | `nil` |
@@ -506,10 +519,10 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
-| `rabbitmq.rbac.create`       | Create & use RBAC resources   | `true` |
+| `rabbitmq.rbac.create`       | Create and use RBAC resources   | `true` |
 | `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
 | `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
-| `rabbitmq.replicaCount`                | Number of Replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
+| `rabbitmq.replicaCount`                | Number of replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
 | `rabbitmq.clustering.forceBoot`                | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true  | `false` |
 | `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
 | `rabbitmq.service.port`                | RabbitMQ Port   | `5672` |
@@ -532,7 +545,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.imageTag`                | MySQL Image to use   | `8.0.22-debian-10-r75` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.26-debian-10-r78` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
@@ -542,7 +555,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 ## Ingress-Nginx
 The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
 
-This represents minimal configuration of the Chart, this can be disabled in favor of your own ingress controller in the ingress settings.
+This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
 IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
 
 | Parameter                        | Description                               | Default                                                      |
@@ -557,8 +570,8 @@ IngressClass resources are supported since k8s >= 1.18 and required since k8s >=
 | `ingress-nginx.controller.ingressClassResource.controllerValue` | value of the controller that is processing this ingressClass | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
-To access the API Portal, configure the hostname resolution on your corporate DNS server.
-The hostnames must match the values you enter in your **values.yaml**. 
+To access API Portal, configure the hostname resolution on your corporate DNS server.
+The hostnames must match the values that you enter in your **values.yaml**. 
 
 > **IMPORTANT!** If you are migrating from a Docker Swarm deployment, utilize legacy hostnames to ensure continuity of business. For details, see [Migrate from Docker Swarm](../../utils/portal-migration/README.md).
 
@@ -602,27 +615,27 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Persistent Volumes
-With the deployment of Portal, PersistentVolumeClaim (PVC) are created for components as below:
+With the deployment of API Portal, PersistentVolumeClaims (PVC) are created for components as below:
 
-- RabbitMQ - It is used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
+- RabbitMQ - Used by Portal containers for internal messaging. Containers publish and/or consume messages to and from RabbitMQ.
 
-Below are for Analytics:
+Analytics components:
 
-- Kafka - Kafka is responsible to stream analytics data to druid cluster. Ingestion server is the one which streams data to Kafka, which is then ingested to druid processes. If druid containers are not available, Kafka also act as a message store and retains analytics-data upto 6hrs. 
+- Kafka - Responsible to stream analytics data to druid cluster. Ingestion server streams data to Kafka, which is then ingested into druid processes. If druid containers are not available, Kafka also acts as a message store and retains analytics data up to 6hrs. 
 
-- Zookeeper - Zookeeper is a very critical container in Druid cluster. If it is not available; its a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
+- Zookeeper - A critical container in Druid cluster. When not available, it becomes a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
 
-- Minio - Minio is the data store for analytics data. All anallytics data is persisted in minio volumes. Downtime of minio will lead to data loss as the real time data won't be persisted by ingestion tasks running in druid.
+- Minio - Data store for persisting analytics data. Downtime of Minio leads to data loss as the real time data will not be persisted by ingestion tasks running in druid.
 
-- Historical - Historical serves data for Analytics querying. If this in not available, Analytics reports are not loaded in Portal UI.
+- Historical - Serves data for analytics querying. If this is not available, analytics reports are not loaded in the API Portal UI.
 
 
 ## Troubleshooting
 
-### RabbitMQ won't start
+### RabbitMQ does not start
 
-#### The Chart was uninstalled and re-installed
-RabbitMQ credentials are auto-generated on install, these are bound to the volume that is created and for peer sync. So with re-install, rabbitmq nodes will not be able to connect to the existing volumes. Please run below steps for rabbitmq to start
+#### The chart was uninstalled and re-installed
+RabbitMQ credentials are auto-generated on installation, these are bound to the volume that is created and for peer sync. So with re-install, rabbitmq nodes will not be able to connect to the existing volumes. Perform the following steps for rabbitmq to start.
 Note: It is recommended to do a helm upgrade rather than uninstall and install. 
 
 1. Remove RabbitMQ Replicas (scale to 0)
@@ -643,30 +656,30 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
-Once the rabbitmq is running make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](https://github.com/CAAPIM/apim-charts/blob/rabbitmq-doc-changes/charts/portal/README.md#install-the-chart) 
+After the rabbitmq is running, make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](#install-the-chart) 
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
-If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it won't be restored correctly. Or If sync between rabbitmq peers doesn't happen or set of rabbitmq nodes can never be brought online use the 'force boot' option
+If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it will not be restored correctly. Or if sync between rabbitmq peers doesnot happen or set of rabbitmq nodes can never be brought online, then use the 'force boot' option.
 
 1. Set force boot to true
 
   - In your <my-values.yaml> file, set ```rabbitmq.clustering.forceBoot:true```
 
-2. Upgrade the Chart
+2. Upgrade the chart:
 ```
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 ```
 
 
 ### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"
-If helm updgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", its becasue of limitaion in kubernetes where a job can not be update.
+If helm upgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", it is becasue of the limitation in kubernetes where a job can not be updated.
 
-1. List the jobs in the namespace.
+1. Run the following command to list the jobs in the namespace:-
 ```
 $ kubectl get jobs -n  <nameSpace>
 ```
 
-2. Delete jobs
+2. Run the following command to delete jobs:
 ```
 kubectl delete job db-upgrade -n <nameSpace>
 kubectl delete job rbac-upgrade -n <nameSpace>
@@ -675,10 +688,10 @@ kubectl delete job rbac-upgrade -n <nameSpace>
 
 ### MySQL container in unhealthy state
 
-#### The Chart was uninstalled and re-installed
-MySQL container health check is failing as it is using credentials auto-generated during current installtion to access the database created during earlier installation. We have to recreate database with new credentials by deleting old volumes. This process causes loss of old data.
+#### The chart was uninstalled and re-installed
+MySQL container health check is failing as it is using credentials that were auto-generated during current installation to access the database created during earlier installation. We have to recreate database with new credentials by deleting old volumes. This process causes loss of old data.
 
-1. Remove MySQL Replicas (scale to 0)
+1. Run the following commands to remove MySQL Replicas (scale to 0):
 ```
 $ kubectl get statefulset <release-name>-mysql
 
@@ -687,17 +700,17 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=0
 $ kubectl get pvc | grep data-<release-name>-mysql
 ```
 
-2. For each data-\<release-name\>-mysql-\<number\> is returned
+2. For each data-\<release-name\>-mysql-\<number\> is returned, run the following command:
 ```
 $ kubectl delete pvc data-<release-name>-mysql-<number>
 ```
 
-3. Restore MySQL Replicas
+3. Run the following command to restore MySQL Replicas
 ```
 $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2020 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2022 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
