@@ -516,8 +516,8 @@ IngressClass resources are supported since k8s >= 1.18 and required since k8s >=
 | `ingress-nginx.controller.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
 | `ingress-nginx.controller.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
 | `ingress-nginx.controller.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
-| `ingress-nginx.controller.ingressClassResource.default` | Creating the IngressClass- with the name specified, by default | `false` |
-| `ingress-nginx.controller.ingressClassResource.controllerValue` | Creating the IngressClass- with the contollerValue specified | `k8s.io/ingress-nginx` |
+| `ingress-nginx.controller.ingressClassResource.default` | true value will make this the default ingressClass for the cluster | `false` |
+| `ingress-nginx.controller.ingressClassResource.controllerValue` | value of the controller that is processing this ingressClass | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
 To access the API Portal, configure the hostname resolution on your corporate DNS server.
