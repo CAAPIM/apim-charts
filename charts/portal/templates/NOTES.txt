@@ -31,4 +31,4 @@ Please use an external MYSQL 8 database.
 {{- end }}
 
 For documentation about the portal, please visit:
-{{ include "portal.help.page" . }}
+https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/
