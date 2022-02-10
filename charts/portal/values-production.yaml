@@ -56,7 +56,7 @@ portal:
   #Configuration to use custom registries to pull the container images with appropriate credentials.
   #This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
-  #Set this to true if there is already an existing pull secret available. 
+  #Set this to true if there is already an existing pull secret available.
   useExistingPullSecret: false
   #Set this if you would like to add an image pull secret directly to the Portal deployment.
   imagePullSecret:
@@ -73,10 +73,10 @@ tls:
 # then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
 # The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
 # During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
-# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates. 
+# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates.
 # Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
 ## if tls.job.enabled is 'false', irrespective of 'tls.job.rotate' value no new certs are created.
-## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created. 
+## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created.
 # Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
 ## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
   job:
@@ -787,7 +787,7 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
-   #ingressClassResource:
+   # ingressClassResource:
    #  name: nginx
    #  enabled: true
    #  default: false

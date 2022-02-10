@@ -634,7 +634,7 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
-   #ingressClassResource:
+   # ingressClassResource:
    #  name: nginx
    #  enabled: true
    #  default: false
