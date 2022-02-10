@@ -25,6 +25,7 @@ spec:
       containers:
         - name: rbac-upgrade
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.rbacUpgrade }}"
+          imagePullPolicy: IfNotPresent
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
