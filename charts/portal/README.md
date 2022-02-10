@@ -105,7 +105,7 @@ MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1. This 
 5) Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26.
 Ensure in **values.yaml** the value of **tls.job.enabled** must be set to **false**
 ```
-6) Install the chart again
+Install the chart again
  $ helm install <release name> -n <namespace>
 ```
 
