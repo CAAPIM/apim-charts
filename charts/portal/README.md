@@ -14,7 +14,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html)
 
 ### Production
-- A dedicated MySQL 5.7/8.0.22 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html#concept.dita_18bc57ed503d5d7b08bde9b6e90147aef9a864c4_ProvideMySQLSettings)
+- A dedicated MySQL 8.0.22/8.0.26 server [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -58,6 +58,43 @@ To delete API Portal installation
 ```
 
 *Additional resources such as PVCs and Secrets will need to be cleaned up manually. This protects your data in the event of an accidental deletion.* 
+
+## Upgrade External Portal Database to MySQL 8.0
+MySQL 8.0 is supported as external database starting from Portal 5.0 CR 1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
+
+Before starting upgrade of Database follow the sections **Before You Begin** and **Check Database Compatibility** from [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+
+
+Persist Analytics Data into Druid Database
+```
+ Connect the coordinator pod(s) and run below com
+ $ kubectl exec -it coordinator-0|1 -n <namespace> sh
+
+ Run the following curl command to persists Analytics data
+ $ curl --location --request POST 'localhost:8081/druid/indexer/v1/supervisor/terminateAll'
+
+ Run the below curl commands and wait until the runningTasks response is empty and the supervisor response is empty before proceeding with other steps.
+ $ curl localhost:8081/druid/indexer/v1/runningTasks
+ $ curl localhost:8081/druid/indexer/v1/supervisor
+```
+
+Stop the Running portal
+```
+ Get the Release name
+ $ helm list -n <namespace>
+
+ Uninstall the chart
+ $ helm uninstall <release name> -n <namespace>
+```
+
+Upgrade MYSQL 5.7 to 8.0.26 using the steps available at section - **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+
+Once MySQL upgrade is done, ensure we could connect to it and then follow below steps to start the portal with MySQL 8.0.26.
+Ensure in **values.yaml** the value of **tls.job.enabled** must be set to **false**
+```
+ Use the older release name and Install the chart 
+ $ helm install <release name> -n <namespace>
+```
 
 ## Additional Guides/Info
 * [Use/Replace Signed Certificates](#certificates)
