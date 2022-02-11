@@ -3,6 +3,21 @@ entries:
   druid:
   - apiVersion: v2
     appVersion: 0.17.0
+    created: "2022-02-11T12:07:16.493076908Z"
+    description: Broadcom APIM Portal Analytics Chart
+    digest: 5c3cc32fe0b090e93436577af6628f43c8febb8854f80b0a2a00dd0af212361a
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: druid
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.8/druid-1.0.8.tgz
+    version: 1.0.8
+  - apiVersion: v2
+    appVersion: 0.17.0
     created: "2021-06-09T11:48:15.703070053Z"
     description: Broadcom APIM Portal Analytics Chart
     digest: 9cf05e055fa6e8ca4ca979195f422e5339f72ba25a9b66d57a03806c8fc29778
@@ -47,6 +62,38 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.0/druid-1.0.0.tgz
     version: 1.0.0
   gateway:
+  - apiVersion: v2
+    appVersion: 10.1.00
+    created: "2022-02-11T12:07:16.643683404Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 3.4.6
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.7.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 3.1.1
+    - condition: database.create
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.2.5
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: ce1328c6e8599259cb5f0992133f8412ec589cd56b82f328a8c45eacbacb82b6
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-2.0.3/gateway-2.0.3.tgz
+    version: 2.0.3
   - apiVersion: v2
     appVersion: 10.1.00
     created: "2021-10-13T11:20:45.458072129Z"
@@ -334,6 +381,32 @@ entries:
   gateway-otk:
   - apiVersion: v2
     appVersion: 10.1.00
+    created: "2022-02-11T12:07:16.748955598Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 3.4.6
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.7.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 3.1.1
+    - condition: database.create
+      name: mysql
+      repository: https://charts.helm.sh/stable
+      version: 1.6.7
+    description: This alpha Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
+    digest: 4b8b539fd6630b2322f7ed4280285055294c9250ab223c2c16082e8a507579e1
+    name: gateway-otk
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-otk-1.0.2/gateway-otk-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 10.1.00
     created: "2021-09-20T21:36:37.52825133Z"
     dependencies:
     - condition: hazelcast.enabled
@@ -411,6 +484,38 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/gateway-otk-0.0.1/gateway-otk-0.0.1.tgz
     version: 0.0.1
   portal:
+  - apiVersion: v2
+    appVersion: 5.1.0
+    created: "2022-02-11T12:07:16.880530314Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: global.setupDemoDatabase
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.8.16
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 7.6.6
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.0.9
+    description: CA API Developer Portal
+    digest: 818710d6f8079eedf438d82c886ff08b45b447da402b78c595bd043aec746698
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.2.0/portal-2.2.0.tgz
+    version: 2.2.0
   - apiVersion: v2
     appVersion: 5.0.2
     created: "2021-08-19T14:01:24.417080765Z"
@@ -699,4 +804,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2021-10-13T11:20:45.458162929Z"
+generated: "2022-02-11T12:07:16.880623716Z"
