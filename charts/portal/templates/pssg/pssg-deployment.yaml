@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.pssg.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   {{- if .Values.pssg.strategy }}
   strategy: {{- toYaml .Values.pssg.strategy | nindent 12 }}
@@ -19,6 +25,10 @@ spec:
     metadata:
       labels:
         app: pssg
+      {{ if .Values.pssg.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.pssg.affinity }}
@@ -26,6 +36,9 @@ spec:
       {{- end }}
       {{- if .Values.pssg.nodeSelector }}
       nodeSelector: {{- toYaml .Values.pssg.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pssg.tolerations }}
+      tolerations: {{- toYaml .Values.pssg.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

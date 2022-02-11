@@ -24,7 +24,7 @@ data:
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
   DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
-  JAVA_OPTS: -Xms512m -Xmx512m
+  JAVA_OPTIONS: {{ .Values.tenantProvisioner.javaOptions | default "-Xms512m -Xmx512m" | quote }}
   NSS_SDB_USE_CACHE: "no"
   OTK_PORT: {{ .Values.portal.otk.port | quote }}
   PORTAL_VERSION: {{ .Chart.AppVersion }}

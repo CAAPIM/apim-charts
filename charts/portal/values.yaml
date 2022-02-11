@@ -20,6 +20,7 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/
 # storageClass: "_"
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
@@ -51,11 +52,19 @@ portal:
   # password: 7layer
   otk:
     port: 443
-  # This loads the bintray imagePullSecret
-  registryCredentials:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
+  # Configuration to use custom registries to pull the container images with appropriate credentials.
+  # This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  registryCredentials:
+  # Set this to true if there is already an existing pull secret available.
+  useExistingPullSecret: false
+  # Set this if you would like to add an image pull secret directly to the Portal deployment.
+  imagePullSecret:
+    enabled: false
+    username:
+    password:
 
 tls:
 # Leave this blank to be auto-generated
@@ -63,8 +72,15 @@ tls:
 # These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
-# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
+# then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
 # The job will still run, but will not update anything.
+# During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
+# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates.
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
+## if tls.job.enabled is 'false', irrespective of 'tls.job.rotate' value no new certs are created.
+## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created.
+# Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
+## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
   job:
     enabled: true
 # You may need to update the internal/external facing certificates, to do this set rotate
@@ -99,6 +115,9 @@ tls:
 # Kubernetes Ingress
 ingress:
 # Use a kubernetes/openshift ingress
+  class:
+    name: nginx
+    enabled: true
   type:
     kubernetes: true
     openshift: false
@@ -109,7 +128,7 @@ ingress:
   create: true
 # Configure additional ingress controller specific annotations
   annotations:
-    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
@@ -148,6 +167,7 @@ rbac:
 
 # If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
 analytics:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -164,9 +184,11 @@ analytics:
     # cpu: 1000m
     # memory: 2000Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 apim:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -185,10 +207,13 @@ apim:
     # cpu: 2000m
     # memory: 6144Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 authenticator:
+  forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -204,9 +229,11 @@ authenticator:
     # cpu: 750m
     # memory: 1500Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 dispatcher:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -223,7 +250,27 @@ dispatcher:
     # cpu: 500m
     # memory: 1024Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
+# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update.
+# If none specified, default HTTP GET request is used for both readiness and liveness probe
+  # readinessProbe:
+  #   exec:
+  #     command: [sh, /opt/diagnostic/health_check.sh]
+  #   initialDelaySeconds: 90
+  #   timeoutSeconds: 1
+  #   periodSeconds: 15
+  #   successThreshold: 1
+  # livenessProbe:
+  #   httpGet:
+  #     path: /nginx_status
+  #     port: 8443
+  #     scheme: HTTPS
+  #   initialDelaySeconds: 30
+  #   timeoutSeconds: 5
+  #   periodSeconds: 15
+  #   successThreshold: 1
+  #   failureThreshold: 20
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
@@ -234,7 +281,9 @@ dispatcher:
 #    key1: value
 
 portalData:
+  forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -250,10 +299,13 @@ portalData:
     # cpu: 1000m
     # memory: 3072Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 portalEnterprise:
+  forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -269,9 +321,11 @@ portalEnterprise:
     # cpu: 2000m
     # memory: 3072Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 pssg:
+  forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -288,28 +342,13 @@ pssg:
     # cpu: 2000m
     # memory: 4608Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
-solr:
-  replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  resources:
-    requests: {}
-    # cpu: 50m
-    # memory: 250Mi
-    limits: {}
-    # cpu: 500m
-    # memory: 750Mi
-# nodeSelector: {}
-
 tenantProvisioner:
+  forceRedeploy: false
   replicaCount: 1
+  javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -325,22 +364,22 @@ tenantProvisioner:
     # cpu: 1000m
     # memory: 1536Mi
 # nodeSelector: {}
+# tolerations: []
 # affinity: {}
 
 image:
-  dispatcher: dispatcher:5.0.2
-  pssg: pssg:5.0.2
-  apim: ingress:5.0.2
-  enterprise: portal-enterprise:5.0.2
-  data: portal-data:5.0.2
-  tps: tenant-provisioning-service:5.0.2
-  solr: solr:5.0.2
-  analytics: analytics-server:5.0.2
-  authenticator: authenticator:5.0.2
-  dbUpgrade: db-upgrade-portal:5.0.2
-  rbacUpgrade: db-upgrade-rbac:5.0.2
-  upgradeVerify: upgrade-verify:5.0.2
-  tlsManager: tls-automator:5.0.2
+  dispatcher: dispatcher:5.1
+  pssg: pssg:5.1
+  apim: ingress:5.1
+  enterprise: portal-enterprise:5.1
+  data: portal-data:5.1
+  tps: tenant-provisioning-service:5.1
+  analytics: analytics-server:5.1
+  authenticator: authenticator:5.1
+  dbUpgrade: db-upgrade-portal:5.1
+  rbacUpgrade: db-upgrade-rbac:5.1
+  upgradeVerify: upgrade-verify:5.1
+  tlsManager: tls-automator:5.1
 
 ##
 ## Subchart Configuration
@@ -349,6 +388,7 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
+  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
@@ -362,6 +402,7 @@ druid:
 
   minio:
     # consider changing to mode... standalone/distributed.
+    # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -401,6 +442,7 @@ druid:
       limits: {}
       # memory: 256Mi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   zookeeper:
@@ -413,8 +455,8 @@ druid:
       requests: {}
       # memory: 256Mi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
-
 
   coordinator:
     replicaCount: 1
@@ -426,6 +468,7 @@ druid:
       requests: {}
       # memory: 512Mi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   kafka:
@@ -440,6 +483,7 @@ druid:
       # cpu: 1000m
       # memory: 1.5Gi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   broker:
@@ -452,6 +496,7 @@ druid:
       limits: {}
       # memory: 2Gi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   historical:
@@ -464,6 +509,7 @@ druid:
       limits: {}
       # memory: 2Gi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   ingestion:
@@ -479,6 +525,7 @@ druid:
       # cpu: 1000m
       # memory: 1.5Gi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   middlemanager:
@@ -491,17 +538,18 @@ druid:
       limits: {}
       # memory: 4Gi
   # nodeSelector: {}
+  # tolerations: []
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.0.2
-    broker: druid:5.0.2
-    coordinator: druid:5.0.2
-    middlemanager: druid:5.0.2
-    minio: minio:5.0.2
-    historical: druid:5.0.2
-    kafka: kafka:5.0.2
-    ingestion: ingestion-server:5.0.2
+    zookeeper: zookeeper:5.1
+    broker: druid:5.1
+    coordinator: druid:5.1
+    middlemanager: druid:5.1
+    minio: minio:5.1
+    historical: druid:5.1
+    kafka: kafka:5.1
+    ingestion: ingestion-server:5.1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -511,7 +559,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.0.2"
+    tag: "5.1"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
@@ -586,6 +634,11 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
+   # ingressClassResource:
+   #  name: nginx
+   #  enabled: true
+   #  default: false
+   #  controllerValue: "k8s.io/ingress-nginx"
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
 
@@ -594,7 +647,7 @@ ingress-nginx:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.22-debian-10-r75"
+    tag: "8.0.26-debian-10-r78"
   auth:
     username: portal
     existingSecret: database-secret
@@ -613,7 +666,7 @@ mysql:
       [client]
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8
+      default-character-set=utf8mb4
       plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
       default_authentication_plugin=mysql_native_password
@@ -625,11 +678,12 @@ mysql:
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       datadir=/bitnami/mysql/data
       tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8_general_ci
-      character-set-server=UTF8
+      collation-server=utf8mb4_0900_ai_ci
+      character-set-server=utf8mb4
       innodb_log_buffer_size=32M
       innodb_log_file_size=80M
       max_allowed_packet=8M
+      group_concat_max_len=512000
       sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
       bind-address=0.0.0.0
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
@@ -638,3 +692,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"

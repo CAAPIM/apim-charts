@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.historical.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -20,6 +26,10 @@ spec:
     metadata:
       labels:
         app: historical
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.historical.affinity }}
@@ -27,6 +37,9 @@ spec:
       {{- end }}
       {{- if .Values.historical.nodeSelector }}
       nodeSelector: {{- toYaml .Values.historical.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.historical.tolerations }}
+      tolerations: {{- toYaml .Values.historical.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010
