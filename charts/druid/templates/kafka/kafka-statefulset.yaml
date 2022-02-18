@@ -35,11 +35,11 @@ spec:
       {{- if .Values.kafka.affinity }}
       affinity: {{- toYaml .Values.kafka.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.kafka.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.kafka.nodeSelector | nindent 12 }}
+      {{- if or .Values.kafka.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.kafka.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.kafka.tolerations }}
-      tolerations: {{- toYaml .Values.kafka.tolerations | nindent 12 }}
+      {{- if or .Values.kafka.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.kafka.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010

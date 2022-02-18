@@ -36,11 +36,11 @@ spec:
       {{- if .Values.ingestion.affinity }}
       affinity: {{- toYaml .Values.ingestion.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.ingestion.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.ingestion.nodeSelector | nindent 12 }}
+      {{- if or .Values.ingestion.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.ingestion.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.ingestion.tolerations }}
-      tolerations: {{- toYaml .Values.ingestion.tolerations | nindent 12 }}
+      {{- if or .Values.ingestion.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.ingestion.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: ingestion-server

@@ -37,11 +37,11 @@ spec:
       {{- if .Values.minio.affinity }}
       affinity: {{- toYaml .Values.minio.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.minio.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- if or .Values.minio.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.minio.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.minio.tolerations }}
-      tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
+      {{- if or .Values.minio.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.minio.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

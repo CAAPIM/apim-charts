@@ -35,11 +35,11 @@ spec:
       {{- if .Values.broker.affinity }}
       affinity: {{- toYaml .Values.broker.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.broker.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.broker.nodeSelector | nindent 12 }}
+      {{- if or .Values.broker.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.broker.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.broker.tolerations }}
-      tolerations: {{- toYaml .Values.broker.tolerations | nindent 12 }}
+      {{- if or .Values.broker.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.broker.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: broker

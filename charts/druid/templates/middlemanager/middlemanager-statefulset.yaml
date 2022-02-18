@@ -35,11 +35,11 @@ spec:
       {{- if .Values.middlemanager.affinity }}
       affinity: {{- toYaml .Values.middlemanager.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.middlemanager.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.middlemanager.nodeSelector | nindent 12 }}
+      {{- if or .Values.middlemanager.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.middlemanager.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.middlemanager.tolerations }}
-      tolerations: {{- toYaml .Values.middlemanager.tolerations | nindent 12 }}
+      {{- if or .Values.middlemanager.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.middlemanager.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: middlemanager

@@ -34,11 +34,11 @@ spec:
       {{- if .Values.portalData.affinity }}
       affinity: {{- toYaml .Values.portalData.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.portalData.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.portalData.nodeSelector | nindent 12 }}
+      {{- if or .Values.portalData.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.portalData.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.portalData.tolerations }}
-      tolerations: {{- toYaml .Values.portalData.tolerations | nindent 12 }}
+      {{- if or .Values.portalData.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.portalData.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

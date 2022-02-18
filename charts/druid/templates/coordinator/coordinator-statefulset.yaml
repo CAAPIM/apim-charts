@@ -35,11 +35,11 @@ spec:
       {{- if .Values.coordinator.affinity }}
       affinity: {{- toYaml .Values.coordinator.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.coordinator.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.coordinator.nodeSelector | nindent 12 }}
+      {{- if or .Values.coordinator.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.coordinator.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.coordinator.tolerations }}
-      tolerations: {{- toYaml .Values.coordinator.tolerations | nindent 12 }}
+      {{- if or .Values.coordinator.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.coordinator.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: coordinator

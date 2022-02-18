@@ -38,11 +38,11 @@ spec:
       {{- if .Values.zookeeper.affinity }}
       affinity: {{- toYaml .Values.zookeeper.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.zookeeper.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.zookeeper.nodeSelector | nindent 12 }}
+      {{- if or .Values.zookeeper.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.zookeeper.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.zookeeper.tolerations }}
-      tolerations: {{- toYaml .Values.zookeeper.tolerations | nindent 12 }}
+      {{- if or .Values.zookeeper.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.zookeeper.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010

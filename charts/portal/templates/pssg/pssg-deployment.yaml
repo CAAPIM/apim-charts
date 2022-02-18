@@ -34,11 +34,11 @@ spec:
       {{- if .Values.pssg.affinity }}
       affinity: {{- toYaml .Values.pssg.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.pssg.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.pssg.nodeSelector | nindent 12 }}
+      {{- if or .Values.pssg.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.pssg.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.pssg.tolerations }}
-      tolerations: {{- toYaml .Values.pssg.tolerations | nindent 12 }}
+      {{- if or .Values.pssg.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.pssg.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

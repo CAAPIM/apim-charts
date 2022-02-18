@@ -35,11 +35,11 @@ spec:
       {{- if .Values.historical.affinity }}
       affinity: {{- toYaml .Values.historical.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.historical.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.historical.nodeSelector | nindent 12 }}
+      {{- if or .Values.historical.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.historical.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.historical.tolerations }}
-      tolerations: {{- toYaml .Values.historical.tolerations | nindent 12 }}
+      {{- if or .Values.historical.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.historical.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010

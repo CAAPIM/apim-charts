@@ -34,11 +34,11 @@ spec:
       {{- if .Values.authenticator.affinity }}
       affinity: {{- toYaml .Values.authenticator.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.authenticator.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.authenticator.nodeSelector | nindent 12 }}
+      {{- if or .Values.authenticator.nodeSelector .Values.global.nodeSelector}}
+      nodeSelector: {{- toYaml or .Values.authenticator.nodeSelector .Values.global.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.authenticator.tolerations }}
-      tolerations: {{- toYaml .Values.authenticator.tolerations | nindent 12 }}
+      {{- if or .Values.authenticator.tolerations .Values.global.tolerations }}
+      tolerations: {{- toYaml or .Values.authenticator.tolerations .Values.global.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
