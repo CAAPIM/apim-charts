@@ -60,6 +60,9 @@ spec:
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
       {{- end }}
+      {{- if .Values.jobs.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.jobs.nodeSelector | nindent 12 }}
+      {{- end }}
       {{- if .Values.jobs.tolerations }}
       tolerations: {{- toYaml .Values.jobs.tolerations | nindent 12 }}
       {{- end }}
