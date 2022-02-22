@@ -110,3 +110,129 @@ Portal Docops page
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{- define "s3.url" -}}
+    {{- if eq .Values.global.analytics.deepStorage "seaweedfs" -}}
+    {{- printf "http://%s-filer:%s" .Values.global.analytics.deepStorage | trunc 63 | trimSuffix "-" -}}
+    {{- else -}}
+    {- printf "http://%s:%s" .Values.global.analytics.deepStorage .Values.minio.port | trunc 63 | trimSuffix "-" -}}
+    {{- end -}}
+{{- end -}}
+
+{{/*
+Inject extra environment vars in the format key:value, if populated
+*/}}
+{{- define "seaweedfs.extraEnvironmentVars" -}}
+{{- if .extraEnvironmentVars -}}
+{{- range $key, $value := .extraEnvironmentVars }}
+- name: {{ $key }}
+  value: {{ $value | quote }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Return the proper filer image */}}
+{{- define "filer.image" -}}
+{{- if .Values.filer.imageOverride -}}
+{{- $imageOverride := .Values.filer.imageOverride -}}
+{{- printf "%s" $imageOverride -}}
+{{- else -}}
+{{- $registryName := default .Values.image.registry .Values.global.localRegistry | toString -}}
+{{- $repositoryName := .Values.image.repository | toString -}}
+{{- $name := .Values.global.image.seaweedfs| toString -}}
+{{- $tag := .Chart.AppVersion | toString -}}
+{{- printf "%s%s%s:%s" $registryName $repositoryName $name $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Return the proper master image */}}
+{{- define "master.image" -}}
+{{- if .Values.master.imageOverride -}}
+{{- $imageOverride := .Values.master.imageOverride -}}
+{{- printf "%s" $imageOverride -}}
+{{- else -}}
+{{- $registryName := default .Values.image.registry .Values.global.localRegistry | toString -}}
+{{- $repositoryName := .Values.image.repository | toString -}}
+{{- $name := .Values.global.image.seaweedfs | toString -}}
+{{- printf "%s%s%s" $registryName $repositoryName $name -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Return the proper s3 image */}}
+{{- define "s3.image" -}}
+{{- if .Values.s3.imageOverride -}}
+{{- $imageOverride := .Values.s3.imageOverride -}}
+{{- printf "%s" $imageOverride -}}
+{{- else -}}
+{{- $registryName := default .Values.image.registry .Values.global.localRegistry | toString -}}
+{{- $repositoryName := .Values.image.repository | toString -}}
+{{- $name := .Values.global.image.seaweedfs | toString -}}
+{{- $tag := .Chart.AppVersion | toString -}}
+{{- printf "%s%s%s" $registryName $repositoryName $name -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Return the proper volume image */}}
+{{- define "volume.image" -}}
+{{- if .Values.volume.imageOverride -}}
+{{- $imageOverride := .Values.volume.imageOverride -}}
+{{- printf "%s" $imageOverride -}}
+{{- else -}}
+{{- $registryName := default .Values.image.registry .Values.global.localRegistry | toString -}}
+{{- $repositoryName := .Values.image.repository | toString -}}
+{{- $name := .Values.global.image.seaweedfs | toString -}}
+{{- printf "%s%s%s" $registryName $repositoryName $name -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Return the proper cronjob image */}}
+{{- define "cronjob.image" -}}
+{{- if .Values.cronjob.imageOverride -}}
+{{- $imageOverride := .Values.cronjob.imageOverride -}}
+{{- printf "%s" $imageOverride -}}
+{{- else -}}
+{{- $registryName := default .Values.image.registry .Values.global.localRegistry | toString -}}
+{{- $repositoryName := .Values.image.repository | toString -}}
+{{- $name := .Values.global.image.seaweedfs | toString -}}
+{{- printf "%s%s%s" $registryName $repositoryName $name -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/* check if any PVC exists */}}
+{{- define "volume.pvc_exists" -}}
+{{- if or (or (eq .Values.volume.data.type "persistentVolumeClaim") (and (eq .Values.volume.idx.type "persistentVolumeClaim") .Values.volume.dir_idx )) (eq .Values.volume.logs.type "persistentVolumeClaim") -}}
+{{- printf "true" -}}
+{{- else -}}
+{{- printf "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/* check if any HostPath exists */}}
+{{- define "volume.hostpath_exists" -}}
+{{- if or (or (eq .Values.volume.data.type "hostPath") (and (eq .Values.volume.idx.type "hostPath") .Values.volume.dir_idx )) (eq .Values.volume.logs.type "hostPath") -}}
+{{- printf "true" -}}
+{{- else -}}
+{{- if .Values.volume.extraVolumes -}}
+{{- printf "true" -}}
+{{- else -}}
+{{- printf "false" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get "filer db name" database name
+*/}}
+{{- define "filer-db-name" -}}
+    {{ if .Values.global.legacyDatabaseNames }}
+        {{- print "analytics" }}
+    {{- else }}
+        {{- $f:= .Values.global.subdomainPrefix -}}
+        {{ if empty $f }}
+            {{- fail "Please define subdomainPrefix in values.yaml" }}
+        {{- else }}
+            {{- printf "%s_%s" $f "analytics" | replace "-" "_" -}}
+        {{- end }}
+    {{- end }}
+{{- end -}}

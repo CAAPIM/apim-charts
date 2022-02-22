@@ -15,8 +15,8 @@ data:
   OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
   COORDINATOR_HOST: {{ .Values.coordinator.hostname }}
   COORDINATOR_PORT: {{ .Values.coordinator.port | quote }}
-  MINIO_URL: http://minio:9000
-  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  MINIO_URL: http://seaweedfs-s3:{{ if .Values.s3.enabled }}{{ .Values.s3.port }}{{ else }}{{ .Values.filer.s3.port }}{{ end }}
+  MINIO_BUCKET: {{ .Values.global.s3BucketName }}
   PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
   REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
 {{ if .Values.global.setupDemoDatabase}}

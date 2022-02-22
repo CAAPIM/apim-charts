@@ -11,8 +11,8 @@ data:
   SERVICE_NAME: {{ .Values.coordinator.hostname }}
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
-  MINIO_URL: http://minio:9000
-  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+  MINIO_URL: http://seaweedfs-s3:{{ if .Values.s3.enabled }}{{ .Values.s3.port }}{{ else }}{{ .Values.filer.s3.port }}{{ end }}
+  MINIO_BUCKET: {{ .Values.global.s3BucketName }}
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
 {{ if .Values.global.setupDemoDatabase}}
   DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
