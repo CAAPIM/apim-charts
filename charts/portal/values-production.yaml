@@ -797,6 +797,7 @@ ingress-nginx:
 
 #Settings for portal jobs
 jobs:
+  labels: {}
 # nodeSelector: {}
 # tolerations: []
 
