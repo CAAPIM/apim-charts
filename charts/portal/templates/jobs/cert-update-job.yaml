@@ -15,7 +15,7 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-    {{- range $key, $val := .Values.portal.jobsLabels }}
+    {{- range $key, $val := .Values.jobs.labels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
