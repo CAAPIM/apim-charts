@@ -795,7 +795,7 @@ ingress-nginx:
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
 
-#Settings for portal jobs
+# Settings for portal jobs
 jobs:
   labels: {}
 # nodeSelector: {}
