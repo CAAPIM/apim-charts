@@ -167,7 +167,6 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.ssoDebug` | SSO Debugging | `false` |
 | `portal.hostnameWhiteList` | Hostname whitelist | `` |
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
-| `portal.jobsLabels` | A list of custom key: value labels applied to jobs | `not set` |
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
 | `portal.useExistingPullSecret` | Configures Portal Deployment to use **global.pullSecret** as imagePullSecret | `false` |
 | `portal.imagePullSecret.enabled` | Configures Portal Deployment to use custom registry, this option is only evaluated only when portal.registryCredentials option is not used | `false` |
@@ -299,6 +298,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
+| `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
+| `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
+| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set` |
 
 
 ### RBAC Parameters

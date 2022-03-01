@@ -14,7 +14,7 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-    {{- range $key, $val := .Values.portal.jobsLabels }}
+    {{- range $key, $val := .Values.jobs.labels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
@@ -57,5 +57,11 @@ spec:
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      {{- if .Values.jobs.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.jobs.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.jobs.tolerations }}
+      tolerations: {{- toYaml .Values.jobs.tolerations | nindent 12 }}
       {{- end }}
       restartPolicy: "OnFailure"
