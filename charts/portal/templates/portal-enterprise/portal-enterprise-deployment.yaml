@@ -120,17 +120,17 @@ spec:
                   key: keypass.txt
                   optional: false
             - name: APIM_SSL_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: {{ .Values.tls.externalSecretName }}
-                    key: apim-ssl.p12
-                    optional: false
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.externalSecretName }}
+                  key: apim-ssl.p12
+                  optional: false
             - name: DSSG_SSL_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: {{ .Values.tls.internalSecretName }}
-                    key: apim-dssg.p12
-                    optional: false
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: apim-dssg.p12
+                  optional: false
             - name: PSSG_SSL_KEY
               valueFrom:
                 secretKeyRef:
