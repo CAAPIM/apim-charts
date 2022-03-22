@@ -119,6 +119,42 @@ spec:
                   name: {{ .Values.tls.internalSecretName }}
                   key: keypass.txt
                   optional: false
+            - name: APIM_SSL_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.tls.externalSecretName }}
+                    key: apim-ssl.p12
+                    optional: false
+            - name: DSSG_SSL_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.tls.internalSecretName }}
+                    key: apim-dssg.p12
+                    optional: false
+            - name: PSSG_SSL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: pssg-ssl.p12
+                  optional: false
+            - name: APIM_SSL_KEY_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.tls.externalSecretName }}
+                    key: keypass.txt
+                    optional: false
+            - name: DSSG_SSL_KEY_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.tls.internalSecretName }}
+                    key: keypass.txt
+                    optional: false
+            - name: PSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.tls.internalSecretName }}
+                  key: keypass.txt
+                  optional: false
             # test only variables
             - name: RBAC_CLIENT_CACHE_EXPIRY
               value: "{{ .Values.portalEnterprise.RBAC_CLIENT_CACHE_EXPIRY }}"
