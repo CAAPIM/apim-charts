@@ -23,6 +23,30 @@ imagePullSecret:
   username:
   password:
 
+# Add initContainers to the Gateway
+initContainers: {}
+## Example:
+## initContainers:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+
+## Add sidecars to the Gateway Deployment.
+sidecars: {}
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+
 serviceAccount:
   # name:
   create: true
@@ -62,9 +86,12 @@ management:
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
     enabled: false
-  # This is the username/password used for Policy Manager/Gateway Management
+  # This is the username/password used for Policy Manager/Gateway Management.
   username: admin
   password: mypassword
+  # This optionally loads the Kubernetes Service Account token as a secure password for use in Policy.
+  kubernetes:
+    loadServiceAccountToken: false
 
 # Database configuration
 database:
@@ -160,14 +187,12 @@ installSolutionKits:
   solutionKits:
 
 # Additional Environment variables to be added to the Gateway Configmap
-additionalEnv:
-  key1: value
+additionalEnv: {}
 # key1: value
 # key2: value
 
 # Additional Secret variables to be added to the Gateway Secret
-additionalSecret:
-  key1: value
+additionalSecret: {}
 # key1: value
 # key2: value
 
@@ -183,26 +208,37 @@ bundle:
 # When creating these secrets/configmaps the format should be
 # key: bundle1.bundle value: <xml value>
 # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+
+# Bundles that contain sensitive information can be mounted using the Kubernetes CSI Driver
 existingBundle:
   enabled: false
-  configMaps:
-  - mybundle1
-  - mybundle2
-  secrets:
-  - mysecretbundle1
-  - mysecretbundle2
+  configMaps: []
+ # - name: mybundle1
+    # configMap:
+    #   defaultMode: 420
+    #   optional: false
+    #   name: mybundle1
+ # - name: mybundle2
+  secrets: []
+  # - name: mysecretbundle1
+  #   csi:
+  #     driver: secrets-store.csi.k8s.io
+  #     readOnly: true
+  #     volumeAttributes:
+  #       secretProviderClass: "secret-provider-class-name"
+ # - mysecretbundle2
 
 # Configure custom hosts
 customHosts:
   enabled: false
-  hostAliases:
-  - hostnames:
-    - "dev.ca.com"
-    - "dev1.ca.com"
-    ip: "0.0.0.0"
-  - hostnames:
-    - "example.ca.com"
-    ip: "0.0.0.0"
+  hostAliases: []
+  # - hostnames:
+  #   - "dev.ca.com"
+  #   - "dev1.ca.com"
+  #   ip: "0.0.0.0"
+  # - hostnames:
+  #   - "example.ca.com"
+  #   ip: "0.0.0.0"
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
@@ -260,14 +296,14 @@ ingress:
   secretName: tls-secret
   # Array of Hostnames that the certificate is valid for - must contain at least one.
   hostname: dev.ca.com
-  tlsHostnames:
-  - dev.ca.com
-  - dev1.ca.com
+  tlsHostnames: []
+  # - dev.ca.com
+  # - dev1.ca.com
   ## The port that you want to route to via ingress. This needs to be available via service.ports.
   port: 8443
   ## Define additional hostnames and ports as key-value pairs.
-  additionalHostnamesAndPorts:
-    dev1.ca.com: 9443
+  additionalHostnamesAndPorts: {}
+  #  dev1.ca.com: 9443
 
 livenessProbe:
   enabled: true
