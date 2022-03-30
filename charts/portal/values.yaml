@@ -274,7 +274,7 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
-#    key1: value
+    HTTPD_USE_SSL_CERT_CHAIN: false
 
 # Additional Secret variables to be added to the Dispatcher Secret
   additionalSecret:
