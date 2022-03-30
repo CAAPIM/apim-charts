@@ -113,6 +113,10 @@ spec:
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
+{{ if .Values.customHosts.enabled }}
+      hostAliases:
+{{ toYaml .Values.customHosts.hostAliases | indent 12 }}
+{{ end }}
 {{ end }}
       volumes:
 {{ if  .Values.tls.customKey.enabled }}
