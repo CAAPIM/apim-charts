@@ -73,7 +73,7 @@ To delete API Portal installation, run the following command:
  $ helm delete <release name>
 ```
 
-*Manually clean up additional resources such as PVCs and Secrets. This protects your data if deleted accidentally.* 
+*Manually clean up additional resources such as PVCs and Secrets. This protects your data if deleted accidentally.*
 
 ## Upgrade External Portal Database to MySQL 8.0
 MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
@@ -331,7 +331,7 @@ If RBAC is required and a set service account is in use, the following roles mus
 *batch-reader*
 - apiGroups: ["batch"]
   resources: ["jobs"]
-  verbs: ["get", "describe"]
+  verbs: ["get"]
 ...
 *cert-update*
 rules:
@@ -507,7 +507,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:5.1` |
 | `druid.image.broker`                | Broker image   | `druid:5.1` |
 | `druid.image.coordinator`                | Coordinator  | `druid:5.1` |
-| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.1` 
+| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.1`
 | `druid.image.minio`                | Minio image   | `minio:5.1` |
 | `druid.image.historical`                | Historical image   | `druid:5.1` |
 | `druid.image.kafka`                | Kafka image   | `kafka:5.1` |
@@ -576,7 +576,7 @@ IngressClass resources are supported since k8s >= 1.18 and required since k8s >=
 
 ## DNS Configuration
 To access API Portal, configure the hostname resolution on your corporate DNS server.
-The hostnames must match the values that you enter in your **values.yaml**. 
+The hostnames must match the values that you enter in your **values.yaml**.
 
 > **IMPORTANT!** If you are migrating from a Docker Swarm deployment, utilize legacy hostnames to ensure continuity of business. For details, see [Migrate from Docker Swarm](../../utils/portal-migration/README.md).
 
@@ -586,11 +586,11 @@ API Portal requires the following hostnames to be resolvable:
 
 | Endpoint | Hostname | Legacy Hostname |
 | -------- | -------- | --------------- |
-| Default tenant homepage | `apim-<subdomainPrefix>.<domain>` | `apim.<domain>` | 
-| Ingress SSG | `<subdomainPrefix>-ssg.<domain>` | `ssg.<domain>` | 
-| Message broker | `<subdomainPrefix>-broker.<domain>` | `broker.<domain>` | 
-| TSSG enrollment | `<subdomainPrefix>-enroll.<domain>` | `enroll.<domain>` | 
-| TSSG sync | `<subdomainPrefix>-sync.<domain>` | `sync.<domain>` | 
+| Default tenant homepage | `apim-<subdomainPrefix>.<domain>` | `apim.<domain>` |
+| Ingress SSG | `<subdomainPrefix>-ssg.<domain>` | `ssg.<domain>` |
+| Message broker | `<subdomainPrefix>-broker.<domain>` | `broker.<domain>` |
+| TSSG enrollment | `<subdomainPrefix>-enroll.<domain>` | `enroll.<domain>` |
+| TSSG sync | `<subdomainPrefix>-sync.<domain>` | `sync.<domain>` |
 | API analytics | `<subdomainPrefix>-analytics.<domain>` | `analytics.<domain>` |
 
 ## Hostname Restrictions
@@ -612,11 +612,11 @@ Resulting hostnames:
 
 | Endpoint | Hostname | Legacy Hostname |
 | -------- | -------- | --------------- |
-| Default tenant homepage | `apim-dev-portal.example.com` | `apim.example.com` | 
-| Ingress SSG | `dev-portal-ssg.example.com` | `ssg.example.com` | 
-| Message broker | `dev-portal-broker.example.com` | `broker.example.com` | 
-| TSSG enrollment | `dev-portal-enroll.example.com` | `enroll.example.com` | 
-| TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` | 
+| Default tenant homepage | `apim-dev-portal.example.com` | `apim.example.com` |
+| Ingress SSG | `dev-portal-ssg.example.com` | `ssg.example.com` |
+| Message broker | `dev-portal-broker.example.com` | `broker.example.com` |
+| TSSG enrollment | `dev-portal-enroll.example.com` | `enroll.example.com` |
+| TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` |
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Persistent Volumes
@@ -626,7 +626,7 @@ With the deployment of API Portal, PersistentVolumeClaims (PVC) are created for 
 
 Analytics components:
 
-- Kafka - Responsible to stream analytics data to druid cluster. Ingestion server streams data to Kafka, which is then ingested into druid processes. If druid containers are not available, Kafka also acts as a message store and retains analytics data up to 6hrs. 
+- Kafka - Responsible to stream analytics data to druid cluster. Ingestion server streams data to Kafka, which is then ingested into druid processes. If druid containers are not available, Kafka also acts as a message store and retains analytics data up to 6hrs.
 
 - Zookeeper - A critical container in Druid cluster. When not available, it becomes a single point of failure for the entire ingestion pipeline. Kafka and druid clusters both depend on Zookeeper for sync and coordination within their respective clusters.
 
@@ -641,7 +641,7 @@ Analytics components:
 
 #### The chart was uninstalled and re-installed
 RabbitMQ credentials are auto-generated on installation, these are bound to the volume that is created and for peer sync. So with re-install, rabbitmq nodes will not be able to connect to the existing volumes. Perform the following steps for rabbitmq to start.
-Note: It is recommended to do a helm upgrade rather than uninstall and install. 
+Note: It is recommended to do a helm upgrade rather than uninstall and install.
 
 1. Remove RabbitMQ Replicas (scale to 0)
 ```
@@ -661,7 +661,7 @@ $ kubectl delete pvc data-rabbitmq-0|1|2
 ```
 $ kubectl scale statefulset rabbitmq --replicas=1|3
 ```
-After the rabbitmq is running, make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](#install-the-chart) 
+After the rabbitmq is running, make a note of its credentials as specified above in [Install Chart section - Credentials for Rabbitmq](#install-the-chart)
 
 #### Your Kubernetes nodes failed or RabbitMQ crashed.
 If the RabbitMQ cluster is stopped or removed out of order, there is a chance that it will not be restored correctly. Or if sync between rabbitmq peers doesnot happen or set of rabbitmq nodes can never be brought online, then use the 'force boot' option.
