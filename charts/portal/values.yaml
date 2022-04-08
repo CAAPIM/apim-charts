@@ -1,6 +1,6 @@
 # Global values
 global:
-  portalRepository: caapim/
+  portalRepository: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
   setupDemoDatabase: true
@@ -31,6 +31,7 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+    deepStorage: minio
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -368,18 +369,18 @@ tenantProvisioner:
 # affinity: {}
 
 image:
-  dispatcher: dispatcher:5.1
-  pssg: pssg:5.1
-  apim: ingress:5.1
-  enterprise: portal-enterprise:5.1
-  data: portal-data:5.1
-  tps: tenant-provisioning-service:5.1
-  analytics: analytics-server:5.1
-  authenticator: authenticator:5.1
-  dbUpgrade: db-upgrade-portal:5.1
-  rbacUpgrade: db-upgrade-rbac:5.1
-  upgradeVerify: upgrade-verify:5.1
-  tlsManager: tls-automator:5.1
+  dispatcher: dispatcher:latest
+  pssg: pssg:latest
+  apim: ingress:latest
+  enterprise: portal-enterprise:latest
+  data: portal-data:latest
+  tps: tenant-provisioning-service:latest
+  analytics: analytics-server:latest
+  authenticator: authenticator:latest
+  dbUpgrade: db-upgrade-portal:latest
+  rbacUpgrade: db-upgrade-rbac:latest
+  upgradeVerify: upgrade-verify:latest
+  tlsManager: tls-automator:latest
 
 ##
 ## Subchart Configuration
@@ -542,14 +543,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.1
-    broker: druid:5.1
-    coordinator: druid:5.1
-    middlemanager: druid:5.1
-    minio: minio:5.1
-    historical: druid:5.1
-    kafka: kafka:5.1
-    ingestion: ingestion-server:5.1
+    zookeeper: zookeeper:latest
+    broker: druid:latest
+    coordinator: druid:latest
+    middlemanager: druid:latest
+    minio: minio:latest
+    historical: druid:latest
+    kafka: kafka:latest
+    ingestion: ingestion-server:POC_Seaweed
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -559,7 +560,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.1"
+    tag: "latest"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
