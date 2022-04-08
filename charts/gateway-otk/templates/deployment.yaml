@@ -87,6 +87,10 @@ spec:
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
+{{ if .Values.management.graphman.enabled }}
+            - name: {{ template "gateway.fullname" . }}-graphman
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+{{ end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
@@ -162,5 +166,9 @@ spec:
 {{ end }}
 {{ if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
+          emptyDir: {}
+{{ end }}
+{{ if .Values.management.graphman.enabled }}
+        - name: {{ template "gateway.fullname" . }}-graphman
           emptyDir: {}
 {{ end }}

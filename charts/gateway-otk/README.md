@@ -70,6 +70,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `clusterPassword`          | Cluster Password, used if db backed  | `mypassword`  |
 | `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
 | `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
+| `management.graphman.enabled`          | Enable/Disable the GraphQL Management API (Graphman) | `false`  |
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `mypassword`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |

@@ -40,6 +40,8 @@ management:
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
     enabled: false
+  graphman:
+    enabled: false
   username: admin
   password: mypassword
 
