@@ -1,30 +1,30 @@
 # Global values
 global:
-  portalRepository: caapim/
+  portalRepository: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal/
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
-  setupDemoDatabase: true
+  setupDemoDatabase: false
   # A secret is created for mysql credentials
   # If using the demo database mysql.xxx needs to match the values here
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-# databaseUsername: admin
-# databasePassword: 7layer
-# demoDatabaseRootPassword: 7layer
-# demoDatabaseReplicationPassword: 7layer
-# databaseHost: rancher-mysql-01.apim.broadcom.net
-#  databasePort: 3306
+  databaseUsername: admin
+  databasePassword: 7layer
+  demoDatabaseRootPassword: 7layer
+  demoDatabaseReplicationPassword: 7layer
+  databaseHost: rancher-mysql-05.apim.broadcom.net
+  databasePort: 3306
   databaseUseSSL: false
   databaseRequireSSL: false
   legacyHostnames: false
   legacyDatabaseNames: false
-  #subdomainPrefix: portal-kv664763
+  subdomainPrefix: kv664763-seaweedfs
   storageClass: "standard"
 # schedulerName:
 
 portal:
-  domain: apps.rancher-stormwind.apim.broadcom.net
+  domain: apps.rancher-dalaran.apim.broadcom.net
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
@@ -107,7 +107,7 @@ ingress:
   create: false
 # Configure additional ingress controller specific annotations
   annotations:
-     kubernetes.io/ingress.class: nginx
+     #kubernetes.io/ingress.class: nginx
      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
@@ -413,7 +413,6 @@ image:
   rbacUpgrade: db-upgrade-rbac:latest
   upgradeVerify: upgrade-verify:latest
   tlsManager: tls-automator:latest
-
 ##
 ## Subchart Configuration
 ##
@@ -653,7 +652,7 @@ rabbitmq:
   host: rabbitmq
   fullnameOverride: rabbitmq
   image:
-    registry: caapim
+    registry: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal
     repository: message-broker
     tag: "latest"
     pullSecrets:
