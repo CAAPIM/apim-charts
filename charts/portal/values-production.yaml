@@ -636,6 +636,14 @@ druid:
   #                 - middlemanager
   #         topologyKey: kubernetes.io/hostname
 
+  filer:
+    s3:
+      enableAuth: true
+  master:
+    volumeSizeLimitMB: 1024
+  volume:
+    maxVolumes: "3"
+
   image:
     zookeeper: zookeeper:latest
     broker: druid:latest
