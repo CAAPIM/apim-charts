@@ -180,22 +180,28 @@ service:
 ingress:
   # Set to true to create ingress object
   enabled: false
-  class: nginx
   # Ingress annotations
   annotations:
   # Ingress class
-  #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
-  hostname:
-  ## The port that you want to route to via ingress. This needs to be available via service.ports.
-  port: https
-  ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
-  tls: false
-  secretName:
+   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
 
-  #Need to configure additional ingress options for hosts/tls
+  # TLS Secret Name - this must present in your Kubernetes Cluster.
+  secretName: tls-secret
+  # Array of Hostnames that the certificate is valid for - must contain at least one.
+  hostname: dev.ca.com
+  tlsHostnames: []
+  # - dev.ca.com
+  # - dev1.ca.com
+  ## The port that you want to route to via ingress. This needs to be available via service.ports.
+  port: 8443
+  ## Define additional hostnames and ports as key-value pairs.
+  additionalHostnamesAndPorts: {}
+  #  dev1.ca.com: 9443
 
 livenessProbe:
   enabled: true
