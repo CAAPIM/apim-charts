@@ -30,11 +30,17 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: {{ .Values.global.schedulerName }}
       {{- end }}
+      {{- if .Values.initContainers }}
+      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
+      {{- end }}
 {{ if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
 {{ end }}
       containers:
+        {{ if .Values.sidecars }}
+        {{- toYaml .Values.sidecars | nindent 8 }}
+        {{ end }}
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -101,15 +107,47 @@ spec:
 {{ end }}
 {{ if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
-            - name: {{ . }}
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ . }}
+            - name: {{ .name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
            {{- end }}
            {{- range .Values.existingBundle.secrets }}
-            - name: {{ . }}
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ . }}
+            - name: {{ .name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
+              {{ if .csi }}
+              readOnly: {{ .csi.readOnly }}
+              {{ end }}
            {{- end }}
 {{ end }}
-
+{{ if .Values.management.kubernetes.loadServiceAccountToken }}
+            - name: {{ template "gateway.fullname" . }}-service-account-token-script
+              mountPath: /opt/docker/rc.d/002-load-service-account-token.sh
+              subPath: 002-load-service-account-token.sh
+            - name: {{ template "gateway.fullname" . }}-service-account-token-template
+              mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
+              subPath: update-service-account-token.xml
+{{ end }}
+{{ if .Values.initContainers }}
+           {{- range .Values.initContainers }}
+           {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{ if .subPath }}
+              subPath: {{ .subPath }}
+              {{ end }}
+           {{- end }}
+           {{- end }}
+{{ end }}
+{{ if .Values.sidecars }}
+           {{- range .Values.sidecars }}
+           {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{ if .subPath }}
+              subPath: {{ .subPath }}
+              {{ end }}
+           {{- end }}
+           {{- end }}
+{{ end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
@@ -215,17 +253,55 @@ spec:
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
 {{ end }}
+{{ if .Values.management.kubernetes.loadServiceAccountToken }}
+        - name: {{ template "gateway.fullname" . }}-service-account-token-script
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: 002-load-service-account-token
+              path: 002-load-service-account-token.sh
+        - name: {{ template "gateway.fullname" . }}-service-account-token-template
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: update-service-account-token
+              path: update-service-account-token.xml
+{{ end }}
 {{ if .Values.existingBundle.enabled }}
      {{- range .Values.existingBundle.configMaps }}
-        - name: {{ . }}
+        - name: {{ .name }}
+      {{ if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+      {{ else }}
           configMap:
             defaultMode: 292
             optional: false
-            name: {{ . }}
+            name: {{ .name }}
+      {{ end }}
      {{- end }}
      {{- range .Values.existingBundle.secrets }}
-        - name: {{ . }}
+        - name: {{ .name }}
+      {{ if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+      {{ else }}
           secret:
-            secretName: {{ . }}
+            secretName: {{ .name }}
+      {{ end }}
+     {{- end }}
+{{ end }}
+{{ if .Values.initContainers }}
+     {{- range .Values.initContainers }}
+     {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+     {{- end }}
+     {{- end }}
+{{ end }}
+{{ if .Values.sidecars }}
+     {{- range .Values.sidecars }}
+     {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+     {{- end }}
      {{- end }}
 {{ end }}

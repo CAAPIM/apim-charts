@@ -337,10 +337,10 @@ pssg:
   resources:
     requests: {}
     # cpu: 100m
-    # memory: 2048Mi
+    # memory: 4096Mi
     limits: {}
     # cpu: 2000m
-    # memory: 4608Mi
+    # memory: 6144Mi
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
@@ -641,6 +641,12 @@ ingress-nginx:
    #  controllerValue: "k8s.io/ingress-nginx"
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
+
+# Settings for portal jobs
+jobs:
+  labels: {}
+  # nodeSelector: {}
+  # tolerations: []
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.

@@ -13,6 +13,17 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 - MySQL Stable Chart is deprecated - the demo database subChart has been changed to Bitnami MySQL - if your database is NOT externalised you will lose any policy/configuration you have there.
 - tls.customKey ==> tls.useSignedCertificates tls.key tls.pass tls.existingSecretName
 
+## 2.0.4 Updates to Secret Management
+- Added support for the Kubernetes CSI Driver for gateway bundles. This does not currently extend to environment variables or the Gateway license.
+- The CSI functionality is optional
+
+## 2.0.4 General Updates
+- Added support for sidecars and initContainers
+  - volumeMounts are automatically configured with emptyDir 
+- Updated default values update to reflect empty objects/arrays for optional fields.
+- Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
+  - management.kubernetes.loadServiceAccountToken
+
 ## 2.0.2 Updates to Secret Management
 - You can now specify existing secrets for Gateway Configuration, DefaultSSLKey (tls) and bundles
 
@@ -96,6 +107,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `mypassword`  |
+| `management.kubernetes.loadServiceAccountToken`    | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
 | `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
 | `database.username`          | Database Username | `gateway`  |
@@ -123,8 +135,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false`  |
 | `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`  |
 | `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false`  |
-| `existingBundle.configMaps`          | Array of configMap names that will be mounted to the Gateway's bootstrap folder | `see values.yaml`  |
-| `existingBundle.secrets`          | Array of Secret names that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`  |
+| `existingBundle.configMaps`          | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml`  |
+| `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`  |
 | `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
 | `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
 | `service.type`    | Service Type               | `LoadBalancer` |

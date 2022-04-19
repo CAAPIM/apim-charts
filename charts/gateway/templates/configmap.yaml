@@ -61,3 +61,42 @@ data:
     com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
 {{ .Values.config.systemProperties | indent 4 }}
 {{ end }}
+{{ if .Values.management.kubernetes.loadServiceAccountToken}}
+  002-load-service-account-token: |-
+    #!/bin/bash
+    SERVICE_ACCOUNT_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    UPDATE_SERVICE_ACCOUNT_TOKEN=$(sed -e "s~SERVICE_ACCOUNT_TOKEN~${SERVICE_ACCOUNT_TOKEN}~g" /opt/docker/rc.d/base/update-service-account-token.xml)
+    echo "${UPDATE_SERVICE_ACCOUNT_TOKEN}" > ${GATEWAY_DIR}/node/default/etc/bootstrap/bundle/02_update_service_account_token.xml.req.bundle
+  update-service-account-token: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+        <l7:References>
+            <l7:Item>
+                <l7:Name>sa_token</l7:Name>
+                <l7:Id>fc8324c4f9f6221a79ce132b3a4052d5</l7:Id>
+                <l7:Type>SECURE_PASSWORD</l7:Type>
+                <l7:Resource>
+                    <l7:StoredPassword id="fc8324c4f9f6221a79ce132b3a4052d5">
+                        <l7:Name>sa_token</l7:Name>
+                        <l7:Password>SERVICE_ACCOUNT_TOKEN</l7:Password>
+                        <l7:Properties>
+                            <l7:Property key="description">
+                                <l7:StringValue>Kubernetes Service Account Token</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="type">
+                                <l7:StringValue>Password</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="usageFromVariable">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:StoredPassword>
+                </l7:Resource>
+            </l7:Item>
+        </l7:References>
+        <l7:Mappings>
+            <l7:Mapping action="NewOrUpdate" srcId="fc8324c4f9f6221a79ce132b3a4052d5" type="SECURE_PASSWORD">
+            </l7:Mapping>
+        </l7:Mappings>
+    </l7:Bundle>
+{{ end }}
