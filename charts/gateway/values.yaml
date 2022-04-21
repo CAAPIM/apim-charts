@@ -257,14 +257,22 @@ service:
   ##
   # loadBalancerIP:
 
-  # Update this port list if additional ports need to be exposed
+  # # Update this port list if additional ports need to be exposed
   ports:
     - name: https
-      internal: 8443
-      external: 8443
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
     - name: management
-      internal: 9443
-      external: 9443
+      port: 9443
+      targetPort: 9443
+      protocol: TCP
+    # - name: metrics
+    #   port: 8080
+    #   targetPort: 8080
+    #   protocol: TCP
+
+
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
@@ -283,9 +291,12 @@ ingress:
   # Set to true to create ingress object
   enabled: false
   # Ingress annotations
+  class:
+    name: nginx
+    enabled: false
   annotations:
   # Ingress class
-    kubernetes.io/ingress.class: nginx
+  #  kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created

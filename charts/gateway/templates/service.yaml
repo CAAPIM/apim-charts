@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app: {{ template "gateway.name" . }}
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -29,9 +30,9 @@ spec:
   {{- end }}
   ports:
   {{- range .Values.service.ports }}
-    - protocol: TCP
-      port: {{ .external }}
-      targetPort: {{ .internal }}
+    - protocol: {{ .protocol }}
+      port: {{ .port }}
+      targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
   {{- if .Values.service.sessionAffinity }}

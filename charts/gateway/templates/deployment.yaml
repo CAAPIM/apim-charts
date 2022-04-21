@@ -70,7 +70,8 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           ports:
             {{- range .Values.service.ports }}
-            - containerPort: {{ .internal }}
+            - containerPort: {{ .targetPort }}
+              name: {{ .name }}
             {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml

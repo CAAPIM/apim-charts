@@ -17,6 +17,9 @@ metadata:
    {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
+ {{- if and (semverCompare ">=1.19-0" $kubeTargetVersion) (.Values.ingress.class.enabled) }}
+  ingressClassName: {{ .Values.ingress.class.name }}
+ {{- end }} 
   tls:
   - secretName: {{ .Values.ingress.secretName }}
     hosts:

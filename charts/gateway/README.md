@@ -13,6 +13,37 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 - MySQL Stable Chart is deprecated - the demo database subChart has been changed to Bitnami MySQL - if your database is NOT externalised you will lose any policy/configuration you have there.
 - tls.customKey ==> tls.useSignedCertificates tls.key tls.pass tls.existingSecretName
 
+## 2.0.5 Updates to Gateway Service
+- Updated naming conventions to reflect standards. You will need to update your values file to reflect this. If you wish to continue to use the old format specify --version 2.0.4 on install/upgrade
+
+```
+v2.0.4
+------
+ports:
+  - name: https
+    internal: 8443
+    external: 8443
+  - name: management
+    internal: 9443
+    external: 9443
+
+v2.0.5 onwards
+------
+ports:
+  - name: https
+    port: 8443
+    targetPort: 8443
+    protocol: TCP
+  - name: management
+    port: 9443
+    targetPort: 9443
+    protocol: TCP
+```
+
+
+- Added name to containerPorts for more consistent service resolution
+- Added ingressClassName options for Gateway Ingress
+
 ## 2.0.4 Updates to Secret Management
 - Added support for the Kubernetes CSI Driver for gateway bundles. This does not currently extend to environment variables or the Gateway license.
 - The CSI functionality is optional
@@ -144,12 +175,14 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
+| `ingress.class.enabled`    | Use spec.IngressClassName vs. old annotation kubernetes.io/ingress.class               | `false` |
+| `ingress.class.name`    | Specify Ingress Class Name               | `nginx` |
 | `ingress.annotations`    | Additional ingress annotations               | `{}` |
 | `ingress.hostname`    | Sets Ingress Hostname  | `nil` |
 | `ingress.port`    | The Gateway Port number/name to route to  | `8443` |
-| `ingress.tlsHostnames`    | Register additional Hostnames for the TLS Certificate  | `see values.yaml` |
+| `ingress.tlsHostnames`    | Register additional Hostnames for the TLS Certificate  | `[]` |
 | `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `tls-secret` |
-| `ingress.additionalHostnamesAndPorts`    | key/value pairs of hostname:port that will be added to the ingress object  | `see values.yaml` |
+| `ingress.additionalHostnamesAndPorts`    | key/value pairs of hostname:port that will be added to the ingress object  | `{}` |
 | `livenessProbe.enabled`    | Enable/Disable               | `true` |
 | `livenessProbe.initialDelaySeconds`    | Initial delay               | `60` |
 | `livenessProbe.timeoutSeconds`    | Timeout               | `1` |
