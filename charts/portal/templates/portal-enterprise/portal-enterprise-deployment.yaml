@@ -75,11 +75,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.portal.papi.secretName }}
                   key: papi-password
-            - name: GATEWAY_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.portal.internalSSG.secretName }}
-                  key: internal-ssg-username
             - name: ENTERPRISE_DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -107,18 +102,6 @@ spec:
             {{ else if eq .Values.global.databaseType "postgres" }}
                   key: postgres-password
             {{ end }}
-            - name: GATEWAY_PK
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.tls.internalSecretName }}
-                  key: pssg-ssl.p12
-                  optional: false
-            - name: GATEWAY_PK_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.tls.internalSecretName }}
-                  key: keypass.txt
-                  optional: false
             # test only variables
             - name: RBAC_CLIENT_CACHE_EXPIRY
               value: "{{ .Values.portalEnterprise.RBAC_CLIENT_CACHE_EXPIRY }}"
