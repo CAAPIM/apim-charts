@@ -4,6 +4,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.4 General Updates
+- Removed pssg related environment variables from portal-enterprise and portal-data containers.
+
 ## 2.2.2 General Updates
 - The minimum and maximum memory limit of PSSG was increased as the underlying service is a Gateway that was upgraded to version 10.1 CR1.
 
