@@ -200,11 +200,6 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.resources` | Resource request/limits   | `{} evaluated as a template` |
 | `pssg.nodeSelector` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `pssg.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
-| `solr.replicaCount` | Number of Solr nodes | `1` |
-| `solr.image.pullPolicy` | Solr image pull policy | `IfNotPresent` |
-| `solr.strategy` | Update strategy   | `{} evaluated as a template` |
-| `solr.resources` | Resource request/limits   | `{} evaluated as a template` |
-| `solr.nodeSelector ` | Node labels for pod assignment   | `{} evaluated as a template` |
 | `tenantProvisioner.replicaCount` | Number of tenant provisioner nodes | `1` |
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy | `IfNotPresent` |
 | `tenantProvisioner.strategy` | Update strategy   | `{} evaluated as a template` |
@@ -308,16 +303,15 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.0.2` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.0.2.1` |
 | `image.pssg` | PSSG image | `pssg:5.0.2` |
 | `image.apim` | APIM ingress image | `ingress:5.0.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0.2` |
-| `image.data` | portal-data image | `portal-data:5.0.2` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0.2.1` |
+| `image.data` | portal-data image | `portal-data:5.0.2.3` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0.2` |
-| `image.solr` | Solr image | `solr:5.0.2` |
 | `image.analytics` | Analytics image | `analytics-server:5.0.2` |
 | `image.authenticator` | Authenticator image | `authenticator:5.0.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0.2` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.0.2.1` |
 | `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.0.2` |
 | `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.0.2` |
 | `image.tlsManager` | TLS manager image | `tls-automator:5.0.2` |
@@ -402,7 +396,7 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.image.minio`                | Minio image   | `minio:5.0.2` |
 | `druid.image.historical`                | Historical image   | `druid:5.0.2` |
 | `druid.image.kafka`                | Kafka image   | `kafka:5.0.2` |
-| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.0.2` |
+| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.0.2.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
