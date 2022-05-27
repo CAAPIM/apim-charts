@@ -376,7 +376,7 @@ image:
   tps: tenant-provisioning-service:5.1
   analytics: analytics-server:5.1
   authenticator: authenticator:5.1
-  dbUpgrade: db-upgrade-portal:5.1
+  dbUpgrade: db-upgrade-portal:mravi
   rbacUpgrade: db-upgrade-rbac:5.1
   upgradeVerify: upgrade-verify:5.1
   tlsManager: tls-automator:5.1
