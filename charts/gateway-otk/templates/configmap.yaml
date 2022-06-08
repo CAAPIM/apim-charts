@@ -25,7 +25,7 @@ data:
     <hazelcast-client
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
-         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.10.xsd"
+         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
             xmlns="http://www.hazelcast.com/schema/client-config">
         <instance-name>{{ .Release.Name }}-hazelcast-{{ .Release.Namespace }}</instance-name>
         <network>
@@ -36,10 +36,13 @@ data:
                  <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.hazelcast.service.port}}</address>
                 {{ end }}
             </cluster-members>
-            <connection-attempt-limit>10</connection-attempt-limit>
             <redo-operation>true</redo-operation>
         </network>
-        <connection-strategy async-start="false" reconnect-mode="ON" />
+        <connection-strategy async-start="false" reconnect-mode="ON">
+          <connection-retry>
+            <cluster-connect-timeout-millis>-1</cluster-connect-timeout-millis>
+          </connection-retry>
+        </connection-strategy>
     </hazelcast-client>
 {{ else }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}

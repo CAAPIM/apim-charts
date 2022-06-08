@@ -252,7 +252,7 @@ mysql:
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
-# The Gateway currently supports Hazelcast 3.x servers
+# The Gateway currently supports Hazelcast 4.x & 5.x servers
 hazelcast:
   # If you wish to connect to an existing Hazelcast instance set enabled to false
   # external to true, and uncomment and set url.
@@ -260,7 +260,7 @@ hazelcast:
   external: false
   #url: hazelcast.example.com:5701
   image:
-    tag: "3.12.8"
+    tag: "5.1.1"
   cluster:
     memberCount: 2
   mancenter:

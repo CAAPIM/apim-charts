@@ -1,11 +1,11 @@
 apiVersion: v2
 name: gateway-otk
-version: 1.0.3
+version: 2.0.0
 appVersion: "10.1.00"
 description: This alpha Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
 dependencies:
 - name: hazelcast
-  version: 3.4.6
+  version: 5.4.0
   repository: "https://hazelcast-charts.s3.amazonaws.com/"
   condition: hazelcast.enabled
 - name: influxdb
@@ -14,7 +14,7 @@ dependencies:
   condition: influxdb.enabled
 - name: grafana
   version: 3.1.1
-  repository: "https://charts.bitnami.com/bitnami"
+  repository: "https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami" # workaround for https://github.com/bitnami/charts/issues/10539
   condition: grafana.enabled
 - name: mysql
   version: 1.6.7
