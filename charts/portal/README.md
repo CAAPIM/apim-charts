@@ -4,6 +4,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.5 General Updates
+- This new version of the chart supports API Portal 5.1.1.
+
 ## 2.2.4 General Updates
 - Removed pssg related environment variables from portal-enterprise and portal-data containers.
 
@@ -11,7 +14,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - The minimum and maximum memory limit of PSSG was increased as the underlying service is a Gateway that was upgraded to version 10.1 CR1.
 
 ## 2.2.0 General Updates
-- This new version of the chart supports API Portal 5.1.1.
+- This new version of the chart supports API Portal 5.1.
 - NGINX-Ingress Subchart is upgraded to version 4.0.9 to support K8s 1.22+ version.
   - Subchart version 4+ is required for kubernetes 1.22+ due to change in Ingress class API.
   - Depending on the platform and the Ingress setup in your environment, configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentation](https://kubernetes.github.io/ingress-nginx/#getting-started).
@@ -19,7 +22,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - [Learn more about configuring multiple ingress controllers in one cluster.](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
 - The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
 - Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
-- API Portal 5.1 and above no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
+- API Portal 5.1 no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
 - You can now configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
 - You can configure liveness and readiness probe of dispatcher component.
 - Added troubleshooting section related to [RabbitMQ boot-up issues.](#rabbitmq-wont-start)
