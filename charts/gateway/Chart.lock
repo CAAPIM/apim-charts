@@ -6,10 +6,10 @@ dependencies:
   repository: https://helm.influxdata.com/
   version: 4.7.0
 - name: grafana
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 3.1.1
 - name: mysql
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 8.2.5
-digest: sha256:fdda9130e7b81b6cfd7593f17830b809808dbae1d388b8f174f2cafca628849b
-generated: "2021-09-24T13:45:22.263687+01:00"
+digest: sha256:34a89084bee401b5a3a75d3a8832490ac682474fbd279618b856b5b2c475263c
+generated: "2022-06-22T14:13:36.7675246+05:30"
