@@ -17,11 +17,11 @@ dependencies:
   repository: "file://../druid"
 - name: mysql
   version: 8.8.16
-  repository: "https://charts.bitnami.com/bitnami"
+  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: global.setupDemoDatabase
 - name: rabbitmq
   version: 7.6.6
-  repository: "https://charts.bitnami.com/bitnami"
+  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: rabbitmq.enabled
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"
