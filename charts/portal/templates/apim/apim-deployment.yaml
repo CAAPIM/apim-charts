@@ -193,7 +193,6 @@ spec:
             - containerPort: 8081
             - containerPort: 8443
             - containerPort: 9443
-            - containerPort: 9446
             - containerPort: 9449
             - containerPort: 1885
             - containerPort: 9448

@@ -3,13 +3,13 @@ dependencies:
   repository: file://../druid
   version: 1.0.8
 - name: mysql
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  repository: https://charts.bitnami.com/bitnami
   version: 8.8.16
 - name: rabbitmq
-  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  repository: https://charts.bitnami.com/bitnami
   version: 7.6.6
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.0.9
-digest: sha256:2fe61485ca51763c36ea978445378b12692baa33a630f701f1c52566144afd6a
-generated: "2022-06-22T13:00:43.4999218+05:30"
+digest: sha256:6b0621c97c5a0c365802a5cf33a4b95377d2aef7ab0868d6dc69adf0e46ee5ba
+generated: "2022-02-10T21:48:48.558598+05:30"

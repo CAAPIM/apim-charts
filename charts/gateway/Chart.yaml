@@ -2,7 +2,7 @@ apiVersion: v2
 appVersion: "10.1.00"
 description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
 name: gateway
-version: 2.0.5
+version: 2.0.4
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
@@ -20,9 +20,9 @@ dependencies:
     condition: influxdb.enabled
   - name: grafana
     version: 3.1.1
-    repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+    repository: "https://charts.bitnami.com/bitnami"
     condition: grafana.enabled
   - name: mysql
     version: 8.2.5
-    repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+    repository: "https://charts.bitnami.com/bitnami"
     condition: database.create

@@ -29,10 +29,6 @@ spec:
       targetPort: 9449
       protocol: TCP
       name: apim-datalake
-    - port: 9446
-      targetPort: 9446
-      protocol: TCP
-      name: tssg-enroll
     - port: 1885
       targetPort: 1885
       protocol: TCP
