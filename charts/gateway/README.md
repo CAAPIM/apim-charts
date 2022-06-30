@@ -13,6 +13,12 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 - MySQL Stable Chart is deprecated - the demo database subChart has been changed to Bitnami MySQL - if your database is NOT externalised you will lose any policy/configuration you have there.
 - tls.customKey ==> tls.useSignedCertificates tls.key tls.pass tls.existingSecretName
 
+## 2.0.6 General Updates
+- Fixing bitnami repository dependency issue.
+
+## 2.0.5 General Updates
+- Internal only.
+
 ## 2.0.4 Updates to Secret Management
 - Added support for the Kubernetes CSI Driver for gateway bundles. This does not currently extend to environment variables or the Gateway license.
 - The CSI functionality is optional
