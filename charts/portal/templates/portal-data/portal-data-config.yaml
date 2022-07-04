@@ -39,18 +39,6 @@ data:
   RBAC_DATABASE_PORT: {{ include "database-port" . | quote }}
   RBAC_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
   TSSG_TENANT_ID: {{ include "default-tenant-id" . | quote }}
-  CONFIG_DSSG_DATALAKE_HOST: {{ include "analytics-host" . | quote }}
-  CONFIG_DSSG_DATALAKE_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_APIM_HOST: {{ include "tssg-public-host" . | quote }}
-  CONFIG_APIM_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_BROKER_HOST: {{ include "broker-host" . | quote }}
-  CONFIG_BROKER_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
-  CONFIG_PSSG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
-  CONFIG_PSSG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
-  CONFIG_PSSG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
   {{- if .Values.portal.hostnameWhitelist }}
   HOSTNAME_WHITELIST: {{ .Values.portal.hostnameWhitelist}}
   {{- end }}

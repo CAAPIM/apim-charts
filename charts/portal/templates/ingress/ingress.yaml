@@ -88,12 +88,12 @@ spec:
         path: "/"
         backend:
           service:
-            name: apim
+            name: pssg
             port:
               name: tssg-enroll
 {{- else }}
       - backend:
-          serviceName: apim
+          serviceName: pssg
           servicePort: tssg-enroll
 {{- end }}
   - host: {{ include "pssg-sync-host" . | quote }}

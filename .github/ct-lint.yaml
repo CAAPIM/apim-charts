@@ -3,7 +3,7 @@ charts:
   - charts/portal
   - charts/gateway
 chart-repos:
-  - bitnami=https://charts.bitnami.com/bitnami
+  - bitnami=https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   - bitnami-full=https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   - influx=https://helm.influxdata.com/
   - stable=https://charts.helm.sh/stable
