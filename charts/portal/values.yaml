@@ -705,3 +705,8 @@ mysql:
   commonAnnotations:
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-10"
+
+# set default imagePullPolicy for db-upgrade-portal
+db-upgrade-portal:
+  image:
+    pullPolicy: IfNotPresent
