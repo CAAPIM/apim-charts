@@ -312,8 +312,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set` |
-
+| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set`                                 |
+| `jobs.image.PullPolicy`              | Image pull policy applied to jobs                            | `IfNotPresent`                                 |
 
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |

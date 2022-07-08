@@ -647,6 +647,9 @@ jobs:
   labels: {}
   # nodeSelector: {}
   # tolerations: []
+  # set default imagePullPolicy for db-upgrade-portal, db-upgrade-rbac and cert-upgrade jobs
+  image:
+    pullPolicy: IfNotPresent
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
@@ -705,8 +708,3 @@ mysql:
   commonAnnotations:
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-10"
-
-# set default imagePullPolicy for db-upgrade-portal
-dbUpgradePortal:
-  image:
-    pullPolicy: IfNotPresent
