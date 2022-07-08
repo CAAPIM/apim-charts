@@ -707,6 +707,6 @@ mysql:
     helm.sh/hook-weight: "-10"
 
 # set default imagePullPolicy for db-upgrade-portal
-db-upgrade-portal:
+dbUpgradePortal:
   image:
     pullPolicy: IfNotPresent
