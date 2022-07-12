@@ -4,6 +4,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.6 General Updates
+- This new version of the chart to parametrize imagePullPolicy for all three portal jobs: db-upgrade-portal, db-upgrade-rbac and cert-upgrade.
+
 ## 2.2.5 General Updates
 - This new version of the chart supports API Portal 5.1.1.
 
@@ -309,8 +312,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set` |
-
+| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set`                                 |
+| `jobs.image.PullPolicy`              | Image pull policy applied to jobs                            | `IfNotPresent`                                 |
 
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
