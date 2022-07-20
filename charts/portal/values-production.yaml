@@ -1,6 +1,6 @@
 # Global values
 global:
-  portalRepository: caapim/
+  portalRepository: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal/
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
   setupDemoDatabase: false
@@ -9,28 +9,27 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-  databaseUsername: portal
-# databasePassword: 7layer
-# demoDatabaseRootPassword: 7layer
-# demoDatabaseReplicationPassword: 7layer
-  databaseHost:
+  databaseUsername: admin
+  databasePassword: 7layer
+  demoDatabaseRootPassword: 7layer
+  demoDatabaseReplicationPassword: 7layer
+  databaseHost: rancher-mysql-05.apim.broadcom.net
   databasePort: 3306
-  databaseUseSSL: true
+  databaseUseSSL: false
   databaseRequireSSL: false
   legacyHostnames: false
   legacyDatabaseNames: false
-  subdomainPrefix: dev-portal
-  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/
-# storageClass: "_"
+  subdomainPrefix: kv664763-seaweedfs
+  storageClass: "standard"
 # schedulerName:
 
 portal:
-  domain: example.com
+  domain: apps.rancher-dalaran.apim.broadcom.net
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
   # Please set analytics.replicaCount to a minimum of 2
-    aggregation: true
+    aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim and pssg
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
@@ -44,25 +43,17 @@ portal:
     secretName: ssg-secret
   # username: admin
   # password: M2NlY2RhZTMyZDZkNWMyZGI3
-# Internal password for the Portal API - auto-generated on install
+  # Internal password for the Portal API - auto-generated on install
   papi:
     secretName: papi-secret
   # password: 7layer
   otk:
     port: 443
+  # This loads the bintray imagePullSecret
+  registryCredentials:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
-  #Configuration to use custom registries to pull the container images with appropriate credentials.
-  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
-  registryCredentials:
-  #Set this to true if there is already an existing pull secret available.
-  useExistingPullSecret: false
-  #Set this if you would like to add an image pull secret directly to the Portal deployment.
-  imagePullSecret:
-    enabled: false
-    username:
-    password:
 
 tls:
 # Leave this blank to be auto-generated
@@ -70,15 +61,8 @@ tls:
 # These keys are applied to the dispatcher and APIM which have Public facing endpoints.
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
-# then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
-# The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
-# During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
-# If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates.
-# Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
-## if tls.job.enabled is 'false', irrespective of 'tls.job.rotate' value no new certs are created.
-## if tls.job.enabled is 'true', certs are created based on the value of 'tls.job.rotate'. For 'none', no certs are created. For 'all', both internal and external certs are created.
-# Behaviour of tls.job.enabled and tls.job.rotate during 'Install' :
-## if tls.job.enabled is 'true', irrespective of 'tls.job.rotate' value, all certs are created.
+# then follow the instructions here to load your certificates into secrets manually #### Link to doc.
+# The job will still run, but will not update anything.
   job:
     enabled: true
 # You may need to update the internal/external facing certificates, to do this set rotate
@@ -112,9 +96,6 @@ tls:
 
 # Kubernetes Ingress
 ingress:
-  class:
-    name: nginx
-    enabled: true
   # Use a kubernetes/openshift ingress
   type:
     kubernetes: true
@@ -123,16 +104,17 @@ ingress:
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
-  create: true
+  create: false
 # Configure additional ingress controller specific annotations
   annotations:
-    # kubernetes.io/ingress.class: nginx
+     #kubernetes.io/ingress.class: nginx
      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
-    - tenant1
+    - portal-demo-trial
+    - trial-portal-demo
 #   - tenant2
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
@@ -165,8 +147,7 @@ rbac:
 
 # If you want to specify resources, uncomment the cpu, memory lines and remove the curly braces
 analytics:
-  forceRedeploy: false
-  replicaCount: 2
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -182,7 +163,6 @@ analytics:
       cpu: 1000m
       memory: 2000Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -195,8 +175,7 @@ analytics:
 #       topologyKey: "kubernetes.io/hostname"
 
 apim:
-  forceRedeploy: false
-  replicaCount: 2
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   otkDb:
@@ -214,7 +193,6 @@ apim:
       cpu: 2000m
       memory: 6144Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -227,9 +205,7 @@ apim:
 #       topologyKey: "kubernetes.io/hostname"
 
 authenticator:
-  forceRedeploy: false
-  replicaCount: 2
-  javaOptions: -Xms1g -Xmx1g
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -245,7 +221,6 @@ authenticator:
       cpu: 750m
       memory: 1500Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -258,8 +233,7 @@ authenticator:
 #       topologyKey: "kubernetes.io/hostname"
 
 dispatcher:
-  forceRedeploy: false
-  replicaCount: 2
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -275,7 +249,6 @@ dispatcher:
       cpu: 500m
       memory: 1024Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -286,25 +259,6 @@ dispatcher:
 #           values:
 #           - dispatcher
 #       topologyKey: "kubernetes.io/hostname"
-# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
-# If none specified, default HTTP GET request is used for both readiness and liveness probe 
-  # readinessProbe:
-  #   exec:
-  #     command: [sh, /opt/diagnostic/health_check.sh]
-  #   initialDelaySeconds: 90
-  #   timeoutSeconds: 1
-  #   periodSeconds: 15
-  #   successThreshold: 1
-  # livenessProbe:
-  #   httpGet:
-  #     path: /nginx_status
-  #     port: 8443
-  #     scheme: HTTPS
-  #   initialDelaySeconds: 30
-  #   timeoutSeconds: 5
-  #   periodSeconds: 15
-  #   successThreshold: 1
-  #   failureThreshold: 20
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
@@ -315,9 +269,7 @@ dispatcher:
 #    key1: value
 
 portalData:
-  forceRedeploy: false
-  replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -333,7 +285,6 @@ portalData:
       cpu: 1000m
       memory: 3072Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -346,9 +297,7 @@ portalData:
 #       topologyKey: "kubernetes.io/hostname"
 
 portalEnterprise:
-  forceRedeploy: false
-  replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -364,7 +313,6 @@ portalEnterprise:
       cpu: 2000m
       memory: 3072Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -377,8 +325,7 @@ portalEnterprise:
 #       topologyKey: "kubernetes.io/hostname"
 
 pssg:
-  forceRedeploy: false
-  replicaCount: 2
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -394,7 +341,6 @@ pssg:
       cpu: 2000m
       memory: 6144Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -406,10 +352,27 @@ pssg:
 #           - pssg
 #       topologyKey: "kubernetes.io/hostname"
 
-tenantProvisioner:
-  forceRedeploy: false
+
+solr:
   replicaCount: 1
-  javaOptions: -Xms512m -Xmx512m
+  image:
+    pullPolicy: IfNotPresent
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  resources:
+    requests:
+      cpu: 50m
+      memory: 250Mi
+    limits:
+      cpu: 500m
+      memory: 750Mi
+# nodeSelector: {}
+
+tenantProvisioner:
+  replicaCount: 1
   image:
     pullPolicy: IfNotPresent
   strategy:
@@ -425,7 +388,6 @@ tenantProvisioner:
       cpu: 1000m
       memory: 1536Mi
 # nodeSelector: {}
-# tolerations: []
 # affinity:
 #   podAntiAffinity:
 #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -458,22 +420,20 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
-  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
   # name:
   persistence:
     storage:
-      historical: 50Gi
-      minio: 40Gi
-      kafka: 10Gi
-      zookeeper: 10Gi
+      historical: 5Gi
+      minio: 5Gi
+      kafka: 1Gi
+      zookeeper: 1Gi
 
   minio:
     # consider changing to mode... standalone/distributed.
-    # Once Portal is installed, minio can not be scaled up or down.
-    replicaCount: 4
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     auth:
@@ -512,7 +472,6 @@ druid:
       limits:
         memory: 256Mi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -525,8 +484,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   zookeeper:
-    # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
-    replicaCount: 3
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -535,7 +493,6 @@ druid:
       requests:
         memory: 256Mi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -549,7 +506,7 @@ druid:
 
 
   coordinator:
-    replicaCount: 2
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -558,7 +515,6 @@ druid:
       requests:
         memory: 512Mi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -571,7 +527,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   kafka:
-    replicaCount: 3
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -582,7 +538,6 @@ druid:
         cpu: 1000m
         memory: 1.5Gi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -595,7 +550,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   broker:
-    replicaCount: 2
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -604,7 +559,6 @@ druid:
       limits:
         memory: 2Gi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -617,7 +571,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   historical:
-    replicaCount: 2
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -626,7 +580,6 @@ druid:
       limits:
         memory: 2Gi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -639,7 +592,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   ingestion:
-    replicaCount: 2
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     portName: ingestion-svc
@@ -650,21 +603,20 @@ druid:
       limits:
         cpu: 1000m
         memory: 1.5Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity:
-  #   podAntiAffinity:
-  #     requiredDuringSchedulingIgnoredDuringExecution:
-  #       - labelSelector:
-  #           matchExpressions:
-  #             - key: app
-  #               operator: In
-  #               values:
-  #                 - ingestion-server
-  #         topologyKey: kubernetes.io/hostname
+    nodeSelector: {}
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - ingestion-server
+            topologyKey: kubernetes.io/hostname
 
   middlemanager:
-    replicaCount: 2
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     resources:
@@ -673,7 +625,6 @@ druid:
       limits:
         memory: 4Gi
   # nodeSelector: {}
-  # tolerations: []
   # affinity:
   #   podAntiAffinity:
   #     requiredDuringSchedulingIgnoredDuringExecution:
@@ -685,6 +636,14 @@ druid:
   #                 - middlemanager
   #         topologyKey: kubernetes.io/hostname
 
+  filer:
+    s3:
+      enableAuth: true
+  master:
+    volumeSizeLimitMB: 1024
+  volume:
+    maxVolumes: "3"
+
   image:
     zookeeper: zookeeper:5.1.1
     broker: druid:5.1.1
@@ -695,13 +654,14 @@ druid:
     kafka: kafka:5.1.1
     ingestion: ingestion-server:5.1.1
 
+
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
   enabled: true
   host: rabbitmq
   fullnameOverride: rabbitmq
   image:
-    registry: caapim
+    registry: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal
     repository: message-broker
     tag: "5.1.1"
     pullSecrets:
@@ -714,8 +674,7 @@ rabbitmq:
   persistence:
     enabled: true
   # size: 8Gi
-  # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
-  replicaCount: 3
+  replicaCount: 1
 ## Affinity for pod assignment. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 ## This default will ensure that additional pods are scheduled onto different nodes in your k8s cluster
@@ -787,11 +746,6 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
-   # ingressClassResource:
-   #  name: nginx
-   #  enabled: true
-   #  default: false
-   #  controllerValue: "k8s.io/ingress-nginx"
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
 
@@ -812,7 +766,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.26-debian-10-r78"
+    tag: "8.0.22-debian-10-r75"
   auth:
     username: portal
     existingSecret: database-secret
@@ -831,7 +785,7 @@ mysql:
       [client]
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=utf8mb4
+      default-character-set=UTF8
       plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
       default_authentication_plugin=mysql_native_password
@@ -843,12 +797,11 @@ mysql:
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       datadir=/bitnami/mysql/data
       tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8mb4
-      character-set-server=utf8mb4_0900_ai_ci
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
       innodb_log_buffer_size=32M
       innodb_log_file_size=80M
       max_allowed_packet=8M
-      group_concat_max_len=512000
       sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
       bind-address=0.0.0.0
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
@@ -857,10 +810,3 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-10"
-  commonAnnotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-weight: "-10"

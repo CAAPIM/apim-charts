@@ -1,0 +1,142 @@
+{{- if .Values.s3.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs-s3
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs
+    chart: {{ template "druid.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.s3.replicas }}
+  selector:
+    matchLabels:
+      app: seaweedfs
+      chart: {{ template "druid.name" . }}
+      release: {{ .Release.Name }}
+      component: s3
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+        chart: {{ template "druid.name" . }}
+        release: {{ .Release.Name }}
+        component: s3
+    spec:
+      restartPolicy: Always
+      {{- if .Values.s3.tolerations }}
+      tolerations:
+        {{ tpl .Values.s3.tolerations . | nindent 8 | trim }}
+      {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.pullSecret }}
+      {{- end }}
+      terminationGracePeriodSeconds: 10
+      {{- if .Values.s3.priorityClassName }}
+      priorityClassName: {{ .Values.s3.priorityClassName | quote }}
+      {{- end }}
+      enableServiceLinks: false
+      containers:
+        - name: seaweedfs
+          image: {{ template "s3.image" . }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.global.imagePullPolicy }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SEAWEEDFS_FULLNAME
+              value: "seaweedfs"
+            {{- if .Values.global.extraEnvironmentVars }}
+            {{- range $key, $value := .Values.global.extraEnvironmentVars }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+          command:
+            - "/bin/sh"
+            - "-ec"
+            - | 
+              exec /usr/bin/weed -logdir=/logs \
+              {{- if .Values.s3.loggingOverrideLevel }}
+              -v={{ .Values.s3.loggingOverrideLevel }} \
+              {{- else }}
+              -v={{ .Values.global.loggingLevel }} \
+              {{- end }}
+              s3 \
+              -port={{ .Values.s3.port }} \
+              {{- if .Values.s3.metricsPort }}
+              -metricsPort {{ .Values.s3.metricsPort }} \
+              {{- end }}              
+              {{- if .Values.s3.domainName }}
+              -domainName={{ .Values.s3.domainName }} \
+              {{- end }}
+              {{- if .Values.s3.allowEmptyFolder }}
+              -allowEmptyFolder={{ .Values.s3.allowEmptyFolder }} \
+              {{- end }}
+              {{- if .Values.s3.enableAuth }}
+              -config=/etc/sw/seaweedfs_s3_config \
+              {{- end }}
+              -filer=seaweedfs-filer-client:{{ .Values.filer.port }}
+          volumeMounts:
+            - name: logs
+              mountPath: "/logs/"
+            - mountPath: /etc/sw
+              name: config-users
+              readOnly: true            
+            {{ tpl .Values.s3.extraVolumeMounts . | nindent 12 | trim }}
+          ports:
+            - containerPort: {{ .Values.s3.port }}
+              name: swfs-s3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.s3.port }}
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            failureThreshold: 100
+            timeoutSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.s3.port }}
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 20
+            timeoutSeconds: 10
+          {{- if .Values.s3.resources }}
+          resources:
+            {{ tpl .Values.s3.resources . | nindent 12 | trim }}
+          {{- end }}
+      volumes:
+        - name: config-users
+          secret:
+            defaultMode: 420
+            secretName: seaweedfs-s3-secret
+        {{- if eq .Values.s3.logs.type "hostPath" }}
+        - name: logs
+          hostPath:
+            path: /storage/logs/seaweedfs/s3
+            type: DirectoryOrCreate
+        {{- end }}        
+        {{ tpl .Values.s3.extraVolumes . | indent 8 | trim }}
+      {{- if .Values.s3.nodeSelector }}
+      nodeSelector:
+        {{ tpl .Values.s3.nodeSelector . | indent 8 | trim }}
+      {{- end }}
+{{- end }}

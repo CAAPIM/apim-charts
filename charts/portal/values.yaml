@@ -1,6 +1,6 @@
 # Global values
 global:
-  portalRepository: caapim/
+  portalRepository: apim-docker-dev-local.artifactory-blr.broadcom.net/apim-portal
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
   setupDemoDatabase: true
@@ -31,6 +31,7 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+    deepStorage: minio
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -559,7 +560,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.1.1"
+    tag: "latest"
     pullSecrets:
       - broadcom-apim
   serviceAccount:

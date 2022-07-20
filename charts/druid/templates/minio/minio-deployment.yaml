@@ -1,4 +1,4 @@
-{{- if .Values.minio.cloudStorage }}
+{{- if and (.Values.minio.cloudStorage) (.Values.minio.enabled) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

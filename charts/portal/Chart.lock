@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.8
+  version: 1.0.9
 - name: mysql
   repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 8.8.16
