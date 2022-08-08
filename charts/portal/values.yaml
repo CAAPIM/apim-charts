@@ -209,6 +209,7 @@ apim:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 authenticator:
   forceRedeploy: false
@@ -344,6 +345,7 @@ pssg:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 tenantProvisioner:
   forceRedeploy: false
