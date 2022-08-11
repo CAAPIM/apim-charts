@@ -250,6 +250,18 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `apim.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `apim.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_8443_TLS` | Enabled Port 8443 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9443_TLS` | Enabled Port 9443 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9446_TLS` | Enabled Port 9446 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9448_TLS` | Enabled Port 9448 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9449_TLS` | Enabled Port 9449 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_1885_TLS` | Enabled Port 1885 TLS Versions                               | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_8443_CIPHER_SUITE` | Enabled Port 8443 Cipher Suites                     | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9443_CIPHER_SUITE` | Enabled Port 9443 Cipher Suites                     | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9446_CIPHER_SUITE` | Enabled Port 9446 Cipher Suites                     | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9448_CIPHER_SUITE` | Enabled Port 9448 Cipher Suites                     | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_9449_CIPHER_SUITE` | Enabled Port 9449 Cipher Suites                     | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_1885_CIPHER_SUITE` | Enabled Port 1885 Cipher Suites                     | `not set`                                                    |
 | `authenticator.forceRedeploy`        | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `authenticator.replicaCount`         | Number of authenticator nodes                                | `1`                                                          |
 | `authenticator.javaOptions`          | Java Options to pass in                                      | `-Xms1g -Xmx1g`                                              |
@@ -271,6 +283,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `not set`                                                    |
+| `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `not set`                                                    |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
@@ -300,6 +314,16 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `pssg.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `pssg.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_8443_TLS` | Enabled Port 8443 TLS Versions                               | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9443_TLS` | Enabled Port 9443 TLS Versions                               | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9446_TLS` | Enabled Port 9446 TLS Versions                               | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9447_TLS` | Enabled Port 9447 TLS Versions                               | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9448_TLS` | Enabled Port 9448 TLS Versions                               | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_8443_CIPHER_SUITE` | Enabled Port 8443 Cipher Suites                     | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9443_CIPHER_SUITE` | Enabled Port 9443 Cipher Suites                     | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9446_CIPHER_SUITE` | Enabled Port 9446 Cipher Suites                     | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9447_CIPHER_SUITE` | Enabled Port 9447 Cipher Suites                     | `not set`                                                    |
+| `pssg.additionalEnv.CONFIG_9448_CIPHER_SUITE` | Enabled Port 9448 Cipher Suites                     | `not set`                                                    |
 | `tenantProvisioner.forceRedeploy`    | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `tenantProvisioner.replicaCount`     | Number of tenant provisioner nodes                           | `1`                                                          |
 | `tenantProvisioner.javaOptions`      | Java Options to pass in                                      | `-Xms512m -Xmx512m`                                          |

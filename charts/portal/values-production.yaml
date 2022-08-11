@@ -225,6 +225,7 @@ apim:
 #           values:
 #           - apim
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 authenticator:
   forceRedeploy: false
@@ -405,6 +406,7 @@ pssg:
 #           values:
 #           - pssg
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 tenantProvisioner:
   forceRedeploy: false
