@@ -151,8 +151,8 @@ database:
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
-* [Gateway Bundles](#gateway-bundles)
-* [Logs & Audit Configuration](#logs-&-audit-configuration)
+* [Gateway Bundles](#bundle-configuration)
+* [Logs & Audit Configuration](#logs--audit-configuration)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
@@ -442,6 +442,20 @@ ingress:
 #        #number:
 ```
 
+### PM Tagger Configuration
+[PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `pmtagger.enabled`          | Enable pm-tagger | `false`  |
+| `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
+| `pmtagger.image.registry`          | Image Registry | `docker.io`  |
+| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
+| `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
+| `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
+| `pmtagger.resources`                | Resources   | `see values.yaml` |
+
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
 ```
@@ -586,30 +600,17 @@ existingBundle:
   #       secretProviderClass: "secret-provider-class-name"
 ```
 
-### PM Tagger Configuration
-[PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `pmtagger.enabled`          | Enable pm-tagger | `false`  |
-| `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
-| `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
-| `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `pmtagger.image.imagePullSecret.enabled`                | Add Image Pull secret, uses the Gateway image pull secret   | `false` |
-| `pmtagger.resources`                | Resources   | `see values.yaml` |
-
-
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
 In order for Kubernetes to determine when to scale, you will also need to configure resources
 
+We do not recommend setting MaxReplicas for a MySQL backed API Gateway above 8.
+
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `autoscaling.enabled`          | Enable the background metrics processing task | `false`  |
-| `autoscaling.hpa.minReplicas`          | Point to an external influx database. Set influxDbUrl if true | `false`  |
-| `autoscaling.hpa.maxReplicas`          | InfluxDB URL | `http://influxdb`  |
+| `autoscaling.enabled`          | Enable autoscaling | `false`  |
+| `autoscaling.hpa.minReplicas`          | Minimum replicas that should be available | `1`  |
+| `autoscaling.hpa.maxReplicas`          | Maximum replicas that should be available | `3`  |
 | `autoscaling.hpa.metrics`          | Metrics to scale on | `see values.yaml`  |
 | `autoscaling.hpa.behaviour`          | Scale up/down behaviour | `see values.yaml`  |
 
@@ -642,7 +643,6 @@ autoscaling:
           periodSeconds: 15
 ```
 
-
 ### RBAC Parameters
 PM Tagger requires access to pods in the current namespace, it uses the Gateway Configured service account.
 
@@ -660,24 +660,6 @@ rules:
   resources: ["pods"]
   verbs: ["list", "patch"]
 ```
-
-
-
-### PM Tagger Configuration
-[PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `pmtagger.enabled`          | Enable pm-tagger | `false`  |
-| `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
-| `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
-| `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
-| `pmtagger.resources`                | Resources   | `see values.yaml` |
-
-
 
 ### Logs & Audit Configuration
 The API Gateway containers are configured to output logs and audits as JSON events, and to never write audits to the in-memory Derby database:
