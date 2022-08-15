@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "gateway.fullname" . }}-pm-tagger
+  labels:
+    app: {{ template "gateway.fullname" . }}-pm-tagger
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-pm-tagger
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.pmtagger.replicas }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}-pm-tagger
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+{{- if .Values.pmtagger.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+{{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{.Values.pmtagger.image.registry}}/{{.Values.pmtagger.image.repository}}:{{.Values.pmtagger.image.tag}}
+          imagePullPolicy: {{ .Values.pmtagger.image.pullPolicy }}
+          imagePullSecrets: {{ .Values.pmtagger.image.imagePullSecrets }}
+          command:
+          - /pm-tagger
+          resources:
+{{ toYaml .Values.pmtagger.resources | indent 12 }}
+          volumeMounts:
+            - name: {{ template "gateway.fullname" . }}-pm-tagger
+              mountPath: /config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: {{ template "gateway.fullname" . }}-pm-tagger
+          configMap:
+            name: {{ template "gateway.fullname" . }}-pm-tagger-configmap
+            items:
+            - key: config.yaml
+              path: config.yaml

@@ -23,23 +23,43 @@ data:
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
   hazelcast-xml: |+
     <hazelcast-client
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        {{- if .Values.hazelcast.legacy.enabled }}
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
          http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.10.xsd"
+        {{- else }}
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
+         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
+        {{- end }}
             xmlns="http://www.hazelcast.com/schema/client-config">
-        <instance-name>{{ .Release.Name }}-hazelcast-{{ .Release.Namespace }}</instance-name>
+        <instance-name>{{ .Release.Name }}-{{ .Release.Namespace }}</instance-name>
         <network>
             <cluster-members>
-                {{ if .Values.hazelcast.external }}
+                {{- if .Values.hazelcast.external }}
                 <address>{{ required "Please set an external Hazelcast URL in values.yaml" .Values.hazelcast.url }}</address>
-                {{ else }}
-                 <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{.Values.hazelcast.service.port}}</address>
-                {{ end }}
+                {{- else }}
+                  {{- if hasSuffix "-hazelcast" .Release.Name }}
+                    <address>{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.hazelcast.service.port }}</address>
+                  {{- else }}
+                    <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.hazelcast.service.port }}</address>
+                  {{- end }}
+                {{- end }}
             </cluster-members>
+            {{- if .Values.hazelcast.legacy.enabled }}
             <connection-attempt-limit>10</connection-attempt-limit>
+            {{- end }}
             <redo-operation>true</redo-operation>
         </network>
+        {{- if .Values.hazelcast.legacy.enabled }}
         <connection-strategy async-start="false" reconnect-mode="ON" />
+        {{- else }}
+        <connection-strategy async-start="false" reconnect-mode="ON">
+          <connection-retry>
+            <cluster-connect-timeout-millis>-1</cluster-connect-timeout-millis>
+          </connection-retry>
+        </connection-strategy>
+        {{- end }}
     </hazelcast-client>
 {{ else }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}

@@ -14,9 +14,9 @@ image:
   # Will create a Registry secret and apply it to the Gateway
   secretName:
   credentials:
-   username:
-   password:
-   email:
+    username:
+    password:
+    email:
 
 # Number of Edge Gateways to deploy
 replicas: 1
@@ -107,14 +107,14 @@ installSolutionKits:
   restmanReadyWaitInterval: 30s
   restmanReadyWaitMaxAttempt: 10
 
-#Additional Environment variables to be added to the Gateway Configmap
+# Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
   key1: value
 
 # key1: value
 # key2: value
 
-#Additional Secret variables to be added to the Gateway Secret
+# Additional Secret variables to be added to the Gateway Secret
 additionalSecret:
   key1: value
 
@@ -234,11 +234,11 @@ mysql:
   mysqlUser: gateway
   mysqlPassword: mypassword
   mysqlDatabase: ssg
-  #mysqlRootPassword: mypassword
+# mysqlRootPassword: mypassword
   persistence:
     enabled: true
     size: 8Gi
-    #storageClass:
+  # storageClass:
 
   configurationFiles:
     my.cnf: |-
@@ -252,15 +252,19 @@ mysql:
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
-# The Gateway currently supports Hazelcast 3.x servers
+# The Gateway currently supports Hazelcast 4.x & 5.x servers
 hazelcast:
+  # Older versions of the API Gateway will still support 3.x servers
+  legacy:
+    # set this to true if your Gateway version does not support 4.x and 5.x
+    enabled: true
   # If you wish to connect to an existing Hazelcast instance set enabled to false
   # external to true, and uncomment and set url.
   enabled: false
   external: false
-  #url: hazelcast.example.com:5701
+  # url: hazelcast.example.com:5701
   image:
-    tag: "3.12.8"
+    tag: "5.1.1"
   cluster:
     memberCount: 2
   mancenter:

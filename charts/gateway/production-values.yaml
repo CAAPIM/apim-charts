@@ -76,7 +76,7 @@ database:
   enabled: true
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   # Do not use this demo database in production!!!
-  create: true
+  create: false
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
   # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
   username: gateway
@@ -102,7 +102,7 @@ tls:
 # most cloud vendors provide metrics server by default
 # https://github.com/kubernetes-sigs/metrics-server
 autoscaling:
-  enabled: false
+  enabled: true
   hpa:
     minReplicas: 1
     maxReplicas: 3
@@ -131,14 +131,18 @@ resources:
   # There are no resource limits set by default, this is a consicious choice for the user and
   # increases the chance of these running on environments with fewer resources available
   # Remove the curly braces and uncomment cpu/memory to set.
-  limits: {}
-  #   cpu: 2000m
-  #   memory: 4Gi
-  requests: {}
-  #   cpu: 2000m
-  #   memory: 4Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 2000m
+    memory: 4Gi
+
+
 
 config:
+  # Heap Size should be a percentage of the memory configured in resource limits
+  # by default it is 50% - you should not go above 75%
   heapSize: "2g"
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
@@ -158,7 +162,7 @@ config:
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
   cwp:
-    enabled: false
+    enabled: true
     properties:
       - name: io.httpsHostAllowWildcard
         value: true
@@ -190,7 +194,7 @@ config:
  # If enabled this will override the default listen ports and their configuration in the API Gateway
   listenPorts:
     custom:
-      enabled: false
+      enabled: true
     ports:
       - name: Default HTTPS (8443)
         port: 8443
@@ -208,8 +212,8 @@ config:
           enabled: true
           clientAuthentication: Optional
           versions:
-        # - TLSv1.0
-        # - TLSv1.1
+          #- TLSv1.0
+          #- TLSv1.1
           - TLSv1.2
           - TLSv1.3
           cipherSuites:
@@ -267,8 +271,8 @@ config:
           enabled: true
           clientAuthentication: Optional
           versions:
-        # - TLSv1.0
-        # - TLSv1.1
+          #- TLSv1.0
+          #- TLSv1.1
           - TLSv1.2
           - TLSv1.3
           cipherSuites:
@@ -375,7 +379,7 @@ management:
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
-  type: LoadBalancer
+  type: ClusterIP
   ## Load Balancer sources
   ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
   # loadBalancerSourceRanges:
@@ -391,10 +395,10 @@ service:
       internal: 8443
       external: 8443
       protocol: TCP
-    - name: management
-      internal: 9443
-      external: 9443
-      protocol: TCP
+    # - name: management
+    #   internal: 9443
+    #   external: 9443
+    #   protocol: TCP
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
@@ -412,7 +416,7 @@ service:
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
 ingress:
   # Set to true to create ingress object
-  enabled: false
+  enabled: true
   # Ingress Class Name
   ingressClassName: nginx
   # Ingress annotations
@@ -425,26 +429,26 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts:
+  - hosts: 
     - dev.ca.com
     secretName: default
   # - hosts:
   #   - dev1.ca.com
   #   secretName: default
-
+  
   rules:
-  - host: dev.ca.com
-    path: "/"
-    service:
-      port:
-        name: https
-      # number:
-# - host: dev1.ca.com
-#   path: "/"
-#   service:
-#     port:
-#       name: anotherport
-#      #number:
+   - host: dev.ca.com
+     path: "/"
+     service:
+       port:
+         name: https
+         #number:
+  #  - host: dev1.ca.com
+  #    path: "/"
+  #    service:
+  #      port:
+  #        name: anotherport
+  #       #number:
 
 # Additional Environment variables to be added to the Gateway Configmap
 additionalEnv: {}
