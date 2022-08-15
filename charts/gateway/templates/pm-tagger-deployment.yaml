@@ -39,7 +39,6 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{.Values.pmtagger.image.registry}}/{{.Values.pmtagger.image.repository}}:{{.Values.pmtagger.image.tag}}
           imagePullPolicy: {{ .Values.pmtagger.image.pullPolicy }}
-          imagePullSecrets: {{ .Values.pmtagger.image.imagePullSecrets }}
           command:
           - /pm-tagger
           resources:
