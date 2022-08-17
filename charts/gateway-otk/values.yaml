@@ -228,27 +228,49 @@ serviceAccount:
 ##                                                                                           ##
 ###############################################################################################
 
-# MySQL stable chart - this is not scalable nor will be in this format.
+# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
-  imageTag: "8"
-  mysqlUser: gateway
-  mysqlPassword: mypassword
-  mysqlDatabase: ssg
-# mysqlRootPassword: mypassword
-  persistence:
-    enabled: true
-    size: 8Gi
-  # storageClass:
-
-  configurationFiles:
-    my.cnf: |-
+  image:
+    tag: "8.0.22-debian-10-r75"
+  auth:
+    username: gateway
+    password: mypassword
+    database: ssg
+    rootPassword: mypassword
+  primary:
+    # persistence:
+    #   enabled: true
+    #   size: 8Gi
+    configuration: |-
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      character-set-server = utf8
-      innodb_log_buffer_size = 32M
-      innodb_log_file_size = 80M
-      max_allowed_packet = 20M
-      default-authentication-plugin=mysql_native_password
+      default_authentication_plugin=mysql_native_password
       log-bin-trust-function-creators=1
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
+      innodb_log_buffer_size=32M
+      innodb_log_file_size=80M
+      max_allowed_packet=20M
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
