@@ -29,9 +29,9 @@ spec:
   {{- end }}
   ports:
   {{- range .Values.service.ports }}
-    - protocol: TCP
+    - protocol: {{ .protocol }}
       port: {{ .external }}
-      targetPort: {{ .internal }}
+      targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
   {{- if .Values.service.sessionAffinity }}

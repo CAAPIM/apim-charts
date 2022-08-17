@@ -11,9 +11,9 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  {{ if .Values.grafana.customDashboard.value}}
+  {{- if .Values.grafana.customDashboard.value}}
   gateway-service-metrics.json: {{ .Values.grafana.customDashboard.value | toJson }}
-  {{ else }}
+  {{- else }}
   gateway-service-metrics.json: {{ .Files.Get "files/gateway-service-metrics.json" | toJson }}
-  {{ end }}
+  {{- end }}
 {{ end }}
