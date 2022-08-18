@@ -321,6 +321,7 @@ config:
     ports:
       - name: Default HTTPS (8443)
         port: 8443
+      
         enabled: true
         protocol: HTTPS
         managementFeatures:
@@ -333,12 +334,14 @@ config:
           value: A
         tls:
           enabled: true
+        # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
           #- TLSv1.0
           #- TLSv1.1
           - TLSv1.2
           - TLSv1.3
+          useCipherSuitesOrder: true
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384

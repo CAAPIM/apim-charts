@@ -35,6 +35,9 @@ data:
                 {{- if .tls.enabled }}
     					<l7:TlsSettings>
     						<l7:ClientAuthentication>{{ .tls.clientAuthentication }}</l7:ClientAuthentication>
+                            {{- if .tls.privateKey }}
+                            <l7:PrivateKeyReference id="{{ .tls.privateKey }}" resourceUri="http://ns.l7tech.com/2010/04/gateway-management/privateKeys"/>
+                            {{- end}}
     						<l7:EnabledVersions>
                             {{- range .tls.versions }}
     							<l7:StringValue>{{ . }}</l7:StringValue>
@@ -45,7 +48,7 @@ data:
     							<l7:StringValue>{{ . }}</l7:StringValue>
                             {{- end }}
     						</l7:EnabledCipherSuites>
-    						<l7:UseCipherSuitesOrder>true</l7:UseCipherSuitesOrder>
+    						<l7:UseCipherSuitesOrder>{{ .tls.useCipherSuitesOrder }}</l7:UseCipherSuitesOrder>
     						<l7:Properties>
     							<l7:Property key="usesTLS">
     								<l7:BooleanValue>true</l7:BooleanValue>
