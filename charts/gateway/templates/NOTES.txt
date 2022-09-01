@@ -9,7 +9,11 @@ Your deployment has been UPGRADED
 {{ if .Values.ingress.enabled }}
 You configured ingress
 
-The Gateway is accessible on {{ .Values.ingress.hostname }}:{{ .Values.ingress.port }}
+The Gateway is accessible on:
+{{ .Values.ingress.hostname }}:443 (to service port {{ .Values.ingress.port }})
+{{- range $key, $val := .Values.ingress.additionalHostnamesAndPorts }}
+{{ $key }}:443 (to service port {{ $val }})
+{{- end }}
 {{ else }}
 You did not configure ingress
 To get the Gateway's IP Address type the following
