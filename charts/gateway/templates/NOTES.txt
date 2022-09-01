@@ -5,10 +5,18 @@ Your deployment has been INSTALLED
 {{ else }}
 Your deployment has been UPGRADED
 {{ end }}
+
+{{ if .Values.ingress.enabled }}
+You configured ingress
+
+The Gateway is accessible on {{ .Values.ingress.hostname }}:{{ .Values.ingress.port }}
+{{ else }}
+You did not configure ingress
 To get the Gateway's IP Address type the following
 $ kubectl get svc -n {{ .Release.Namespace }}
 
 The Gateway is accessible on <gateway-ip>:8443/9443
+{{ end }}
 
 {{if .Values.grafana.enabled}}
 To access the Grafana Dashboard
