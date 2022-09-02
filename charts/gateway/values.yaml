@@ -395,10 +395,10 @@ service:
       internal: 8443
       external: 8443
       protocol: TCP
-    - name: management
-      internal: 9443
-      external: 9443
-      protocol: TCP
+    # - name: management
+    #   internal: 9443
+    #   external: 9443
+    #   protocol: TCP
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}

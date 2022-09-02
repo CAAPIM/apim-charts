@@ -247,18 +247,15 @@ There are two types of port configuration available in the Gateway Helm Chart th
 ### Container/Service Level Ports
 
 ### Default Gateway Service
-Sample entry that exposes 8443 and 9443 which are the default TLS ports on the API Gateway using service type LoadBalancer. 
+Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer. 
 ```
 service:
   type: LoadBalancer
+  annotations: {}
   ports:
     - name: https
       internal: 8443
       external: 8443
-      protocol: TCP
-    - name: management
-      internal: 9443
-      external: 9443
       protocol: TCP
 ```
 
