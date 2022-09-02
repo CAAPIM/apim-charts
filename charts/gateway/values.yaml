@@ -18,6 +18,10 @@ image:
     password:
     email:
 
+# Read OS environment variables , By default environment variable names starting with "SSGX" like ${environment.variable.SSGX_foo} are visible to Gateway
+env:
+  useEnvironmentVars: true
+
 # Number of Edge Gateways to deploy
 replicas: 1
 # Update strategy
@@ -102,7 +106,7 @@ config:
           com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-  
+
 tls:
   customKey:
     enabled: false

@@ -46,7 +46,7 @@ Create chart name and version as used by the chart label.
 
 {{/*
  Generate []16bit HEX
- This creates Gateway ids for bundles  
+ This creates Gateway ids for bundles
  */}}
  {{- define "gateway.cwp.hex" -}}
  {{ $hexArr := "" }}
@@ -57,11 +57,11 @@ Create chart name and version as used by the chart label.
  {{- end -}}
 
 {{/*
- Generate 16bit HEX 
+ Generate 16bit HEX
  #  {{ split " " $hexArr }}
  #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
  */}}
- 
+
 
 
 {{/*
@@ -85,3 +85,13 @@ Create Image Pull Secret
 {{- end }}
 {{- end }}
 
+{{/*
+ Define OS Env Secret Name
+ */}}
+{{- define "gateway.envSecretName" -}}
+{{- if .Values.env.existingSecretName -}}
+    {{ .Values.env.existingSecretName }}
+{{- else -}}
+{{- printf "%s-%s" (include "gateway.fullname" .) "env-secret" -}}
+{{- end -}}
+{{- end -}}

@@ -98,6 +98,10 @@ spec:
                 name: {{ template "gateway.fullname" . }}-secret
 {{ if .Values.livenessProbe.enabled }}
           livenessProbe:
+{{ if .Values.env.useEnvironmentVars }}
+            - secretRef:
+                name: {{ template "gateway.envSecretName" . }}
+{{ end }}
 {{ if (eq .Values.livenessProbe.type "httpGet" ) }}
             httpGet:
               path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
