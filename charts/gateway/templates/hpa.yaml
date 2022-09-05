@@ -1,0 +1,27 @@
+{{- if .Values.autoscaling.enabled }}
+{{- $kubeTargetVersion := .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">=1.23-0" $kubeTargetVersion -}}
+apiVersion: autoscaling/v2
+{{- else -}}
+apiVersion: autoscaling/v2beta2
+{{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ template "gateway.fullname" . }}-hpa
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  behavior:
+{{ toYaml .Values.autoscaling.hpa.behavior | indent 4 }}
+  maxReplicas: {{ .Values.autoscaling.hpa.maxReplicas }}
+  metrics:
+{{ toYaml .Values.autoscaling.hpa.metrics | indent 4 }}
+  minReplicas: {{ .Values.autoscaling.hpa.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "gateway.fullname" . }}
+{{- end }}

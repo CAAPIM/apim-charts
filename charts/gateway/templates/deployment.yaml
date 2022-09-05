@@ -33,14 +33,14 @@ spec:
       {{- if .Values.initContainers }}
       initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
       {{- end }}
-{{ if .Values.imagePullSecret.enabled }}
+{{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
-{{ end }}
+{{- end }}
       containers:
-        {{ if .Values.sidecars }}
+        {{- if .Values.sidecars }}
         {{- toYaml .Values.sidecars | nindent 8 }}
-        {{ end }}
+        {{- end }}
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -70,8 +70,17 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           ports:
             {{- range .Values.service.ports }}
-            - containerPort: {{ .internal }}
+            - name: {{ .name }} 
+              containerPort: {{ .internal }}
+              protocol: {{ .protocol }}
             {{- end }}
+            {{ if .Values.management.service.enabled}}
+            {{- range .Values.management.service.ports }}
+            - name: {{ .name }} 
+              containerPort: {{ .internal }}
+              protocol: {{ .protocol }}
+            {{- end }}
+            {{ end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
@@ -79,33 +88,37 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
-{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
-{{ end }}
-{{ if .Values.serviceMetrics.enabled }}
+{{- end }}
+{{- if .Values.serviceMetrics.enabled }}
             - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/servicemetrics
-{{ end }}
-{{ if .Values.config.log.override }}
+{{- end }}
+{{- if .Values.config.log.override }}
             - name: {{ template "gateway.fullname" . }}-log-config-override
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
               subPath: log-override.properties
-{{ end }}
-{{ if .Values.config.cwp.enabled }}
+{{- end }}
+{{- if .Values.config.cwp.enabled }}
             - name: {{ template "gateway.fullname" . }}-cwp-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/cwp
-{{ end }}
-{{ if .Values.bundle.enabled }}
+{{- end }}
+{{- if .Values.config.listenPorts.custom.enabled }}
+            - name: {{ template "gateway.fullname" . }}-listenport-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/listenports
+{{- end }}
+{{- if .Values.bundle.enabled }}
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
-{{ end }}
-{{ if .Values.management.restman.enabled }}
+{{- end }}
+{{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
-{{ end }}
-{{ if .Values.existingBundle.enabled }}
+{{- end }}
+{{- if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
             - name: {{ .name }}
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
@@ -117,16 +130,16 @@ spec:
               readOnly: {{ .csi.readOnly }}
               {{ end }}
            {{- end }}
-{{ end }}
-{{ if .Values.management.kubernetes.loadServiceAccountToken }}
+{{- end }}
+{{- if .Values.management.kubernetes.loadServiceAccountToken }}
             - name: {{ template "gateway.fullname" . }}-service-account-token-script
               mountPath: /opt/docker/rc.d/002-load-service-account-token.sh
               subPath: 002-load-service-account-token.sh
             - name: {{ template "gateway.fullname" . }}-service-account-token-template
               mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
               subPath: update-service-account-token.xml
-{{ end }}
-{{ if .Values.initContainers }}
+{{- end }}
+{{- if .Values.initContainers }}
            {{- range .Values.initContainers }}
            {{- range .volumeMounts }}
             - name: {{ .name }}
@@ -136,8 +149,8 @@ spec:
               {{ end }}
            {{- end }}
            {{- end }}
-{{ end }}
-{{ if .Values.sidecars }}
+{{- end }}
+{{- if .Values.sidecars }}
            {{- range .Values.sidecars }}
            {{- range .volumeMounts }}
             - name: {{ .name }}
@@ -147,58 +160,58 @@ spec:
               {{ end }}
            {{- end }}
            {{- end }}
-{{ end }}
+{{- end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
             - secretRef:
                 name: {{ template "gateway.secretName" . }}
-{{ if .Values.tls.useSignedCertificates }}
+{{- if .Values.tls.useSignedCertificates }}
             - secretRef:
                 name: {{ template "gateway.tlsSecretName" . }}
-{{ end }}
-{{ if .Values.livenessProbe.enabled }}
+{{- end }}
+{{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-{{ if (eq .Values.livenessProbe.type "httpGet" ) }}
+{{- if (eq .Values.livenessProbe.type "httpGet" ) }}
             httpGet:
               path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.livenessProbe.port | default 8443 }}
               scheme: {{ .Values.livenessProbe.scheme | default "HTTPS" }}
-{{ else }}
+{{- else }}
             exec:
               command:
               - /bin/bash
               - {{ .Values.livenessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+{{- end }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             successThreshold: {{ .Values.livenessProbe.successThreshold }}
-{{ end }}
-{{ if .Values.readinessProbe.enabled }}
+{{- end }}
+{{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-{{ if (eq .Values.readinessProbe.type "httpGet" ) }}
+{{- if (eq .Values.readinessProbe.type "httpGet" ) }}
             httpGet:
               path: {{ .Values.readinessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.readinessProbe.port | default 8443 }}
               scheme: {{ .Values.readinessProbe.scheme | default "HTTPS" }}
-{{ else }}
+{{- else }}
             exec:
               command:
               - /bin/bash
               - {{ .Values.readinessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+{{- end }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
-{{ if .Values.customHosts.enabled }}
+{{- if .Values.customHosts.enabled }}
       hostAliases:
 {{ toYaml .Values.customHosts.hostAliases | indent 12 }}
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
       volumes:
         - name: {{ template "gateway.fullname" . }}-license-xml
           secret:
@@ -212,48 +225,55 @@ spec:
             items:
             - key: system-properties
               path: system.properties
-{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
             items:
             - key: hazelcast-xml
               path: hazelcast-client.xml
-{{ end }}
-{{ if .Values.config.log.override }}
+{{- end }}
+{{- if .Values.config.log.override }}
         - name: {{ template "gateway.fullname" . }}-log-config-override
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
             items:
             - key: log-override-properties
               path: log-override.properties
-{{ end }}
-{{ if .Values.config.cwp.enabled }}
+{{- end }}
+{{- if .Values.config.cwp.enabled }}
         - name: {{ template "gateway.fullname" . }}-cwp-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-cwp-configmap
-{{ end }}
-{{ if .Values.bundle.enabled }}
+{{- end }}
+{{- if .Values.config.listenPorts.custom.enabled }}
+        - name: {{ template "gateway.fullname" . }}-listenport-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-listenport-configmap
+{{- end }}
+{{- if .Values.bundle.enabled }}
         - name: {{ template "gateway.fullname" . }}-bundle-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-bundle-configmap
-{{ end }}
-{{ if .Values.serviceMetrics.enabled }}
+{{- end }}
+{{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-{{ end }}
-{{ if .Values.management.restman.enabled }}
+{{- end }}
+{{- if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
-{{ end }}
-{{ if .Values.management.kubernetes.loadServiceAccountToken }}
+{{- end }}
+{{- if .Values.management.kubernetes.loadServiceAccountToken }}
         - name: {{ template "gateway.fullname" . }}-service-account-token-script
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
@@ -266,42 +286,42 @@ spec:
             items:
             - key: update-service-account-token
               path: update-service-account-token.xml
-{{ end }}
-{{ if .Values.existingBundle.enabled }}
+{{- end }}
+{{- if .Values.existingBundle.enabled }}
      {{- range .Values.existingBundle.configMaps }}
         - name: {{ .name }}
-      {{ if .configMap }}
+      {{- if .configMap }}
           configMap: {{ toYaml .configMap | nindent 12 }}
-      {{ else }}
+      {{- else }}
           configMap:
             defaultMode: 292
             optional: false
             name: {{ .name }}
-      {{ end }}
+      {{- end }}
      {{- end }}
      {{- range .Values.existingBundle.secrets }}
         - name: {{ .name }}
-      {{ if .csi }}
+      {{- if .csi }}
           csi: {{ toYaml .csi | nindent 12 }}
-      {{ else }}
+      {{- else }}
           secret:
             secretName: {{ .name }}
-      {{ end }}
+      {{- end }}
      {{- end }}
-{{ end }}
-{{ if .Values.initContainers }}
+{{- end }}
+{{- if .Values.initContainers }}
      {{- range .Values.initContainers }}
      {{- range .volumeMounts }}
         - name: {{ .name }}
           emptyDir: {}
      {{- end }}
      {{- end }}
-{{ end }}
-{{ if .Values.sidecars }}
+{{- end }}
+{{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
      {{- range .volumeMounts }}
         - name: {{ .name }}
           emptyDir: {}
      {{- end }}
      {{- end }}
-{{ end }}
+{{- end }}
