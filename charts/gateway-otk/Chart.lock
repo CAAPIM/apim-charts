@@ -1,15 +1,15 @@
 dependencies:
 - name: hazelcast
   repository: https://hazelcast-charts.s3.amazonaws.com/
-  version: 3.4.6
+  version: 5.4.0
 - name: influxdb
   repository: https://helm.influxdata.com/
-  version: 4.7.0
+  version: 4.12.0
 - name: grafana
   repository: https://charts.bitnami.com/bitnami
-  version: 3.1.1
+  version: 8.0.11
 - name: mysql
-  repository: https://charts.helm.sh/stable
-  version: 1.6.7
-digest: sha256:862e28aa89c20f7abdfac6c8077ef0089d89480535e6c0a20034b34bf0c17b7e
-generated: "2021-03-03T15:08:26.929461Z"
+  repository: https://charts.bitnami.com/bitnami
+  version: 9.2.6
+digest: sha256:0db027a0602128156cbcb7b23f694bde96686411367a8cb640a081978112a418
+generated: "2022-08-15T13:44:06.925386+01:00"

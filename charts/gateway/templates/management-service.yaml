@@ -1,0 +1,45 @@
+{{ if .Values.management.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ template "gateway.fullname" . }}-management
+  annotations:
+    description: "The Gateway Management service"
+{{- range $key, $val := .Values.management.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  selector:
+    app: {{ template "gateway.fullname" . }}
+    management-access: leader
+    release: {{ .Release.Name }}
+  type: {{ .Values.management.service.type }}
+  {{- if eq .Values.management.service.type "LoadBalancer" }}
+  {{- if not (empty .Values.management.service.loadBalancerIP) }}
+  loadBalancerIP: {{ .Values.management.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.management.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml .Values.management.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.management.service.externalIPs }}
+  externalIPs: {{- toYaml .Values.management.service.externalIPs | nindent 4 }}
+  {{- end }}
+  ports:
+  {{- range .Values.management.service.ports }}
+    - protocol: {{ .protocol }}
+      port: {{ .external }}
+      targetPort: {{ .name }}
+      name: {{ .name | quote }}
+  {{- end }}
+  {{- if .Values.management.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.management.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.management.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.management.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  {{ end }}
