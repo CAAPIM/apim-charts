@@ -21,6 +21,10 @@ image:
 # Read OS environment variables , By default environment variable names starting with "SSGX" like ${environment.variable.SSGX_foo} are visible to Gateway
 env:
   useEnvironmentVars: true
+  SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+  SSGX_gatewayDbJdbcUser: root
+  SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost-mysql:3306/ssg
+  SSGX_gatewayDbJdbcPassword: 7layer
 
 # Number of Edge Gateways to deploy
 replicas: 1
