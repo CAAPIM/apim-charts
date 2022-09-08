@@ -164,6 +164,18 @@ jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=tru
 
 In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
 
+## Read OS environment variables in Policy or pre-selected configuration fields (e.g. JDBC Connection URL)
+You can create and read OS environment variables as Gateway context variable syntax in Policy and in pre-selected configuration fields (e.g. JDBC Connection URL). In the values.yaml file, set the useEnvironmentVars field in env section to true , and set JDBC configuration parameters to use your env variables values:
+
+```
+env:
+  useEnvironmentVars: true
+  SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+  SSGX_gatewayDbJdbcUser: root
+  SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost-mysql:3306/ssg
+  SSGX_gatewayDbJdbcPassword: 7layer
+```  
+
 ## Subcharts - these do not represent production configurations
 For Production implementations, please see the Chart links for recommended settings. The best approach would be deploying each independently
 MySQL doesn't have a tried and tested K8's production deployment so it's best to use an external service. You could also try Vitess (https://vitess.io/)
