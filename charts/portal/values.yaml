@@ -302,6 +302,7 @@ portalData:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 portalEnterprise:
   forceRedeploy: false

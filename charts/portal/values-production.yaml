@@ -345,6 +345,7 @@ portalData:
 #           values:
 #           - portal-data
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 portalEnterprise:
   forceRedeploy: false
