@@ -402,11 +402,12 @@ Run the following commands to create the zipped and base64 encoded value:
     $ zip output.zip your_policy_file.xml
     $ cat output.zip | base64
 ```
+Note: the output from base64 should not contain any line breaks.
 Take the base64 output and set it to the variable below and restart portal stack.
 
 | Environment Variable                              | Description                                                                                                          |
 |---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `portalData.additionalEnv.XSS_FILTER_POLICY_FILE` | Zipped policy file in base64 encoded format|
+| `portalData.additionalEnv.ANTISAMY_FILTER_POLICY` | Zipped policy file in base64 encoded format|
 
 
 ### RBAC Parameters
