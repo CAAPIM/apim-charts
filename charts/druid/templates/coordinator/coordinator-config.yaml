@@ -23,6 +23,7 @@ data:
   DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   DRUID_DATABASE_NAME: {{ include "druid-db-name" . | quote }}
+  CONTAINER_LOG_LEVEL: {{ .Values.coordinator.loglevel }}
   runtime.properties: |-
     druid.service=druid/coordinator
     druid.plaintextPort=8081

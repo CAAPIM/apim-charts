@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.tenantProvisioner.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   replicas: {{ .Values.tenantProvisioner.replicaCount }}
   selector:
@@ -19,6 +25,10 @@ spec:
     metadata:
       labels:
         app: tenant-provisioner
+      {{ if .Values.tenantProvisioner.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.tenantProvisioner.affinity }}
@@ -26,6 +36,9 @@ spec:
       {{- end }}
       {{- if .Values.tenantProvisioner.nodeSelector }}
       nodeSelector: {{- toYaml .Values.tenantProvisioner.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.tenantProvisioner.tolerations }}
+      tolerations: {{- toYaml .Values.tenantProvisioner.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

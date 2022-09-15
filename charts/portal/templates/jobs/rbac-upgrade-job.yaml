@@ -4,11 +4,19 @@ metadata:
   name: rbac-upgrade
   annotations:
     chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-4"
   labels:
     app: {{ template "portal.name" . }}
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.jobs.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   backoffLimit: 2
   template:
@@ -17,6 +25,7 @@ spec:
       containers:
         - name: rbac-upgrade
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.rbacUpgrade }}"
+          imagePullPolicy: IfNotPresent
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
@@ -48,5 +57,11 @@ spec:
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      {{- if .Values.jobs.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.jobs.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.jobs.tolerations }}
+      tolerations: {{- toYaml .Values.jobs.tolerations | nindent 12 }}
       {{- end }}
       restartPolicy: "OnFailure"

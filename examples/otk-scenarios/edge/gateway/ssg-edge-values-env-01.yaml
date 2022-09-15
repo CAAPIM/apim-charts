@@ -3,7 +3,7 @@ ssg:
   image:
     registry: docker.io
     repository: caapim/gateway
-    tag: 10.0.00
+    tag: 10.1.00
     pullPolicy: Always
     # Will create a Registry secret and apply it to the Gateway
     secretName: ####edge-release-name

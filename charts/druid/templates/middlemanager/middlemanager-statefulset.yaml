@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.middlemanager.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -20,6 +26,10 @@ spec:
     metadata:
       labels:
         app: middlemanager
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.middlemanager.affinity }}
@@ -27,6 +37,9 @@ spec:
       {{- end }}
       {{- if .Values.middlemanager.nodeSelector }}
       nodeSelector: {{- toYaml .Values.middlemanager.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.middlemanager.tolerations }}
+      tolerations: {{- toYaml .Values.middlemanager.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: middlemanager

@@ -1,24 +1,45 @@
 nameOverride: ""
 fullnameOverride: ""
+global:
+  schedulerName:
 
 # Use set file to place a Gateway license here
 license:
   value:
   accept: false
+  # existingSecretName: ssg-license
 
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 10.0.00
+  tag: 10.1.00
   pullPolicy: IfNotPresent
-  # Will create a Registry secret and apply it to the Gateway
-  secretName:
-  credentials:
-    username:
-    password:
-    email:
 
-# Number of Edge Gateways to deploy
+# If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
+# and use the following Gateway image docker.io/caapim/gateway:10.1.00_20220802
+# image:
+#   registry: docker.io
+#   repository: caapim/gateway
+#   tag: 10.1.00_20220802
+#   pullPolicy: IfNotPresent
+
+# Set this if you would like to add an image pull secret directly to the Gateway deployment
+# Alternatively, leave this disabled and reference a service account that has the image pull secret associated with it.
+imagePullSecret:
+  enabled: false
+  # existingSecretName: private-registry-secret
+  username:
+  password:
+
+serviceAccount:
+  # name:
+  create: true
+# If pmtagger is enabled the Gateway Service Account will need to have
+# list/patch permissions for Pods.
+rbac:
+  create: true
+
+# Number of Gateways to deploy
 replicas: 1
 # Update strategy
 updateStrategy:
@@ -27,47 +48,95 @@ updateStrategy:
     maxSurge: 1
     maxUnavailable: 0
 
+pmtagger:
+  enabled: true
+  replicas: 1
+  image:
+    registry: docker.io
+    repository: layer7api/pm-tagger
+    tag: 1.0.0
+    pullPolicy: IfNotPresent
+# Uses the image pull secret configured for the Gateway.
+  imagePullSecret:
+    enabled: false
+  resources:
+    requests:
+      memory: 32Mi
+      cpu: 200m
+    limits:
+      memory: 64Mi
+      cpu: 250m
+
 # Cluster Hostname
 clusterHostname: my.localdomain
-
-# Cluster Password
-clusterPassword: mypassword
-
-# This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
-# Credentials will be moved to a secret object in the next push..
-management:
-  enabled: true
-  # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
-  restman:
-    enabled: false
-  username: admin
-  password: mypassword
 
 # Database configuration
 database:
   # DB Backed or ephemeral
   enabled: true
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+  # Do not use this demo database in production!!!
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.<settings> if you change this
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
   username: gateway
   password: mypassword
   name: ssg
 
-## Beta - enable/disable the background metrics processing task
-## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
-## Disabling on upgrade will have no effect on the deployed policy
-## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
-## InfluxDbUrl and tags are Cluster-Wide-Properties.
-serviceMetrics:
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
+# Configure autoscaling
+# this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
+# Metrics server will need to be configured for this to work correctly
+# most cloud vendors provide metrics server by default
+# https://github.com/kubernetes-sigs/metrics-server
+autoscaling:
   enabled: false
-  ## By default influxdb is not deployed with this Chart.
-  ## Set influxdb.enabled in the subchart section to true to deploy it.
-  external: false
-  influxDbUrl: http://influxdb:8086
-  influxDbDatabase: serviceMetricsDb
-  tags: env=dev
+  hpa:
+    minReplicas: 1
+    maxReplicas: 3
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      scaleUp:
+        stabilizationWindowSeconds: 0
+        policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+
+resources:
+  # There are no resource limits set by default, this is a consicious choice for the user and
+  # increases the chance of these running on environments with fewer resources available
+  # Remove the curly braces and uncomment cpu/memory to set.
+  limits: {}
+  #   cpu: 2000m
+  #   memory: 4Gi
+  requests: {}
+  #   cpu: 2000m
+  #   memory: 4Gi
 
 config:
   heapSize: "2g"
@@ -102,63 +171,222 @@ config:
           com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
-  
-tls:
-  customKey:
+  systemProperties: |-
+    # Default Gateway system properties
+    # Configuration properties for shared state extensions.
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+    com.l7tech.server.extension.sharedCounterProvider=ssgdb
+    com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
+    # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
+    # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
+    com.safelogic.cryptocomply.rsa.allow_multi_use=true
+    # Specifies the type of Trust Store (JKS/PKCS12) provided by AdoptOpenJDK that is used by Gateway.
+    # Must be set correctly when Gateway is running in FIPS mode. If not specified it will default to PKCS12.
+    javax.net.ssl.trustStoreType=jks
+    # Period of time before the Gateway removes inactive nodes.
+    com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Additional properties go here
+
+ # If enabled this will override the default listen ports and their configuration in the API Gateway
+  listenPorts:
+    custom:
+      enabled: false
+    ports:
+      - name: Default HTTPS (8443)
+        port: 8443
+        enabled: true
+        protocol: HTTPS
+        managementFeatures:
+        - Published service message input
+        # - Administrative access
+        # - Browser-based administration
+        # - Built-in services
+        properties:
+        - name: server
+          value: A
+        tls:
+          enabled: true
+        # privateKey: 00000000000000000000000000000002:ssl
+          clientAuthentication: Optional
+          versions:
+        # - TLSv1.0
+        # - TLSv1.1
+          - TLSv1.2
+          - TLSv1.3
+          useCipherSuitesOrder: true
+          cipherSuites:
+          - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+          - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+          - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+          - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+          - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+          - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+          - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+          - TLS_AES_256_GCM_SHA384
+          - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
+        # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA
+        # - TLS_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
+        # - TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_128_CBC_SHA
+        # - TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA
+        # - TLS_RSA_WITH_AES_128_GCM_SHA256
+        # - TLS_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_RSA_WITH_AES_128_CBC_SHA
+      - name: Default HTTPS (9443)
+        port: 9443
+        enabled: true
+        protocol: HTTPS
+        managementFeatures:
+        - Published service message input
+        - Administrative access
+        - Browser-based administration
+        - Built-in services
+        properties:
+        - name: server
+          value: B
+        tls:
+          enabled: true
+        # privateKey: 00000000000000000000000000000002:ssl
+          clientAuthentication: Optional
+          versions:
+        # - TLSv1.0
+        # - TLSv1.1
+          - TLSv1.2
+          - TLSv1.3
+          useCipherSuitesOrder: true
+          cipherSuites:
+          - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+          - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+          - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+          - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+          - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+          - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+          - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+          - TLS_AES_256_GCM_SHA384
+          - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
+        # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA
+        # - TLS_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256
+        # - TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_128_CBC_SHA
+        # - TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA
+        # - TLS_RSA_WITH_AES_128_GCM_SHA256
+        # - TLS_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_RSA_WITH_AES_128_CBC_SHA
+      - name: Default HTTP (8080)
+        port: 8080
+        enabled: false
+        protocol: HTTP
+        managementFeatures:
+        - Published service message input
+        # - Administrative access
+        # - Browser-based administration
+        # - Built-in services
+        tls:
+          enabled: false
+
+## Reference an existing secret for sensitive Gateway fields
+## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
+
+# existingGatewaySecretName: ssg-secret
+
+## The folllowing must be included
+  # SSG_ADMIN_USERNAME
+  # SSG_ADMIN_PASSWORD
+  # SSG_CLUSTER_PASSWORD
+## If using a Database
+  # SSG_DATABASE_USER
+  # SSG_DATABASE_PASSWORD
+
+# Cluster Password
+clusterPassword: mypassword
+
+# This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
+# Credentials will be moved to a secret object in the next push..
+management:
+  enabled: true
+  # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
+  restman:
     enabled: false
-  # when enabled, the pass cannot be empty. key value needs to be base64 encoded .p12
-  # This key will become the default ssl key. Can only have one.
-  # ex. DEMO_KEY=`cat demo-key.p12 | base64 --wrap=0`
-  # use with helm command: --set "tls.customDefaultSslKey.key=$DEMO_KEY"
-  customDefaultSslKey:
-    enabled: false
-    key:
-    pass:
-
-# Install Gateway solution kit(s) using restman.
-#   Prerequisites:
-#     1) restman is enabled
-#     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
-#   Description of solution kit(s):
-#     1) OAuth Solution Kit: https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
-installSolutionKits:
-  enabled: false
-  restmanPort: 8443
-  restmanReadyWait: 150s
-  solutionKits:
-
-# Additional Environment variables to be added to the Gateway Configmap
-additionalEnv:
-  key1: value
-# key1: value
-# key2: value
-
-# Additional Secret variables to be added to the Gateway Secret
-additionalSecret:
-  key1: value
-# key1: value
-# key2: value
-
-# This mounts a bundle folder to the Gateway.
-bundle:
-  enabled: false
-  path: "bundles/*.bundle"
+  # This is the username/password used for Policy Manager/Gateway Management.
+  username: admin
+  password: mypassword
+  # This optionally loads the Kubernetes Service Account token as a secure password for use in Policy.
+  kubernetes:
+    loadServiceAccountToken: false
+  service:
+    enabled: true
+    type: LoadBalancer
+    ## Load Balancer sources
+    ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    annotations: {}
+      # cloud.google.com/load-balancer-type: "Internal"
+    ports:
+      # - name: https
+      #   internal: 8443
+      #   external: 8443
+      #   protocol: TCP
+      - name: management
+        internal: 9443
+        external: 9443
+        protocol: TCP
+    # Uncomment the following section to enable session affinity
+    # sessionAffinity: ClientIP
+    # sessionAffinityConfig:
+    #   clientIP:
+    #     timeoutSeconds: 10800
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: LoadBalancer
   ## Load Balancer sources
   ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
-  ##
   # loadBalancerSourceRanges:
   # - 10.10.10.0/24
-
   ## Set the ExternalIPs
-  ##
   # externalIPs:
-
   ## Set the LoadBalancerIP
-  ##
   # loadBalancerIP:
 
   # Update this port list if additional ports need to be exposed
@@ -166,13 +394,22 @@ service:
     - name: https
       internal: 8443
       external: 8443
-    - name: management
-      internal: 9443
-      external: 9443
+      protocol: TCP
+    # - name: management
+    #   internal: 9443
+    #   external: 9443
+    #   protocol: TCP
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
-#    cloud.google.com/load-balancer-type: "Internal"
+    # cloud.google.com/load-balancer-type: "Internal"
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+  # Uncomment the following section to enable session affinity
+  # sessionAffinity: ClientIP
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
@@ -180,29 +417,85 @@ service:
 ingress:
   # Set to true to create ingress object
   enabled: false
-  class: nginx
+  # Ingress Class Name
+  ingressClassName: nginx
   # Ingress annotations
   annotations:
   # Ingress class
-  #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-
+   # kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
-  hostname:
-  ## The port that you want to route to via ingress. This needs to be available via service.ports.
-  port: https
-  ## Define additional hostnames and ports as key-value pairs.
-  additionalHostnamesAndPorts:
-  #  managementhost.domain: management
-  ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
-  tls: false
-  secretName:
+   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
+  tls:
+  - hosts:
+    - dev.ca.com
+    secretName: default
+  # - hosts:
+  #   - dev1.ca.com
+  #   secretName: default
+
+  rules:
+  - host: dev.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+      # number:
+# - host: dev1.ca.com
+#   path: "/"
+#   service:
+#     port:
+#       name: anotherport
+#      #number:
+
+# Additional Environment variables to be added to the Gateway Configmap
+additionalEnv: {}
+# key1: value
+# key2: value
+
+# Additional Secret variables to be added to the Gateway Secret
+additionalSecret: {}
+# key1: value
+# key2: value
+
+# This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+# When creating these secrets/configmaps the format should be
+# key: bundle1.bundle value: <xml value>
+# Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+
+# Bundles that contain sensitive information can be mounted using the Kubernetes CSI Driver
+existingBundle:
+  enabled: false
+  configMaps: []
+ # - name: mybundle1
+    # configMap:
+    #   defaultMode: 420
+    #   optional: false
+    #   name: mybundle1
+ # - name: mybundle2
+  secrets: []
+  # - name: mysecretbundle1
+  #   csi:
+  #     driver: secrets-store.csi.k8s.io
+  #     readOnly: true
+  #     volumeAttributes:
+  #       secretProviderClass: "secret-provider-class-name"
+ # - name: mysecretbundle2
+
+# This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
+# Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
+# Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
+# We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
+bundle:
+  enabled: false
+  path: "bundles/*.bundle"
 
 livenessProbe:
   enabled: true
   type: command
   command: /opt/docker/rc.d/diagnostic/health_check.sh
-
 # type: httpGet
 # path: /ssg/ping
 # port: 8443
@@ -217,7 +510,6 @@ readinessProbe:
   enabled: true
   type: command
   command: /opt/docker/rc.d/diagnostic/health_check.sh
-
 # type: httpGet
 # path: /ssg/ping
 # port: 8443
@@ -228,58 +520,134 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 15
 
-resources:
-  # There are no resource limits set by default, this is a consicious choice for the user and
-  # increases the chance of these running on environments with fewer resources available
-  # Remove the curly braces and uncomment cpu/memory to set.
-  limits: {}
-  #   cpu: 1000m
-  #   memory: 2Gi
-  requests: {}
-  #   cpu: 1000m
-  #   memory: 2Gi
 
-serviceAccount:
-  # name:
-  create: true
+# nodeSelector: {}
+# affinity: {}
+
+# Add initContainers to the Gateway
+initContainers: {}
+## Example:
+## initContainers:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+
+## Add sidecars to the Gateway Deployment.
+sidecars: {}
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+
+# Configure custom hosts
+customHosts:
+  enabled: false
+  hostAliases: []
+  # - hostnames:
+  #   - "dev.ca.com"
+  #   - "dev1.ca.com"
+  #   ip: "0.0.0.0"
+  # - hostnames:
+  #   - "example.ca.com"
+  #   ip: "0.0.0.0"
+
+## Demo - enable/disable the background metrics processing task
+## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
+## Disabling on upgrade will have no effect on the deployed policy
+## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
+## InfluxDbUrl and tags are Cluster-Wide-Properties.
+serviceMetrics:
+  enabled: false
+  ## By default influxdb is not deployed with this Chart.
+  ## Set influxdb.enabled in the subchart section to true to deploy it.
+  external: false
+  influxDbUrl: http://influxdb:8086
+  influxDbDatabase: serviceMetricsDb
+  tags: env=dev
+
+# Install Gateway solution kit(s) using restman.
+#   Prerequisites:
+#     1) restman is enabled
+#     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
+#   Description of solution kit(s):
+#     1) OAuth Solution Kit: https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
+installSolutionKits:
+  enabled: false
+  restmanPort: 8443
+  restmanReadyWait: 150s
+  solutionKits:
 
 ##
 ## Subchart Configuration
 ##
 
-# MySQL stable chart - this is not scalable nor will be in this format.
+# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
-  imageTag: "8"
-  mysqlUser: gateway
-  mysqlPassword: mypassword
-  mysqlDatabase: ssg
-  # mysqlRootPassword: mypassword
-  persistence:
-    enabled: true
-    size: 8Gi
-    # storageClass:
-
-  configurationFiles:
-    my.cnf: |-
+  image:
+    tag: "8.0.22-debian-10-r75"
+  auth:
+    username: gateway
+    password: mypassword
+    database: ssg
+    rootPassword: mypassword
+  primary:
+    # persistence:
+    #   enabled: true
+    #   size: 8Gi
+    configuration: |-
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      character-set-server = utf8
-      innodb_log_buffer_size = 32M
-      innodb_log_file_size = 80M
-      max_allowed_packet = 8M
-      default-authentication-plugin=mysql_native_password
+      default_authentication_plugin=mysql_native_password
       log-bin-trust-function-creators=1
-
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
+      innodb_log_buffer_size=32M
+      innodb_log_file_size=80M
+      max_allowed_packet=20M
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
-# The Gateway currently supports Hazelcast 3.x servers
+# The Gateway currently supports Hazelcast 4.x & 5.x servers
 hazelcast:
+  # Older versions of the API Gateway will still support 3.x servers
+  legacy:
+    # set this to true if your Gateway version does not support 4.x and 5.x
+    enabled: true
   # If you wish to connect to an existing Hazelcast instance set enabled to false
   # external to true, and uncomment and set url.
   enabled: false
   external: false
   # url: hazelcast.example.com:5701
   image:
-    tag: "3.12.8"
+    tag: "5.1.1"
   cluster:
     memberCount: 2
   mancenter:

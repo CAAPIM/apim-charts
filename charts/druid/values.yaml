@@ -20,6 +20,8 @@ global:
   legacyDatabaseNames: false
 # databasePassword: 7layer
 
+forceRedeploy: false
+
 image:
   zookeeper: zookeeper:5.0
   broker: druid:5.0
@@ -94,6 +96,10 @@ zookeeper:
 
 middlemanager:
   replicaCount: 1
+  loglevel: WARN
+  indexer:
+    startPort: 8100
+    endPort: 65535
   image:
     pullPolicy: IfNotPresent
   resources:
@@ -106,6 +112,7 @@ middlemanager:
 
 broker:
   replicaCount: 1
+  loglevel: WARN
   image:
     pullPolicy: IfNotPresent
   resources:
@@ -116,8 +123,9 @@ broker:
 # nodeSelector: {}
 # affinity:
 
-coordinator: 
+coordinator:
   hostname: coordinator
+  loglevel: WARN
   port: 8081
   replicaCount: 1
   image:
@@ -132,6 +140,7 @@ coordinator:
 
 historical:
   replicaCount: 1
+  loglevel: WARN
   image:
     pullPolicy: IfNotPresent
   resources:

@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingestion.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   strategy:
     type: RollingUpdate
@@ -21,6 +27,10 @@ spec:
     metadata:
       labels:
         app: ingestion-server
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.ingestion.affinity }}
@@ -28,6 +38,9 @@ spec:
       {{- end }}
       {{- if .Values.ingestion.nodeSelector }}
       nodeSelector: {{- toYaml .Values.ingestion.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.ingestion.tolerations }}
+      tolerations: {{- toYaml .Values.ingestion.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: ingestion-server

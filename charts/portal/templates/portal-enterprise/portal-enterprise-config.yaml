@@ -21,7 +21,7 @@ data:
   ENTERPRISE_DATABASE_PORT: {{ include "database-port" . | quote }}
   ENTERPRISE_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
   HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
-  JAVA_OPTIONS: -Xms2048m -Xmx2048m
+  JAVA_OPTIONS: {{ .Values.portalEnterprise.javaOptions | default "-Xms2g -Xmx2g" | quote }}
   NSS_SDB_USE_CACHE: "no"
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
@@ -42,4 +42,9 @@ data:
   {{- end }}
   {{- if and .Values.portal.analytics.enabled  .Values.portal.analytics.aggregation }}
   AGGR_ENABLED: {{ required "Please fill in portal.analytics.aggregation values.yaml" .Values.portal.analytics.aggregation | quote }}
-  {{- end}}
+  {{- end }}
+{{ if .Values.portalEnterprise.additionalEnv }}
+{{- range $key, $val := .Values.portalEnterprise.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}
