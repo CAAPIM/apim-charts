@@ -168,8 +168,7 @@ In order the create the database on the remote server, the provided user in the 
 You can create and read OS environment variables as Gateway context variable syntax in Policy and in pre-selected configuration fields (e.g. JDBC Connection URL). In the values.yaml file, set the useEnvironmentVars field in env section to true , and set JDBC configuration parameters to use your env variables values:
 
 ```
-env:
-  useEnvironmentVars: true
+additionalSecret: 
   SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
   SSGX_gatewayDbJdbcUser: root
   SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost-mysql:3306/ssg
