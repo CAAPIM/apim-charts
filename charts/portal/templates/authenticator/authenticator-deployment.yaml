@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.authenticator.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   {{- if .Values.authenticator.strategy }}
   strategy: {{- toYaml .Values.authenticator.strategy | nindent 12 }}
@@ -19,6 +25,10 @@ spec:
     metadata:
       labels:
         app: authenticator
+      {{ if .Values.authenticator.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.authenticator.affinity }}
@@ -26,6 +36,9 @@ spec:
       {{- end }}
       {{- if .Values.authenticator.nodeSelector }}
       nodeSelector: {{- toYaml .Values.authenticator.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.authenticator.tolerations }}
+      tolerations: {{- toYaml .Values.authenticator.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

@@ -20,7 +20,12 @@ data:
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
   DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
-  JAVA_OPTIONS: -Xms1024m -Xmx1024m
+  JAVA_OPTIONS: {{ .Values.authenticator.javaOptions | default "-Xms1g -Xmx1g" | quote }}
   NSS_SDB_USE_CACHE: "no"
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+{{ if .Values.authenticator.additionalEnv }}
+{{- range $key, $val := .Values.authenticator.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}

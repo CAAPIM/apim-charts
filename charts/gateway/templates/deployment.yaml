@@ -21,11 +21,26 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
-{{ if .Values.image.secretName }}
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+      {{- if .Values.initContainers }}
+      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
+      {{- end }}
+{{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
-        - name: {{ .Values.image.secretName | quote }}
-{{ end }}
+        - name: {{ template "gateway.imagePullSecret" . }}
+{{- end }}
       containers:
+        {{- if .Values.sidecars }}
+        {{- toYaml .Values.sidecars | nindent 8 }}
+        {{- end }}
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -55,139 +70,258 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           ports:
             {{- range .Values.service.ports }}
-            - containerPort: {{ .internal }}
+            - name: {{ .name }} 
+              containerPort: {{ .internal }}
+              protocol: {{ .protocol }}
             {{- end }}
+            {{ if .Values.management.service.enabled}}
+            {{- range .Values.management.service.ports }}
+            - name: {{ .name }} 
+              containerPort: {{ .internal }}
+              protocol: {{ .protocol }}
+            {{- end }}
+            {{ end }}
           volumeMounts:
-{{ if  .Values.tls.customKey.enabled }}
-            - name: {{ template "gateway.fullname" . }}-ssl
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/env/config/privateKeys
-{{ end }}
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
-{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
+            - name: {{ template "gateway.fullname" . }}-system-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
+              subPath: system.properties
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
-{{ end }}
-{{ if .Values.serviceMetrics.enabled }}
+{{- end }}
+{{- if .Values.serviceMetrics.enabled }}
             - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/servicemetrics
-{{ end }}
-{{ if .Values.config.log.override }}
+{{- end }}
+{{- if .Values.config.log.override }}
             - name: {{ template "gateway.fullname" . }}-log-config-override
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
               subPath: log-override.properties
-{{ end }}
-{{ if .Values.config.cwp.enabled }}
+{{- end }}
+{{- if .Values.config.cwp.enabled }}
             - name: {{ template "gateway.fullname" . }}-cwp-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/cwp
-{{ end }}
-{{ if .Values.bundle.enabled }}
+{{- end }}
+{{- if .Values.config.listenPorts.custom.enabled }}
+            - name: {{ template "gateway.fullname" . }}-listenport-configmap
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/listenports
+{{- end }}
+{{- if .Values.bundle.enabled }}
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
-{{ end }}
-{{ if .Values.management.restman.enabled }}
+{{- end }}
+{{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
-{{ end }}
+{{- end }}
+{{- if .Values.existingBundle.enabled }}
+           {{- range .Values.existingBundle.configMaps }}
+            - name: {{ .name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
+           {{- end }}
+           {{- range .Values.existingBundle.secrets }}
+            - name: {{ .name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
+              {{ if .csi }}
+              readOnly: {{ .csi.readOnly }}
+              {{ end }}
+           {{- end }}
+{{- end }}
+{{- if .Values.management.kubernetes.loadServiceAccountToken }}
+            - name: {{ template "gateway.fullname" . }}-service-account-token-script
+              mountPath: /opt/docker/rc.d/002-load-service-account-token.sh
+              subPath: 002-load-service-account-token.sh
+            - name: {{ template "gateway.fullname" . }}-service-account-token-template
+              mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
+              subPath: update-service-account-token.xml
+{{- end }}
+{{- if .Values.initContainers }}
+           {{- range .Values.initContainers }}
+           {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{ if .subPath }}
+              subPath: {{ .subPath }}
+              {{ end }}
+           {{- end }}
+           {{- end }}
+{{- end }}
+{{- if .Values.sidecars }}
+           {{- range .Values.sidecars }}
+           {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              {{ if .subPath }}
+              subPath: {{ .subPath }}
+              {{ end }}
+           {{- end }}
+           {{- end }}
+{{- end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
             - secretRef:
-                name: {{ template "gateway.fullname" . }}-secret
-{{ if .Values.livenessProbe.enabled }}
-          livenessProbe:
-{{ if .Values.env.useEnvironmentVars }}
+                name: {{ template "gateway.secretName" . }}
+{{- if .Values.tls.useSignedCertificates }}
             - secretRef:
-                name: {{ template "gateway.envSecretName" . }}
-{{ end }}
-{{ if (eq .Values.livenessProbe.type "httpGet" ) }}
+                name: {{ template "gateway.tlsSecretName" . }}
+{{- end }}
+{{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+{{- if (eq .Values.livenessProbe.type "httpGet" ) }}
             httpGet:
               path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.livenessProbe.port | default 8443 }}
               scheme: {{ .Values.livenessProbe.scheme | default "HTTPS" }}
-{{ else }}
+{{- else }}
             exec:
               command:
               - /bin/bash
               - {{ .Values.livenessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+{{- end }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             successThreshold: {{ .Values.livenessProbe.successThreshold }}
-{{ end }}
-{{ if .Values.readinessProbe.enabled }}
+{{- end }}
+{{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-{{ if (eq .Values.readinessProbe.type "httpGet" ) }}
+{{- if (eq .Values.readinessProbe.type "httpGet" ) }}
             httpGet:
               path: {{ .Values.readinessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.readinessProbe.port | default 8443 }}
               scheme: {{ .Values.readinessProbe.scheme | default "HTTPS" }}
-{{ else }}
+{{- else }}
             exec:
               command:
               - /bin/bash
               - {{ .Values.readinessProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
-{{ end }}
+{{- end }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
-{{ end }}
+{{- if .Values.customHosts.enabled }}
+      hostAliases:
+{{ toYaml .Values.customHosts.hostAliases | indent 12 }}
+{{- end }}
+{{- end }}
       volumes:
-{{ if  .Values.tls.customKey.enabled }}
-        - name: {{ template "gateway.fullname" . }}-ssl
-          secret:
-            secretName: {{ template "gateway.fullname" . }}-ssl
-{{ end }}
         - name: {{ template "gateway.fullname" . }}-license-xml
           secret:
-            secretName: {{ template "gateway.fullname" .}}-license
+            secretName: {{ template "gateway.license" . }}
             items:
             - key: license
               path: license.xml
-{{  if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
+        - name: {{ template "gateway.fullname" . }}-system-properties
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: system-properties
+              path: system.properties
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
             items:
             - key: hazelcast-xml
               path: hazelcast-client.xml
-{{ end }}
-{{ if .Values.config.log.override }}
+{{- end }}
+{{- if .Values.config.log.override }}
         - name: {{ template "gateway.fullname" . }}-log-config-override
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
             items:
             - key: log-override-properties
               path: log-override.properties
-{{ end }}
-{{ if .Values.config.cwp.enabled }}
+{{- end }}
+{{- if .Values.config.cwp.enabled }}
         - name: {{ template "gateway.fullname" . }}-cwp-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-cwp-configmap
-{{ end }}
-{{ if .Values.bundle.enabled }}
+{{- end }}
+{{- if .Values.config.listenPorts.custom.enabled }}
+        - name: {{ template "gateway.fullname" . }}-listenport-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-listenport-configmap
+{{- end }}
+{{- if .Values.bundle.enabled }}
         - name: {{ template "gateway.fullname" . }}-bundle-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-bundle-configmap
-{{ end }}
-{{ if .Values.serviceMetrics.enabled }}
+{{- end }}
+{{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
           configMap:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-{{ end }}
-{{ if .Values.management.restman.enabled }}
+{{- end }}
+{{- if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
-{{ end }}
+{{- end }}
+{{- if .Values.management.kubernetes.loadServiceAccountToken }}
+        - name: {{ template "gateway.fullname" . }}-service-account-token-script
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: 002-load-service-account-token
+              path: 002-load-service-account-token.sh
+        - name: {{ template "gateway.fullname" . }}-service-account-token-template
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: update-service-account-token
+              path: update-service-account-token.xml
+{{- end }}
+{{- if .Values.existingBundle.enabled }}
+     {{- range .Values.existingBundle.configMaps }}
+        - name: {{ .name }}
+      {{- if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+      {{- else }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .name }}
+      {{- end }}
+     {{- end }}
+     {{- range .Values.existingBundle.secrets }}
+        - name: {{ .name }}
+      {{- if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+      {{- else }}
+          secret:
+            secretName: {{ .name }}
+      {{- end }}
+     {{- end }}
+{{- end }}
+{{- if .Values.initContainers }}
+     {{- range .Values.initContainers }}
+     {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+     {{- end }}
+     {{- end }}
+{{- end }}
+{{- if .Values.sidecars }}
+     {{- range .Values.sidecars }}
+     {{- range .volumeMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+     {{- end }}
+     {{- end }}
+{{- end }}

@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.broker.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -20,6 +26,10 @@ spec:
     metadata:
       labels:
         app: broker
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.broker.affinity }}
@@ -27,6 +37,9 @@ spec:
       {{- end }}
       {{- if .Values.broker.nodeSelector }}
       nodeSelector: {{- toYaml .Values.broker.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.broker.tolerations }}
+      tolerations: {{- toYaml .Values.broker.tolerations | nindent 12 }}
       {{- end }}
       containers:
         - name: broker

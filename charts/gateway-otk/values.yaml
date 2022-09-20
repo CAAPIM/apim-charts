@@ -9,14 +9,14 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 10.0.00
+  tag: 10.1.00
   pullPolicy: Always
   # Will create a Registry secret and apply it to the Gateway
   secretName:
   credentials:
-   username:
-   password:
-   email:
+    username:
+    password:
+    email:
 
 # Number of Edge Gateways to deploy
 replicas: 1
@@ -107,14 +107,14 @@ installSolutionKits:
   restmanReadyWaitInterval: 30s
   restmanReadyWaitMaxAttempt: 10
 
-#Additional Environment variables to be added to the Gateway Configmap
+# Additional Environment variables to be added to the Gateway Configmap
 additionalEnv:
   key1: value
 
 # key1: value
 # key2: value
 
-#Additional Secret variables to be added to the Gateway Secret
+# Additional Secret variables to be added to the Gateway Secret
 additionalSecret:
   key1: value
 
@@ -142,7 +142,7 @@ service:
   ## Set the LoadBalancerIP
   ##
   # loadBalancerIP:
-  
+
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -154,7 +154,13 @@ service:
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
   annotations: {}
-#    cloud.google.com/load-balancer-type: "Internal"
+    # cloud.google.com/load-balancer-type: "Internal"
+
+  # Uncomment the following section to enable session affinity
+  # sessionAffinity: ClientIP
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
@@ -162,22 +168,28 @@ service:
 ingress:
   # Set to true to create ingress object
   enabled: false
-  class: nginx
-  # Ingress annotations 
+  # Ingress annotations
   annotations:
   # Ingress class
-  #  nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-  
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   # By default clusterHostname is used, only set this if you want to use a different host
-  hostname:
-  ## The port that you want to route to via ingress. This needs to be available via service.ports.
-  port: https
-  ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
-  tls: false
-  secretName:
+   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
 
-  #Need to configure additional ingress options for hosts/tls
+  # TLS Secret Name - this must present in your Kubernetes Cluster.
+  secretName: tls-secret
+  # Array of Hostnames that the certificate is valid for - must contain at least one.
+  hostname: dev.ca.com
+  tlsHostnames: []
+  # - dev.ca.com
+  # - dev1.ca.com
+  ## The port that you want to route to via ingress. This needs to be available via service.ports.
+  port: 8443
+  ## Define additional hostnames and ports as key-value pairs.
+  additionalHostnamesAndPorts: {}
+  #  dev1.ca.com: 9443
 
 livenessProbe:
   enabled: true
@@ -216,39 +228,65 @@ serviceAccount:
 ##                                                                                           ##
 ###############################################################################################
 
-# MySQL stable chart - this is not scalable nor will be in this format.
+# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
-  imageTag: "8"
-  mysqlUser: gateway
-  mysqlPassword: mypassword
-  mysqlDatabase: ssg
-  #mysqlRootPassword: mypassword
-  persistence:
-    enabled: true
-    size: 8Gi
-    #storageClass:
-  
-  configurationFiles:
-    my.cnf: |-
+  image:
+    tag: "8.0.22-debian-10-r75"
+  auth:
+    username: gateway
+    password: mypassword
+    database: ssg
+    rootPassword: mypassword
+  primary:
+    # persistence:
+    #   enabled: true
+    #   size: 8Gi
+    configuration: |-
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      character-set-server = utf8
-      innodb_log_buffer_size = 32M
-      innodb_log_file_size = 80M
-      max_allowed_packet = 8M
-      default-authentication-plugin=mysql_native_password
+      default_authentication_plugin=mysql_native_password
       log-bin-trust-function-creators=1
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      collation-server=utf8_general_ci
+      character-set-server=UTF8
+      innodb_log_buffer_size=32M
+      innodb_log_file_size=80M
+      max_allowed_packet=20M
+      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
-# The Gateway currently supports Hazelcast 3.x servers
+# The Gateway currently supports Hazelcast 4.x & 5.x servers
 hazelcast:
+  # Older versions of the API Gateway will still support 3.x servers
+  legacy:
+    # set this to true if your Gateway version does not support 4.x and 5.x
+    enabled: true
   # If you wish to connect to an existing Hazelcast instance set enabled to false
   # external to true, and uncomment and set url.
   enabled: false
   external: false
-  #url: hazelcast.example.com:5701
+  # url: hazelcast.example.com:5701
   image:
-    tag: "3.12.8"
+    tag: "5.1.1"
   cluster:
     memberCount: 2
   mancenter:
@@ -294,5 +332,3 @@ grafana:
       fileName: gateway-service-metrics.json
   datasources:
     secretName: grafana-secret
-
-

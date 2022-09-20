@@ -13,9 +13,9 @@ data:
   cwp.bundle: |
     <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
     <l7:References>
-{{ range $i, $v := $hexArr }}
-{{ if ne $i 0 }}
-{{ with index $.Values.config.cwp.properties (sub $i 1 )}}
+{{- range $i, $v := $hexArr }}
+{{- if ne $i 0 }}
+{{- with index $.Values.config.cwp.properties (sub $i 1 )}}
     <l7:Item>
         <l7:Name>{{ .name }}</l7:Name>
         <l7:Id>{{ $v }}</l7:Id>
@@ -23,22 +23,22 @@ data:
           <l7:Resource>
            <l7:ClusterProperty id="{{ $v }}">
            <l7:Name>{{ .name }}</l7:Name>
-{{ if contains "\\n" (.value | quote)}}
+{{- if contains "\\n" (.value | quote)}}
            <l7:Value>{{ .value | trim | indent 4 | trim }}</l7:Value>
-{{ else }}
+{{- else }}
            <l7:Value>{{ .value }}</l7:Value>
-{{ end }}
+{{- end }}
            </l7:ClusterProperty>
         </l7:Resource>
     </l7:Item>
-{{ end }}
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
+{{- end }}
     </l7:References>
        <l7:Mappings>
-{{ range $i, $v := $hexArr }}
-{{ if ne $i 0 }}
-{{ with index $.Values.config.cwp.properties (sub $i 1 ) }}
+{{- range $i, $v := $hexArr }}
+{{- if ne $i 0 }}
+{{- with index $.Values.config.cwp.properties (sub $i 1 ) }}
         <l7:Mapping action="NewOrUpdate" srcId="{{ $v }}" type="CLUSTER_PROPERTY">
             <l7:Properties>
                 <l7:Property key="MapBy">
@@ -49,9 +49,9 @@ data:
                 </l7:Property>
             </l7:Properties>
         </l7:Mapping>
-{{ end }}
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
+{{- end }}
     </l7:Mappings>
     </l7:Bundle>
 {{ end }} 

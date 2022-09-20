@@ -11,47 +11,107 @@ data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
-{{ if .Values.database.enabled }}
-  {{ if .Values.database.create }}
+{{- if .Values.database.enabled }}
+  {{- if .Values.database.create }}
   SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
-  {{ else }}
+  {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
-  {{ end }}
-{{ end }}
-
-{{ if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
+  {{- end }}
+{{- end }}
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
   hazelcast-xml: |+
     <hazelcast-client
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        {{- if .Values.hazelcast.legacy.enabled }}
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
          http://www.hazelcast.com/schema/client-config/hazelcast-client-config-3.10.xsd"
+        {{- else }}
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
+         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
+        {{- end }}
             xmlns="http://www.hazelcast.com/schema/client-config">
         <instance-name>{{ .Release.Name }}-{{ .Release.Namespace }}</instance-name>
         <network>
             <cluster-members>
-                {{ if .Values.hazelcast.external }}
+                {{- if .Values.hazelcast.external }}
                 <address>{{ required "Please set an external Hazelcast URL in values.yaml" .Values.hazelcast.url }}</address>
-                {{ else }}
-                 <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.hazelcast.service.port }}</address>
-                {{ end }}
+                {{- else }}
+                  {{- if hasSuffix "-hazelcast" .Release.Name }}
+                    <address>{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.hazelcast.service.port }}</address>
+                  {{- else }}
+                    <address>{{ .Release.Name }}-hazelcast.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.hazelcast.service.port }}</address>
+                  {{- end }}
+                {{- end }}
             </cluster-members>
+            {{- if .Values.hazelcast.legacy.enabled }}
             <connection-attempt-limit>10</connection-attempt-limit>
+            {{- end }}
             <redo-operation>true</redo-operation>
         </network>
+        {{- if .Values.hazelcast.legacy.enabled }}
         <connection-strategy async-start="false" reconnect-mode="ON" />
+        {{- else }}
+        <connection-strategy async-start="false" reconnect-mode="ON">
+          <connection-retry>
+            <cluster-connect-timeout-millis>-1</cluster-connect-timeout-millis>
+          </connection-retry>
+        </connection-strategy>
+        {{- end }}
     </hazelcast-client>
-{{ else }}
+{{- else }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }}
-{{ end }}
-
-{{ if .Values.additionalEnv }}
+{{- end }}
+{{- if .Values.additionalEnv }}
 {{- range $key, $val := .Values.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
 {{- end }}
-{{ end }}
-
-{{ if .Values.config.log.override }}
+{{- end }}
+{{- if .Values.config.log.override }}
   log-override-properties: |-
 {{ .Values.config.log.properties | indent 4 }}
-{{ end }}
+{{- end }}
+{{- if .Values.config.systemProperties }}
+  system-properties: |-
+{{ .Values.config.systemProperties | indent 4 }}
+{{- end }}
+{{- if .Values.management.kubernetes.loadServiceAccountToken }}
+  002-load-service-account-token: |-
+    #!/bin/bash
+    SERVICE_ACCOUNT_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+    UPDATE_SERVICE_ACCOUNT_TOKEN=$(sed -e "s~SERVICE_ACCOUNT_TOKEN~${SERVICE_ACCOUNT_TOKEN}~g" /opt/docker/rc.d/base/update-service-account-token.xml)
+    echo "${UPDATE_SERVICE_ACCOUNT_TOKEN}" > ${GATEWAY_DIR}/node/default/etc/bootstrap/bundle/02_update_service_account_token.xml.req.bundle
+  update-service-account-token: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+        <l7:References>
+            <l7:Item>
+                <l7:Name>sa_token</l7:Name>
+                <l7:Id>fc8324c4f9f6221a79ce132b3a4052d5</l7:Id>
+                <l7:Type>SECURE_PASSWORD</l7:Type>
+                <l7:Resource>
+                    <l7:StoredPassword id="fc8324c4f9f6221a79ce132b3a4052d5">
+                        <l7:Name>sa_token</l7:Name>
+                        <l7:Password>SERVICE_ACCOUNT_TOKEN</l7:Password>
+                        <l7:Properties>
+                            <l7:Property key="description">
+                                <l7:StringValue>Kubernetes Service Account Token</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="type">
+                                <l7:StringValue>Password</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="usageFromVariable">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:StoredPassword>
+                </l7:Resource>
+            </l7:Item>
+        </l7:References>
+        <l7:Mappings>
+            <l7:Mapping action="NewOrUpdate" srcId="fc8324c4f9f6221a79ce132b3a4052d5" type="SECURE_PASSWORD">
+            </l7:Mapping>
+        </l7:Mappings>
+    </l7:Bundle>
+{{- end }}

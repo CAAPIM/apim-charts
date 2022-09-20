@@ -215,7 +215,11 @@ Get "analytics" database name
 Portal Docops page
 */}}
 {{- define "portal.help.page" -}}
-{{- printf "%s" "https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0.html" -}}
+    {{- if .Values.global.helpPage }}
+        {{- printf "%s" .Values.global.helpPage   -}}
+    {{- else }}
+         {{- printf "%s" "https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/" -}}
+    {{- end }}
 {{- end -}}
 
 {{/*
@@ -351,3 +355,12 @@ Get "database-port" based on databaseType value
         {{- printf "*.%s" .Values.portal.domain }}
     {{- end }}
 {{- end -}}
+
+{{/*
+Create Image Pull Secret
+*/}}
+{{- define "imagePullSecret" }}
+{{- if and (not .Values.portal.useExistingPullSecret) (.Values.portal.imagePullSecret.enabled) }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password (printf "%s:%s" .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}

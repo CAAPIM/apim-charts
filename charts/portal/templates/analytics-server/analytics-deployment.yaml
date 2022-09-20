@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.analytics.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   {{- if .Values.analytics.strategy }}
   strategy: {{- toYaml .Values.analytics.strategy | nindent 12 }}
@@ -23,6 +29,10 @@ spec:
     metadata:
       labels:
         app: analytics-server
+      {{ if .Values.analytics.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.analytics.affinity }}
@@ -30,6 +40,9 @@ spec:
       {{- end }}
       {{- if .Values.analytics.nodeSelector }}
       nodeSelector: {{- toYaml .Values.analytics.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.analytics.tolerations }}
+      tolerations: {{- toYaml .Values.analytics.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

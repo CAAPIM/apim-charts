@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.apim.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   {{- if .Values.apim.strategy }}
   strategy: {{- toYaml .Values.apim.strategy | nindent 12 }}
@@ -19,6 +25,10 @@ spec:
     metadata:
       labels:
         app: apim
+      {{ if .Values.apim.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.apim.affinity }}
@@ -26,6 +36,9 @@ spec:
       {{- end }}
       {{- if .Values.apim.nodeSelector }}
       nodeSelector: {{- toYaml .Values.apim.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.apim.tolerations }}
+      tolerations: {{- toYaml .Values.apim.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
@@ -101,12 +114,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.tls.internalSecretName }}
                   key: apim-tps.crt
-                  optional: false
-            - name: APIM_SOLR_SSL_CERT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.tls.internalSecretName }}
-                  key: apim-solr.crt
                   optional: false
             - name: DATALAKE_SSL_KEY
               valueFrom:
