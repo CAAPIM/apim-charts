@@ -405,9 +405,10 @@ Run the following commands to create the zipped and base64 encoded value:
 Note: the output from base64 should not contain any line breaks.
 Take the base64 output and set it to the variable below and restart portal stack.
 
-| Environment Variable                              | Description                                                                                                          |
-|---------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `portalData.additionalEnv.ANTISAMY_FILTER_POLICY` | Zipped policy file in base64 encoded format|
+| Environment Variable                                 | Description                                                                                                          |
+|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `portalData.additionalEnv.ANTISAMY_FILTER_POLICY`    | Zipped policy file in base64 encoded format|
+| `authenticator.additionalEnv.ANTISAMY_FILTER_POLICY` | Zipped policy file in base64 encoded format|
 
 
 ### RBAC Parameters

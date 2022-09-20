@@ -232,6 +232,7 @@ authenticator:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 dispatcher:
   forceRedeploy: false
