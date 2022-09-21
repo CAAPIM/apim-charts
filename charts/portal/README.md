@@ -289,6 +289,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS` | The &#124; separated allowed domain(s) whitelist. | ``                                                   |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
