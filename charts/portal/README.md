@@ -135,6 +135,7 @@ Install the chart again
 * [Troubleshooting](#troubleshooting)
 * [Portal TLS Defaults](#portal-tls-defaults)
 * [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)
+* [Portal Request XSS Filter](#portal-request-xss-filter)
 
 
 # Configuration
@@ -392,6 +393,24 @@ Portal Cipher Suites defaults if the parameters are not set.
 | `dispatcher` | Dispatcher HTTPS supported Cipher Suites            | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,ECDHE_RSA_AES128_GCM_SHA256,ECDHE_ECDSA_AES128_GCM_SHA256,ECDHE_RSA_AES256_GCM_SHA384,ECDHE_ECDSA_AES256_GCM_SHA384,DHE_RSA_AES128_GCM_SHA256,DHE_DSS_AES128_GCM_SHA256,kEDH+AESGCM,ECDH_RSA_AES128_SHA256,ECDHE_ECDSA_AES128_SHA256,ECDHE_ECDSA_AES128_SHA,ECDHE_ECDSA_AES256_SHA384,ECDHE_ECDSA_AES256_SHA,DES_RSA_AES128_SHA256,DHE_RSA_AES128_SHA,DHE_DSS_AES128_SHA256,DHE_RSA_AES256_SHA256,DHE_DSS_AES256_SHA,DHE_RSA_AES256_SHA,!aNULL,!eNULL,!EXPORT,!DES,!RC4,!3DES,!MD5,!PSK`                                                    |
 | `pssg` | PSSG HTTPS/MQTT-TLS supported Cipher Suites               | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA`                                                    |
 
+### Portal Request XSS Filter
+The value of this variable should contain rules for sanitizing malicious scripts
+that exist in a HTTP request.  The value must be zipped and base64 encoded.
+
+Run the following commands to create the zipped and base64 encoded value:
+```
+    $ zip output.zip your_policy_file.xml
+    $ cat output.zip | base64
+```
+Note: the output from base64 should not contain any line breaks.
+Take the base64 output and set it to the variable below and restart portal stack.
+
+| Environment Variable                                 | Description                                                                                                          |
+|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `portalData.additionalEnv.ANTISAMY_FILTER_POLICY`    | Zipped policy file in base64 encoded format|
+| `authenticator.additionalEnv.ANTISAMY_FILTER_POLICY` | Zipped policy file in base64 encoded format|
+
+
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -588,16 +607,16 @@ The following table lists the configured parameters of the Druid Subchart:
 ## Druid Images
 The following table lists the configured parameters of the Druid Subchart
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `druid.image.zookeeper `                | Zookeeper image   | `zookeeper:5.1.1` |
-| `druid.image.broker`                | Broker image   | `druid:5.1.1` |
-| `druid.image.coordinator`                | Coordinator  | `druid:5.1.1` |
-| `druid.image.middlemanager`                | Middlemanager image   | `druid:5.1.1`
-| `druid.image.minio`                | Minio image   | `minio:5.1.1` |
-| `druid.image.historical`                | Historical image   | `druid:5.1.1` |
-| `druid.image.kafka`                | Kafka image   | `kafka:5.1.1` |
-| `druid.image.ingestion`                | Ingestion image   | `ingestion-server:5.1.1` |
+| Parameter                   | Description         | Default                  |
+|-----------------------------|---------------------|--------------------------|
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.1.1`        |
+| `druid.image.broker`        | Broker image        | `druid:5.1.1`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.1.1`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.1.1`            |
+| `druid.image.minio`         | Minio image         | `minio:5.1.1`            |
+| `druid.image.historical`    | Historical image    | `druid:5.1.1`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.1.1`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.1.1` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
