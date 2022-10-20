@@ -24,6 +24,15 @@ spec:
       {{- if .Values.affinity }}
       affinity: {{- toYaml .Values.affinity | nindent 12 }}
       {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.topologySpreadConstraints | nindent 12 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 12 }}
+      {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
       {{- end }}
@@ -44,6 +53,9 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           {{- if .Values.installSolutionKits.enabled}}
           lifecycle:
             postStart:
@@ -118,6 +130,10 @@ spec:
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{- end }}
+{{- if .Values.management.graphman.enabled }}
+            - name: {{ template "gateway.fullname" . }}-graphman
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+{{- end }}
 {{- if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
             - name: {{ .name }}
@@ -138,6 +154,11 @@ spec:
             - name: {{ template "gateway.fullname" . }}-service-account-token-template
               mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
               subPath: update-service-account-token.xml
+{{- end }}
+{{- if .Values.bootstrap.script.enabled }}
+            - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
+              mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
+              subPath: 003-parse-custom-files.sh
 {{- end }}
 {{- if .Values.initContainers }}
            {{- range .Values.initContainers }}
@@ -177,6 +198,11 @@ spec:
               path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.livenessProbe.port | default 8443 }}
               scheme: {{ .Values.livenessProbe.scheme | default "HTTPS" }}
+              httpHeaders:
+              {{- range.Values.livenessProbe.httpHeaders }}
+              - name: {{ .name }}
+                value: {{ .value }}
+              {{- end }}     
 {{- else }}
             exec:
               command:
@@ -196,6 +222,11 @@ spec:
               path: {{ .Values.readinessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.readinessProbe.port | default 8443 }}
               scheme: {{ .Values.readinessProbe.scheme | default "HTTPS" }}
+              httpHeaders:
+              {{- range.Values.livenessProbe.httpHeaders }}
+              - name: {{ .name }}
+                value: {{ .value }}
+              {{- end }}
 {{- else }}
             exec:
               command:
@@ -273,6 +304,10 @@ spec:
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
 {{- end }}
+{{- if .Values.management.graphman.enabled }}
+        - name: {{ template "gateway.fullname" . }}-graphman
+          emptyDir: {}
+{{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
         - name: {{ template "gateway.fullname" . }}-service-account-token-script
           configMap:
@@ -286,6 +321,14 @@ spec:
             items:
             - key: update-service-account-token
               path: update-service-account-token.xml
+{{- end }}
+{{- if .Values.bootstrap.script.enabled }}
+        - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: 003-parse-custom-files
+              path: 003-parse-custom-files.sh
 {{- end }}
 {{- if .Values.existingBundle.enabled }}
      {{- range .Values.existingBundle.configMaps }}

@@ -115,3 +115,55 @@ data:
         </l7:Mappings>
     </l7:Bundle>
 {{- end }}
+{{- if .Values.bootstrap.script.enabled }}
+  003-parse-custom-files: |-
+    #!/bin/bash
+    BASE_CONFIG_DIR="/opt/docker/custom"
+    BUNDLE_DIR="$BASE_CONFIG_DIR/bundle"
+    CUSTOM_ASSERTIONS_DIR="$BASE_CONFIG_DIR/custom-assertions"
+    MODULAR_ASSERTIONS_DIR="$BASE_CONFIG_DIR/modular-assertions"
+    CUSTOM_SCRIPTS_DIR="$BASE_CONFIG_DIR/scripts/custom"
+    CUSTOM_HEALTHCHECK_DIR="$BASE_CONFIG_DIR/scripts/healthcheck"
+    BASE_TARGET_DIR="/opt/SecureSpan/Gateway"
+    TARGET_BUNDLE_DIR="$BASE_TARGET_DIR/node/default/etc/bootstrap/bundle"
+    TARGET_CUSTOM_ASSERTIONS_DIR="$BASE_TARGET_DIR/runtime/modules/lib"
+    TARGET_MODULAR_ASSERTIONS_DIR="$BASE_TARGET_DIR/runtime/modules/assertions"
+    TARGET_CUSTOM_SCRIPTS_DIR="/opt/docker/rc.d"
+    TARGET_CUSTOM_HEALTHCHECK_DIR="/opt/docker/rc.d/diagnostic/"
+
+    function cleanup() {
+      echo "***********************************************"
+      echo "removing $BASE_CONFIG_DIR"
+      echo "***********************************************"
+      rm -rf $BASE_CONFIG_DIR/*
+    }
+    
+    function copy() {
+        TYPE=$1
+        EXT=$2
+        SOURCE_DIR=$3
+        TARGET_DIR=$4
+        echo "***********************************************"
+        echo "scanning for $TYPE in $SOURCE_DIR"
+        echo "***********************************************"
+        FILES=$(find $3 -type f -name '*'$2 2>/dev/null)
+        for file in $FILES; do
+            name=$(basename "$file")
+            if [[ $EXT == ".sh" ]]; then
+                chmod +x $file
+            fi
+            cp $file $4/$name
+            echo -e "$name written to $4/$name"
+        done
+    }
+    
+    copy "bundles" ".bundle" $BUNDLE_DIR $TARGET_BUNDLE_DIR
+    copy "custom assertions" ".jar" $CUSTOM_ASSERTIONS_DIR $TARGET_CUSTOM_ASSERTIONS_DIR
+    copy "modular assertions" ".aar" $MODULAR_ASSERTIONS_DIR $TARGET_MODULAR_ASSERTIONS_DIR
+    copy "custom scripts" ".sh" $CUSTOM_SCRIPTS_DIR $TARGET_CUSTOM_SCRIPTS_DIR
+    copy "custom healthcheck scripts" ".sh" $CUSTOM_HEALTHCHECK_DIR $TARGET_CUSTOM_HEALTHCHECK_DIR
+{{- if .Values.bootstrap.cleanup }}
+    cleanup
+{{- end}}
+    
+{{- end }}

@@ -4,6 +4,21 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
+## 3.0.2 General Updates
+To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
+
+The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
+- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+
+The following configuration options have been added
+- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
+- [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+- Http headers can also now be added to the liveness and readiness probes
+- Ingress API Version validation has been updated to check for available APIs vs. KubeVersion
+- SubCharts now show image repository and tags
+
 ### Upgrading to Chart v3.0.0
 Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
 
@@ -152,12 +167,11 @@ database:
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
 * [Gateway Bundles](#bundle-configuration)
+* [Bootstrap Script](#bootstrap-script)
 * [Logs & Audit Configuration](#logs--audit-configuration)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
-
-
 * [SubChart Configuration](#subchart-configuration)
 
 ## Configuration
@@ -240,6 +254,15 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `readinessProbe.failureThreshold`    | Failure Threshold               | `10` |
 | `resources.limits`    | Resource Limits               | `{}` |
 | `resources.requests`    | Resource Requests              | `{}` |
+| `nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
+| `affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
+| `topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
+| `tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
+| `podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
+| `containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+| `bootstrap.script.enabled`    | Enable the bootstrap script              | `false` |
+| `bootstrap.script.cleanup`    | Cleanup the /opt/docker/custom folder              | `false` |
+
 
 ## Port Configuration
 There are two types of port configuration available in the Gateway Helm Chart that are configured in the following ways
@@ -599,6 +622,19 @@ existingBundle:
   #     volumeAttributes:
   #       secretProviderClass: "secret-provider-class-name"
 ```
+
+### Bootstrap Script
+To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder. The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
+
+The following configuration enables the script
+```
+bootstrap:
+  script:
+    enabled: true
+  cleanup: false <== set this to true if you'd like to clear the /opt/docker/custom folder after it has run.
+```
+
+More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.

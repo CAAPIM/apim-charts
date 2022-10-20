@@ -205,16 +205,16 @@ config:
         # - Administrative access
         # - Browser-based administration
         # - Built-in services
-        properties:
-        - name: server
-          value: A
+        properties: []
+        # - name: server
+        #   value: A
         tls:
           enabled: true
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          #- TLSv1.0
-          #- TLSv1.1
+          # - TLSv1.0
+          # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
@@ -266,16 +266,16 @@ config:
         - Administrative access
         - Browser-based administration
         - Built-in services
-        properties:
-        - name: server
-          value: B
+        properties: []
+        # - name: server
+        #   value: B
         tls:
           enabled: true
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          #- TLSv1.0
-          #- TLSv1.1
+          # - TLSv1.0
+          # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
@@ -352,6 +352,9 @@ management:
   enabled: true
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
+    enabled: false
+  # Enable Graphman (placeholder)
+  graphman:
     enabled: false
   # This is the username/password used for Policy Manager/Gateway Management.
   username: admin
@@ -446,7 +449,7 @@ ingress:
      service:
        port:
          name: https
-         #number:
+        # number:
   #  - host: dev1.ca.com
   #    path: "/"
   #    service:
@@ -504,6 +507,7 @@ livenessProbe:
 # path: /ssg/ping
 # port: 8443
 # scheme: HTTPS
+# httpHeaders: []
   initialDelaySeconds: 40
   timeoutSeconds: 1
   periodSeconds: 15
@@ -524,24 +528,52 @@ readinessProbe:
   successThreshold: 1
   failureThreshold: 15
 
-
 # nodeSelector: {}
 # affinity: {}
 
+# ref:https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods
+topologySpreadConstraints: []
+# topologySpreadConstraints:
+#   - maxSkew: 1
+#     topologyKey: topology.kubernetes.io/zone
+#     whenUnsatisfiable: DoNotSchedule
+#     labelSelector:
+#       matchLabels:
+#         app: <releasename>-gateway
+
+# ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+# ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+podSecurityContext: {}
+
+# ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+containerSecurityContext: {}
+
+# This script reads files in /opt/docker/custom and moves them into the correct location
+# for Gateway startup. Enabling this with an empty /opt/docker/custom folder will have no effect.
+#################################################################################################
+# We recommend using an initContainer with a shared volume to populate the /opt/docker/custom folder.
+# The initContainer can either be built with all of the required files, or dynamically retrieve files
+# from an external location.
+# See the Readme for details and examples.
+bootstrap:
+  script:
+    enabled: false
+  cleanup: false
+
 # Add initContainers to the Gateway
-initContainers: {}
-## Example:
-## initContainers:
-##   - name: your-image-name
-##     image: your-image
-##     imagePullPolicy: Always
-##     ports:
-##       - name: portname
-##         containerPort: 1234
-##
+initContainers: []
+# initContainers:
+# - name: simple-init
+#   image: docker.io/layer7api/simple-init:1.0.0
+#   imagePullPolicy: Always
+#   volumeMounts:
+#   - name: config-directory
+#     mountPath: /opt/docker/custom
 
 ## Add sidecars to the Gateway Deployment.
-sidecars: {}
+sidecars: []
 ## Example:
 ## sidecars:
 ##   - name: your-image-name
@@ -597,7 +629,12 @@ installSolutionKits:
 # MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
   image:
-    tag: "8.0.22-debian-10-r75"
+    registry: docker.io
+    repository: bitnami/mysql
+    tag: 8.0.22-debian-10-r75
+    pullPolicy: IfNotPresent
+    # pullSecrets:
+    # - myRegistryKeySecretName
   auth:
     username: gateway
     password: mypassword
@@ -651,7 +688,11 @@ hazelcast:
   external: false
   # url: hazelcast.example.com:5701
   image:
+    repository: "hazelcast/hazelcast"
     tag: "5.1.1"
+    pullPolicy: IfNotPresent
+    # pullSecrets:
+    # - myRegistryKeySecretName
   cluster:
     memberCount: 2
   mancenter:
@@ -673,6 +714,12 @@ hazelcast:
 # This is not a production implementation!
 influxdb:
   enabled: false
+  image:
+    repository: "influxdb"
+    tag: "1.8.10-alpine"
+    pullPolicy: IfNotPresent
+    # pullSecrets:
+    #   - registry-secret
   service:
     port: 8086
   persistence:
@@ -686,6 +733,13 @@ influxdb:
 # Settings for Grafana - https://github.com/bitnami/charts/tree/master/bitnami/grafana
 grafana:
   enabled: false
+  image:
+    registry: docker.io
+    repository: bitnami/grafana
+    tag: 9.0.7-debian-11-r0
+    pullPolicy: IfNotPresent
+    # pullSecrets:
+    # - myRegistryKeySecretName
   # Change this to update the UI Password
   admin:
     user: admin
