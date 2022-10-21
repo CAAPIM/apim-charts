@@ -4,6 +4,8 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.8 General Updates
+- Updating the portal version doc link.
 
 ## 2.2.7 General Updates
 - This new version of the chart supports API Portal 5.1.2.
@@ -46,7 +48,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -92,7 +94,7 @@ To delete API Portal installation, run the following command:
 ## Upgrade External Portal Database to MySQL 8.0
 MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
 
-1) Before upgrading the Database, see **Before You Begin** and **Check Database Compatibility** in [TechDocs.](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+1) Before upgrading the Database, see **Before You Begin** and **Check Database Compatibility** in [TechDocs.](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
 
 2) Persist Analytics Data into Druid Database
@@ -117,7 +119,7 @@ MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1
  $ helm uninstall <release name> -n <namespace>
 ```
 
-4) Upgrade MySQL 5.7 to 8.0.26. For more information, see **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+4) Upgrade MySQL 5.7 to 8.0.26. For more information, see **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
 5) After MySQL is upgraded, ensure that you can connect to it and then follow the below steps to start the portal with MySQL 8.0.26.
 Ensure that the value of **tls.job.enabled** is set to **false** in **values.yaml**
