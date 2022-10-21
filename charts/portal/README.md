@@ -7,7 +7,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.2.7 General Updates
 - This new version of the chart supports API Portal 5.1.2.
-- This new version of the chart to parametrize imagePullPolicy for all three portal jobs: db-upgrade-portal, db-upgrade-rbac and cert-upgrade.
+- Faclilates to parametrize imagePullPolicy for all three portal jobs: db-upgrade-portal, db-upgrade-rbac and cert-upgrade.
 ## 2.2.6 General Updates
 - Fixing bitnami repository dependency issue.
 
