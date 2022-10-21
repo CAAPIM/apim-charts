@@ -16,7 +16,7 @@ The following configuration options have been added
 - [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
 - [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
 - Http headers can also now be added to the liveness and readiness probes
-- Ingress API Version validation has been updated to check for available APIs vs. KubeVersion
+- Ingress and HPA API Version validation has been updated to check for available APIs vs. KubeVersion
 - SubCharts now show image repository and tags
 
 ### Upgrading to Chart v3.0.0

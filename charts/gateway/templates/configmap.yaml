@@ -129,7 +129,7 @@ data:
     TARGET_CUSTOM_ASSERTIONS_DIR="$BASE_TARGET_DIR/runtime/modules/lib"
     TARGET_MODULAR_ASSERTIONS_DIR="$BASE_TARGET_DIR/runtime/modules/assertions"
     TARGET_CUSTOM_SCRIPTS_DIR="/opt/docker/rc.d"
-    TARGET_CUSTOM_HEALTHCHECK_DIR="/opt/docker/rc.d/diagnostic/"
+    TARGET_CUSTOM_HEALTHCHECK_DIR="/opt/docker/rc.d/diagnostic/health_check"
 
     function cleanup() {
       echo "***********************************************"
