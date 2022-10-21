@@ -27,7 +27,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}-tls-manager
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
         env:
          - name: P12_INTERNAL_PASS
            valueFrom:
