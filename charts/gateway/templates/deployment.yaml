@@ -130,10 +130,39 @@ spec:
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{- end }}
-{{- if .Values.management.graphman.enabled }}
+{{- if .Values.management.graphman  }}
+        {{- if .Values.management.graphman.enabled }}
             - name: {{ template "gateway.fullname" . }}-graphman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+        {{- end }}
 {{- end }}
+{{- if .Values.existingHealthCheck }}
+{{- if .Values.existingHealthCheck.enabled }}
+           {{- if .Values.existingHealthCheck.configMap }}
+            - name: {{ .Values.existingHealthCheck.configMap.name }}
+              mountPath: /opt/docker/rc.d/diagnostic/health_check
+           {{- end }}
+           {{- if .Values.existingHealthCheck.secret }}
+            - name: {{ .Values.existingHealthCheck.secret.name }}
+              mountPath: /opt/docker/rc.d/diagnostic/health_check
+              {{ if .Values.existingHealthCheck.secret.csi }}
+              readOnly: {{ .Values.existingHealthCheck.secret.csi.readOnly }}
+              {{ end }}
+           {{- end }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.customConfig }}
+{{- if .Values.customConfig.enabled }}
+        {{- range .Values.customConfig.mounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+        {{- end }}
+{{- end }}
+{{- end }}
+
+
 {{- if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
             - name: {{ .name }}
@@ -155,10 +184,13 @@ spec:
               mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
               subPath: update-service-account-token.xml
 {{- end }}
+
+{{- if .Values.bootstrap }}
 {{- if .Values.bootstrap.script.enabled }}
             - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
               mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
               subPath: 003-parse-custom-files.sh
+{{- end }}
 {{- end }}
 {{- if .Values.initContainers }}
            {{- range .Values.initContainers }}
@@ -264,6 +296,26 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
+{{- if .Values.customConfig }}
+{{- if .Values.customConfig.enabled }}
+     {{- range .Values.customConfig.mounts }}
+        - name: {{ .name }}
+        {{- if .configMap }}
+          configMap:
+            name: {{ .configMap.name }}
+            items:
+            - key: {{ .configMap.item.key }}
+              path: {{ .configMap.item.path }}
+        {{- else }}
+          secret:
+            secretName: {{ .secret.name }}
+            items:
+            - key: {{ .secret.item.key }}
+              path: {{ .secret.item.path }}
+        {{- end }}
+     {{- end }}
+{{- end }}
+{{- end }}
 {{- if .Values.config.log.override }}
         - name: {{ template "gateway.fullname" . }}-log-config-override
           configMap:
@@ -304,9 +356,11 @@ spec:
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
 {{- end }}
-{{- if .Values.management.graphman.enabled }}
+{{- if .Values.management.graphman }}
+      {{- if .Values.management.graphman.enabled }}
         - name: {{ template "gateway.fullname" . }}-graphman
           emptyDir: {}
+      {{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
         - name: {{ template "gateway.fullname" . }}-service-account-token-script
@@ -322,6 +376,7 @@ spec:
             - key: update-service-account-token
               path: update-service-account-token.xml
 {{- end }}
+{{- if .Values.bootstrap }}
 {{- if .Values.bootstrap.script.enabled }}
         - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
           configMap:
@@ -329,6 +384,7 @@ spec:
             items:
             - key: 003-parse-custom-files
               path: 003-parse-custom-files.sh
+{{- end }}
 {{- end }}
 {{- if .Values.existingBundle.enabled }}
      {{- range .Values.existingBundle.configMaps }}
@@ -351,6 +407,26 @@ spec:
             secretName: {{ .name }}
       {{- end }}
      {{- end }}
+{{- end }}
+{{- if .Values.existingHealthCheck }}
+{{- if .Values.existingHealthCheck.enabled }}
+     {{- if .Values.existingHealthCheck.configMap }}
+        - name: {{ .Values.existingHealthCheck.configMap.name }}
+          configMap:
+            defaultMode: {{ .Values.existingHealthCheck.configMap.defaultMode | default 292 }}
+            optional: {{ .Values.existingHealthCheck.configMap.optional | default false }}
+            name: {{ .Values.existingHealthCheck.configMap.name }}
+     {{- end }}
+     {{- if .Values.existingHealthCheck.secret }}
+        - name: {{ .Values.existingHealthCheck.secret.name }}
+      {{- if .Values.existingHealthCheck.secret.csi }}
+          csi: {{ toYaml .Values.existingHealthCheck.secret.csi | nindent 12 }}
+      {{- else }}
+          secret:
+            secretName: {{ .Values.existingHealthCheck.secret.name }}
+      {{- end }}
+     {{- end }}
+{{- end }}
 {{- end }}
 {{- if .Values.initContainers }}
      {{- range .Values.initContainers }}

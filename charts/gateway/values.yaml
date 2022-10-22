@@ -489,6 +489,38 @@ existingBundle:
   #       secretProviderClass: "secret-provider-class-name"
  # - name: mysecretbundle2
 
+# This is limited to a single configmap or secret. ConfigMaps and Secrets can hold multiple scripts.
+# See an example here - https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples
+# NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.
+existingHealthCheck:
+  enabled: false
+  configMap: {}
+    # name: healthcheck-scripts-configmap
+    # defaultMode: 292
+    # optional: false
+  secret: {}
+    # name: healthcheck-scripts-secret
+    # csi:
+    #   driver: secrets-store.csi.k8s.io
+    #   readOnly: true
+    #   volumeAttributes:
+    #     secretProviderClass: "vault-database"
+
+# Certain folders on the Container Gateway are not writeable by design.
+# This configuration allows you to mount configMap/Secret keys to specific paths on the Gateway without
+# the need for a root user or a custom/derived image.
+customConfig:
+  enabled: false
+  # mounts:
+  # - name: sampletrafficloggerca-override
+  #   mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/sampletrafficloggerca.properties
+  #   subPath: sampletrafficloggerca.properties
+  #   secret:
+  #     name: config-override-secret
+  #     item:
+  #       key: sampletrafficloggerca.properties
+  #       path: sampletrafficloggerca.properties
+
 # This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
 # Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
 # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
@@ -520,6 +552,7 @@ readinessProbe:
 # path: /ssg/ping
 # port: 8443
 # scheme: HTTPS
+# httpHeaders: []
   initialDelaySeconds: 40
   timeoutSeconds: 1
   periodSeconds: 15

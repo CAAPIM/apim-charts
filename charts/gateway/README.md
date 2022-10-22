@@ -5,12 +5,14 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## 3.0.2 General Updates
-To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
+To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
 
 The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
-- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) - this repository also contains examples for custom health checks and configuration files.
 
 The following configuration options have been added
+- [Custom Health Checks](#custom-health-checks)
+- [Custom Configuration Files](#custom-configuration-files)
 - [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
 - [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
 - [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
@@ -168,6 +170,8 @@ database:
 * [System Properties](#system-properties)
 * [Gateway Bundles](#bundle-configuration)
 * [Bootstrap Script](#bootstrap-script)
+* [Custom Health Checks](#custom-health-checks)
+* [Custom Configuration Files](#custom-configuration-files)
 * [Logs & Audit Configuration](#logs--audit-configuration)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
@@ -634,7 +638,67 @@ bootstrap:
   cleanup: false <== set this to true if you'd like to clear the /opt/docker/custom folder after it has run.
 ```
 
+The bootstrap script scans files in ```/opt/docker/custom```. This folder is populated by an initContainer.
+
+The following folder stucture must be maintained
+
+- Restman Bundles (.bundle)
+  - Source ```/opt/docker/custom/bundles```
+  - Target ```/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle```
+- Custom Assertions (.jar)
+  - Source ```/opt/docker/custom/custom-assertions```
+  - Target ```/opt/SecureSpan/Gateway/runtime/modules/lib/```
+- Modular Assertions (.aar)
+  - Source ```/opt/docker/custom/modular-assertions```
+  - Target ```/opt/SecureSpan/Gateway/runtime/modules/assertions```
+- Properties (.properties)
+  - Source ```/opt/docker/custom/properties```
+  - Target ```/opt/SecureSpan/Gateway/node/default/etc/conf/```
+
+
 More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
+
+### Custom Health Checks
+You can now specify a configMap or Secret that contains healthcheck scripts. These are mounted to ```/opt/docker/rc.d/diagnostic/health_check``` where they are run by ```/opt/docker/rc.d/diagnostic/health_check.sh```.
+
+- Limited to a single configmap or secret.
+  - ConfigMaps and Secrets can hold multiple scripts.
+  - [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+
+***NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.***
+```
+existingHealthCheck:
+  enabled: false
+  configMap: {}
+    # name: healthcheck-scripts-configmap
+    # defaultMode: 292
+    # optional: false
+  secret: {}
+    # name: healthcheck-scripts-secret
+    # csi:
+    #   driver: secrets-store.csi.k8s.io
+    #   readOnly: true
+    #   volumeAttributes:
+    #     secretProviderClass: "vault-database"
+```
+
+### Custom Configuration Files
+Certain folders on the Container Gateway are not writeable by design. This configuration allows you to mount existing configMap/Secret keys to specific paths on the Gateway without the need for a root user or a custom/derived image.
+
+- [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+```
+customConfig:
+  enabled: false
+  # mounts:
+  # - name: sampletrafficloggerca-override
+  #   mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/sampletrafficloggerca.properties
+  #   subPath: sampletrafficloggerca.properties
+  #   secret:
+  #     name: config-override-secret
+  #     item:
+  #       key: sampletrafficloggerca.properties
+  #       path: sampletrafficloggerca.properties
+```
 
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
