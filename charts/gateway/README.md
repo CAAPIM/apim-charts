@@ -4,26 +4,6 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
-## 3.0.2 General Updates
-To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
-
-The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
-- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) - this repository also contains examples for custom health checks and configuration files.
-
-The following configuration options have been added
-- [Custom Health Checks](#custom-health-checks)
-- [Custom Configuration Files](#custom-configuration-files)
-- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
-- [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
-- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
-- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
-- Http headers can also now be added to the liveness and readiness probes
-- Ingress and HPA API Version validation has been updated to check for available APIs vs. KubeVersion
-- SubCharts now show image repository and tags
-
-### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
-
 ## Prerequisites
 - Kubernetes 1.22.x
 - Helm v3.7.x
@@ -45,10 +25,36 @@ Please see the 3.0.0 updates, this release brings significant updates and ***bre
 * [Additional Guides](#additional-guides)
 * [Thinking in Kubernetes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html)
 
+#### Getting Started
+***If you are using a previous version of this Chart please read the updates section before you upgrade.***
+* [Install the Chart](#installing-the-chart)
+* [Upgrade the Chart](#upgrading-the-chart)
+* [Uninstall the Chart](#uninstalling-the-chart)
+
 # Java 11
 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
-Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
+Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.2 General Updates
+To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
+
+The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
+- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) - this repository also contains examples for custom health checks and configuration files.
+
+The following configuration options have been added
+- [Custom Health Checks](#custom-health-checks)
+- [Custom Configuration Files](#custom-configuration-files)
+- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
+- [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+- Http headers can also now be added to the liveness and readiness probes
+- Ingress and HPA API Version validation has been updated to check for available APIs vs. KubeVersion
+- SubCharts now show image repository and tags
+
+### Upgrading to Chart v3.0.0
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -126,21 +132,20 @@ Inspect and update the new gateway-values.yaml
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
 ```
 
-# Install the Chart
+## Installing the Chart
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
 ```
 $ helm repo add layer7 https://caapim.github.io/apim-charts/
 $ helm repo update
 $ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
-
-## Upgrade this Chart
-To upgrade the Gateway deployment
+## Upgrading the Chart
+To upgrade your Gateway Release
 ```
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
-## Remove this Chart
-To delete Gateway installation
+## Uninstalling the Chart
+To uninstall the Gateway Chart
 
 ```
 $ helm uninstall <release name> -n <release namespace>
