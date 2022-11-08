@@ -31,8 +31,6 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
-
 {{/*
  Set the service account name for the Gateway
  */}}
@@ -45,6 +43,19 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
+ Generate []16bit HEX
+ This creates Gateway ids for bundles  
+ */}}
+ {{- define "gateway.listenPort.hex" -}}
+ {{ $hexArr := "" }}
+ {{- range .Values.config.listenPorts.ports }}
+ {{- $hex := randAlphaNum 16 }}
+ {{- join $hex (printf " %x" $hex) }}
+ {{- end -}}
+ {{- end -}}
+
+
+ {{/*
  Generate []16bit HEX
  This creates Gateway ids for bundles  
  */}}
@@ -62,8 +73,6 @@ Create chart name and version as used by the chart label.
  #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
  */}}
  
-
-
 {{/*
 Create java args to apply.
 */}}
@@ -75,13 +84,55 @@ Create java args to apply.
 {{- end  -}}
 {{- end -}}
 
-
 {{/*
 Create Image Pull Secret
 */}}
 {{- define "imagePullSecret" }}
-{{- if .Values.image.secretName}}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .Values.image.registry .Values.image.credentials.username .Values.image.credentials.password .Values.image.credentials.email (printf "%s:%s" .Values.image.credentials.username .Values.image.credentials.password | b64enc) | b64enc }}
+{{- if not .Values.imagePullSecret.existingSecretName }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.image.registry .Values.imagePullSecret.username .Values.imagePullSecret.password (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
 
+{{/*
+Define Image Pull Secret Name
+*/}}
+{{- define "gateway.imagePullSecret" -}}
+{{- if .Values.imagePullSecret.existingSecretName -}}
+    {{ .Values.imagePullSecret.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "image-pull-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define Gateway TLS Secret Name
+ */}}
+{{- define "gateway.tlsSecretName" -}}
+{{- if .Values.tls.existingSecretName -}}
+    {{ .Values.tls.existingSecretName }}
+{{- else -}}
+{{- printf "%s-%s" (include "gateway.fullname" .) "tls-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define Gateway Management Secret Name
+ */}}
+{{- define "gateway.secretName" -}}
+{{- if .Values.existingGatewaySecretName -}}
+    {{ .Values.existingGatewaySecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define Gateway License Secret Name
+ */}}
+{{- define "gateway.license" -}}
+{{- if .Values.license.existingSecretName -}}
+    {{ .Values.license.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "license" -}}
+{{- end -}}
+{{- end -}}

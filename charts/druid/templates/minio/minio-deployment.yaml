@@ -8,6 +8,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.minio.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   strategy:
     type: RollingUpdate
@@ -22,6 +28,10 @@ spec:
     metadata:
       labels:
         app: minio
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.minio.affinity }}
@@ -29,6 +39,9 @@ spec:
       {{- end }}
       {{- if .Values.minio.nodeSelector }}
       nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.tolerations }}
+      tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

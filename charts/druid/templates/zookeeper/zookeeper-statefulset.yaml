@@ -8,6 +8,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.zookeeper.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   serviceName: zookeeper
   replicas: {{ .Values.zookeeper.replicaCount }}
@@ -20,9 +26,12 @@ spec:
     metadata:
       labels:
         app: zookeeper
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
-      terminationGracePeriodSeconds: 1800
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
@@ -31,6 +40,9 @@ spec:
       {{- end }}
       {{- if .Values.zookeeper.nodeSelector }}
       nodeSelector: {{- toYaml .Values.zookeeper.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.zookeeper.tolerations }}
+      tolerations: {{- toYaml .Values.zookeeper.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010

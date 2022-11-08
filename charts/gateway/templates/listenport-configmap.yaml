@@ -1,0 +1,92 @@
+{{ if .Values.config.listenPorts.custom.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-listenport-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- $hexArr := splitList " " (include "gateway.listenPort.hex" .) }}
+data:
+  listenPort.bundle: |-
+    <l7:Bundle
+    	xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    	<l7:References>
+{{- range $i, $v := $hexArr }}
+{{- if ne $i 0 }}
+{{- with index $.Values.config.listenPorts.ports (sub $i 1 ) }}
+    <l7:Item>
+        <l7:Name>{{ .name }}</l7:Name>
+        <l7:Id>{{ $v }}</l7:Id>
+        <l7:Type>SSG_CONNECTOR</l7:Type>
+          <l7:Resource>
+           <l7:ListenPort id="{{ $v }}">
+                <l7:Name>{{ .name }}</l7:Name>
+    			<l7:Enabled>{{ .enabled }}</l7:Enabled>
+    			<l7:Protocol>{{.protocol}}</l7:Protocol>
+    			<l7:Port>{{ .port }}</l7:Port>
+    			<l7:EnabledFeatures>
+                {{- range .managementFeatures}}
+    				<l7:StringValue>{{ . }}</l7:StringValue>
+                {{- end }}
+    			</l7:EnabledFeatures>
+                {{- if .tls.enabled }}
+    					<l7:TlsSettings>
+    						<l7:ClientAuthentication>{{ .tls.clientAuthentication }}</l7:ClientAuthentication>
+                            {{- if .tls.privateKey }}
+                            <l7:PrivateKeyReference id="{{ .tls.privateKey }}" resourceUri="http://ns.l7tech.com/2010/04/gateway-management/privateKeys"/>
+                            {{- end}}
+    						<l7:EnabledVersions>
+                            {{- range .tls.versions }}
+    							<l7:StringValue>{{ . }}</l7:StringValue>
+                            {{- end }}
+    						</l7:EnabledVersions>
+    						<l7:EnabledCipherSuites>
+                            {{- range .tls.cipherSuites }}
+    							<l7:StringValue>{{ . }}</l7:StringValue>
+                            {{- end }}
+    						</l7:EnabledCipherSuites>
+    						<l7:UseCipherSuitesOrder>{{ .tls.useCipherSuitesOrder }}</l7:UseCipherSuitesOrder>
+    						<l7:Properties>
+    							<l7:Property key="usesTLS">
+    								<l7:BooleanValue>true</l7:BooleanValue>
+    							</l7:Property>
+    						</l7:Properties>
+    					</l7:TlsSettings>
+                {{- end }}
+                <l7:Properties>
+                {{- range .properties }}
+                            <l7:Property key="{{ .name }}">
+                                <l7:StringValue>{{ .value }}</l7:StringValue>
+                            </l7:Property>
+                {{- end }}
+                 </l7:Properties>
+           </l7:ListenPort>
+        </l7:Resource>
+    </l7:Item>
+{{- end }}
+{{- end }}
+{{- end }}
+       </l7:References> 
+       <l7:Mappings>
+{{- range $i, $v := $hexArr }}
+{{- if ne $i 0 }}
+{{- with index $.Values.config.listenPorts.ports (sub $i 1 ) }}
+        <l7:Mapping action="NewOrUpdate" srcId="{{ $v }}" type="SSG_CONNECTOR">
+            <l7:Properties>
+                <l7:Property key="MapBy">
+                    <l7:StringValue>name</l7:StringValue>
+                </l7:Property>
+                <l7:Property key="MapTo">
+                    <l7:StringValue>{{ .name }}</l7:StringValue>
+                </l7:Property>
+            </l7:Properties>
+        </l7:Mapping>
+{{- end }}
+{{- end }}
+{{- end }}
+    </l7:Mappings>
+    </l7:Bundle>
+{{ end }} 

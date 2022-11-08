@@ -8,6 +8,12 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.minio.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   selector:
     matchLabels:
@@ -21,6 +27,10 @@ spec:
     metadata:
       labels:
         app: minio
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
       {{- if .Values.minio.affinity }}
@@ -28,6 +38,9 @@ spec:
       {{- end }}
       {{- if .Values.minio.nodeSelector }}
       nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.tolerations }}
+      tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
       {{- end }}
       securityContext:
         fsGroup: 1010

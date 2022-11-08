@@ -25,7 +25,8 @@ data:
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   FILE_REPOSITORY_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
-  # TODO: Find out why this is hardcoded, can it be ommitted?? 
+  JAVA_OPTIONS: {{ .Values.portalData.javaOptions | default "-Xms2g -Xmx2g" | quote }}
+  # TODO: Find out why this is hardcoded, can it be ommitted??
   HOST_NAME_ID: MTAuMTc1LjI0Ny4yNDQgMTcyLjE4LjAuMSAxNzIuMTcuMC4xIAo=
   JAVA_OPTIONS: -Xms2048m -Xmx2048m
   NSS_SDB_USE_CACHE: "no"
@@ -52,7 +53,7 @@ data:
   TELEMETRY_PLA_ENABLED: {{ .Values.telemetry.plaEnabled | quote }}
   TELEMETRY_USAGE_TYPE: {{ .Values.telemetry.usageType | quote }}
   {{- end }}
-  {{ if .Values.portalData.additionalEnv }}
+{{ if .Values.portalData.additionalEnv }}
 {{- range $key, $val := .Values.portalData.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
 {{- end }}

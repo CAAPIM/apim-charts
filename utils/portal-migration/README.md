@@ -209,6 +209,7 @@ $ mc mirror /opt/api-metrics portal/$BUCKET_NAME
 
 4. [Restart Analytics Services](#restart-analytics-services)
 
+
 ### Using Cloud Storage
 We have exposed this Minio functionality in Kubernetes, if you would like to use Amazon S3, Google GCS, or Azure Blob Storage then simply do the following tasks
 1. Go to your chosen cloud storage provider.
@@ -238,6 +239,13 @@ The Middle Manager and Coordinator services need to be restarted.
 $ kubectl rollout restart statefulset coordinator -n <namespace>
 
 $ kubectl rollout restart statefulset middlemanager -n <namespace>
+```
+Connect to the Coordinator pods and reset the supervisors using the following curl commands
+```
+$ kubectl exec -it <coordinator> -n <namespace> sh
+Run below commands to reset  
+$ curl -X POST  http://localhost:8081/druid/indexer/v1/supervisor/apim_metrics/reset
+$ curl -X POST  http://localhost:8081/druid/indexer/v1/supervisor/apim_metrics_hour/reset
 ```
 
 

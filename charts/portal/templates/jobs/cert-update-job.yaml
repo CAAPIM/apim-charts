@@ -4,6 +4,7 @@ kind: Job
 metadata:
   name: "{{ .Release.Name }}-tls-manager"
   annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "-5"
   labels:
@@ -11,6 +12,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.jobs.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
 spec:
   backoffLimit: 0
   template:
@@ -20,7 +27,7 @@ spec:
       containers:
       - name: {{ .Release.Name }}-tls-manager
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
         env:
          - name: P12_INTERNAL_PASS
            valueFrom:
@@ -83,5 +90,11 @@ spec:
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      {{- if .Values.jobs.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.jobs.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.jobs.tolerations }}
+      tolerations: {{- toYaml .Values.jobs.tolerations | nindent 12 }}
       {{- end }}
 {{- end }}

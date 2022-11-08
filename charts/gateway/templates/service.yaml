@@ -28,9 +28,15 @@ spec:
   externalIPs: {{- toYaml .Values.service.externalIPs | nindent 4 }}
   {{- end }}
   ports:
-{{- range .Values.service.ports }}
-    - protocol: TCP
+  {{- range .Values.service.ports }}
+    - protocol: {{ .protocol }}
       port: {{ .external }}
-      targetPort: {{ .internal }}
+      targetPort: {{ .name }}
       name: {{ .name | quote }}
-{{- end }}
+  {{- end }}
+  {{- if .Values.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
