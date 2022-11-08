@@ -12,7 +12,7 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 10.1.00
+  tag: 10.1.00_CR2
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true

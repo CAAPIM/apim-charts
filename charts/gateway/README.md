@@ -5,7 +5,8 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Prerequisites
-- Kubernetes 1.22.x
+- Kubernetes 1.24.x
+  - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/release-notes_cgw/container-gateway-platform-support.html#concept.dita_3277fc35fde9c5232f0d64d7a360181d5d18fd6c) for the latest version support
 - Helm v3.7.x
 - Gateway v10.x License
 
@@ -32,11 +33,13 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 * [Uninstall the Chart](#uninstalling-the-chart)
 
 # Java 11
-API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
+The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 ## 3.0.2 General Updates
+***The default image tag in values.yaml and production-values.yaml now points at specific CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 10.1.00_CR2***
+
 To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
 
 The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
@@ -195,7 +198,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.1.00`  |
+| `image.tag`          | Image tag | `10.1.00_CR2`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
