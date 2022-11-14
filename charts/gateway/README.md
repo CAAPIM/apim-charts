@@ -4,11 +4,9 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
-### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
-
 ## Prerequisites
-- Kubernetes 1.22.x
+- Kubernetes 1.24.x
+  - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/release-notes_cgw/container-gateway-platform-support.html#concept.dita_3277fc35fde9c5232f0d64d7a360181d5d18fd6c) for the latest version support
 - Helm v3.7.x
 - Gateway v10.x License
 
@@ -28,10 +26,38 @@ Please see the 3.0.0 updates, this release brings significant updates and ***bre
 * [Additional Guides](#additional-guides)
 * [Thinking in Kubernetes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html)
 
-# Java 11
-API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
+#### Getting Started
+***If you are using a previous version of this Chart please read the updates section before you upgrade.***
+* [Install the Chart](#installing-the-chart)
+* [Upgrade the Chart](#upgrading-the-chart)
+* [Uninstall the Chart](#uninstalling-the-chart)
 
-Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
+# Java 11
+The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
+
+Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.2 General Updates
+***The default image tag in values.yaml and production-values.yaml now points at specific CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 10.1.00_CR2***
+
+To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
+
+The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
+- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) - this repository also contains examples for custom health checks and configuration files.
+
+The following configuration options have been added
+- [Custom Health Checks](#custom-health-checks)
+- [Custom Configuration Files](#custom-configuration-files)
+- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
+- [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
+- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+- Http headers can also now be added to the liveness and readiness probes
+- Ingress and HPA API Version validation has been updated to check for available APIs vs. KubeVersion
+- SubCharts now show image repository and tags
+
+### Upgrading to Chart v3.0.0
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -109,21 +135,20 @@ Inspect and update the new gateway-values.yaml
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
 ```
 
-# Install the Chart
+## Installing the Chart
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
 ```
 $ helm repo add layer7 https://caapim.github.io/apim-charts/
 $ helm repo update
 $ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
-
-## Upgrade this Chart
-To upgrade the Gateway deployment
+## Upgrading the Chart
+To upgrade your Gateway Release
 ```
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
-## Remove this Chart
-To delete Gateway installation
+## Uninstalling the Chart
+To uninstall the Gateway Chart
 
 ```
 $ helm uninstall <release name> -n <release namespace>
@@ -152,12 +177,13 @@ database:
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
 * [Gateway Bundles](#bundle-configuration)
+* [Bootstrap Script](#bootstrap-script)
+* [Custom Health Checks](#custom-health-checks)
+* [Custom Configuration Files](#custom-configuration-files)
 * [Logs & Audit Configuration](#logs--audit-configuration)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
-
-
 * [SubChart Configuration](#subchart-configuration)
 
 ## Configuration
@@ -172,7 +198,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.1.00`  |
+| `image.tag`          | Image tag | `10.1.00_CR2`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
@@ -240,6 +266,15 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `readinessProbe.failureThreshold`    | Failure Threshold               | `10` |
 | `resources.limits`    | Resource Limits               | `{}` |
 | `resources.requests`    | Resource Requests              | `{}` |
+| `nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
+| `affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
+| `topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
+| `tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
+| `podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
+| `containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+| `bootstrap.script.enabled`    | Enable the bootstrap script              | `false` |
+| `bootstrap.script.cleanup`    | Cleanup the /opt/docker/custom folder              | `false` |
+
 
 ## Port Configuration
 There are two types of port configuration available in the Gateway Helm Chart that are configured in the following ways
@@ -600,6 +635,79 @@ existingBundle:
   #       secretProviderClass: "secret-provider-class-name"
 ```
 
+### Bootstrap Script
+To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder. The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
+
+The following configuration enables the script
+```
+bootstrap:
+  script:
+    enabled: true
+  cleanup: false <== set this to true if you'd like to clear the /opt/docker/custom folder after it has run.
+```
+
+The bootstrap script scans files in ```/opt/docker/custom```. This folder is populated by an initContainer.
+
+The following folder stucture must be maintained
+
+- Restman Bundles (.bundle)
+  - Source ```/opt/docker/custom/bundles```
+  - Target ```/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle```
+- Custom Assertions (.jar)
+  - Source ```/opt/docker/custom/custom-assertions```
+  - Target ```/opt/SecureSpan/Gateway/runtime/modules/lib/```
+- Modular Assertions (.aar)
+  - Source ```/opt/docker/custom/modular-assertions```
+  - Target ```/opt/SecureSpan/Gateway/runtime/modules/assertions```
+- Properties (.properties)
+  - Source ```/opt/docker/custom/properties```
+  - Target ```/opt/SecureSpan/Gateway/node/default/etc/conf/```
+
+
+More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
+
+### Custom Health Checks
+You can now specify a configMap or Secret that contains healthcheck scripts. These are mounted to ```/opt/docker/rc.d/diagnostic/health_check``` where they are run by ```/opt/docker/rc.d/diagnostic/health_check.sh```.
+
+- Limited to a single configmap or secret.
+  - ConfigMaps and Secrets can hold multiple scripts.
+  - [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+
+***NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.***
+```
+existingHealthCheck:
+  enabled: false
+  configMap: {}
+    # name: healthcheck-scripts-configmap
+    # defaultMode: 292
+    # optional: false
+  secret: {}
+    # name: healthcheck-scripts-secret
+    # csi:
+    #   driver: secrets-store.csi.k8s.io
+    #   readOnly: true
+    #   volumeAttributes:
+    #     secretProviderClass: "vault-database"
+```
+
+### Custom Configuration Files
+Certain folders on the Container Gateway are not writeable by design. This configuration allows you to mount existing configMap/Secret keys to specific paths on the Gateway without the need for a root user or a custom/derived image.
+
+- [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+```
+customConfig:
+  enabled: false
+  # mounts:
+  # - name: sampletrafficloggerca-override
+  #   mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/sampletrafficloggerca.properties
+  #   subPath: sampletrafficloggerca.properties
+  #   secret:
+  #     name: config-override-secret
+  #     item:
+  #       key: sampletrafficloggerca.properties
+  #       path: sampletrafficloggerca.properties
+```
+
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
 In order for Kubernetes to determine when to scale, you will also need to configure resources
@@ -720,7 +828,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
 | `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
-| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 3.x servers.  | `5.1.1` |
+| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.1.1` |
 | `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |

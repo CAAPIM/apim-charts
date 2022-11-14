@@ -1,6 +1,5 @@
 {{- if .Values.autoscaling.enabled }}
-{{- $kubeTargetVersion := .Capabilities.KubeVersion.GitVersion }}
-{{- if semverCompare ">=1.23-0" $kubeTargetVersion -}}
+{{- if $.Capabilities.APIVersions.Has "autoscaling/v2" -}}
 apiVersion: autoscaling/v2
 {{- else -}}
 apiVersion: autoscaling/v2beta2

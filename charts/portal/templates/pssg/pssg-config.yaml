@@ -38,3 +38,8 @@ data:
   NSS_SDB_USE_CACHE: "no"
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   SSG_JVM_HEAP: 4096m
+{{ if .Values.pssg.additionalEnv }}
+{{- range $key, $val := .Values.pssg.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}
