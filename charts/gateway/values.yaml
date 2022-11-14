@@ -416,6 +416,37 @@ service:
   #   clientIP:
   #     timeoutSeconds: 10800
 
+# This enables/disables otk install or upgrade.
+# Prerequisites.
+#  1. OTK DB is installed. 
+#  2. management is enabled with restman (management.enabled: true, management.restman.enabled: true)
+#  3. pmtagger is enabled.
+# Management and pmtagger can be disabled once otk intall/upgrade is complete. 
+otk:
+  enabled: false
+  job:
+    image:
+      repository: apim-mobile/otk-install
+      tag: 4.6.1
+      pullPolicy: Always
+    labels: {}
+    # nodeSelector: {}
+    # tolerations: []
+  database:
+    type: mysql
+    username: root
+    password: 7layer
+    properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    # properties: {"localDataCenterName" : "DC1"}
+    mysql:
+      jdbcURL: mysql://localhost:3306/otk_db
+      jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+    # cassandra:
+    #   connectionPoints: localhost
+    #   port:
+    #   keyspace:
+    #   driverConfig: {"localDataCenterName" : "DC1"}
+
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS

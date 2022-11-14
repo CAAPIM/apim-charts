@@ -1,0 +1,80 @@
+{{ if and (.Values.management.enabled) (.Values.management.restman.enabled) (.Values.management.service.enabled) (.Values.otk.enabled)}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "gateway.fullname" . }}-otk-install
+  annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-4"
+  labels:
+    app: {{ template "gateway.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.otk.job.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      containers:
+        - name: otk-install
+          image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
+          imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          env:
+           - name: OTK_DATABASE_TYPE
+             value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
+{{ if eq .Values.otk.database.type "cassandra" }}
+           - name: OTK_CASSANDRA_CONNECTION_POINTS
+             value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
+           - name: OTK_CASSANDRA_PORT
+             value: {{ required "Please fill in otk.database.cassandra.jdbcDriverClass in values.yaml" .Values.otk.database.cassandra.port | quote }}
+           - name: OTK_CASSANDRA_KEYSPACE
+             value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.keySpace | quote }}
+           - name: OTK_CASSANDRA_DRIVER_CONFIG
+             value: {{ required "Please fill in otk.database.cassandra.driverConfig in values.yaml" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
+{{ end }}
+{{ if eq .Values.otk.database.type "mysql" }}
+           - name: OTK_JDBC_URL
+             value: {{ required "Please fill in otk.database.mysql.jdbcURL in values.yaml" .Values.otk.database.mysql.jdbcURL | quote }}
+           - name: OTK_JDBC_DRIVER_CLASS
+             value: {{ required "Please fill in otk.database.mysql.jdbcDriverClass in values.yaml" .Values.otk.database.mysql.jdbcDriverClass | quote }}
+{{ end }}
+           - name: OTK_DATABASE_PASSWORD
+             value: {{ required "Please fill in otk.database.password in values.yaml" .Values.otk.database.password | quote }}
+           - name: OTK_DATABASE_USERNAME
+             value: {{ required "Please fill in otk.database.username in values.yaml" .Values.otk.database.username | quote }}        
+           - name: OTK_DDATABASE_PROPERTIES
+             value: {{ required "Please fill in otk.database.properties in values.yaml" .Values.otk.database.properties | toJson | b64enc | quote }}
+           - name: OTK_SKAR_RETRY_COUNT
+             value: {{ default 1 .Values.otk.installRetry | quote}}
+           - name: OTK_SKAR_BACKOFF_FACTOR  
+             value: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
+           - name: OTK_CONNECT_BACKOFF_FACTOR  
+             value: {{ default 0.1 .Values.otk.connectRetry | quote}}
+           - name: OTK_CONNECT_RETRY_COUNT  
+             value: {{ default 10 .Values.otk.connectlBackoffFactor | quote}}
+           - name: SSG_RESTMAN_PORT  
+             value: {{ template "management.service.external.port" .}}
+           - name: SSG_RESTMAN_HOST
+             value: {{ template "gateway.fullname" . }}-management
+           - name: SSG_ADMIN_USERNAME
+             value: {{ required "Please fill in Values.management.username in values.yaml" .Values.management.username | quote }}
+           - name: SSG_ADMIN_PASSWORD
+             value: {{ required "Please fill in Values.management.passowrd in values.yaml" .Values.management.password | quote }}
+
+{{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+{{- end }}
+{{- if .Values.otk.job.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
+{{- end }}
+{{- if .Values.otk.job.tolerations }}
+      tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
+{{- end }}
+      restartPolicy: "OnFailure"
+{{ end }}
