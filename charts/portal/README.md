@@ -4,6 +4,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.9 General Updates
+- Updating troubleshooting section
+
 ## 2.2.8 General Updates
 - Updating the portal version doc link.
 
