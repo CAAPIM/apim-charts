@@ -4,6 +4,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.2.9 General Updates
+- Updating troubleshooting section
+
 ## 2.2.8 General Updates
 - Updating the portal version doc link.
 
@@ -788,6 +791,11 @@ If the RabbitMQ cluster is stopped or removed out of order, there is a chance th
 $ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
 ```
 
+### Unable to log in
+
+#### The chart was uninstalled and re-installed
+
+This issue is similar to the one described in the Troubleshooting section’s sub-section “RabbitMQ does not start.” The authenticator container fails to connect to RabbitMQ when it is started with incorrect credentials. As a result, users are unable to authenticate with the portal. Restarting RabbitMQ after deleting the volumes, as described in the section “RabbitMQ does not start,” resolves this issue.
 
 ### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"
 If helm upgrade of the portal fails with error "Error: UPGRADE FAILED: cannot patch 'db-upgrade'", it is becasue of the limitation in kubernetes where a job can not be updated.
