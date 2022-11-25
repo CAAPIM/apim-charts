@@ -19,6 +19,9 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
+        {{- range $key, $val := .Values.customlabels }}
+        {{ $key }}: "{{ $val }}"
+        {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.affinity }}
