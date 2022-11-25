@@ -127,6 +127,11 @@ autoscaling:
           value: 100
           periodSeconds: 15
 
+# Add custom label keypairs for deployment object
+# Can be needed on some cloud providers such as Tencent
+#customlabels:
+#  internet-network: allow
+
 resources:
   # There are no resource limits set by default, this is a consicious choice for the user and
   # increases the chance of these running on environments with fewer resources available
