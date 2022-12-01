@@ -140,6 +140,7 @@ Install the chart again
 * [Portal TLS Defaults](#portal-tls-defaults)
 * [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)
 * [Portal Request XSS Filter](#portal-request-xss-filter)
+* [Audit Event Logs](#audit-event-logs)
 
 
 # Configuration
@@ -414,6 +415,16 @@ Take the base64 output and set it to the variable below and restart portal stack
 |------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
 | `portalData.additionalEnv.ANTISAMY_FILTER_POLICY`    | Zipped policy file in base64 encoded format|
 | `authenticator.additionalEnv.ANTISAMY_FILTER_POLICY` | Zipped policy file in base64 encoded format|
+
+
+### Audit Event Logs
+Audit event log purging is enabled and set to 365 days retention by default. Set
+this variable to customize the retention period. Set the value to 0 to disable
+this feature.
+
+| Environment Variable                                | Description                          |
+|-----------------------------------------------------|--------------------------------------|
+| `portalData.additionalEnv.AUDIT_LOG_RETENTION_DAYS` | The number of days of logs to retain |
 
 
 ### RBAC Parameters
