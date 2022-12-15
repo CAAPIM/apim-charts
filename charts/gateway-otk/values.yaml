@@ -70,7 +70,7 @@ serviceMetrics:
   tags: env=dev
 
 config:
-  heapSize: "2g"
+  heapSize: "3g"
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
@@ -105,15 +105,19 @@ otk:
   cassandra:
     strategy: 'SimpleStrategy'
     replicationFactor: 1
-
-installSolutionKits:
+upgradeSolutionKits:
   enabled: true
+  solutionKitId: a6f9bbee-87c2-43d8-b613-5c072f7b6f7d
+  file: OAuthSolutionKit-4.6.0-6324.sskar
+  param: --form solutionKitSelectByName="OTK Assertions" --form solutionKitSelectByName="Shared OAuth Resources"
+installSolutionKits:
+  enabled: false 
   restmanPort: 8443
   restmanReadyWaitInterval: 30s
   restmanReadyWaitMaxAttempt: 10
 
   # OTK JDBC connection
-  otkJdbcEnabled: true
+  otkJdbcEnabled: false 
   otkJdbcDriver: com.mysql.jdbc.Driver
   #   - WARNING 1: MySQL deployed by this example is for DEVELOPMENT ONLY OTK database.
   #                For production, an EXTERNALLY managed PERSISTENT deployment is recommended (along with using non-ROOT database/JDBC user).
@@ -131,12 +135,11 @@ installSolutionKits:
     #       2) separate install of some OTK sub-solution kits to avoid bug that requires Gateway restart (recommendation from OTK engineering team)
     #       3) Liquibase files to create OTK database schema (/tmp/otk-db-liquibase/)
     - otkBaseSelect1:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
-      preInstallCommand: java -jar /tmp/otk-db-liquibase/liquibase-3.2.2.jar --driver=com.mysql.jdbc.Driver --classpath=/opt/SecureSpan/Gateway/runtime/lib/mysql-connector-java-5.1.46.jar --changeLogFile=/tmp/otk-db-liquibase/otk.xml --url="jdbc:mysql://ssg-base-select-otk-mysql:3306/otk_db?createDatabaseIfNotExist=true&useSSL=false" --username=root --password=mypassword update
+      file: OAuthSolutionKit-4.5.1-5323.sskar
       # solutionKitID: b74b063c-5151-4f7d-b4db-71f032cc2d46
       param: --form solutionKitSelectByName="OTK Assertions"
     - otkBaseSelect2:
-      file: OAuthSolutionKit-4.4.1-4425.sskar
+      file: OAuthSolutionKit-4.5.1-5323.sskar
       # solutionKitID: 1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001
       param: --form solutionKitSelectByName="Shared OAuth Resources"
 
@@ -213,16 +216,16 @@ ingress:
   #Need to configure additional ingress options for hosts/tls
 
 livenessProbe:
-  enabled: true
-  initialDelaySeconds: 60
+  enabled: true 
+  initialDelaySeconds: 90
   timeoutSeconds: 1
   periodSeconds: 10
   successThreshold: 1
   failureThreshold: 10
 
 readinessProbe:
-  enabled: true
-  initialDelaySeconds: 60
+  enabled: true 
+  initialDelaySeconds: 90
   timeoutSeconds: 1
   periodSeconds: 10
   successThreshold: 1
@@ -252,10 +255,15 @@ serviceAccount:
 # MySQL stable chart - this is not scalable nor will be in this format.
 mysql:
   imageTag: "8"
+  imagePullSecrets: 
+     - name: docker-cred
   mysqlUser: gateway
   mysqlPassword: mypassword
   mysqlDatabase: ssg
   mysqlRootPassword: mypassword
+  requests:
+    cpu: 1000m
+    memory: 2Gi
   persistence:
     enabled: true
     size: 8Gi

@@ -29,7 +29,7 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.installSolutionKits.enabled}}
+          {{- if .Values.upgradeSolutionKits.enabled}}
           lifecycle:
             postStart:
               exec:
@@ -45,10 +45,17 @@ spec:
                       fi
                       sleep {{ $.Values.installSolutionKits.restmanReadyWaitInterval }}
                     done
+                    {{- if .Values.upgradeSolutionKits.enabled }}
+                    {{ .preInstallCommand }}
+                    curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} --insecure -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers?id={{ $.Values.upgradeSolutionKits.solutionKitId }} {{ $.Values.upgradeSolutionKits.param }} --form "file=@/tmp/{{ $.Values.upgradeSolutionKits.file }}"
+                    {{ .postInstallCommand }}
+                    {{- end }}
+                    {{- if .Values.installSolutionKits.enabled}}
                     {{- range .Values.installSolutionKits.solutionKits }}
                     {{ .preInstallCommand }}
                     curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} --insecure -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
                     {{ .postInstallCommand }}
+	            {{- end }}
                     {{- end }}
           {{- end }}
           resources:
@@ -88,10 +95,12 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
 {{ if .Values.installSolutionKits.otkJdbcEnabled }}
-            - name: {{ template "gateway.fullname" . }}-otk-db-liquibase
-              mountPath: /tmp/otk-db-liquibase
             - name: {{ template "gateway.fullname" . }}-otk-sskar
-              mountPath: /tmp/OAuthSolutionKit-4.4.1-4425.sskar
+              mountPath: /tmp/OAuthSolutionKit-4.5.1-5323.sskar
+{{ end }}
+{{ if .Values.upgradeSolutionKits.enabled }}
+            - name: {{ template "gateway.fullname" . }}-otk-sskar
+              mountPath: /tmp/OAuthSolutionKit-4.6.0-6324.sskar
 {{ end }}
           envFrom:
             - configMapRef:
@@ -167,11 +176,14 @@ spec:
           emptyDir: {}
 {{ end }}
 {{ if .Values.installSolutionKits.otkJdbcEnabled }}
-        - name: {{ template "gateway.fullname" . }}-otk-db-liquibase
-          hostPath:
-            path: /home/docker/otk-artifacts/otk-db-liquibase
         - name: {{ template "gateway.fullname" . }}-otk-sskar
           hostPath:
-            path: /home/docker/otk-artifacts/OAuthSolutionKit-4.4.1-4425.sskar
+            path: /home/docker/otk-artifacts/OAuthSolutionKit-4.5.1-5323.sskar
+            type: File
+{{ end }}
+{{ if .Values.upgradeSolutionKits.enabled }}
+        - name: {{ template "gateway.fullname" . }}-otk-sskar
+          hostPath:
+            path: /home/docker/otk-artifacts/OAuthSolutionKit-4.6.0-6234.sskar
             type: File
 {{ end }}
