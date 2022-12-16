@@ -197,11 +197,15 @@ spec:
             - containerPort: 9449
             - containerPort: 1885
             - containerPort: 9448
-          {{ if contains "4.5" .Chart.AppVersion }}
           volumeMounts:
+          {{ if contains "4.5" .Chart.AppVersion }}
             - name: {{.Values.portal.license.secretName}}
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
+          {{ end }}
+          {{ if .Values.apim.restman.enabled }}
+            - name: apim-restman
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
           {{ end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
@@ -209,12 +213,16 @@ spec:
       {{- end }}
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
-      {{ if contains "4.5" .Chart.AppVersion }}
       volumes:
+      {{ if contains "4.5" .Chart.AppVersion }}
         - name: {{.Values.portal.license.secretName}}
           secret:
             secretName: {{.Values.portal.license.secretName}}
             items:
               - key: license
                 path: license.xml
+      {{ end }}
+      {{ if .Values.apim.restman.enabled }}
+        - name: apim-restman
+          emptyDir: {}
       {{ end }}

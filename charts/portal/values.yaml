@@ -210,6 +210,8 @@ apim:
 # tolerations: []
 # affinity: {}
   additionalEnv:
+  restman:
+    enable: false
 
 authenticator:
   forceRedeploy: false
