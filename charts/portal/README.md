@@ -303,11 +303,11 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.0.2.1` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.0.2.2` |
 | `image.pssg` | PSSG image | `pssg:5.0.2` |
-| `image.apim` | APIM ingress image | `ingress:5.0.2` |
+| `image.apim` | APIM ingress image | `ingress:5.0.2.6` |
 | `image.enterprise` | portal-enterprise image | `portal-enterprise:5.0.2.1` |
-| `image.data` | portal-data image | `portal-data:5.0.2.3` |
+| `image.data` | portal-data image | `portal-data:5.0.2.6` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.0.2` |
 | `image.analytics` | Analytics image | `analytics-server:5.0.2` |
 | `image.authenticator` | Authenticator image | `authenticator:5.0.2` |
