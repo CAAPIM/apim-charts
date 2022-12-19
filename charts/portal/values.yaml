@@ -290,24 +290,6 @@ pssg:
 # nodeSelector: {}
 # affinity: {}
 
-solr:
-  replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  resources:
-    requests: {}
-    # cpu: 50m
-    # memory: 250Mi
-    limits: {}
-    # cpu: 500m
-    # memory: 750Mi
-# nodeSelector: {}
-
 tenantProvisioner:
   replicaCount: 1
   image:
@@ -328,11 +310,11 @@ tenantProvisioner:
 # affinity: {}
 
 image:
-  dispatcher: dispatcher:5.0.2.1
+  dispatcher: dispatcher:5.0.2.2
   pssg: pssg:5.0.2
-  apim: ingress:5.0.2
+  apim: ingress:5.0.2.6
   enterprise: portal-enterprise:5.0.2.1
-  data: portal-data:5.0.2.3
+  data: portal-data:5.0.2.6
   tps: tenant-provisioning-service:5.0.2
   analytics: analytics-server:5.0.2
   authenticator: authenticator:5.0.2
