@@ -30,7 +30,7 @@ spec:
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_CONNECTION_NAME
-             value: value: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
+             value: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
 {{ if eq .Values.otk.database.type "cassandra" }}
            - name: OTK_CASSANDRA_CONNECTION_POINTS
              value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
