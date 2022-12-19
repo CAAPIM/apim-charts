@@ -147,3 +147,33 @@ Define Image Pull Secret Name
     {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Validate OTK installation type (SINGLE, INTERNAL, DMZ)
+*/}}
+{{- define "otk-install-type" -}}
+    {{- $f:= .Values.otk.type }}
+    {{- if empty $f }}
+        {{- fail "Please define otk.type (SINGLE/INTERNAL/DMZ)" }}
+    {{- else if $f "INTERNAL" }}
+        {{- if empty .Values.otk.dmzGatewayHost -}}
+            {{- fail "Please define otk.dmzGatewayHost in values.yaml" }}
+        {{- end }}
+        {{- if empty .Values.otk.dmzGatewayPort }}
+            {{- fail "Please define otk.dmzGatewayPort in values.yaml" }}
+        {{- end }}
+    {{- else if $f "DMZ" }}
+        {{- if empty .Values.otk.intrenalGatewayHost -}}
+            {{- fail "Please define otk.intrenalGatewayHost in values.yaml" }}
+        {{- end }}
+        {{- if empty .Values.otk.internalGatewayPort }}
+            {{- fail "Please define otk.internalGatewayPort in values.yaml" }}
+        {{- end }}
+    {{- else if $f "SINGLE" }}
+
+    {{- else }}
+        {{- fail "otk.type should be one of SINGLE/INTERNAL/DMZ" }}
+    {{- end }}
+
+    {{- .$f | quote -}}
+{{- end -}}

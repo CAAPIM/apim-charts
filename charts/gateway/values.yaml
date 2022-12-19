@@ -424,6 +424,19 @@ service:
 # Management and pmtagger can be disabled once otk intall/upgrade is complete. 
 otk:
   enabled: false
+  # OTK installation type - SINGLE, DMZ or INTERNAL
+  type: SINGLE
+  # Not applicable for DMZ and INTERNAL OTK types
+  enablePortalIngeration: false
+  skipPostInstallationTasks: false
+  # Specify internal gateway host and port for DMZ OTK type
+  # internalGatewayHost: 
+  # internalGatewayPort:
+  # Specify DMZ gateway host and port for interal OTK type
+  # dmzGatewayHost: 
+  # dmzGatewayPort:
+  # List of comma seperated sub soluction Kits to install or upgrade.
+  # subSolutionKitNames:
   job:
     image:
       repository: apim-mobile/otk-install
@@ -433,12 +446,14 @@ otk:
     # nodeSelector: {}
     # tolerations: []
   database:
+    # OTK database type - mysql/oracle/cassandra
     type: mysql
+    connectionName: OAuth
     username: root
     password: 7layer
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # properties: {"localDataCenterName" : "DC1"}
-    mysql:
+    sql:
       jdbcURL: mysql://localhost:3306/otk_db
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
     # cassandra:

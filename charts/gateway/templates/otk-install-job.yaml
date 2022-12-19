@@ -16,7 +16,7 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
-  backoffLimit: 10
+  backoffLimit: 2
   template:
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
@@ -25,8 +25,12 @@ spec:
           image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
           env:
+           - name: OTK_TYPE
+             value: {{ template "otk-install-type" .}}
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
+           - name: OTK_DATABASE_CONNECTION_NAME
+             value: value: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
 {{ if eq .Values.otk.database.type "cassandra" }}
            - name: OTK_CASSANDRA_CONNECTION_POINTS
              value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
@@ -37,11 +41,11 @@ spec:
            - name: OTK_CASSANDRA_DRIVER_CONFIG
              value: {{ required "Please fill in otk.database.cassandra.driverConfig in values.yaml" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
 {{ end }}
-{{ if eq .Values.otk.database.type "mysql" }}
+{{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
            - name: OTK_JDBC_URL
-             value: {{ required "Please fill in otk.database.mysql.jdbcURL in values.yaml" .Values.otk.database.mysql.jdbcURL | quote }}
+             value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
            - name: OTK_JDBC_DRIVER_CLASS
-             value: {{ required "Please fill in otk.database.mysql.jdbcDriverClass in values.yaml" .Values.otk.database.mysql.jdbcDriverClass | quote }}
+             value: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
 {{ end }}
            - name: OTK_DATABASE_PASSWORD
              value: {{ required "Please fill in otk.database.password in values.yaml" .Values.otk.database.password | quote }}
@@ -62,9 +66,23 @@ spec:
            - name: SSG_RESTMAN_HOST
              value: {{ template "gateway.fullname" . }}-management
            - name: SSG_ADMIN_USERNAME
-             value: {{ required "Please fill in Values.management.username in values.yaml" .Values.management.username | quote }}
+             value: {{ required "Please fill in management.username in values.yaml" .Values.management.username | quote }}
            - name: SSG_ADMIN_PASSWORD
-             value: {{ required "Please fill in Values.management.passowrd in values.yaml" .Values.management.password | quote }}
+             value: {{ required "Please fill in management.passowrd in values.yaml" .Values.management.password | quote }}
+           - name: OTK_INTERNAL_GW_HOST
+             value: {{ .Values.otk.internalGatewayHost| quote }}
+           - name: OTK_INTERNAL_GW_PORT
+             value: {{ .Values.otk.internalGatewayPORT| quote }}
+           - name: OTK_DMZ_GW_HOST
+             value: {{ .Values.otk.dmzGatewayHost| quote }}
+           - name: OTK_DMz_GW_PORT
+             value: {{ .Values.otk.dmzGatewayPORT| quote }}
+           - name: OTK_INTEGRATE_WITH_PORTAL
+             value: {{default false .Values.otk.enablePortalIngeration | quote }}
+           - name: OTK_SKIP_POST_INSTALLATION_TASKS
+             value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
+           - name: SSK_NAMES
+             value: {{ .Values.otk.solutionKitNames | quote }}
 
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
@@ -76,5 +94,5 @@ spec:
 {{- if .Values.otk.job.tolerations }}
       tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
 {{- end }}
-      restartPolicy: "OnFailure"
+      restartPolicy: "Never"
 {{ end }}
