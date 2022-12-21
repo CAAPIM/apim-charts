@@ -44,7 +44,7 @@ Create chart name and version as used by the chart label.
 
 {{/*
  Generate []16bit HEX
- This creates Gateway ids for bundles  
+ This creates Gateway ids for bundles
  */}}
  {{- define "gateway.listenPort.hex" -}}
  {{ $hexArr := "" }}
@@ -57,7 +57,7 @@ Create chart name and version as used by the chart label.
 
  {{/*
  Generate []16bit HEX
- This creates Gateway ids for bundles  
+ This creates Gateway ids for bundles
  */}}
  {{- define "gateway.cwp.hex" -}}
  {{ $hexArr := "" }}
@@ -68,11 +68,11 @@ Create chart name and version as used by the chart label.
  {{- end -}}
 
 {{/*
- Generate 16bit HEX 
+ Generate 16bit HEX
  #  {{ split " " $hexArr }}
  #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
  */}}
- 
+
 {{/*
 Create java args to apply.
 */}}
@@ -142,7 +142,7 @@ Define Image Pull Secret Name
  */}}
 {{- define "management.service.external.port" -}}
 {{- range .Values.management.service.ports -}}
-    {{- if eq .name "management" -}}    
+    {{- if eq .name "management" -}}
         {{- .external | quote -}}
     {{- end -}}
 {{- end -}}
@@ -163,8 +163,8 @@ Define Image Pull Secret Name
             {{- fail "Please define otk.dmzGatewayPort in values.yaml" }}
         {{- end }}
     {{- else if eq $f "DMZ" }}
-        {{- if empty .Values.otk.intrenalGatewayHost -}}
-            {{- fail "Please define otk.intrenalGatewayHost in values.yaml" }}
+        {{- if empty .Values.otk.internalGatewayHost -}}
+            {{- fail "Please define otk.internalGatewayHost in values.yaml" }}
         {{- end }}
         {{- if empty .Values.otk.internalGatewayPort }}
             {{- fail "Please define otk.internalGatewayPort in values.yaml" }}

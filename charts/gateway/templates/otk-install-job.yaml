@@ -16,7 +16,7 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
-  backoffLimit: 2
+  backoffLimit: 1
   template:
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
@@ -54,18 +54,18 @@ spec:
            - name: OTK_DATABASE_PASSWORD
              value: {{ required "Please fill in otk.database.password in values.yaml" .Values.otk.database.password | quote }}
            - name: OTK_DATABASE_USERNAME
-             value: {{ required "Please fill in otk.database.username in values.yaml" .Values.otk.database.username | quote }}        
+             value: {{ required "Please fill in otk.database.username in values.yaml" .Values.otk.database.username | quote }}
            - name: OTK_DDATABASE_PROPERTIES
              value: {{ required "Please fill in otk.database.properties in values.yaml" .Values.otk.database.properties | toJson | b64enc | quote }}
            - name: OTK_SKAR_RETRY_COUNT
              value: {{ default 1 .Values.otk.installRetry | quote}}
-           - name: OTK_SKAR_BACKOFF_FACTOR  
+           - name: OTK_SKAR_BACKOFF_FACTOR
              value: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
-           - name: OTK_CONNECT_BACKOFF_FACTOR  
+           - name: OTK_CONNECT_BACKOFF_FACTOR
              value: {{ default 0.1 .Values.otk.connectRetry | quote}}
-           - name: OTK_CONNECT_RETRY_COUNT  
+           - name: OTK_CONNECT_RETRY_COUNT
              value: {{ default 10 .Values.otk.connectlBackoffFactor | quote}}
-           - name: SSG_RESTMAN_PORT  
+           - name: SSG_RESTMAN_PORT
              value: {{ template "management.service.external.port" .}}
            - name: SSG_RESTMAN_HOST
              value: {{ template "gateway.fullname" . }}-management
@@ -76,11 +76,11 @@ spec:
            - name: OTK_INTERNAL_GW_HOST
              value: {{ .Values.otk.internalGatewayHost| quote }}
            - name: OTK_INTERNAL_GW_PORT
-             value: {{ .Values.otk.internalGatewayPORT| quote }}
+             value: {{ .Values.otk.internalGatewayPort| quote }}
            - name: OTK_DMZ_GW_HOST
              value: {{ .Values.otk.dmzGatewayHost| quote }}
-           - name: OTK_DMz_GW_PORT
-             value: {{ .Values.otk.dmzGatewayPORT| quote }}
+           - name: OTK_DMZ_GW_PORT
+             value: {{ .Values.otk.dmzGatewayPort| quote }}
            - name: OTK_INTEGRATE_WITH_PORTAL
              value: {{default false .Values.otk.enablePortalIngeration | quote }}
            - name: OTK_SKIP_POST_INSTALLATION_TASKS
