@@ -176,3 +176,15 @@ Define Image Pull Secret Name
     {{- end }}
     {{- print $f | quote }}
 {{- end -}}
+
+
+{{/*
+ Define OTK database Secret Name
+ */}}
+{{- define "otk.dbSecretName" -}}
+{{- if .Values.otk.database.existingSecretName -}}
+    {{ .Values.otk.database.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "otkdb-secret" -}}
+{{- end -}}
+{{- end -}}

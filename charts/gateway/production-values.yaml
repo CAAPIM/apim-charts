@@ -449,6 +449,7 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    #existingSecretName: otkdb-secret
     username: root
     password: 7layer
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}

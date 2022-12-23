@@ -24,6 +24,9 @@ spec:
         - name: otk-install
           image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ template "otk.dbSecretName" . }}
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
@@ -50,11 +53,7 @@ spec:
 {{ if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-{{ end }}
-           - name: OTK_DATABASE_PASSWORD
-             value: {{ required "Please fill in otk.database.password in values.yaml" .Values.otk.database.password | quote }}
-           - name: OTK_DATABASE_USERNAME
-             value: {{ required "Please fill in otk.database.username in values.yaml" .Values.otk.database.username | quote }}
+{{ end }}           
            - name: OTK_DDATABASE_PROPERTIES
              value: {{ required "Please fill in otk.database.properties in values.yaml" .Values.otk.database.properties | toJson | b64enc | quote }}
            - name: OTK_SKAR_RETRY_COUNT
