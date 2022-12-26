@@ -225,7 +225,21 @@ spec:
 {{- end }}
 {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
-{{- if (eq .Values.livenessProbe.type "httpGet" ) }}
+{{- if and (.Values.otk.enabled) (.Values.otk.livenessProbe.enabled) }}
+{{- if (eq .Values.otk.livenessProbe.type "httpGet" ) }}
+            httpGet:
+              path: {{ .Values.otk.livenessProbe.path | default "/auth/oauth/health"}}
+              port: {{ .Values.otk.livenessProbe.port | default 8443 }}
+              scheme: {{ .Values.otk.livenessProbe.scheme | default "HTTPS" }}
+{{- else }}
+            exec:
+              command:
+              - curl
+              - --insecure
+              - -X GET
+              - https://127.0.0.1:8443/auth/oauth/health
+{{- end }}
+{{- else if eq .Values.livenessProbe.type "httpGet"}}
             httpGet:
               path: {{ .Values.livenessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.livenessProbe.port | default 8443 }}
@@ -249,13 +263,27 @@ spec:
 {{- end }}
 {{- if .Values.readinessProbe.enabled }}
           readinessProbe:
-{{- if (eq .Values.readinessProbe.type "httpGet" ) }}
+{{- if and (.Values.otk.enabled) (.Values.otk.readinessProbe.enabled) }}
+{{- if (eq .Values.otk.readinessProbe.type "httpGet" ) }}
+            httpGet:
+              path: {{ .Values.otk.readinessProbe.path | default "/auth/oauth/health"}}
+              port: {{ .Values.otk.readinessProbe.port | default 8443 }}
+              scheme: {{ .Values.otk.readinessProbe.scheme | default "HTTPS" }}
+{{- else }}
+            exec:
+              command:
+              - curl
+              - --insecure
+              - -X GET
+              - https://127.0.0.1:8443/auth/oauth/health
+{{- end }}
+{{- else if eq .Values.readinessProbe.type "httpGet"}}
             httpGet:
               path: {{ .Values.readinessProbe.path | default "/ssg/ping"}}
               port: {{ .Values.readinessProbe.port | default 8443 }}
               scheme: {{ .Values.readinessProbe.scheme | default "HTTPS" }}
               httpHeaders:
-              {{- range.Values.livenessProbe.httpHeaders }}
+              {{- range.Values.readinessProbe.httpHeaders }}
               - name: {{ .name }}
                 value: {{ .value }}
               {{- end }}
@@ -270,10 +298,10 @@ spec:
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
+{{- end }}
 {{- if .Values.customHosts.enabled }}
       hostAliases:
 {{ toYaml .Values.customHosts.hostAliases | indent 12 }}
-{{- end }}
 {{- end }}
       volumes:
         - name: {{ template "gateway.fullname" . }}-license-xml

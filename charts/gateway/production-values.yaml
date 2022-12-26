@@ -462,7 +462,30 @@ otk:
     #   port:
     #   keyspace:
     #   driverConfig: {"localDataCenterName" : "DC1"}
-
+  # OTK Specific configuration:
+  # - otk.livenessProbe.type as httpGet
+  # - otk.livenessProbe.path /auth/oauth/health
+  # - otk.livenessProbe.port 8443
+  # - otk.livenessProbe.scheme https
+  # Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete
+  livenessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path:
+      port:
+  # OTK Specific configuration:
+  # - otk.readinessProbe.type as httpGet
+  # - otk.readinessProbe.path /auth/oauth/health
+  # - otk.readinessProbe.port 8443
+  # - otk.readinessProbe.scheme https
+  # Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete
+  readinessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path:
+      port:
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
