@@ -426,15 +426,22 @@ otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
+
+  # Force install or upgrade by uninstalling existing otk soluction kit and install.
+  # forceInstallOrUpgrade: false
+
   # Not applicable for DMZ and INTERNAL OTK types
-  enablePortalIngeration: false
-  skipPostInstallationTasks: false
+  # enablePortalIngeration: false
+  # skipPostInstallationTasks: false
+
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost: 
   # internalGatewayPort:
+
   # Specify DMZ gateway host and port for interal OTK type
   # dmzGatewayHost: 
   # dmzGatewayPort:
+
   # List of comma seperated sub soluction Kits to install or upgrade.
   # subSolutionKitNames:
   job:
@@ -448,8 +455,10 @@ otk:
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
-    connectionName: OAuth
-    #existingSecretName: otkDbSecret
+    # Force install or upgrade by uninstalling existing otk soluction kit and install.
+    # forceInstallOrUpgrade: false
+    # connectionName: OAuth
+    # existingSecretName: otkDbSecret
     username: root
     password: 7layer
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
@@ -457,6 +466,8 @@ otk:
     sql:
       jdbcURL: mysql://localhost:3306/otk_db
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+      # Oracle database name
+      # databaseName:
     # cassandra:
     #   connectionPoints: localhost
     #   port:
@@ -487,6 +498,7 @@ otk:
     httpGet:
       path:
       port:
+
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS

@@ -177,7 +177,6 @@ Define Image Pull Secret Name
     {{- print $f | quote }}
 {{- end -}}
 
-
 {{/*
  Define OTK database Secret Name
  */}}
