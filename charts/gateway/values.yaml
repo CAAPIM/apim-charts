@@ -455,9 +455,7 @@ otk:
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
-    # Force install or upgrade by uninstalling existing otk soluction kit and install.
-    # forceInstallOrUpgrade: false
-    # connectionName: OAuth
+     # connectionName: OAuth
     # existingSecretName: otkDbSecret
     username: root
     password: 7layer
