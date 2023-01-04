@@ -1,4 +1,4 @@
-{{ if and (.Values.management.enabled) (.Values.management.restman.enabled) (.Values.management.service.enabled) (.Values.otk.enabled)}}
+{{ if and (.Values.management.restman.enabled) (.Values.otk.enabled)}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -27,6 +27,8 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
+            - secretRef:
+                name: {{ template "gateway.secretName" . }}
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
@@ -66,16 +68,12 @@ spec:
              value: {{ default 0.1 .Values.otk.connectRetry | quote}}
            - name: OTK_CONNECT_RETRY_COUNT
              value: {{ default 10 .Values.otk.connectlBackoffFactor | quote}}
-           - name: SSG_RESTMAN_PORT
-             value: {{ template "management.service.external.port" .}}
+           - name: SSG_RESTMAN_PORT             
+             value: {{ .Values.installSolutionKits.restmanPort | quote}}
            - name: SSG_RESTMAN_HOST
-             value: {{ template "gateway.fullname" . }}-management
-           - name: SSG_ADMIN_USERNAME
-             value: {{ required "Please fill in management.username in values.yaml" .Values.management.username | quote }}
-           - name: SSG_ADMIN_PASSWORD
-             value: {{ required "Please fill in management.passowrd in values.yaml" .Values.management.password | quote }}
+             value: {{ template "gateway.fullname" . }}
            - name: OTK_INTERNAL_GW_HOST
-             value: {{ .Values.otk.internalGatewayHost| quote }}
+             value: {{ .Values.otk.internalGatewayHost | quote }}
            - name: OTK_INTERNAL_GW_PORT
              value: {{ .Values.otk.internalGatewayPort| quote }}
            - name: OTK_DMZ_GW_HOST

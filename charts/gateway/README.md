@@ -332,6 +332,21 @@ OTK job is used to install or upgrade otk on gateway. It supports single, intern
 
 Prerequisites:
 * Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
+* Configure cluster wide property for otk.port pointing to gateway ingress port.
+'''
+config:
+  cwp:
+    enabled: true
+    properties:
+      - name: otk.port
+        value: 443
+'''
+* Restman is enabled. Can be disabled once the install/upgrage is complete.
+```
+management:
+  restman:
+    enabled: true
+```
 * Management is enabled with restman (management.enabled: true, management.restman.enabled: true)
 
 Limitations:

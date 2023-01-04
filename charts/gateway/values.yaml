@@ -419,9 +419,7 @@ service:
 # This enables/disables otk install or upgrade.
 # Prerequisites.
 #  1. OTK DB is installed. 
-#  2. management is enabled with restman (management.enabled: true, management.restman.enabled: true)
-#  3. pmtagger is enabled.
-# Management and pmtagger can be disabled once otk intall/upgrade is complete. 
+#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
 otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
