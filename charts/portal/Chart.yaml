@@ -2,7 +2,7 @@ apiVersion: v2
 appVersion: "5.1.2"
 description: CA API Developer Portal
 name: portal
-version: 2.2.8
+version: 2.2.9
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:

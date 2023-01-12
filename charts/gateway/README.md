@@ -172,6 +172,7 @@ database:
 * [Gateway Application Ports](#gateway-application-ports)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
+* [OTK Install or Upgrage](#otk-install-or-upgrage)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
@@ -326,6 +327,77 @@ management:
         external: 9443
         protocol: TCP
 ```
+### OTK install or upgrage
+OTK job is used to install or upgrade otk on gateway. It supports single, internal and external type of OTK installations.
+
+Prerequisites:
+* Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
+* Configure cluster wide property for otk.port pointing to gateway ingress port.
+```
+config:
+  cwp:
+    enabled: true
+    properties:
+      - name: otk.port
+        value: 443
+```
+* Restman is enabled. Can be disabled once the install/upgrage is complete.
+```
+management:
+  restman:
+    enabled: true
+```
+* Management is enabled with restman (management.enabled: true, management.restman.enabled: true)
+
+Limitations:
+* OTK Instance modifiers are not supported.
+* OTK not supported on ephemeral gateway.
+```
+database:
+  # DB Backed or ephemeral
+  enabled: true
+```
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `otk.enabled`                     | Enable/Disable OTK installation or upgrade | `false`  |
+| `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
+| `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
+| `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
+| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ| `false`
+| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
+| `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
+| `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
+| `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
+| `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
+| `otk.job.image.repository`        | Image Repositor | `apim-mobile/otk-install`
+| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6.1`
+| `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
+| `otk.job.image.labels`            | Job lables | {}
+| `otk.job.image.nodeSelector`      | Job Node selector | {}
+| `otk.job.image.tolerations`       | Job tolerations | []
+| `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
+| `otk.database.connectionName`     | OTK database connection name | `OAuth`
+| `otk.database.existingSecretName` | Point to an existing OTK database Secret |
+| `otk.database.username`           | OTK database user name | 
+| `otk.database.password`           | OTK database password |
+| `otk.database.properties`         | OTK database additional properties  | `{}`
+| `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
+| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
+| `otk.database.sql.databaseName`   | OTK database Oracle database name | 
+| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
+| `otk.database.cassandra.port`              | OTK database cassandra connection port  |
+| `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
+| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
+| `otk.livenessProbe.enabled`                |  Enable/Disable Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete | `false`
+| `otk.livenessProbe.type`                   |  | `httpGet`
+| `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
+| `otk.livenessProbe.httpGet.port`           |  | `8443`
+| `otk.readinessProbe.enabled`               | Enable/Disable Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete  | `false`
+| `otk.readinessProbe.type`                  |  | `httpGet`
+| `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
+| `otk.readinessProbe.httpGet.port`          |  | `8443`
 
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
