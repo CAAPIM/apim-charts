@@ -441,11 +441,11 @@ tenantProvisioner:
 #       topologyKey: "kubernetes.io/hostname"
 
 image:
-  dispatcher: dispatcher:5.1.2
+  dispatcher: dispatcher:5.1.2.1
   pssg: pssg:5.1.2
-  apim: ingress:5.1.2
-  enterprise: portal-enterprise:5.1.2
-  data: portal-data:5.1.2
+  apim: ingress:5.1.2.1
+  enterprise: portal-enterprise:5.1.2.1
+  data: portal-data:5.1.2.1
   tps: tenant-provisioning-service:5.1.2
   analytics: analytics-server:5.1.2
   authenticator: authenticator:5.1.2
@@ -689,13 +689,13 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.1.2
+    zookeeper: zookeeper:5.1.2.1
     broker: druid:5.1.2
     coordinator: druid:5.1.2
     middlemanager: druid:5.1.2
     minio: minio:5.1.2
     historical: druid:5.1.2
-    kafka: kafka:5.1.2
+    kafka: kafka:5.1.2.1
     ingestion: ingestion-server:5.1.2
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
