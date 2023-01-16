@@ -5,7 +5,7 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
 ## 2.2.10 General Updates
-- This new version of the chart supports API Portal 5.1.2.1 to support internal SaaS only release
+- This new version of the chart supports API Portal 5.1.2.1, refer release notes for more info https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/release-notes-api-developer-portal.html
 
 ## 2.2.9 General Updates
 - This version fixes the broken functional issue of enrolling proxy so the advisory to use this version after 2.2.5
