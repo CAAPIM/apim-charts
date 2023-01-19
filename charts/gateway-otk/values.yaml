@@ -236,6 +236,9 @@ serviceAccount:
   # name:
   create: true
 
+# nodeSelector: {}
+tolerations: []
+
 ###############################################################################################
 ##                                                                                           ##
 ##                              Subchart Configuration                                       ##
@@ -263,6 +266,7 @@ mysql:
       max_allowed_packet = 20M
       default-authentication-plugin=mysql_native_password
       log-bin-trust-function-creators=1
+
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
