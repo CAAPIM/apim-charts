@@ -26,6 +26,9 @@ spec:
       {{- if .Values.affinity }}
       affinity: {{- toYaml .Values.affinity | nindent 12 }}
       {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
       {{- end }}
