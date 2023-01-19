@@ -222,6 +222,9 @@ serviceAccount:
   # name:
   create: true
 
+# nodeSelector: {}
+tolerations: []
+
 ###############################################################################################
 ##                                                                                           ##
 ##                              Subchart Configuration                                       ##
