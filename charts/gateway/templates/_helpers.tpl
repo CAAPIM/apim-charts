@@ -138,17 +138,6 @@ Define Image Pull Secret Name
 {{- end -}}
 
 {{/*
- Define Management serivce external port
- */}}
-{{- define "management.service.external.port" -}}
-{{- range .Values.management.service.ports -}}
-    {{- if eq .name "management" -}}
-        {{- .external | quote -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
  Validate OTK installation type (SINGLE, INTERNAL, DMZ)
 */}}
 {{- define "otk-install-type" -}}

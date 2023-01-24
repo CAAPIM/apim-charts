@@ -364,14 +364,14 @@ database:
 | `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
 | `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
 | `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ| `false`
+| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway   | `false`
 | `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
-| `otk.job.image.repository`        | Image Repositor | `apim-mobile/otk-install`
-| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6.1`
+| `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
+| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
 | `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}

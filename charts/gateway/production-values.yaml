@@ -444,9 +444,9 @@ otk:
   # subSolutionKitNames:
   job:
     image:
-      repository: apim-mobile/otk-install
-      tag: 4.6.1
-      pullPolicy: Always
+      repository: caapim/otk-install
+      tag: 4.6
+      pullPolicy: IfNotPresent
     labels: {}
     # nodeSelector: {}
     # tolerations: []
