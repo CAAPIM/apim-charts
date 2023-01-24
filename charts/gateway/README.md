@@ -370,8 +370,8 @@ database:
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
-| `otk.job.image.repository`        | Image Repositor | `apim-mobile/otk-install`
-| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6.1`
+| `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
+| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
 | `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}
