@@ -66,6 +66,11 @@ pmtagger:
     limits:
       memory: 64Mi
       cpu: 250m
+  # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  # nodeSelector: {}
+  # affinity: {}
+  # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
 
 # Cluster Hostname
 clusterHostname: my.localdomain

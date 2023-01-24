@@ -24,13 +24,13 @@ spec:
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.affinity }}
-      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      affinity: {{- toYaml .Values.pmtagger.affinity | nindent 12 }}
       {{- end }}
       {{- if .Values.tolerations }}
-      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      tolerations: {{- toYaml .Values.pmtagger.tolerations | nindent 12 }}
       {{- end }}
       {{- if .Values.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      nodeSelector: {{- toYaml .Values.pmtagger.nodeSelector | nindent 12 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: {{ .Values.global.schedulerName }}
