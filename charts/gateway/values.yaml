@@ -462,7 +462,8 @@ otk:
     # existingSecretName: otkDbSecret
     username: root
     password: 7layer
-    properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
     sql:
       jdbcURL: mysql://localhost:3306/otk_db
@@ -473,9 +474,11 @@ otk:
     #   connectionPoints: localhost
     #   port:
     #   keyspace:
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
 
   # OTK Specific configuration:
+  # - The liveliness probe is not supported for OTK 4.6 & below versions
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
@@ -488,6 +491,7 @@ otk:
       path:
       port:
   # OTK Specific configuration:
+  # - The readinessProbe probe is not supported for OTK 4.6 & below versions
   # - otk.readinessProbe.type as httpGet
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
