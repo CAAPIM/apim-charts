@@ -2,7 +2,7 @@
 
 ## Prerequisite:
 1. A Gateway license (`LICENSE.xml`) in this directory
-2. OTK solution kit and Liquibase files to create OTK database schema must exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar and /tmp/otk-db-liquibase/)
+2. The database connection details should be provided in the chart
 
 ## Usage:
 `apim-charts/examples/otk-scenarios/sts/gateway> ./ssg-sts-deploy.sh`
@@ -14,32 +14,7 @@ To change release name. Edit `ssg-sts-deploy.sh`:
  
 ## LoadBalancer / Ingress
 The default sample uses the GCP's load balancer to expose the ports. To use other service
-types, uncomment the ingress block 
-
-## Deployment Modes:
-
-- DB-Backed STS:
-```
-The default values will deploy a db-backed STS Gateway. This configuration uses
-the mysql root user to create the otk_db.
-```
-
-- In-Memory STS:
-```
-To deploy an in-memory STS Gateway. This configuration requires some changes to the following,
-- otkJdbcUser, mysqlUser (same value)
-- otkJdbcPassword, mysqlPassword (same value)
-- preInstallCommand, change the user credentials and the database name
-- mysqlDatabase
-```
-
-## Database Connection:
-The default configuration will deploy a new mysql pod. To use an existing MySQL server, change the values
-in the "database" section. 
-- create: false
-- jdbcURL: jdbc:mysql://mysql-server-1:3306,mysql-server-2:3306/ssg_db?failOverReadOnly=false
-- username: gateway
-- password: mypassword
+types, uncomment the ingress block
 
 ## Trying It Out With Docker for Desktop
 Replace the following in the ssg-sts-values-env-01.yaml file,

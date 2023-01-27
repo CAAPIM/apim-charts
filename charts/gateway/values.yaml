@@ -66,6 +66,11 @@ pmtagger:
     limits:
       memory: 64Mi
       cpu: 250m
+  # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  # nodeSelector: {}
+  # affinity: {}
+  # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
 
 # Cluster Hostname
 clusterHostname: my.localdomain
@@ -415,6 +420,89 @@ service:
   # sessionAffinityConfig:
   #   clientIP:
   #     timeoutSeconds: 10800
+
+# This enables/disables otk install or upgrade.
+# Prerequisites.
+#  1. OTK DB is installed.
+#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+otk:
+  enabled: false
+  # OTK installation type - SINGLE, DMZ or INTERNAL
+  type: SINGLE
+
+  # Force install or upgrade by uninstalling existing otk soluction kit and install.
+  # forceInstallOrUpgrade: false
+
+  # Not applicable for DMZ and INTERNAL OTK types
+  # enablePortalIngeration: false
+  # skipPostInstallationTasks: false
+
+  # Specify internal gateway host and port for DMZ OTK type
+  # internalGatewayHost:
+  # internalGatewayPort:
+
+  # Specify DMZ gateway host and port for interal OTK type
+  # dmzGatewayHost:
+  # dmzGatewayPort:
+
+  # List of comma seperated sub soluction Kits to install or upgrade.
+  # subSolutionKitNames:
+  job:
+    image:
+      repository: caapim/otk-install
+      tag: 4.6.0
+      pullPolicy: IfNotPresent
+    labels: {}
+    # nodeSelector: {}
+    # tolerations: []
+  database:
+    # OTK database type - mysql/oracle/cassandra
+    type: mysql
+     # connectionName: OAuth
+    # existingSecretName: otkDbSecret
+    username: root
+    password: 7layer
+    # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
+    # properties: {"localDataCenterName" : "DC1"}
+    sql:
+      jdbcURL: mysql://localhost:3306/otk_db
+      jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+      # Oracle database name
+      # databaseName:
+    # cassandra:
+    #   connectionPoints: localhost
+    #   port:
+    #   keyspace:
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
+    #   driverConfig: {"localDataCenterName" : "DC1"}
+
+  # OTK Specific configuration:
+  # - The liveliness probe is not supported for OTK 4.6 & below versions
+  # - otk.livenessProbe.type as httpGet
+  # - otk.livenessProbe.path /auth/oauth/health
+  # - otk.livenessProbe.port 8443
+  # - otk.livenessProbe.scheme https
+  # Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete
+  livenessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path:
+      port:
+  # OTK Specific configuration:
+  # - The readinessProbe probe is not supported for OTK 4.6 & below versions
+  # - otk.readinessProbe.type as httpGet
+  # - otk.readinessProbe.path /auth/oauth/health
+  # - otk.readinessProbe.port 8443
+  # - otk.readinessProbe.scheme https
+  # Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete
+  readinessProbe:
+    enabled: true
+    type: httpGet
+    httpGet:
+      path:
+      port:
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes

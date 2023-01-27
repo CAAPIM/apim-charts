@@ -44,7 +44,7 @@ Create chart name and version as used by the chart label.
 
 {{/*
  Generate []16bit HEX
- This creates Gateway ids for bundles  
+ This creates Gateway ids for bundles
  */}}
  {{- define "gateway.listenPort.hex" -}}
  {{ $hexArr := "" }}
@@ -57,7 +57,7 @@ Create chart name and version as used by the chart label.
 
  {{/*
  Generate []16bit HEX
- This creates Gateway ids for bundles  
+ This creates Gateway ids for bundles
  */}}
  {{- define "gateway.cwp.hex" -}}
  {{ $hexArr := "" }}
@@ -68,11 +68,11 @@ Create chart name and version as used by the chart label.
  {{- end -}}
 
 {{/*
- Generate 16bit HEX 
+ Generate 16bit HEX
  #  {{ split " " $hexArr }}
  #  {{ $hexArr = append $hexArr (printf "%x" $hex) }}
  */}}
- 
+
 {{/*
 Create java args to apply.
 */}}
@@ -134,5 +134,45 @@ Define Image Pull Secret Name
     {{ .Values.license.existingSecretName }}
 {{- else -}}
     {{- printf "%s-%s" (include "gateway.fullname" .) "license" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Validate OTK installation type (SINGLE, INTERNAL, DMZ)
+*/}}
+{{- define "otk-install-type" -}}
+    {{- $f := .Values.otk.type -}}
+    {{- if empty $f }}
+        {{- fail "Please define otk.type (SINGLE/INTERNAL/DMZ)" }}
+    {{- else if eq $f "INTERNAL" }}
+        {{- if empty .Values.otk.dmzGatewayHost -}}
+            {{- fail "Please define otk.dmzGatewayHost in values.yaml" }}
+        {{- end }}
+        {{- if empty .Values.otk.dmzGatewayPort }}
+            {{- fail "Please define otk.dmzGatewayPort in values.yaml" }}
+        {{- end }}
+    {{- else if eq $f "DMZ" }}
+        {{- if empty .Values.otk.internalGatewayHost -}}
+            {{- fail "Please define otk.internalGatewayHost in values.yaml" }}
+        {{- end }}
+        {{- if empty .Values.otk.internalGatewayPort }}
+            {{- fail "Please define otk.internalGatewayPort in values.yaml" }}
+        {{- end }}
+    {{- else if eq $f "SINGLE" }}
+
+    {{- else }}
+        {{- fail "otk.type should be one of SINGLE/INTERNAL/DMZ" }}
+    {{- end }}
+    {{- print $f | quote }}
+{{- end -}}
+
+{{/*
+ Define OTK database Secret Name
+ */}}
+{{- define "otk.dbSecretName" -}}
+{{- if .Values.otk.database.existingSecretName -}}
+    {{ .Values.otk.database.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "otkdb-secret" -}}
 {{- end -}}
 {{- end -}}
