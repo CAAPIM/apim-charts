@@ -2,7 +2,7 @@
 
 ## Prerequisite:
 1. A Gateway license (`LICENSE.xml`) in this directory
-2. OTK solution kit and Liquibase files to create OTK database schema must exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar and /tmp/otk-db-liquibase/)
+2. The database connection details should be provided in the chart
 
 ## Usage:
 `apim-charts/examples/otk-scenarios/edge/gateway> ./ssg-edge-deploy.sh`
@@ -11,10 +11,7 @@
 To change release name. Edit `ssg-edge-deploy.sh`:
  - `STS_RELEASE_NAME="ssg-sts"`
  - `EDGE_RELEASE_NAME="ssg-edge"` (e.g. `EDGE_RELEASE_NAME="username-ssg-edge-v4"` for a shared environment to identify pod owner and version)
-
-## Deployment Modes:
-There is currently only 1 mode available for the Edge Gateway, which is MySQL db-backed.
-
+ 
 ## Trying It Out With Docker for Desktop
 Replace the following in the ssg-edge-values-env-01.yaml file,
 ```

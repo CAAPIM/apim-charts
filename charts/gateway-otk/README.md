@@ -1,5 +1,7 @@
 # Layer7 API Gateway - OAUTH TOOLKIT (NOTE: In Development)
 
+###Note:This Chart is deprecated. The OTK is integrated with Gateway into a single chart. Refer to gateway directory
+
 This Chart deploys the API Gateway - OAUTH TOOLKIT with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
 
 It's targeted at Gateway v10.x onward.
