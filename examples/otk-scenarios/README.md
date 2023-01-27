@@ -1,5 +1,8 @@
 # OTK Gateway Deployment Examples
 
+###Note: The examples listed below are deprecated since OTK is integrated with Gateway into a single chart now. Refer to gateway directory.
+
+
 ## The otk deployment can be fulfilled now
 The gateway chart is now includes OTK deployment configuration. The OTK database should be setup independent of the deployment.
 
