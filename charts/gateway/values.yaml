@@ -450,7 +450,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6
+      tag: 4.6.0
       pullPolicy: IfNotPresent
     labels: {}
     # nodeSelector: {}
