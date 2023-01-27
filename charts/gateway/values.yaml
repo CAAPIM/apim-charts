@@ -423,7 +423,7 @@ service:
 
 # This enables/disables otk install or upgrade.
 # Prerequisites.
-#  1. OTK DB is installed. 
+#  1. OTK DB is installed.
 #  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
 otk:
   enabled: false
@@ -438,11 +438,11 @@ otk:
   # skipPostInstallationTasks: false
 
   # Specify internal gateway host and port for DMZ OTK type
-  # internalGatewayHost: 
+  # internalGatewayHost:
   # internalGatewayPort:
 
   # Specify DMZ gateway host and port for interal OTK type
-  # dmzGatewayHost: 
+  # dmzGatewayHost:
   # dmzGatewayPort:
 
   # List of comma seperated sub soluction Kits to install or upgrade.
