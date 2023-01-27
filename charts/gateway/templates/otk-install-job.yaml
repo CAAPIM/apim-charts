@@ -34,6 +34,7 @@ spec:
              value: {{ template "otk-install-type" .}}
            - name: OTK_FORCE_INSTALL
              value: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
+{{ if ne .Values.otk.type "DMZ" }}
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_CONNECTION_NAME
@@ -60,6 +61,7 @@ spec:
 {{ end }}           
            - name: OTK_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
+{{ end }}
            - name: OTK_SKAR_RETRY_COUNT
              value: {{ default 1 .Values.otk.installRetry | quote}}
            - name: OTK_SKAR_BACKOFF_FACTOR
