@@ -428,6 +428,8 @@ this feature.
 | Environment Variable                                | Description                          |
 |-----------------------------------------------------|--------------------------------------|
 | `portalData.additionalEnv.AUDIT_LOG_RETENTION_DAYS` | The number of days of logs to retain |
+| `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
+| `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
 
 
 ### RBAC Parameters
