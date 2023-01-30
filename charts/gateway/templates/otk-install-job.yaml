@@ -67,9 +67,9 @@ spec:
            - name: OTK_SKAR_BACKOFF_FACTOR
              value: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
            - name: OTK_CONNECT_BACKOFF_FACTOR
-             value: {{ default 0.1 .Values.otk.connectRetry | quote}}
+             value: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}
            - name: OTK_CONNECT_RETRY_COUNT
-             value: {{ default 10 .Values.otk.connectlBackoffFactor | quote}}
+             value: {{ default 10 .Values.otk.connectRetry | quote}}
            - name: SSG_RESTMAN_PORT             
              value: {{ .Values.installSolutionKits.restmanPort | quote}}
            - name: SSG_RESTMAN_HOST
