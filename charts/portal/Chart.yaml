@@ -9,6 +9,7 @@ maintainers:
   - name: Gazza7205
 sources:
   - https://github.com/CAAPIM/apim-charts
+engine: gotpl
 dependencies:
 - name: druid
   version: ^1.0.0
