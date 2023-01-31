@@ -37,6 +37,11 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.5 General Updates
+The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
+
+Before upgrading existing deployments, please see the [Container Gateway 11.0 Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw.html) for important information regarding the procedure.
+
 ## 3.0.4 General Updates
 OTK installation and upgrade is now supported as part of Gateway charts.  Please refer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
 [Gateway-OTK](../gateway-otk) is now deprecated.
