@@ -38,7 +38,8 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 ## 3.0.4 General Updates
-OTK intallation and upgrade is now supported as part of Gateway charts.  Reffer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
+OTK installation and upgrade is now supported as part of Gateway charts.  Please refer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
+[Gateway-OTK](../gateway-otk) is now deprecated.
 
 ## 3.0.2 General Updates
 ***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 11.0.00***
