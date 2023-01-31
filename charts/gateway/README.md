@@ -37,6 +37,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.4 General Updates
+OTK intallation and upgrade is now supported as part of Gateway charts.  Reffer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
+
 ## 3.0.2 General Updates
 ***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 11.0.00***
 
@@ -328,7 +331,7 @@ management:
         protocol: TCP
 ```
 ### OTK install or upgrade
-OTK job is used to install or upgrade otk on gateway. It supports single, internal and external type of OTK installations.
+OTK job is used to install or upgrade otk on gateway. It supports Single, Internal and DMZ type of OTK installations.
 
 Prerequisites:
 * Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
