@@ -172,7 +172,7 @@ database:
 * [Gateway Application Ports](#gateway-application-ports)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
-* [OTK Install or Upgrage](#otk-install-or-upgrage)
+* [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
@@ -327,7 +327,7 @@ management:
         external: 9443
         protocol: TCP
 ```
-### OTK install or upgrage
+### OTK install or upgrade
 OTK job is used to install or upgrade otk on gateway. It supports single, internal and external type of OTK installations.
 
 Prerequisites:
