@@ -38,7 +38,7 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 ## 3.0.2 General Updates
-***The default image tag in values.yaml and production-values.yaml now points at specific CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 10.1.00_CR2***
+***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 11.0.00***
 
 To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
 
@@ -199,7 +199,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.1.00_CR2`  |
+| `image.tag`          | Image tag | `11.0.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |

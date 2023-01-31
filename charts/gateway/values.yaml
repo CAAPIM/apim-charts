@@ -12,7 +12,7 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 10.1.00_CR2
+  tag: 11.0.00
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -370,8 +370,8 @@ management:
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
-    annotations: {}
-      # cloud.google.com/load-balancer-type: "Internal"
+    annotations:
+      cloud.google.com/load-balancer-type: "Internal"
     ports:
       # - name: https
       #   internal: 8443
@@ -411,8 +411,8 @@ service:
     #   protocol: TCP
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
-  annotations: {}
-    # cloud.google.com/load-balancer-type: "Internal"
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
     # service.beta.kubernetes.io/azure-load-balancer-internal: "true"
 
   # Uncomment the following section to enable session affinity
