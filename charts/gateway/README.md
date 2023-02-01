@@ -47,7 +47,7 @@ OTK installation and upgrade is now supported as part of Gateway charts.  Please
 [Gateway-OTK](../gateway-otk) is now deprecated.
 
 ## 3.0.2 General Updates
-***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 11.0.00***
+***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also been updated to reflect that. As of this release, that is 10.1.00_CR2***
 
 To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
 
