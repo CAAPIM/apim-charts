@@ -8,7 +8,9 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 - Kubernetes 1.24.x
   - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/release-notes_cgw/container-gateway-platform-support.html#concept.dita_3277fc35fde9c5232f0d64d7a360181d5d18fd6c) for the latest version support
 - Helm v3.7.x
-- Gateway v10.x License
+- Gateway License
+  - License for corresponding major version needed
+  - e.g. v11.x license for 11.0.00 tag, v10.x license for 10.1.00_CR2 tag
 
 ## Optional
 - Persistent Volume Provisioner (if using PVC for the Demo MySQL Database or Service Metrics example with Grafana or InfluxDb)
