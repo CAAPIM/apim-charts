@@ -49,7 +49,7 @@ spec:
       - command:
         - /bin/sh
         - -ce
-        {{ if gt .Values.minio.replicaCount 1.0 }}
+        {{ if gt (.Values.minio.replicaCount | int) 1 }}
         - /usr/bin/docker-entrypoint.sh minio server  http://minio-{0...3}{{ $address }}
         {{ else }}
         - /usr/bin/docker-entrypoint.sh minio server /opt/data
