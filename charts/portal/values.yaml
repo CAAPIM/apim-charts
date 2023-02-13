@@ -116,7 +116,7 @@ tls:
 ingress:
 # Use a kubernetes/openshift ingress
   class:
-    name: nginx
+    name: ksp52feb13testnginx
     enabled: true
   type:
     kubernetes: true
@@ -134,8 +134,8 @@ ingress:
 # A list of tenants that you have/will create.
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
-    - tenant1
-#   - tenant2
+    - t1ksp52
+    - t2ksp52
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
 
@@ -170,7 +170,7 @@ analytics:
   forceRedeploy: false
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -191,7 +191,7 @@ apim:
   forceRedeploy: false
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   otkDb:
     name: otk_db
   strategy:
@@ -216,7 +216,7 @@ authenticator:
   replicaCount: 1
   javaOptions: -Xms1g -Xmx1g
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -238,7 +238,7 @@ dispatcher:
   forceRedeploy: false
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -287,7 +287,7 @@ portalData:
   replicaCount: 1
   javaOptions: -Xms2g -Xmx2g
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -310,7 +310,7 @@ portalEnterprise:
   replicaCount: 1
   javaOptions: -Xms2g -Xmx2g
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -331,7 +331,7 @@ pssg:
   forceRedeploy: false
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -354,7 +354,7 @@ tenantProvisioner:
   replicaCount: 1
   javaOptions: -Xms512m -Xmx512m
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -409,7 +409,7 @@ druid:
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
@@ -452,7 +452,7 @@ druid:
   zookeeper:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       limits: {}
       # memory: 256Mi
@@ -465,7 +465,7 @@ druid:
   coordinator:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       limits: {}
       # memory: 512Mi
@@ -478,7 +478,7 @@ druid:
   kafka:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       requests: {}
       # cpu: 100m
@@ -493,7 +493,7 @@ druid:
   broker:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       requests: {}
       # memory: 1Gi
@@ -506,7 +506,7 @@ druid:
   historical:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       requests: {}
       # memory: 2Gi
@@ -519,7 +519,7 @@ druid:
   ingestion:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     portName: ingestion-svc
     resources:
       requests: {}
@@ -535,7 +535,7 @@ druid:
   middlemanager:
     replicaCount: 1
     image:
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     resources:
       requests: {}
       # memory: 4Gi
@@ -638,11 +638,11 @@ ingress-nginx:
       enabled: true
     extraArgs:
       enable-ssl-passthrough: true
-   # ingressClassResource:
-   #  name: nginx
-   #  enabled: true
-   #  default: false
-   #  controllerValue: "k8s.io/ingress-nginx"
+    ingressClassResource:
+     name: ksp52feb13testnginx
+     enabled: true
+     default: false
+     controllerValue: "k8s.io/ksp52feb13testnginxcontroller"
 #  tcp:
 #    9443: "<namespace>/dispatcher:9443"
 
@@ -653,7 +653,7 @@ jobs:
   # tolerations: []
   # set default imagePullPolicy for db-upgrade-portal, db-upgrade-rbac and cert-upgrade jobs
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
