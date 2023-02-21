@@ -30,7 +30,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - Depending on the platform and the Ingress setup in your environment, configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentation](https://kubernetes.github.io/ingress-nginx/#getting-started).
   - If you are not using the subchart use 'kubernetes.io/ingress.class' annotation to support backward compatibility.
   - [Learn more about configuring multiple ingress controllers in one cluster.](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
-- The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
+- The Demo database that is based on Bitnami MySQL subchart version is updated to 9.4.7.
 - Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
 - API Portal 5.1 no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
 - You can now configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
@@ -48,7 +48,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.22/8.0.26/8.0.31 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -294,6 +294,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.additionalEnv.PROBE_IP_RANGE` | IP address range in CIDR notation to whitelist readiness and liveness probes for Dispatcher | `not set`                                                    |
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |

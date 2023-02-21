@@ -276,7 +276,8 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
-     PROBE_IP_RANGE: 240.224.0.0/16
+## Add whitelist IP Range for Dispatcher
+#    PROBE_IP_RANGE: <iprange-in-CIDR-notation>
 #    key1: value
 
 # Additional Secret variables to be added to the Dispatcher Secret
