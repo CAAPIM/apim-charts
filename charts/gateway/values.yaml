@@ -465,8 +465,9 @@ otk:
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
-    sql:      
-      jdbcURL: # jdbc:mysql://<host>:<port>/<database>
+    sql:
+      # jdbc:mysql://<host>:<port>/<database>
+      jdbcURL:
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
       # Oracle database name
       # databaseName:
