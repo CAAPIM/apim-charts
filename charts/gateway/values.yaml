@@ -465,8 +465,8 @@ otk:
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
-    sql:
-      jdbcURL: mysql://localhost:3306/otk_db
+    sql:      
+      jdbcURL: # jdbc:mysql://<host>:<port>/<database>
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
       # Oracle database name
       # databaseName:
@@ -479,26 +479,26 @@ otk:
 
   # OTK Specific configuration:
   # - The liveliness probe is not supported for OTK 4.6 & below versions
+  # - Should be enabled after otk installation.
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
-  # Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete
   livenessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
       path:
       port:
   # OTK Specific configuration:
   # - The readinessProbe probe is not supported for OTK 4.6 & below versions
+  # - Should be enabled after otk installation.
   # - otk.readinessProbe.type as httpGet
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
-  # Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete
   readinessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
       path:
