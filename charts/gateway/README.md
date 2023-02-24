@@ -37,6 +37,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.6 General Updates
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
+
 ## 3.0.5 General Updates
 The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
 
@@ -399,6 +402,9 @@ database:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
 | `otk.livenessProbe.enabled`                | Enable/Disable. Should be enabled only after OTK installation is complete and OTK version >= 4.6.1 | `false`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
