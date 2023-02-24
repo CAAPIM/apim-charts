@@ -399,11 +399,11 @@ database:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.livenessProbe.enabled`                |  Enable/Disable Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete | `false`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Should be enabled only after OTK installation is complete and OTK version >= 4.6.1 | `false`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
 | `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete  | `false`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Should be enabled only after OTK installation is complete and OTK version >= 4.6.1 | `false`
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`
