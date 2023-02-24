@@ -402,14 +402,14 @@ database:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
 | `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
 | `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1 | `false`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1 | `true`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
 | `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1  | `false`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1  | `true`
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`
