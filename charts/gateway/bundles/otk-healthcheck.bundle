@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<l7:Bundle xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+    <l7:References>
+        <l7:Item>
+            <l7:Name>OtkHealthCheck</l7:Name>
+            <l7:Id>2ace60fb68280f90e1919e6565c70e9c</l7:Id>
+            <l7:Type>SERVICE</l7:Type>
+            <l7:TimeStamp>2023-02-23T12:02:00.861Z</l7:TimeStamp>
+            <l7:Resource>
+                <l7:Service id="2ace60fb68280f90e1919e6565c70e9c">
+                    <l7:ServiceDetail folderId="0000000000000000ffffffffffffec76" id="2ace60fb68280f90e1919e6565c70e9c">
+                        <l7:Name>OtkHealthCheck</l7:Name>
+                        <l7:Enabled>true</l7:Enabled>
+                        <l7:ServiceMappings>
+                            <l7:HttpMapping>
+                                <l7:UrlPattern>/otk/health</l7:UrlPattern>
+                                <l7:Verbs>
+                                    <l7:Verb>GET</l7:Verb>
+                                </l7:Verbs>
+                            </l7:HttpMapping>
+                        </l7:ServiceMappings>
+                        <l7:Properties>
+                            <l7:Property key="hasRouting">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="internal">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="policyRevision">
+                            <l7:Property key="soap">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="tracingEnabled">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="wssProcessingEnabled">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:ServiceDetail>
+                    <l7:Resources>
+                        <l7:ResourceSet tag="policy">
+                            <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+    &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+        &lt;L7p:SslAssertion/&gt;
+        &lt;L7p:RemoteIpAddressRange&gt;
+            &lt;L7p:NetworkMask stringValue=&quot;16&quot;/&gt;
+            &lt;L7p:StartIp stringValue=&quot;240.224.2.1&quot;/&gt;
+        &lt;/L7p:RemoteIpAddressRange&gt;
+        &lt;L7p:SetVariable&gt;
+            &lt;L7p:Base64Expression stringValue=&quot;YWR2YW5jZWQ=&quot;/&gt;
+            &lt;L7p:VariableToSet stringValue=&quot;check_type&quot;/&gt;
+        &lt;/L7p:SetVariable&gt;
+        &lt;L7p:SetVariable&gt;
+            &lt;L7p:Base64Expression stringValue=&quot;JHtyZXF1ZXN0Lmh0dHAucGFyYW1ldGVyLmNsaWVudF9pZH0=&quot;/&gt;
+            &lt;L7p:VariableToSet stringValue=&quot;client_id&quot;/&gt;
+        &lt;/L7p:SetVariable&gt;
+        &lt;L7p:SetVariable&gt;
+            &lt;L7p:Base64Expression stringValue=&quot;JHtyZXF1ZXN0Lmh0dHAucGFyYW1ldGVyLmFwaWtleX0=&quot;/&gt;
+            &lt;L7p:VariableToSet stringValue=&quot;api_key&quot;/&gt;
+        &lt;/L7p:SetVariable&gt;
+        &lt;wsp:OneOrMore wsp:Usage=&quot;Required&quot;&gt;
+            &lt;L7p:ComparisonAssertion&gt;
+                &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                &lt;L7p:Expression1 stringValue=&quot;${request.http.parameter.check_type}&quot;/&gt;
+                &lt;L7p:ExpressionIsVariable booleanValue=&quot;false&quot;/&gt;
+                &lt;L7p:Operator operatorNull=&quot;null&quot;/&gt;
+                &lt;L7p:Predicates predicates=&quot;included&quot;&gt;
+                    &lt;L7p:item dataType=&quot;included&quot;&gt;
+                        &lt;L7p:Type variableDataType=&quot;string&quot;/&gt;
+                    &lt;/L7p:item&gt;
+                    &lt;L7p:item binary=&quot;included&quot;&gt;
+                        &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                        &lt;L7p:RightValue stringValue=&quot;advanced&quot;/&gt;
+                    &lt;/L7p:item&gt;
+                &lt;/L7p:Predicates&gt;
+            &lt;/L7p:ComparisonAssertion&gt;
+            &lt;L7p:SetVariable&gt;
+                &lt;L7p:Base64Expression stringValue=&quot;YmFzaWM=&quot;/&gt;
+                &lt;L7p:VariableToSet stringValue=&quot;check_type&quot;/&gt;
+            &lt;/L7p:SetVariable&gt;
+        &lt;/wsp:OneOrMore&gt;
+        &lt;L7p:Encapsulated&gt;
+            &lt;L7p:EncapsulatedAssertionConfigGuid stringValue=&quot;357db91a-500e-41e9-b192-4990f9507ce9&quot;/&gt;
+            &lt;L7p:EncapsulatedAssertionConfigName stringValue=&quot;OTK Health Check&quot;/&gt;
+            &lt;L7p:NoOpIfConfigMissing booleanValue=&quot;true&quot;/&gt;
+        &lt;/L7p:Encapsulated&gt;
+        &lt;wsp:OneOrMore wsp:Usage=&quot;Required&quot;&gt;
+            &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                &lt;L7p:ComparisonAssertion&gt;
+                    &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                    &lt;L7p:Expression1 stringValue=&quot;${healthCheckError}&quot;/&gt;
+                    &lt;L7p:Expression2 stringValue=&quot;true&quot;/&gt;
+                    &lt;L7p:Predicates predicates=&quot;included&quot;&gt;
+                        &lt;L7p:item binary=&quot;included&quot;&gt;
+                            &lt;L7p:CaseSensitive booleanValue=&quot;false&quot;/&gt;
+                            &lt;L7p:RightValue stringValue=&quot;true&quot;/&gt;
+                        &lt;/L7p:item&gt;
+                    &lt;/L7p:Predicates&gt;
+                &lt;/L7p:ComparisonAssertion&gt;
+                &lt;L7p:HardcodedResponse&gt;
+                    &lt;L7p:Base64ResponseBody stringValue=&quot;ewogICJlcnJvciI6ImludmFsaWRfcmVxdWVzdCIsCiAgImVycm9yX2Rlc2NyaXB0aW9uIjoiVGhlIHNlcnZlciBjb25maWd1cmF0aW9uIGlzIGludmFsaWQuIFNvbWUgZXJyb3Igb2NjdXJlZCBkdXJpbmcgT1RLIGhlYWx0aCBjaGVjay4gQ29udGFjdCB0aGUgYWRtaW5pc3RyYXRvciIKfQ==&quot;/&gt;
+                    &lt;L7p:ResponseContentType stringValue=&quot;application/json; charset=UTF-8&quot;/&gt;
+                    &lt;L7p:ResponseStatus stringValue=&quot;500&quot;/&gt;
+                &lt;/L7p:HardcodedResponse&gt;
+            &lt;/wsp:All&gt;
+            &lt;L7p:HardcodedResponse&gt;
+                &lt;L7p:Base64ResponseBody stringValue=&quot;b2s=&quot;/&gt;
+                &lt;L7p:ResponseContentType stringValue=&quot;application/text; charset=UTF-8&quot;/&gt;
+            &lt;/L7p:HardcodedResponse&gt;
+        &lt;/wsp:OneOrMore&gt;
+    &lt;/wsp:All&gt;
+&lt;/wsp:Policy&gt;
+                        </l7:Resource>
+                        </l7:ResourceSet>
+                    </l7:Resources>
+                </l7:Service>
+            </l7:Resource>
+        </l7:Item>
+    </l7:References>
+    <l7:Mappings>
+        <l7:Mapping action="NewOrUpdate" srcId="0000000000000000ffffffffffffec76" srcUri="https://localhost:8443/restman/1.0/folders/0000000000000000ffffffffffffec76" type="FOLDER">
+            <l7:Properties>
+                <l7:Property key="FailOnNew">
+                    <l7:BooleanValue>true</l7:BooleanValue>
+                </l7:Property>
+            </l7:Properties>
+        </l7:Mapping>
+        <l7:Mapping action="NewOrUpdate" srcId="2ace60fb68280f90e1919e6565c70e9c" srcUri="https://localhost:8443/restman/1.0/services/2ace60fb68280f90e1919e6565c70e9c" type="SERVICE"/>
+    </l7:Mappings>
+</l7:Bundle>

@@ -19,9 +19,6 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
-      annotations:
-        instrumentation.opentelemetry.io/inject-java: "true"
-        instrumentation.opentelemetry.io/container-names: "{{ .Chart.Name }}"
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.affinity }}
@@ -128,6 +125,10 @@ spec:
 {{- if .Values.bundle.enabled }}
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
+{{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
+            - name: {{ .Values.otk.healthCheckBundle.name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/otkhealthcheck
 {{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
@@ -375,6 +376,13 @@ spec:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-bundle-configmap
+{{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting) }}
+        - name: {{ .Values.otk.healthCheckBundle.name }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .Values.otk.healthCheckBundle.name }}
 {{- end }}
 {{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap

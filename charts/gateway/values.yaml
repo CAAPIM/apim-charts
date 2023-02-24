@@ -478,6 +478,14 @@ otk:
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
 
+  # Install OTK Health check bundle on gateway. Uses config map.
+  # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
+  # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otkhealthcheck.bundle
+  healthCheckBundle:
+    enabled: true
+    useExisting: false
+    name: otk-health-check-bundle-config
+
   # OTK Specific configuration:
   # - The liveliness probe is not supported for OTK 4.6 & below versions
   # - Should be enabled after otk installation.
