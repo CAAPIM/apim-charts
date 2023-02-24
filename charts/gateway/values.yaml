@@ -466,7 +466,7 @@ otk:
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
     sql:
-      # jdbc:mysql://<host>:<port>/<database>
+      # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
       # Oracle database name
@@ -494,7 +494,7 @@ otk:
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
   livenessProbe:
-    enabled: false
+    enabled: true
     type: httpGet
     httpGet:
       path:
@@ -507,7 +507,7 @@ otk:
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
   readinessProbe:
-    enabled: false
+    enabled: true
     type: httpGet
     httpGet:
       path:

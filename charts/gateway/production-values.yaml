@@ -465,7 +465,7 @@ otk:
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # properties: {"localDataCenterName" : "DC1"}
     sql:
-      # jdbc:mysql://<host>:<port>/<database>
+      # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
       # Oracle database name
@@ -480,7 +480,7 @@ otk:
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
   # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
   healthCheckBundle:
-    enabled: fale
+    enabled: true
     useExisting: false
     name: otk-health-check-bundle-config
 
@@ -492,7 +492,7 @@ otk:
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
   livenessProbe:
-    enabled: false
+    enabled: true
     type: httpGet
     httpGet:
       path:
@@ -505,7 +505,7 @@ otk:
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
   readinessProbe:
-    enabled: false
+    enabled: true
     type: httpGet
     httpGet:
       path:
