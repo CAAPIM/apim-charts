@@ -1,4 +1,5 @@
 {{ if .Values.ingress.enabled }}
+---
 {{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" -}}
 apiVersion: networking.k8s.io/v1
 {{- else -}}
@@ -45,4 +46,30 @@ spec:
           servicePort: {{ .service.port.number }}
 {{- end }}
 {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: ns66739411gke5-0-gateway-ingress-1
+ labels:
+   chart: gateway-2.0.5
+   release: ns66739411gke5-0
+   heritage: Helm
+ annotations:
+   kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - secretName: tls-secret
+    hosts:
+  rules:
+  - host: ns66739411gke5-0-1.gke-us-west-1-cluster-01.apim.broadcom.net
+   http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ns66739411gke5-0-gateway
+            port:
+              number: 8443
 {{ end }}
