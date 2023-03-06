@@ -4,6 +4,8 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
 
+## 2.3.1 General Updates
+- This new version of the chart supports API Portal 5.2.0.1, which has authenticator's high cpu usage fixed.
 ## 2.3.0 General Updates
 - This new version of the chart supports API Portal 5.2.
 ## 2.2.10 General Updates
@@ -542,7 +544,7 @@ Portal Analytics
 | `image.data` | portal-data image | `portal-data:5.2` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2` |
 | `image.analytics` | Analytics image | `analytics-server:5.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2` |
+| `image.authenticator` | Authenticator image | `authenticator:5.2.0.1` |
 | `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2` |
 | `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2` |
 | `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2` |
