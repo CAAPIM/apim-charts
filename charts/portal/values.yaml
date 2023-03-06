@@ -276,6 +276,8 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
+## Add whitelist IP Range for Dispatcher
+#    PROBE_IP_RANGE: <iprange-in-CIDR-notation>
 #    key1: value
 
 # Additional Secret variables to be added to the Dispatcher Secret
@@ -660,7 +662,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.26-debian-10-r78"
+    tag: "8.0.31-debian-11-r36"
   auth:
     username: portal
     existingSecret: database-secret
