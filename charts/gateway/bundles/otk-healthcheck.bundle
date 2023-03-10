@@ -5,7 +5,6 @@
             <l7:Name>OtkHealthCheck</l7:Name>
             <l7:Id>2ace60fb68280f90e1919e6565c70e9c</l7:Id>
             <l7:Type>SERVICE</l7:Type>
-            <l7:TimeStamp>2023-02-23T12:02:00.861Z</l7:TimeStamp>
             <l7:Resource>
                 <l7:Service id="2ace60fb68280f90e1919e6565c70e9c">
                     <l7:ServiceDetail folderId="0000000000000000ffffffffffffec76" id="2ace60fb68280f90e1919e6565c70e9c">
@@ -26,7 +25,6 @@
                             <l7:Property key="internal">
                                 <l7:BooleanValue>false</l7:BooleanValue>
                             </l7:Property>
-                            <l7:Property key="policyRevision">
                             <l7:Property key="soap">
                                 <l7:BooleanValue>false</l7:BooleanValue>
                             </l7:Property>
@@ -120,13 +118,6 @@
         </l7:Item>
     </l7:References>
     <l7:Mappings>
-        <l7:Mapping action="NewOrUpdate" srcId="0000000000000000ffffffffffffec76" srcUri="https://localhost:8443/restman/1.0/folders/0000000000000000ffffffffffffec76" type="FOLDER">
-            <l7:Properties>
-                <l7:Property key="FailOnNew">
-                    <l7:BooleanValue>true</l7:BooleanValue>
-                </l7:Property>
-            </l7:Properties>
-        </l7:Mapping>
-        <l7:Mapping action="NewOrUpdate" srcId="2ace60fb68280f90e1919e6565c70e9c" srcUri="https://localhost:8443/restman/1.0/services/2ace60fb68280f90e1919e6565c70e9c" type="SERVICE"/>
-    </l7:Mappings>
+        <l7:Mapping action="NewOrUpdate" srcId="2ace60fb68280f90e1919e6565c70e9c" srcUri="https://ae233fa70b0d:8443/restman/1.0/services/2ace60fb68280f90e1919e6565c70e9c" type="SERVICE"/>
+    </l7:Mappings>       
 </l7:Bundle>
