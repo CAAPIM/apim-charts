@@ -342,6 +342,8 @@ management:
 ### OTK install or upgrade
 OTK job is used to install or upgrade otk on gateway. It supports Single, Internal and DMZ type of OTK installations.
 
+***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
+
 Prerequisites:
 * Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
 * Configure cluster wide property for otk.port pointing to gateway ingress port.
@@ -405,11 +407,11 @@ database:
 | `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
 | `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
 | `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1 | `true`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
 | `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1  | `true`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`

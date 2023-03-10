@@ -425,6 +425,7 @@ service:
 # Prerequisites.
 #  1. OTK DB is installed.
 #  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+# Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
@@ -487,27 +488,31 @@ otk:
     name: otk-health-check-bundle-config
 
   # OTK Specific configuration:
-  # - The liveliness probe is not supported for OTK 4.6 & below versions
+  # - The liveliness probe is not supported for OTK 4.6 & below versions. 
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recomended enable liveness probe after the pods restart.
   # - Should be enabled after otk installation.
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
   livenessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
       path:
       port:
   # OTK Specific configuration:
-  # - The readinessProbe probe is not supported for OTK 4.6 & below versions
+  # - The readinessProbe probe is not supported for OTK 4.6 & below versions.
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recomended enable readiness probe after the pods restart.
   # - Should be enabled after otk installation.
   # - otk.readinessProbe.type as httpGet
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
   readinessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
       path:
