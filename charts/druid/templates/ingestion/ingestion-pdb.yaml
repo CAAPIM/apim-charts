@@ -4,7 +4,7 @@ kind: PodDisruptionBudget
 metadata:
   name: ingestion-server-pdb
 spec:
-  minAvailable: {{ .Values.ingestion-server.replicaCount }}
+  minAvailable: {{ .Values.ingestion.replicaCount }}
   selector:
     matchLabels:
       app: ingestion-server
