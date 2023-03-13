@@ -26,6 +26,10 @@ global:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
 
+# Use PodDisruptionBudget(s)?
+podDisruptionBudgets:
+  enabled: false
+
 portal:
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com

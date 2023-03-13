@@ -18,6 +18,10 @@ image:
     password:
     email:
 
+# Use PodDisruptionBudget(s)?
+podDisruptionBudgets:
+  enabled: false
+
 # Number of Edge Gateways to deploy
 replicas: 1
 # Update strategy

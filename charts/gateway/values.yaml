@@ -31,6 +31,10 @@ imagePullSecret:
   username:
   password:
 
+# Use PodDisruptionBudget(s)?
+podDisruptionBudgets:
+  enabled: false
+
 serviceAccount:
   # name:
   create: true
