@@ -1,0 +1,11 @@
+{{ if .Values.podDisruptionBudgets.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: historical-pdb
+spec:
+  minAvailable: {{ .Values.historical.replicaCount }}
+  selector:
+    matchLabels:
+      app: historical
+{{ end }}

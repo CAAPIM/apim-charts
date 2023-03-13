@@ -1,0 +1,11 @@
+{{ if .Values.podDisruptionBudgets.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: broker-pdb
+spec:
+  minAvailable: {{ .Values.broker.replicaCount }}
+  selector:
+    matchLabels:
+      app: broker
+{{ end }}

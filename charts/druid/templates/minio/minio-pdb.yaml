@@ -1,0 +1,11 @@
+{{ if .Values.podDisruptionBudgets.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: minio-pdb
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: minio
+{{ end }}

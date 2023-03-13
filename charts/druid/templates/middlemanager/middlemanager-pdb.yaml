@@ -1,0 +1,11 @@
+{{ if .Values.podDisruptionBudgets.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: middlemanager-pdb
+spec:
+  minAvailable: {{ .Values.middlemanager.replicaCount }}
+  selector:
+    matchLabels:
+      app: middlemanager
+{{ end }}
