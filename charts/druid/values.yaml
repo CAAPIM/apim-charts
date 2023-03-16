@@ -78,7 +78,6 @@ minio:
     # memory: 256Mi
 # nodeSelector: {}
 # affinity:
-  
 
 zookeeper:
   hostname: zookeeper
@@ -131,7 +130,7 @@ coordinator:
   image:
     pullPolicy: IfNotPresent
   resources:
-    requests: {}     
+    requests: {}
     # memory: 512Mi
     limits: {}
     # memory: 512Mi

@@ -439,7 +439,7 @@ druid:
   minio:
     pdb:
       create: false
-      maxUnavailable: 0
+      maxUnavailable: ""
       minAvailable: 1
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
@@ -488,7 +488,7 @@ druid:
   zookeeper:
     pdb:
       create: false
-      maxUnavailable: 0
+      maxUnavailable: ""
       minAvailable: 1
     replicaCount: 1
     image:
@@ -632,6 +632,8 @@ rabbitmq:
       - broadcom-apim
   pdb:
     create: false
+    maxUnavailable: ""
+    minAvailable: 1
   serviceAccount:
     create: true
   # name:
