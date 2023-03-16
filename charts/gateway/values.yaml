@@ -31,7 +31,7 @@ imagePullSecret:
   username:
   password:
 
-# Use PodDisruptionBudget(s)?
+# Create PodDisruptionBudget
 pdb:
   create: false
   minAvailable: 1

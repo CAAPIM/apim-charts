@@ -39,9 +39,6 @@ persistence:
     kafka: 10Gi
     zookeeper: 10Gi
 
-podDisruptionBudgets:
-  enabled: false
-
 # Service Account for Druid services
 serviceAccount:
   create: true
