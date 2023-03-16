@@ -1,10 +1,11 @@
-{{ if .Values.podDisruptionBudgets.enabled }}
+{{ if .Values.apim.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: apim-pdb
 spec:
-  minAvailable: 1
+  minAvailable: {{ .Values.apim.pdb.minAvailable }}
+  maxUnavailable: {{ .Values.apim.pdb.maxUnavailable }}
   selector:
     matchLabels:
       app: apim
