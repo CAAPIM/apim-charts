@@ -1,11 +1,12 @@
-{{ if .Values.podDisruptionBudgets.enabled }}
+{{ if .Values.ingestion.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: ingestion-server-pdb
+  name: ingestion-pdb
 spec:
-  minAvailable: {{ .Values.ingestion.replicaCount }}
+  minAvailable: {{ .Values.ingestion.pdb.minAvailable }}
+  maxUnavailable: {{ .Values.ingestion.pdb.maxUnavailable }}
   selector:
     matchLabels:
-      app: ingestion-server
+      app: ingestion
 {{ end }}

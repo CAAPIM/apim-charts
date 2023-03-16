@@ -19,8 +19,10 @@ image:
     email:
 
 # Use PodDisruptionBudget(s)?
-podDisruptionBudgets:
-  enabled: false
+pdb:
+  create: false
+  minAvailable: 1
+  maxUnavailable: ""
 
 # Number of Edge Gateways to deploy
 replicas: 1

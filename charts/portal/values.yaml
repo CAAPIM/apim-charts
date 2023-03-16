@@ -29,6 +29,8 @@ global:
 # Use PodDisruptionBudget(s)?
 podDisruptionBudgets:
   enabled: false
+  minAvailable: 1
+  maxUnavailable: ""
 
 portal:
   domain: example.com
@@ -409,6 +411,9 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    pdb:
+      create: false
+      maxUnavailable: 0
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
@@ -454,6 +459,10 @@ druid:
   # affinity: {}
 
   zookeeper:
+    pdb:
+      create: false
+      minAvailiable: ""
+      maxUnavailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -467,6 +476,10 @@ druid:
   # affinity: {}
 
   coordinator:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -480,6 +493,10 @@ druid:
   # affinity: {}
 
   kafka:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -495,6 +512,10 @@ druid:
   # affinity: {}
 
   broker:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -508,6 +529,10 @@ druid:
   # affinity: {}
 
   historical:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -521,6 +546,10 @@ druid:
   # affinity: {}
 
   ingestion:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -537,6 +566,10 @@ druid:
   # affinity: {}
 
   middlemanager:
+    pdb:
+      create: false
+      minAvailable: 1
+      maxUnavailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -570,6 +603,8 @@ rabbitmq:
     tag: "5.2"
     pullSecrets:
       - broadcom-apim
+  pdb:
+    create: false
   serviceAccount:
     create: true
   # name:
@@ -709,6 +744,8 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    pdb:
+      enabled: false
     persistence:
       annotations:
         helm.sh/hook: pre-install

@@ -1,10 +1,11 @@
-{{ if .Values.podDisruptionBudgets.enabled }}
+{{ if .Values.coordinator.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: coordinator-pdb
 spec:
-  minAvailable: {{ .Values.coordinator.replicaCount }}
+  minAvailable: {{ .Values.coordinator.pdb.minAvailable }}
+  maxUnavailable: {{ .Values.coordinator.pdb.maxUnavailable }}
   selector:
     matchLabels:
       app: coordinator

@@ -1,10 +1,10 @@
-{{ if .Values.podDisruptionBudgets.enabled }}
+{{ if .Values.zookeeper.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: zookeeper-pdb
 spec:
-  maxUnavailable: 1
+  maxUnavailable: {{ .Values.zookeeper.pdb.maxUnavailable }}
   selector:
     matchLabels:
       app: zookeeper

@@ -1,10 +1,11 @@
-{{ if .Values.podDisruptionBudgets.enabled }}
+{{ if .Values.middlemanager.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: middlemanager-pdb
 spec:
-  minAvailable: {{ .Values.middlemanager.replicaCount }}
+  minAvailable: {{ .Values.middlemanager.pdb.minAvailable }}
+  maxUnavailable: {{ .Values.middlemanager.pdb.maxUnavailable }}
   selector:
     matchLabels:
       app: middlemanager
