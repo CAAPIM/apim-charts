@@ -173,8 +173,8 @@ analytics:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -200,8 +200,8 @@ apim:
     name: otk_db
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -227,8 +227,8 @@ authenticator:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -253,8 +253,8 @@ dispatcher:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -306,8 +306,8 @@ portalData:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -333,8 +333,8 @@ portalEnterprise:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -358,8 +358,8 @@ pssg:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -385,8 +385,8 @@ tenantProvisioner:
     pullPolicy: IfNotPresent
   pdb:
     create: false
-    minAvailable: 1
     maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -440,6 +440,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: 0
+      minAvailable: 1
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
@@ -487,8 +488,8 @@ druid:
   zookeeper:
     pdb:
       create: false
-      minAvailiable: ""
-      maxUnavailable: 1
+      maxUnavailable: 0
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -504,8 +505,8 @@ druid:
   coordinator:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -521,8 +522,8 @@ druid:
   kafka:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -557,8 +558,8 @@ druid:
   historical:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -594,8 +595,8 @@ druid:
   middlemanager:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent

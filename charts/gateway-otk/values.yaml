@@ -21,8 +21,8 @@ image:
 # Create PodDisruptionBudget
 pdb:
   create: false
-  minAvailable: 1
   maxUnavailable: ""
+  minAvailable: 1
 
 # Number of Edge Gateways to deploy
 replicas: 1

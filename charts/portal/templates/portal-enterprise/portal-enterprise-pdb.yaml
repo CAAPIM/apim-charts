@@ -2,7 +2,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: portalEnterprise-pdb
+  name: portal-enterprise-pdb
 spec:
   minAvailable: {{ .Values.portalEnterprise.pdb.minAvailable }}
   maxUnavailable: {{ .Values.portalEnterprise.pdb.maxUnavailable }}

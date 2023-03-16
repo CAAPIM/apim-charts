@@ -4,6 +4,7 @@ kind: PodDisruptionBudget
 metadata:
   name: zookeeper-pdb
 spec:
+  minAvailable: {{ .Values.zookeeper.pdb.minAvailable }}
   maxUnavailable: {{ .Values.zookeeper.pdb.maxUnavailable }}
   selector:
     matchLabels:
