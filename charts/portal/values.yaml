@@ -541,8 +541,8 @@ druid:
   broker:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -575,8 +575,8 @@ druid:
   ingestion:
     pdb:
       create: false
-      minAvailable: 1
       maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
