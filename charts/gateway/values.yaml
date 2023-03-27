@@ -488,7 +488,7 @@ otk:
     name: otk-health-check-bundle-config
 
   # OTK Specific configuration:
-  # - The liveliness probe is not supported for OTK 4.6 & below versions. 
+  # - The liveliness probe is not supported for OTK 4.6 & below versions.
   # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
   # - In a dual gateway OTK setup, it is recomended enable liveness probe after the pods restart.
   # - Should be enabled after otk installation.
