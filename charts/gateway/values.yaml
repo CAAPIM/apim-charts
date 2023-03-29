@@ -511,6 +511,13 @@ otk:
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
+
+  # Gateway Specific configuration:
+  # - if changed to service foo which is pre-installed via bundles
+  # - readinessProbe.type as httpGet
+  # - readinessProbe.path /foo
+  # - readinessProbe.port 8443
+
   readinessProbe:
     enabled: false
     type: httpGet
