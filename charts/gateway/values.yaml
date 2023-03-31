@@ -512,11 +512,6 @@ otk:
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
 
-  # Gateway Specific configuration:
-  # - if changed to service foo which is pre-installed via bundles
-  # - readinessProbe.type as httpGet
-  # - readinessProbe.path /foo
-  # - readinessProbe.port 8443
 
   readinessProbe:
     enabled: false
@@ -652,6 +647,14 @@ livenessProbe:
   periodSeconds: 15
   successThreshold: 1
   failureThreshold: 15
+
+
+# Gateway Specific configuration:
+# - when readinessProbe checks for path /ssg/ping , then basic authentication is required as httpHeader
+# httpHeaders:
+# - name: Authorization
+#   value: Basic <(.Values.management.username .Values.management.password)|b64enc>
+
 
 readinessProbe:
   enabled: true
