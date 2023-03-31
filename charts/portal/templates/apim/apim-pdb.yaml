@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: apim-pdb
 spec:
+  {{- if .Values.apim.pdb.minAvailable }}
   minAvailable: {{ .Values.apim.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.apim.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.apim.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: apim

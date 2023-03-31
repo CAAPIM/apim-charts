@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: portal-enterprise-pdb
 spec:
+  {{- if .Values.portalEnterprise.pdb.minAvailable }}
   minAvailable: {{ .Values.portalEnterprise.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.portalEnterprise.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.portalEnterprise.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: portal-enterprise

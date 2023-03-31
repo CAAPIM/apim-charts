@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: kafka-pdb
 spec:
+  {{- if .Values.kafka.pdb.minAvailable }}
   minAvailable: {{ .Values.kafka.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.kafka.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.kafka.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: kafka

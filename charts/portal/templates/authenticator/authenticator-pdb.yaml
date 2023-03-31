@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: authenticator-pdb
 spec:
+  {{- if .Values.authenticator.pdb.minAvailable }}
   minAvailable: {{ .Values.authenticator.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.authenticator.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.authenticator.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: authenticator

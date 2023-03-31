@@ -4,7 +4,9 @@ kind: PodDisruptionBudget
 metadata:
   name: minio-pdb
 spec:
+  {{- if .Values.minio.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.minio.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: minio

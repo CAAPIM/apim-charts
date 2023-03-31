@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: middlemanager-pdb
 spec:
+  {{- if .Values.middlemanager.pdb.minAvailable }}
   minAvailable: {{ .Values.middlemanager.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.middlemanager.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.middlemanager.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: middlemanager

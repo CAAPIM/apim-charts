@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: coordinator-pdb
 spec:
+  {{- if .Values.coordinator.pdb.minAvailable }}
   minAvailable: {{ .Values.coordinator.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.coordinator.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.coordinator.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: coordinator

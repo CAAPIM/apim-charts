@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: broker-pdb
 spec:
+  {{- if .Values.broker.pdb.minAvailable }}
   minAvailable: {{ .Values.broker.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.broker.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.broker.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: broker

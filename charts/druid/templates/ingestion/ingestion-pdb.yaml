@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: ingestion-pdb
 spec:
+  {{- if .Values.ingestion.pdb.minAvailable }}
   minAvailable: {{ .Values.ingestion.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.ingestion.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.ingestion.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: ingestion

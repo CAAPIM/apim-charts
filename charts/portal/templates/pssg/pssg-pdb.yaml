@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: pssg-pdb
 spec:
+  {{- if .Values.pssg.pdb.minAvailable }}
   minAvailable: {{ .Values.pssg.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.pssg.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.pssg.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: pssg

@@ -4,8 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   name: dispatcher-pdb
 spec:
+  {{- if .Values.dispatcher.pdb.minAvailable }}
   minAvailable: {{ .Values.dispatcher.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.dispatcher.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.dispatcher.pdb.maxUnavailable }}
+  {{- end }}
   selector:
     matchLabels:
       app: dispatcher
