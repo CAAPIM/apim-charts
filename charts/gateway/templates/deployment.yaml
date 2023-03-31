@@ -126,6 +126,10 @@ spec:
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
 {{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
+            - name: {{ .Values.otk.healthCheckBundle.name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/otkhealthcheck
+{{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
@@ -228,8 +232,8 @@ spec:
 {{- if and (.Values.otk.enabled) (.Values.otk.livenessProbe.enabled) }}
 {{- if (eq .Values.otk.livenessProbe.type "httpGet" ) }}
             httpGet:
-              path: {{ .Values.otk.livenessProbe.path | default "/auth/oauth/health"}}
-              port: {{ .Values.otk.livenessProbe.port | default 8443 }}
+              path: {{ .Values.otk.livenessProbe.httpGet.path | default "/otk/health"}}
+              port: {{ .Values.otk.livenessProbe.httpGet.port | default 8443 }}
               scheme: {{ .Values.otk.livenessProbe.scheme | default "HTTPS" }}
 {{- else }}
             exec:
@@ -266,8 +270,8 @@ spec:
 {{- if and (.Values.otk.enabled) (.Values.otk.readinessProbe.enabled) }}
 {{- if (eq .Values.otk.readinessProbe.type "httpGet" ) }}
             httpGet:
-              path: {{ .Values.otk.readinessProbe.path | default "/auth/oauth/health"}}
-              port: {{ .Values.otk.readinessProbe.port | default 8443 }}
+              path: {{ .Values.otk.readinessProbe.httpGet.path | default "/otk/health"}}
+              port: {{ .Values.otk.readinessProbe.httpGet.port | default 8443 }}
               scheme: {{ .Values.otk.readinessProbe.scheme | default "HTTPS" }}
 {{- else }}
             exec:
@@ -372,6 +376,13 @@ spec:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-bundle-configmap
+{{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting) }}
+        - name: {{ .Values.otk.healthCheckBundle.name }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .Values.otk.healthCheckBundle.name }}
 {{- end }}
 {{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap

@@ -41,11 +41,11 @@ spec:
              value: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
 {{ if eq .Values.otk.database.type "cassandra" }}
            - name: OTK_CASSANDRA_CONNECTION_POINTS
-             value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
+             value: {{ required "Please fill in otk.database.cassandra.connectionPoints in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
            - name: OTK_CASSANDRA_PORT
-             value: {{ required "Please fill in otk.database.cassandra.jdbcDriverClass in values.yaml" .Values.otk.database.cassandra.port | quote }}
+             value: {{ required "Please fill in otk.database.cassandra.port in values.yaml" .Values.otk.database.cassandra.port | quote }}
            - name: OTK_CASSANDRA_KEYSPACE
-             value: {{ required "Please fill in otk.database.cassandra.jdbcURL in values.yaml" .Values.otk.database.cassandra.keySpace | quote }}
+             value: {{ required "Please fill in otk.database.cassandra.keyspace in values.yaml" .Values.otk.database.cassandra.keyspace | quote }}
            - name: OTK_CASSANDRA_DRIVER_CONFIG
              value: {{ default "na" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
 {{ end }}

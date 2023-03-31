@@ -37,6 +37,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.6 General Updates
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
+
 ## 3.0.5 General Updates
 The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
 
@@ -342,6 +345,8 @@ management:
 ### OTK install or upgrade
 OTK job is used to install or upgrade otk on gateway. It supports Single, Internal and DMZ type of OTK installations.
 
+***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
+
 Prerequisites:
 * Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
 * Configure cluster wide property for otk.port pointing to gateway ingress port.
@@ -402,11 +407,14 @@ database:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.livenessProbe.enabled`                |  Enable/Disable Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete | `false`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
 | `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete  | `false`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`
