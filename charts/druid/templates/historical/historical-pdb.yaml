@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: historical
+  labels:
+    app: historical
   name: historical-pdb
 spec:
   {{- if .Values.historical.pdb.minAvailable }}

@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: minio
+  labels:
+    app: minio
   name: minio-pdb
 spec:
   {{- if .Values.minio.pdb.maxUnavailable }}

@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: authenticator
+  labels:
+    app: authenticator
   name: authenticator-pdb
 spec:
   {{- if .Values.authenticator.pdb.minAvailable }}

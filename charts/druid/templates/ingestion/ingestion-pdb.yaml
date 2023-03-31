@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: ingestion
+  labels:
+    app: ingestion
   name: ingestion-pdb
 spec:
   {{- if .Values.ingestion.pdb.minAvailable }}

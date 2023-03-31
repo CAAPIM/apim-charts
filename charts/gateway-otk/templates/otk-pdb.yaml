@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: {{ template "gateway.fullname" . }}
+  labels:
+    app: {{ template "gateway.fullname" . }}-pdb
   name: {{ template "gateway.fullname" . }}-pdb
 spec:
   {{- if .Values.pdb.minAvailable }}

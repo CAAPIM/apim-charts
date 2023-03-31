@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: pssg
+  labels:
+    app: pssg
   name: pssg-pdb
 spec:
   {{- if .Values.pssg.pdb.minAvailable }}

@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: dispatcher
+  labels:
+    app: dispatcher
   name: dispatcher-pdb
 spec:
   {{- if .Values.dispatcher.pdb.minAvailable }}

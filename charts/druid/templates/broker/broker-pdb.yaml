@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: broker
+  labels:
+    app: broker
   name: broker-pdb
 spec:
   {{- if .Values.broker.pdb.minAvailable }}

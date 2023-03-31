@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: analytics-server
+  labels:
+    app: analytics-server
   name: analytics-pdb
 spec:
   {{- if .Values.analytics.pdb.minAvailable }}

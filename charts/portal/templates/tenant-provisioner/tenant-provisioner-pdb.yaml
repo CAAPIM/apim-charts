@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: tenant-provisioner
+  labels:
+    app: tenant-provisioner
   name: tenant-provisioner-pdb
 spec:
   {{- if .Values.tenantProvisioner.pdb.minAvailable }}

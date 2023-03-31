@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: middlemanager
+  labels:
+    app: middlemanager
   name: middlemanager-pdb
 spec:
   {{- if .Values.middlemanager.pdb.minAvailable }}

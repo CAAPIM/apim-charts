@@ -2,7 +2,8 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  app: zookeeper
+  labels:
+    app: zookeeper
   name: zookeeper-pdb
 spec:
   {{- if .Values.zookeeper.pdb.minAvailable }}
