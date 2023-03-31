@@ -2,6 +2,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
+  app: kafka
   name: kafka-pdb
 spec:
   {{- if .Values.kafka.pdb.minAvailable }}

@@ -2,6 +2,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
+  app: portal-enterprise
   name: portal-enterprise-pdb
 spec:
   {{- if .Values.portalEnterprise.pdb.minAvailable }}

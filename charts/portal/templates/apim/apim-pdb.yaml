@@ -2,6 +2,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
+  app: apim
   name: apim-pdb
 spec:
   {{- if .Values.apim.pdb.minAvailable }}
