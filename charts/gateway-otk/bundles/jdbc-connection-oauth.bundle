@@ -12,7 +12,7 @@
                     <l7:Enabled>true</l7:Enabled>
                     <l7:Extension>
                         <l7:DriverClass>{{ .Values.installSolutionKits.otkJdbcDriver }}</l7:DriverClass>
-                        <l7:JdbcUrl>{{ .Values.installSolutionKits.otkJdbcUrl | replace "\&" "\&amp;" }}</l7:JdbcUrl>
+                        <l7:JdbcUrl>{{ .Values.installSolutionKits.otkJdbcUrl | replace "&" "&amp;" }}</l7:JdbcUrl>
                         <l7:ConnectionProperties>
                             <l7:Property key="password">
                                 <l7:StringValue>{{ .Values.installSolutionKits.otkJdbcPassword }}</l7:StringValue>
