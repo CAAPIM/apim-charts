@@ -696,6 +696,9 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 
 ## Ingress-Nginx
+
+***NOTE:- This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample.***
+
 The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
 
 This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
