@@ -121,7 +121,7 @@ ingress:
     openshift: false
   # existingSecret:
   secretName: dispatcher-tls
-  ## Recommendation is to use an central nginx-ingress controller. To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
+  ## To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough.
   create: false
 # Configure additional ingress controller specific annotations
