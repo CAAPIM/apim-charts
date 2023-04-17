@@ -3,7 +3,9 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
-
+## 2.3.2 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.5.2 to support K8s 1.25+ version.
+- Ingress-NGINX Subchart deployment is disabled by default in values-production.yaml. Use any Ingress-controller that supports SSL/TLS Passthrough.
 ## 2.3.1 General Updates
 - This new version of the chart supports API Portal 5.2.0.1, which has authenticator's high cpu usage fixed.
 ## 2.3.0 General Updates
@@ -231,7 +233,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
-| `ingress.create` | Deploy the Nginx subchart as part of this deployment | `true` |
+| `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -694,6 +696,9 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 
 ## Ingress-Nginx
+
+***NOTE:- This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample.***
+
 The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
 
 This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
