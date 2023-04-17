@@ -691,13 +691,12 @@ containerSecurityContext: {}
 bootstrap:
   script:
     enabled: false
-  cleanup: false
 
 # Add initContainers to the Gateway
 initContainers: []
 # initContainers:
 # - name: simple-init
-#   image: docker.io/layer7api/simple-init:1.0.0
+#   image: docker.io/layer7api/simple-init:1.0.1
 #   imagePullPolicy: Always
 #   volumeMounts:
 #   - name: config-directory
