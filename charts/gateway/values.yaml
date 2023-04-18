@@ -511,6 +511,8 @@ otk:
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
+
+
   readinessProbe:
     enabled: false
     type: httpGet
@@ -645,6 +647,14 @@ livenessProbe:
   periodSeconds: 15
   successThreshold: 1
   failureThreshold: 15
+
+
+# Gateway Specific configuration:
+# - when readinessProbe checks for path /ssg/ping , then basic authentication is required as httpHeader
+# httpHeaders:
+# - name: Authorization
+#   value: Basic <(.Values.management.username .Values.management.password)|b64enc>
+
 
 readinessProbe:
   enabled: true
