@@ -54,7 +54,7 @@ pmtagger:
   image:
     registry: docker.io
     repository: layer7api/pm-tagger
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -693,13 +693,12 @@ containerSecurityContext: {}
 bootstrap:
   script:
     enabled: false
-  cleanup: false
 
 # Add initContainers to the Gateway
 initContainers: []
 # initContainers:
 # - name: simple-init
-#   image: docker.io/layer7api/simple-init:1.0.0
+#   image: docker.io/layer7api/simple-init:1.0.1
 #   imagePullPolicy: Always
 #   volumeMounts:
 #   - name: config-directory
