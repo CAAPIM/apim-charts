@@ -38,7 +38,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 ## 3.0.7 General Updates
-The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info 
+The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info .
+
+The PM Tagger image default version tag been updated to 1.0.1.
 
 ## 3.0.6 General Updates
 The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
@@ -577,7 +579,7 @@ ingress:
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
 | `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.1`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |

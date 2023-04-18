@@ -54,7 +54,7 @@ pmtagger:
   image:
     registry: docker.io
     repository: layer7api/pm-tagger
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
