@@ -20,7 +20,13 @@ spec:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . }}      
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
 {{ if .Values.image.secretName }}
       imagePullSecrets:
         - name: {{ .Values.image.secretName | quote }}
@@ -87,6 +93,10 @@ spec:
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
 {{ end }}
+{{ if .Values.management.graphman.enabled }}
+            - name: {{ template "gateway.fullname" . }}-graphman
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+{{ end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
@@ -113,6 +123,10 @@ spec:
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
+{{ if .Values.customHosts.enabled }}
+      hostAliases:
+{{ toYaml .Values.customHosts.hostAliases | indent 12 }}
+{{ end }}
 {{ end }}
       volumes:
 {{ if  .Values.tls.customKey.enabled }}
@@ -158,5 +172,9 @@ spec:
 {{ end }}
 {{ if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
+          emptyDir: {}
+{{ end }}
+{{ if .Values.management.graphman.enabled }}
+        - name: {{ template "gateway.fullname" . }}-graphman
           emptyDir: {}
 {{ end }}

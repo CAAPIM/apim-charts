@@ -15,6 +15,9 @@ API Gateway is now running with Java 11 with the release of the v10.1.00. The Ga
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well. 
 
+## 1.0.3 Update
+- HostAliases applies to /etc/hosts for dns names that aren't available on a dns server.
+
 # Install the Chart
 
 ## From this Repository
@@ -72,6 +75,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `clusterPassword`          | Cluster Password, used if db backed  | `mypassword`  |
 | `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
 | `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
+| `management.graphman.enabled`          | Enable/Disable the GraphQL Management API (Graphman) | `false`  |
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `mypassword`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
@@ -94,6 +98,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
 | `bundle.enabled`          | Create and mount an empty configMap that you can use to load policy bundles onto your Gateway | `false`  |
 | `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`  |
+| `customHosts.enabled`    | Enable customHosts on the Gateway, this overrides /etc/hosts. | `see values.yaml` |
+| `customHosts.hostAliases`    | Array of hostAliases to add to the Container Gateway | `see values.yaml` |
 | `service.type`    | Service Type               | `LoadBalancer` |
 | `service.loadbal..`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |

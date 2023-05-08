@@ -46,6 +46,8 @@ management:
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
     enabled: false
+  graphman:
+    enabled: false
   username: admin
   password: mypassword
 
@@ -131,6 +133,18 @@ additionalSecret:
 bundle:
   enabled: false
   path: "bundles/*.bundle"
+
+# Configure custom hosts
+customHosts:
+  enabled: false
+  hostAliases:
+  - hostnames:
+    - "dev.ca.com"
+    - "dev1.ca.com"
+    ip: "0.0.0.0"
+  - hostnames:
+    - "example.ca.com"
+    ip: "0.0.0.0"
 
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
@@ -228,6 +242,9 @@ serviceAccount:
   # name:
   create: true
 
+# nodeSelector: {}
+tolerations: []
+
 ###############################################################################################
 ##                                                                                           ##
 ##                              Subchart Configuration                                       ##
@@ -277,6 +294,7 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+
 
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
