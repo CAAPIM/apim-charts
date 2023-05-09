@@ -18,6 +18,12 @@ image:
    password:
    email:
 
+# Create PodDisruptionBudget
+pdb:
+  create: false
+  maxUnavailable: ""
+  minAvailable: ""
+
 # Number of Edge Gateways to deploy
 replicas: 1
 # Update strategy
