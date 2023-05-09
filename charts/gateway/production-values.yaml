@@ -34,7 +34,7 @@ imagePullSecret:
 pdb:
   create: false
   maxUnavailable: ""
-  minAvailable: 1
+  minAvailable: ""
 
 serviceAccount:
   # name:
