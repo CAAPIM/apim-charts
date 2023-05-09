@@ -570,14 +570,14 @@ The full default is this
     # Additional properties go here
 ```
 
-## Read OS environment variables in Policy or pre-selected configuration fields (e.g. JDBC Connection URL)
-You can create and read OS environment variables as Gateway context variable syntax in Policy and in pre-selected configuration fields (e.g. JDBC Connection URL). In the values.yaml file, set the useEnvironmentVars field in env section to true , and set JDBC configuration parameters to use your env variables values:
+## Read environment variables in Policy or pre-selected configuration fields (e.g. JDBC Connection URL)
+You can create and read environment variables as Gateway context variable syntax in Policy and in pre-selected configuration fields (e.g. JDBC Connection URL). In the values.yaml file, set the useEnvironmentVars field in env section to true , and set JDBC configuration parameters to use your env variables values:
 
 ```
-additionalSecret: 
+additionalEnv: 
   SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
   SSGX_gatewayDbJdbcUser: root
-  SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost-mysql:3306/ssg
+  SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost:3306/ssg?allowPublicKeyRetrieval=True
   SSGX_gatewayDbJdbcPassword: 7layer
 ```  
 
