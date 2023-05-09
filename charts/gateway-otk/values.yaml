@@ -22,7 +22,7 @@ image:
 pdb:
   create: false
   maxUnavailable: ""
-  minAvailable: 1
+  minAvailable: ""
 
 # Number of Edge Gateways to deploy
 replicas: 1
