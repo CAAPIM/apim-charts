@@ -576,10 +576,14 @@ You can create and read environment variables as Gateway context variable syntax
 ```
 additionalEnv: 
   SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
-  SSGX_gatewayDbJdbcUser: root
+  SSGX_gatewayDbJdbcUser: gateway
   SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost:3306/ssg?allowPublicKeyRetrieval=True
-  SSGX_gatewayDbJdbcPassword: 7layer
 ```  
+Example of adding Jdbc password as Secret 
+```
+additionalSecret: 
+  SSGX_gatewayDbJdbcPassword: myPassword
+``` 
 
 ### Bundle Configuration
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
