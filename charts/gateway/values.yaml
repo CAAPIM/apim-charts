@@ -821,7 +821,7 @@ hazelcast:
   # url: hazelcast.example.com:5701
   image:
     repository: "hazelcast/hazelcast"
-    tag: "5.1.1"
+    tag: "5.2.1"
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName

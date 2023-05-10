@@ -921,7 +921,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
 | `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
-| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.1.1` |
+| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.2.1` |
 | `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |

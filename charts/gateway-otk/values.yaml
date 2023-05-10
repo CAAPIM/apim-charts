@@ -286,7 +286,7 @@ hazelcast:
   external: false
   # url: hazelcast.example.com:5701
   image:
-    tag: "5.1.1"
+    tag: "5.2.1"
   cluster:
     memberCount: 2
   mancenter:
