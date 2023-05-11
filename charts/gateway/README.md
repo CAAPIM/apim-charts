@@ -37,6 +37,10 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.8 Updates to Hazelcast
+The default image tag in values.yaml is updated to **5.2.1** and xsd version in configmap.yaml to **5.2**. The updates are due to vulnerability from CVE-2022-36437.
+The updates are applied to both the gateway and gateway-otk chart.
+
 ## 3.0.7 General Updates
 The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info .
 
