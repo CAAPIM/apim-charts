@@ -29,7 +29,7 @@ data:
         {{- else }}
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
-         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd"
+         http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.2.xsd"
         {{- end }}
             xmlns="http://www.hazelcast.com/schema/client-config">
         <instance-name>{{ .Release.Name }}-{{ .Release.Namespace }}</instance-name>

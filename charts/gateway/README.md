@@ -37,6 +37,10 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.8 Updates to Hazelcast
+The default image tag in values.yaml is updated to **5.2.1** and xsd version in configmap.yaml to **5.2**. The updates are due to vulnerability from CVE-2022-36437.
+The updates are applied to both the gateway and gateway-otk chart.
+
 ## 3.0.7 General Updates
 The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info .
 
@@ -921,7 +925,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
 | `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
-| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.1.1` |
+| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.2.1` |
 | `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |
