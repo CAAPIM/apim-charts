@@ -205,6 +205,9 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
 | `imagePullSecret.username`          | Registry Username | `nil`  |
 | `imagePullSecret.password`          | Registry Password | `nil`  |
+| `pdb.create`          | Create a PodDisruptionBudget (PDB) object | `false` |
+| `pdb.maxUnavailable`         | PodDisruptionBudget maximum unavailable pod count         |
+| `pdb.minAvailable`         | PodDisruptionBudget minimum available pod count          |
 | `replicas`                   | Number of Gateway replicas        | `1`                                                          |
 | `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
 | `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
