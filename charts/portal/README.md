@@ -246,6 +246,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.forceRedeploy`            | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `analytics.replicaCount`             | Number of analytics nodes                                    | `1`                                                          |
 | `analytics.image.pullPolicy`         | Analytics image pull policy                                  | `IfNotPresent`                                               |
+| `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `not set`                                                    |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -256,6 +259,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.replicaCount`                  | Number of APIM nodes                                         | `1`                                                          |
 | `apim.image.pullPolicy`              | APIM image pull policy                                       | `IfNotPresent`                                               |
 | `apim.otkDb.name`                    | APIM OTK Database name                                       | `otk_db`                                                     |
+| `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `apim.pdb.minAvailable`              | Minimum number of available pods                             | `not set`                                                    |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -278,6 +284,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.replicaCount`         | Number of authenticator nodes                                | `1`                                                          |
 | `authenticator.javaOptions`          | Java Options to pass in                                      | `-Xms1g -Xmx1g`                                              |
 | `authenticator.image.pullPolicy`     | authenticator image pull policy                              | `IfNotPresent`                                               |
+| `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `not set`                                                    |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
 | `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -285,8 +294,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.affinity`             | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `authenticator.additionalLabels`     | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | `1`                                                          |
+| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | ``                                                          |
 | `dispatcher.image.pullPolicy`        | Dispatcher image pull policy                                 | `IfNotPresent`                                               |
+| `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `not set`                                                    |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -303,6 +315,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
 | `portalData.image.pullPolicy`        | Portal-data image pull policy                                | `IfNotPresent`                                               |
+| `portalData.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `portalData.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `portalData.pdb.minAvailable`        | Minimum number of available pods                             | `not set`                                                    |
 | `portalData.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalData.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalData.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -313,6 +328,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.replicaCount`      | Number of portal-enterprise nodes                            | `1`                                                          |
 | `portalEnterprise.javaOptions`       | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
 | `portalEnterprise.image.pullPolicy`  | Portal enterprise image pull policy                          | `IfNotPresent`                                               |
+| `portalEnterprise.pdb.create`        | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `portalEnterprise.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `portalEnterprise.pdb.minAvailable`  | Minimum number of available pods                             | `not set`                                                    |
 | `portalEnterprise.strategy`          | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.resources`         | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalEnterprise.nodeSelector`      | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -322,6 +340,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `pssg.replicaCount`                  | Number of PSSG nodes                                         | `1`                                                          |
 | `pssg.image.pullPolicy`              | PSSG image pull policy                                       | `IfNotPresent`                                               |
+| `pssg.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `pssg.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `pssg.pdb.minAvailable`              | Minimum number of available pods                             | `not set`                                                    |
 | `pssg.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `pssg.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `pssg.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -342,6 +363,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.replicaCount`     | Number of tenant provisioner nodes                           | `1`                                                          |
 | `tenantProvisioner.javaOptions`      | Java Options to pass in                                      | `-Xms512m -Xmx512m`                                          |
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy                         | `IfNotPresent`                                               |
+| `tenantProvisioner.pdb.create`       | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `tenantProvisioner.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                   |
+| `tenantProvisioner.pdb.minAvailable`  | Minimum number of available pods                             | `not set`                                                   |
 | `tenantProvisioner.strategy`         | Update strategy                                              | `{} evaluated as a template`                                 |
 | `tenantProvisioner.resources`        | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `tenantProvisioner.nodeSelector `    | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -556,6 +580,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
 | `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
 | `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
+| `druid.minio.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.minio.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.minio.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.minio.replicaCount` | Number of minio nodes. Minio replication count cannot be changed after Portal is installed.  | `1` |
 | `druid.minio.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
 | `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
@@ -576,6 +603,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.zookeeper.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.zookeeper.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.zookeeper.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.zookeeper.replicaCount` | Number of zookeeper nodes. It should maintain a quorum. Preferred for HA is 3 or odd counts.   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -583,6 +613,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.coordinator.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.coordinator.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.coordinator.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.coordinator.replicaCount` | Number of coordinator nodes   | `1` |
 | `druid.coordinator.image.pullPolicy` | Coordinator image pull policy  | `IfNotPresent` |
 | `druid.coordinator.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -590,6 +623,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.kafka.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.kafka.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.kafka.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.kafka.replicaCount` | Number of kafka nodes   | `1` |
 | `druid.kafka.image.pullPolicy` | Kafka image pull policy   | `IfNotPresent` |
 | `druid.kafka.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -597,6 +633,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.broker.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.broker.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.broker.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.broker.replicaCount` | Number of broker nodes   | `1` |
 | `druid.broker.image.pullPolicy` | Broker image pull policy   | `IfNotPresent` |
 | `druid.broker.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -604,6 +643,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.historical.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.historical.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.historical.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.historical.replicaCount` | Number of historical nodes   | `1` |
 | `druid.historical.image.pullPolicy` | Historical image pull policy   | `IfNotPresent` |
 | `druid.historical.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -611,6 +653,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.ingestion.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.ingestion.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.ingestion.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.ingestion.replicaCount` | Number of ingestion nodes   | `1` |
 | `druid.ingestion.image.pullPolicy` | Ingestion image pull policy   | `IfNotPresent` |
 | `druid.ingestion.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -618,6 +663,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.middlemanager.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.middlemanager.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.middlemanager.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.middlemanager.replicaCount` | Number of middle manager nodes   | `1` |
 | `druid.middlemanager.image.pullPolicy` | Middle manager image pull policy   | `IfNotPresent` |
 | `druid.middlemanager.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -649,6 +697,10 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
 | `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
+| `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
+| `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
+| `rabbitmq.pdb.minAvailable   | Minimum number of available pods   | `not set` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
 | `rabbitmq.rbac.create`       | Create and use RBAC resources   | `true` |
@@ -682,6 +734,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
 | `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
+| `mysql.primary.pdb.enabled`     | Create PodDisruptionBudget (PDB) object   | `false` |
 
 
 ## Ingress-Nginx

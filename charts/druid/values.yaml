@@ -78,7 +78,7 @@ minio:
     # memory: 256Mi
 # nodeSelector: {}
 # affinity:
-  
+
 
 zookeeper:
   hostname: zookeeper
@@ -131,7 +131,7 @@ coordinator:
   image:
     pullPolicy: IfNotPresent
   resources:
-    requests: {}     
+    requests: {}
     # memory: 512Mi
     limits: {}
     # memory: 512Mi
@@ -151,20 +151,6 @@ historical:
 # nodeSelector: {}
 # affinity:
 
-kafka:
-  replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  resources:
-    requests: {}
-    # cpu: 100m
-    # memory: 750Mi
-    limits: {}
-    # cpu: 1000m
-    # memory: 1.5Gi
-# nodeSelector: {}
-# affinity:
-
 ingestion:
   replicaCount: 1
   image:
@@ -176,6 +162,20 @@ ingestion:
     requests: {}
     # cpu: 100m
     # memory: 512Mi
+    limits: {}
+    # cpu: 1000m
+    # memory: 1.5Gi
+# nodeSelector: {}
+# affinity:
+
+kafka:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {}
+    # cpu: 100m
+    # memory: 750Mi
     limits: {}
     # cpu: 1000m
     # memory: 1.5Gi

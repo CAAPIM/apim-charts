@@ -171,6 +171,10 @@ analytics:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -194,6 +198,10 @@ apim:
     pullPolicy: IfNotPresent
   otkDb:
     name: otk_db
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -217,6 +225,10 @@ authenticator:
   javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -239,6 +251,10 @@ dispatcher:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -290,6 +306,10 @@ portalData:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -313,6 +333,10 @@ portalEnterprise:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -334,6 +358,10 @@ pssg:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -357,6 +385,10 @@ tenantProvisioner:
   javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -407,6 +439,10 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
@@ -452,6 +488,10 @@ druid:
   # affinity: {}
 
   zookeeper:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -465,6 +505,10 @@ druid:
   # affinity: {}
 
   coordinator:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -478,6 +522,10 @@ druid:
   # affinity: {}
 
   kafka:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -493,6 +541,10 @@ druid:
   # affinity: {}
 
   broker:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -506,6 +558,10 @@ druid:
   # affinity: {}
 
   historical:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -519,6 +575,10 @@ druid:
   # affinity: {}
 
   ingestion:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -535,6 +595,10 @@ druid:
   # affinity: {}
 
   middlemanager:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -568,6 +632,10 @@ rabbitmq:
     tag: "5.2"
     pullSecrets:
       - broadcom-apim
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: 1
   serviceAccount:
     create: true
   # name:
@@ -707,6 +775,8 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    pdb:
+      enabled: false
     persistence:
       annotations:
         helm.sh/hook: pre-install

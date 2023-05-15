@@ -1,0 +1,18 @@
+{{ if .Values.authenticator.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: authenticator
+  name: authenticator-pdb
+spec:
+  {{- if .Values.authenticator.pdb.minAvailable }}
+  minAvailable: {{ .Values.authenticator.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.authenticator.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.authenticator.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: authenticator
+{{ end }}
