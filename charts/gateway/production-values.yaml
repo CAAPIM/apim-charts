@@ -69,8 +69,19 @@ pmtagger:
   # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   # nodeSelector: {}
   # affinity: {}
+
+  # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods
+  topologySpreadConstraints: []
+  
   # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
+  
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
+
 
 # Cluster Hostname
 clusterHostname: my.localdomain

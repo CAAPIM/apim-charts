@@ -2,7 +2,7 @@ apiVersion: v2
 appVersion: "11.0.00"
 description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
 name: gateway
-version: 3.0.8
+version: 3.0.9
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
