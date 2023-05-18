@@ -15,6 +15,15 @@ metadata:
     {{- range $key, $val := .Values.otk.job.labels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
 spec:
   backoffLimit: 1
   template:

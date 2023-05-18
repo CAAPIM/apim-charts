@@ -7,6 +7,15 @@ metadata:
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -19,6 +28,15 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
+    {{- range $key, $val := .Values.podLabels }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- if  .Values.podAnnotations }}
+      annotations:
+    {{- range $key, $val := .Values.podAnnotations }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.affinity }}
