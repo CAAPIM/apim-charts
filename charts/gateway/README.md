@@ -37,6 +37,42 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.10 General Updates
+Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
+
+- Additional Labels/Annotations apply to everything in this Chart's templates
+```
+# Additional Annotations apply to all deployed objects
+additionalAnnotations: {}
+
+# Additional Labels apply to all deployed objects
+additionalLabels: {}
+```
+
+- Pod Labels/Annotations at the base level apply to the Gateway Pod
+```
+## Pod Labels for the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+# Pod Annotations apply to the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+```
+
+- PM-Tagger pod labels/annotations are separate
+```
+pmtagger:
+  ...
+  ## Pod Labels for the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+```
+
 ## 3.0.9 Updates to PM-Tagger
 PM tagger has following additional configuration options
 - [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
@@ -233,6 +269,10 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
 | `imagePullSecret.username`          | Registry Username | `nil`  |
 | `imagePullSecret.password`          | Registry Password | `nil`  |
+| `additionalAnnotations`          | Additional Annotations apply to all deployed objects | `{}`  |
+| `additionalLabels`          | Additional Labels apply to all deployed objects | `{}`  |
+| `podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
+| `podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
 | `replicas`                   | Number of Gateway replicas        | `1`                                                          |
 | `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
 | `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
@@ -594,12 +634,14 @@ ingress:
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |
-| `nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
-| `affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
-| `topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
-| `tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
-| `podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
-| `containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+| `pmtagger.podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
+| `pmtagger.podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
+| `pmtagger.nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
+| `pmtagger.affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
+| `pmtagger.topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
+| `pmtagger.tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
+| `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
+| `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:

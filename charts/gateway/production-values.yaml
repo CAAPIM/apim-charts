@@ -31,6 +31,20 @@ imagePullSecret:
   username:
   password:
 
+# Additional Annotations apply to all deployed objects
+additionalAnnotations: {}
+
+# Additional Labels apply to all deployed objects
+additionalLabels: {}
+
+## Pod Labels for the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+# Pod Annotations apply to the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+
 serviceAccount:
   # name:
   create: true
@@ -66,6 +80,14 @@ pmtagger:
     limits:
       memory: 64Mi
       cpu: 250m
+  ## Pod Labels for the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+
   # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   # nodeSelector: {}
   # affinity: {}

@@ -7,6 +7,15 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+   {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
 data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}

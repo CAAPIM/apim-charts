@@ -11,6 +11,9 @@ metadata:
    chart: {{ template "gateway.chart" . }}
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
+   {{- range $key, $val := .Values.additionalLabels }}
+   {{ $key }}: "{{ $val }}"
+   {{- end }}
  annotations:
 {{- range $key, $val := .Values.ingress.annotations }}
    {{ $key }}: "{{ $val }}"
