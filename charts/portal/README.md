@@ -299,6 +299,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS` |Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com| `not set`                                                   |
+| `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` |allowed rate limit per minute to the Portal health check endpoint| 	`6`                                                   |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
