@@ -81,8 +81,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
             - name: RBAC_DATABASE_PASSWORD
               valueFrom:
@@ -90,8 +88,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
             - name: SEARCH_DATABASE_PASSWORD
               valueFrom:
@@ -99,8 +95,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
             # test only variables
             - name: RBAC_CLIENT_CACHE_EXPIRY
