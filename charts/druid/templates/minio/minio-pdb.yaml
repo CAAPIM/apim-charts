@@ -6,6 +6,9 @@ metadata:
     app: minio
   name: minio-pdb
 spec:
+  {{- if .Values.minio.pdb.minAvailable }}
+  minAvailable: {{ .Values.minio.pdb.minAvailable }}
+  {{- end }}
   {{- if .Values.minio.pdb.maxUnavailable }}
   maxUnavailable: {{ .Values.minio.pdb.maxUnavailable }}
   {{- end }}
