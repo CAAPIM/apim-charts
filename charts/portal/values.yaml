@@ -776,7 +776,9 @@ mysql:
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
     pdb:
-      enabled: false
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     persistence:
       annotations:
         helm.sh/hook: pre-install

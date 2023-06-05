@@ -248,7 +248,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.image.pullPolicy`         | Analytics image pull policy                                  | `IfNotPresent`                                               |
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `not set`                                                    |
+| `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -261,7 +261,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.otkDb.name`                    | APIM OTK Database name                                       | `otk_db`                                                     |
 | `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `apim.pdb.minAvailable`              | Minimum number of available pods                             | `not set`                                                    |
+| `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -286,7 +286,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.image.pullPolicy`     | authenticator image pull policy                              | `IfNotPresent`                                               |
 | `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `not set`                                                    |
+| `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
 | `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -298,7 +298,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.image.pullPolicy`        | Dispatcher image pull policy                                 | `IfNotPresent`                                               |
 | `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `not set`                                                    |
+| `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -318,7 +318,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.image.pullPolicy`        | Portal-data image pull policy                                | `IfNotPresent`                                               |
 | `portalData.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `portalData.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `portalData.pdb.minAvailable`        | Minimum number of available pods                             | `not set`                                                    |
+| `portalData.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
 | `portalData.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalData.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalData.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -331,7 +331,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.image.pullPolicy`  | Portal enterprise image pull policy                          | `IfNotPresent`                                               |
 | `portalEnterprise.pdb.create`        | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `portalEnterprise.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `portalEnterprise.pdb.minAvailable`  | Minimum number of available pods                             | `not set`                                                    |
+| `portalEnterprise.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                          |
 | `portalEnterprise.strategy`          | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.resources`         | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalEnterprise.nodeSelector`      | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -343,7 +343,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.image.pullPolicy`              | PSSG image pull policy                                       | `IfNotPresent`                                               |
 | `pssg.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `pssg.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `pssg.pdb.minAvailable`              | Minimum number of available pods                             | `not set`                                                    |
+| `pssg.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
 | `pssg.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `pssg.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `pssg.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -366,7 +366,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy                         | `IfNotPresent`                                               |
 | `tenantProvisioner.pdb.create`       | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `tenantProvisioner.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                   |
-| `tenantProvisioner.pdb.minAvailable`  | Minimum number of available pods                             | `not set`                                                   |
+| `tenantProvisioner.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                         |
 | `tenantProvisioner.strategy`         | Update strategy                                              | `{} evaluated as a template`                                 |
 | `tenantProvisioner.resources`        | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `tenantProvisioner.nodeSelector `    | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -701,7 +701,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
 | `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
-| `rabbitmq.pdb.minAvailable   | Minimum number of available pods   | `not set` |
+| `rabbitmq.pdb.minAvailable   | Minimum number of available pods   | `1` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
 | `rabbitmq.rbac.create`       | Create and use RBAC resources   | `true` |
@@ -735,7 +735,12 @@ The following table lists the configured parameters of the MySQL Subchart - http
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
 | `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
-| `mysql.primary.pdb.enabled`     | Create PodDisruptionBudget (PDB) object   | `false` |
+| `mysql.primary.pdb.create`      | Create PodDisruptionBudget (PDB) object   | `false` |
+| `mysql.primary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
+| `mysql.primary.pdb.minAvailable` | Minimum number of available pods | `1` |
+| `mysql.secondary.pdb.create`    | Create PodDisruptionBudget (PDB) object   | `false` |
+| `mysql.secondary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
+| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `1` |
 
 
 ## Ingress-Nginx

@@ -880,8 +880,6 @@ jobs:
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
-# We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
-# in any production environment.
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
@@ -931,7 +929,9 @@ mysql:
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
     pdb:
-      enabled: false
+      create: false
+      maxUnavailable: ""
+      minAvailable: 1
     persistence:
       annotations:
         helm.sh/hook: pre-install
