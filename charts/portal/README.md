@@ -448,19 +448,6 @@ this feature.
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
 
-
-### Audit Event Logs
-Audit event log purging is enabled and set to 365 days retention by default. Set
-this variable to customize the retention period. Set the value to 0 to disable
-this feature.
-
-| Environment Variable                                | Description                          |
-|-----------------------------------------------------|--------------------------------------|
-| `portalData.additionalEnv.AUDIT_LOG_RETENTION_DAYS` | The number of days of logs to retain |
-| `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
-| `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
-
-
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -659,14 +646,6 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2` |
 | `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2`        |
 | `druid.image.broker`        | Broker image        | `druid:5.2`            |
 | `druid.image.coordinator`   | Coordinator         | `druid:5.2`            |
