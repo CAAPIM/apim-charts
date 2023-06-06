@@ -1,0 +1,88 @@
+{{ if .Values.pmtagger.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "gateway.fullname" . }}-pm-tagger
+  labels:
+    app: {{ template "gateway.fullname" . }}-pm-tagger
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-pm-tagger
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.pmtagger.replicas }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}-pm-tagger
+        release: {{ .Release.Name }}
+    {{- range $key, $val := .Values.pmtagger.podLabels }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- if  .Values.pmtagger.podAnnotations }}
+      annotations:
+    {{- range $key, $val := .Values.pmtagger.podAnnotations }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.pmtagger.affinity }}
+      affinity: {{- toYaml .Values.pmtagger.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.tolerations }}
+      tolerations: {{- toYaml .Values.pmtagger.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.pmtagger.topologySpreadConstraints | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.podSecurityContext }}
+      securityContext: {{- toYaml .Values.pmtagger.podSecurityContext | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.pmtagger.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+{{- if .Values.pmtagger.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+{{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{.Values.pmtagger.image.registry}}/{{.Values.pmtagger.image.repository}}:{{.Values.pmtagger.image.tag}}
+          imagePullPolicy: {{ .Values.pmtagger.image.pullPolicy }}
+          {{- if .Values.pmtagger.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.pmtagger.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          command:
+          - /pm-tagger
+          resources:
+{{ toYaml .Values.pmtagger.resources | indent 12 }}
+          volumeMounts:
+            - name: {{ template "gateway.fullname" . }}-pm-tagger
+              mountPath: /config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: {{ template "gateway.fullname" . }}-pm-tagger
+          configMap:
+            name: {{ template "gateway.fullname" . }}-pm-tagger-configmap
+            items:
+            - key: config.yaml
+              path: config.yaml
+{{ end }}
