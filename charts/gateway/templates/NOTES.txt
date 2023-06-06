@@ -1,23 +1,39 @@
-Success!
+##################################################################################
+####                                 Success!                                 ####
+##################################################################################
+{{- if .Release.IsInstall}}
+####                 Your gateway deployment has been INSTALLED               ####
+{{- else }}
+####                 Your gateway deployment has been UPGRADED                ####
+{{- end }}
+##################################################################################
 
-{{if .Release.IsInstall}}
-Your deployment has been INSTALLED
-{{ else }}
-Your deployment has been UPGRADED
-{{ end }}
-To get the Gateway's IP Address type the following
-$ kubectl get svc -n {{ .Release.Namespace }}
+To view the Gateway's services you can use the following command
+$ kubectl get svc -n {{ .Release.Namespace }} | grep {{ .Chart.Name }}
 
-The Gateway is accessible on <gateway-ip>:8443/9443
+{{- if .Values.ingress.enabled }}
 
-{{if .Values.grafana.enabled}}
+You configured the following ingress hosts
+{{- range .Values.ingress.rules }}
+- {{ .host }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.grafana.enabled}}
+
 To access the Grafana Dashboard
 $ kubectl port-forward svc/{{.Release.Name}}-grafana 3000 -n {{ .Release.Namespace }}
 
 Open a browser and navigate to
-http://localhost:3000
+- http://localhost:3000
+- username: {{.Values.grafana.admin.user}}
+- password: {{.Values.grafana.admin.password}}
+{{- end }}
 
-username: {{.Values.grafana.admin.user}}
-password: {{.Values.grafana.admin.password}}
+To learn more about the Gateway Helm Chart check out the following links
 
-{{ end }}
+Gateway Helm Chart Readme
+- https://github.com/CAAPIM/apim-charts/tree/stable/charts/gateway
+
+Thinking in Kubernetes
+- https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html#thinkingk8s

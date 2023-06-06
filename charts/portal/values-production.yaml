@@ -20,7 +20,7 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2-1/
 # storageClass: "_"
 # schedulerName:
 
@@ -121,9 +121,9 @@ ingress:
     openshift: false
   # existingSecret:
   secretName: dispatcher-tls
-  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
-  ## Using other ingress controllers will work as long as they support SSL Passthrough
-  create: true
+  ## To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
+  ## Using other ingress controllers will work as long as they support SSL Passthrough.
+  create: false
 # Configure additional ingress controller specific annotations
   annotations:
     # kubernetes.io/ingress.class: nginx
@@ -475,18 +475,18 @@ tenantProvisioner:
 #       topologyKey: "kubernetes.io/hostname"
 
 image:
-  dispatcher: dispatcher:5.2
-  pssg: pssg:5.2
-  apim: ingress:5.2
-  enterprise: portal-enterprise:5.2
-  data: portal-data:5.2
-  tps: tenant-provisioning-service:5.2
-  analytics: analytics-server:5.2
-  authenticator: authenticator:5.2
-  dbUpgrade: db-upgrade-portal:5.2
-  rbacUpgrade: db-upgrade-rbac:5.2
-  upgradeVerify: upgrade-verify:5.2
-  tlsManager: tls-automator:5.2
+  dispatcher: dispatcher:5.2.1
+  pssg: pssg:5.2.1
+  apim: ingress:5.2.1
+  enterprise: portal-enterprise:5.2.1
+  data: portal-data:5.2.1
+  tps: tenant-provisioning-service:5.2.1
+  analytics: analytics-server:5.2.1
+  authenticator: authenticator:5.2.1
+  dbUpgrade: db-upgrade-portal:5.2.1
+  rbacUpgrade: db-upgrade-rbac:5.2.1
+  upgradeVerify: upgrade-verify:5.2.1
+  tlsManager: tls-automator:5.2.1
 
 ##
 ## Subchart Configuration
@@ -755,14 +755,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.2
-    broker: druid:5.2
-    coordinator: druid:5.2
-    middlemanager: druid:5.2
-    minio: minio:5.2
-    historical: druid:5.2
-    kafka: kafka:5.2
-    ingestion: ingestion-server:5.2
+    zookeeper: zookeeper:5.2.1
+    broker: druid:5.2.1
+    coordinator: druid:5.2.1
+    middlemanager: druid:5.2.1
+    minio: minio:5.2.1
+    historical: druid:5.2.1
+    kafka: kafka:5.2.1
+    ingestion: ingestion-server:5.2.1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -772,7 +772,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.2"
+    tag: "5.2.1"
     pullSecrets:
       - broadcom-apim
   pdb:

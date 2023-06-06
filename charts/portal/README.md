@@ -3,19 +3,36 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.3 General Updates
+- This new version of the chart supports API Portal 5.2.1.
+## 2.3.2 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.5.2 to support K8s 1.25+ version.
+- Ingress-NGINX Subchart deployment is disabled by default in values-production.yaml. Use any Ingress-controller that supports SSL/TLS Passthrough.
+## 2.3.1 General Updates
+- This new version of the chart supports API Portal 5.2.0.1, which has authenticator's high cpu usage fixed.
+## 2.3.0 General Updates
+- This new version of the chart supports API Portal 5.2.
+## 2.2.10 General Updates
+- This new version of the chart supports API Portal 5.1.2.1, refer release notes for more info https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/release-notes-api-developer-portal.html
+
+## 2.2.9 General Updates
+- This version fixes the broken functional issue of enrolling proxy so the advisory to use this version after 2.2.5
+
+## 2.2.8 General Updates
+- Updating the portal version doc link.
 
 ## 2.3.0 General Updates
 - This new version of the chart supports API Portal 5.2.
 
 ## 2.2.7 General Updates
 - This new version of the chart supports API Portal 5.1.2.
-
+- Faclilates to parametrize imagePullPolicy for all three portal jobs: db-upgrade-portal, db-upgrade-rbac and cert-upgrade.
 ## 2.2.6 General Updates
-- This new version of the chart to parametrize imagePullPolicy for all three portal jobs: db-upgrade-portal, db-upgrade-rbac and cert-upgrade.
 - Fixing bitnami repository dependency issue.
 
 ## 2.2.5 General Updates
-- This new version of the chart supports API Portal 5.1.1 to support internal SaaS only release.
+- This new version of the chart supports API Portal 5.1.1 to support internal SaaS only release
+
 
 ## 2.2.4 General Updates
 - Removed pssg related environment variables from portal-enterprise and portal-data containers.
@@ -48,7 +65,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26/8.0.31 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.22/8.0.26/8.0.31 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2-1/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -94,7 +111,7 @@ To delete API Portal installation, run the following command:
 ## Upgrade External Portal Database to MySQL 8.0
 MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1. This section helps you understand the overall process of upgrading an existing Portal database running MySQL 5.7 to MySQL 8.0.
 
-1) Before upgrading the Database, see **Before You Begin** and **Check Database Compatibility** in [TechDocs.](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+1) Before upgrading the Database, see **Before You Begin** and **Check Database Compatibility** in [TechDocs.](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
 
 2) Persist Analytics Data into Druid Database
@@ -119,7 +136,7 @@ MySQL 8.0 is supported as an external database starting from API Portal 5.0 CR-1
  $ helm uninstall <release name> -n <namespace>
 ```
 
-4) Upgrade MySQL 5.7 to 8.0.26. For more information, see **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
+4) Upgrade MySQL 5.7 to 8.0.26. For more information, see **Perform the Upgrade** [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2-1/install-configure-and-upgrade/install-portal-on-docker-swarm/upgrade-portal-database-to-mysql-8.html)
 
 5) After MySQL is upgraded, ensure that you can connect to it and then follow the below steps to start the portal with MySQL 8.0.26.
 Ensure that the value of **tls.job.enabled** is set to **false** in **values.yaml**
@@ -221,7 +238,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
-| `ingress.create` | Deploy the Nginx subchart as part of this deployment | `true` |
+| `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -457,7 +474,6 @@ this feature.
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
 
-
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -553,18 +569,18 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.2` |
-| `image.pssg` | PSSG image | `pssg:5.2` |
-| `image.apim` | APIM ingress image | `ingress:5.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2` |
-| `image.data` | portal-data image | `portal-data:5.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.2` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.2.1` |
+| `image.pssg` | PSSG image | `pssg:5.2.1` |
+| `image.apim` | APIM ingress image | `ingress:5.2.1` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2.1` |
+| `image.data` | portal-data image | `portal-data:5.2.1` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2.1` |
+| `image.analytics` | Analytics image | `analytics-server:5.2.1` |
+| `image.authenticator` | Authenticator image | `authenticator:5.2.1` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2.1` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2.1` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2.1` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.2.1` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -680,14 +696,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2.1`        |
+| `druid.image.broker`        | Broker image        | `druid:5.2.1`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.2.1`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.2.1`            |
+| `druid.image.minio`         | Minio image         | `minio:5.2.1`            |
+| `druid.image.historical`    | Historical image    | `druid:5.2.1`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.2.1`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2.1` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -696,7 +712,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2.1` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
@@ -744,6 +760,9 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 
 ## Ingress-Nginx
+
+***NOTE:- This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample.***
+
 The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
 
 This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
