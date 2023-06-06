@@ -740,7 +740,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 | `mysql.primary.pdb.minAvailable` | Minimum number of available pods | `1` |
 | `mysql.secondary.pdb.create`    | Create PodDisruptionBudget (PDB) object   | `false` |
 | `mysql.secondary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
-| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `1` |
+| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `not set` |
 
 
 ## Ingress-Nginx
