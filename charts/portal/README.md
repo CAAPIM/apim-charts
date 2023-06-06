@@ -21,6 +21,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## 2.2.8 General Updates
 - Updating the portal version doc link.
 
+## 2.3.13 General Updates
+- This new version of the chart supports API Portal 5.2.1
+
 ## 2.3.0 General Updates
 - This new version of the chart supports API Portal 5.2.
 
