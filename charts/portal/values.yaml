@@ -381,7 +381,7 @@ image:
   data: portal-data:5.2
   tps: tenant-provisioning-service:5.2
   analytics: analytics-server:5.2
-  authenticator: authenticator:5.2
+  authenticator: authenticator:5.2.0.1
   dbUpgrade: db-upgrade-portal:5.2
   rbacUpgrade: db-upgrade-rbac:5.2
   upgradeVerify: upgrade-verify:5.2

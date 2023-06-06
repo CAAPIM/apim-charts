@@ -1,3 +1,8 @@
+[![Lint and Test Charts](https://github.com/CAAPIM/apim-charts/actions/workflows/lint-test.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/lint-test.yaml)
+[![pages-build-deployment](https://github.com/CAAPIM/apim-charts/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/pages/pages-build-deployment)
+[![Release Charts](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml)
+[![Validate Schemas](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml)
+
 ## APIM Helm Charts
 This repository contains a series of Helm Charts for the Layer7 API Management (APIM) Portfolio.
 
@@ -20,9 +25,8 @@ Then, you can install the charts by:
 
 ## Helm Charts
 
-- [Gateway](./charts/gateway):Helm Chart for deploying API Gateway
+- [Gateway](./charts/gateway):Helm Chart for deploying API Gateway and optionally OTK on it.
 - [Portal](./charts/portal): Helm Chart for deploy the API Developer Portal
-- [Gateway-OTK](./charts/gateway-otk): Helm Chart for deploying API Gateway with the OAUTH TOOLKIT (Alpha)
 
 ***Examples*** contains chart specific values files that you can apply to your Gateway deployment to achieve specific scenarios. OTK-scenarios are currently in an alpha state and will be updated in the coming weeks.
 

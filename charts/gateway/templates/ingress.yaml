@@ -1,6 +1,5 @@
 {{ if .Values.ingress.enabled }}
-{{- $kubeTargetVersion := .Capabilities.KubeVersion.GitVersion }}
-{{- if semverCompare ">=1.19-0" $kubeTargetVersion -}}
+{{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" -}}
 apiVersion: networking.k8s.io/v1
 {{- else -}}
 apiVersion: networking.k8s.io/v1beta1
@@ -12,53 +11,41 @@ metadata:
    chart: {{ template "gateway.chart" . }}
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
+   {{- range $key, $val := .Values.additionalLabels }}
+   {{ $key }}: "{{ $val }}"
+   {{- end }}
  annotations:
 {{- range $key, $val := .Values.ingress.annotations }}
    {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
-  tls:
-  - secretName: {{ .Values.ingress.secretName }}
-    hosts:
-    {{- range .Values.ingress.tlsHostnames}}
-    - {{ . }}
-    {{- end }}
-  rules:
-  - host: {{ .Values.ingress.hostname }}
-    http:
-      paths:
-{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: {{ template "gateway.fullname" . }}
-            port:
-              number: {{ .Values.ingress.port }}
-{{- else }}
-      - backend:
-          serviceName: {{ template "gateway.fullname" . }}
-          servicePort: {{ .Values.ingress.port }}
+{{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
 {{- end }}
-  {{if .Values.ingress.additionalHostnamesAndPorts }}
-  {{- $gatewayFullName := include "gateway.fullname" . }}
-  {{- range $key, $val := .Values.ingress.additionalHostnamesAndPorts }}
-  - host: {{ $key }}
+  tls:
+{{ toYaml .Values.ingress.tls | indent 2 }}
+  rules:
+{{- $gatewayFullName := include "gateway.fullname" . }}
+{{- range .Values.ingress.rules }}
+  - host: {{ .host }}
     http:
       paths:
-{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+{{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
       - pathType: Prefix
-        path: "/"
+        path: {{ .path }}
         backend:
           service:
             name: {{ $gatewayFullName }}
             port:
-              number: {{ $val }}
+            {{- if .service.port.number }}
+              number: {{ .service.port.number }}
+            {{- else }}
+              name: {{ .service.port.name }}
+            {{- end }}
 {{- else }}
       - backend:
-          serviceName: {{ $gatewayFullName }}
-          servicePort: {{ $val }}
+          serviceName: {{ template "gateway.fullname" . }}
+          servicePort: {{ .service.port.number }}
 {{- end }}
-  {{- end }}
-  {{ end }}
-  {{ end }}
+{{- end }}
+{{ end }}
