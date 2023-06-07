@@ -176,3 +176,14 @@ Define Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "otkdb-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define OTK database ReadOnly Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.readOnly" -}}
+{{- if .Values.otk.database.readOnlyConection.existingSecretName -}}
+    {{ .Values.otk.database.readOnlyConection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}

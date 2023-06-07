@@ -38,6 +38,10 @@ spec:
                 name: {{ template "otk.dbSecretName" . }}
             - secretRef:
                 name: {{ template "gateway.secretName" . }}
+{{- if and (.Values.otk.database.readOnlyConection.create) (ne .Values.otk.database.type "cassandra") }}
+            - secretRef:
+                name: {{ template "otk.dbSecretName.readOnly" . }}
+{{ end }}      
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
@@ -63,14 +67,32 @@ spec:
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
            - name: OTK_JDBC_DRIVER_CLASS
              value: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
+{{if .Values.otk.database.readOnlyConection.create }}
+           - name: OTK_RO_DATABASE_CONNECTION_NAME
+             value: {{ required "Please fill in otk.database.readOnlyConection.connectionName in values.yaml" .Values.otk.database.readOnlyConection.connectionName | quote }}
+           - name: OTK_RO_JDBC_URL
+             value: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.readOnlyConection.jdbcURL | quote }}
+           - name: OTK_RO_JDBC_DRIVER_CLASS
+             value: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConection.jdbcDriverClass | quote }}
+           - name: OTK_RO_DATABASE_PROPERTIES
+             value: {{ default "na" .Values.otk.database.readOnlyConection.properties | toJson | b64enc | quote }}
+{{ end }}
 {{ end }}
 {{ if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
+{{if .Values.otk.database.readOnlyConection.create }}
+           - name: OTK_RO_DATABASE_NAME
+             value: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConection.databaseName | quote }}           
+{{ end }}             
 {{ end }}           
            - name: OTK_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
 {{ end }}
+           - name: OTK_CREATE_RO_DATABASE_CONN
+             value: {{default false .Values.otk.database.readOnlyConection.create | quote }}
+           - name:  OTK_UPDATE_DATABASE_CONNECTION
+             value: {{default false .Values.otk.database.update | quote }}
            - name: OTK_SKAR_RETRY_COUNT
              value: {{ default 1 .Values.otk.installRetry | quote}}
            - name: OTK_SKAR_BACKOFF_FACTOR
@@ -95,8 +117,6 @@ spec:
              value: {{default false .Values.otk.enablePortalIngeration | quote }}
            - name: OTK_SKIP_POST_INSTALLATION_TASKS
              value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
-           - name: SSK_NAMES
-             value: {{ .Values.otk.solutionKitNames | quote }}
 
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
