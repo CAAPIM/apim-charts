@@ -31,14 +31,13 @@ spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       containers:
         - name: otk-install
-          image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
             - secretRef:
                 name: {{ template "gateway.secretName" . }}
-{{- if and (.Values.otk.database.readOnlyConection.create) (ne .Values.otk.database.type "cassandra") }}
+{{- if and (.Values.otk.database.readOnlyConnection.create) (ne .Values.otk.database.type "cassandra") }}
             - secretRef:
                 name: {{ template "otk.dbSecretName.readOnly" . }}
 {{ end }}      
@@ -67,30 +66,30 @@ spec:
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
            - name: OTK_JDBC_DRIVER_CLASS
              value: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
-{{if .Values.otk.database.readOnlyConection.create }}
+{{if .Values.otk.database.readOnlyConnection.create }}
            - name: OTK_RO_DATABASE_CONNECTION_NAME
-             value: {{ required "Please fill in otk.database.readOnlyConection.connectionName in values.yaml" .Values.otk.database.readOnlyConection.connectionName | quote }}
+             value: {{ required "Please fill in otk.database.readOnlyConnection.connectionName in values.yaml" .Values.otk.database.readOnlyConection.connectionName | quote }}
            - name: OTK_RO_JDBC_URL
-             value: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.readOnlyConection.jdbcURL | quote }}
+             value: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.readOnlyConnection.jdbcURL | quote }}
            - name: OTK_RO_JDBC_DRIVER_CLASS
-             value: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConection.jdbcDriverClass | quote }}
+             value: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConnection.jdbcDriverClass | quote }}
            - name: OTK_RO_DATABASE_PROPERTIES
-             value: {{ default "na" .Values.otk.database.readOnlyConection.properties | toJson | b64enc | quote }}
+             value: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
 {{ end }}
 {{ end }}
 {{ if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-{{if .Values.otk.database.readOnlyConection.create }}
+{{if .Values.otk.database.readOnlyConnection.create }}
            - name: OTK_RO_DATABASE_NAME
-             value: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConection.databaseName | quote }}           
+             value: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConnection.databaseName | quote }}           
 {{ end }}             
 {{ end }}           
            - name: OTK_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
 {{ end }}
            - name: OTK_CREATE_RO_DATABASE_CONN
-             value: {{default false .Values.otk.database.readOnlyConection.create | quote }}
+             value: {{default false .Values.otk.database.readOnlyConnection.create | quote }}
            - name:  OTK_UPDATE_DATABASE_CONNECTION
              value: {{default false .Values.otk.database.update | quote }}
            - name: OTK_SKAR_RETRY_COUNT

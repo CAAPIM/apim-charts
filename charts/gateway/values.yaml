@@ -506,7 +506,7 @@ otk:
     sql:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
-      jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+      jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
       # databaseName:
     # cassandra:
@@ -517,7 +517,7 @@ otk:
     #   driverConfig: {"localDataCenterName" : "DC1"}
 
     # Optionally configure read only Data Base connection for mysql/oracle.
-    readOnlyConection:
+    readOnlyConnection:
       create: false
       connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
