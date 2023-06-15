@@ -31,6 +31,7 @@ spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       containers:
         - name: otk-install
+          image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
           envFrom:
             - secretRef:
