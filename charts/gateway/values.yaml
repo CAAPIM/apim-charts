@@ -491,6 +491,7 @@ otk:
     # tolerations: []
   database:
     # OTK database type - mysql/oracle/cassandra
+    update: true
     type: mysql
     connectionName: OAuth
     # readonly_connectionName: OAuth_ReadOnly
@@ -518,7 +519,7 @@ otk:
 
     # Optionally configure read only Data Base connection for mysql/oracle.
     readOnlyConnection:
-      create: false
+      enabled: false
       connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
       # username: root
