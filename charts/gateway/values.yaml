@@ -524,7 +524,7 @@ otk:
       # existingSecretName: otkReadOnlyDbSecret
       # username: root
       # password: 7layer
-      # properties: {"maximumPoolSize":15, "minimumPoolSize":3} 
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
