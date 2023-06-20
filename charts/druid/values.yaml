@@ -139,6 +139,12 @@ coordinator:
 # affinity:
 
 historical:
+  livenessProbe:
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    timeoutSeconds: 1
+    failureThreshold: 3
   replicaCount: 1
   loglevel: WARN
   image:
