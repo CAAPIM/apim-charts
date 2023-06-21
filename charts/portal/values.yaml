@@ -636,6 +636,9 @@ ingress-nginx:
   rbac:
     create: true
   controller:
+  # 30MB is the max file size we allow for the custom pages and 15MB for GW Bundle. so max is set to 32
+    config:
+      proxy-body-size: "32m"
     publishService:
       enabled: true
     extraArgs:

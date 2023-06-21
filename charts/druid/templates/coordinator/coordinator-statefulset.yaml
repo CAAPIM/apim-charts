@@ -71,17 +71,19 @@ spec:
           readinessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 60
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.coordinator.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.coordinator.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.coordinator.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.coordinator.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.coordinator.readinessProbe.failureThreshold }}
           livenessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 90
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.coordinator.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.coordinator.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.coordinator.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.coordinator.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.coordinator.livenessProbe.failureThreshold }}
           ports:
             - containerPort: 8081
           {{- if .Values.coordinator.resources }}

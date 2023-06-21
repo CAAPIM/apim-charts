@@ -51,19 +51,21 @@ spec:
         - configMapRef:
             name: kafka-config
         readinessProbe:
-            exec:
-              command: [sh, /opt/ca/health_check.sh]
-            initialDelaySeconds: 90
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+          exec:
+            command: [sh, /opt/ca/health_check.sh]
+          initialDelaySeconds: {{ .Values.kafka.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.kafka.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.kafka.readinessProbe.periodSeconds }}
+          successThreshold: {{ .Values.kafka.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.kafka.readinessProbe.failureThreshold }}
         livenessProbe:
           exec:
             command: [sh, /opt/ca/health_check.sh]
-          initialDelaySeconds: 120
-          timeoutSeconds: 1
-          periodSeconds: 15
-          successThreshold: 1
+          initialDelaySeconds: {{ .Values.kafka.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.kafka.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.kafka.livenessProbe.periodSeconds }}
+          successThreshold: {{ .Values.kafka.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.kafka.livenessProbe.failureThreshold }}
         {{- if .Values.kafka.resources }}
         resources: {{- toYaml .Values.kafka.resources | nindent 12 }}
         {{- end }}
