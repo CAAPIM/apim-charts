@@ -64,18 +64,18 @@ spec:
           readinessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 90
+            initialDelaySeconds: {{ .Values.historical.readinessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ .Values.historical.readinessProbe.timeoutSeconds }}
-            periodSeconds: 15
-            successThreshold: 1
+            periodSeconds: {{ .Values.historical.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.historical.readinessProbe.successThreshold }}
             failureThreshold: {{ .Values.historical.readinessProbe.failureThreshold }}
           livenessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 120
+            initialDelaySeconds: {{ .Values.historical.livenessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ .Values.historical.livenessProbe.timeoutSeconds }}
-            periodSeconds: 15
-            successThreshold: 1
+            periodSeconds: {{ .Values.historical.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.historical.livenessProbe.successThreshold }}
             failureThreshold: {{ .Values.historical.livenessProbe.failureThreshold }}
           ports:
             - containerPort: 8083
