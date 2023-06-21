@@ -70,7 +70,7 @@ spec:
           livenessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-           initialDelaySeconds: {{ .Values.middlemanager.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ .Values.middlemanager.livenessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ .Values.middlemanager.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.middlemanager.livenessProbe.periodSeconds }}
             successThreshold: {{ .Values.middlemanager.livenessProbe.successThreshold }}
