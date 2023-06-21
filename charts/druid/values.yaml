@@ -45,6 +45,18 @@ serviceAccount:
 # name:
 
 minio:
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10
+  readinessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    failureThreshold: 10
   auth:
     secretName: minio-secret
     # Auto-generated minio-auth
@@ -95,6 +107,18 @@ zookeeper:
 # affinity:
 
 middlemanager:
+  livenessProbe:
+    initialDelaySeconds: 120
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 90
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
   replicaCount: 1
   loglevel: WARN
   indexer:
@@ -111,6 +135,18 @@ middlemanager:
 # affinity:
 
 broker:
+  livenessProbe:
+    initialDelaySeconds: 120
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 90
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
   replicaCount: 1
   loglevel: WARN
   image:
@@ -124,6 +160,18 @@ broker:
 # affinity:
 
 coordinator:
+  livenessProbe:
+    initialDelaySeconds: 90
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
   hostname: coordinator
   loglevel: WARN
   port: 8081
@@ -140,10 +188,16 @@ coordinator:
 
 historical:
   livenessProbe:
+    initialDelaySeconds: 120
     timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
     failureThreshold: 3
   readinessProbe:
+    initialDelaySeconds: 90
     timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
     failureThreshold: 3
   replicaCount: 1
   loglevel: WARN
@@ -158,6 +212,18 @@ historical:
 # affinity:
 
 kafka:
+  livenessProbe:
+    initialDelaySeconds: 120
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 90
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -172,6 +238,18 @@ kafka:
 # affinity:
 
 ingestion:
+  livenessProbe:
+    initialDelaySeconds: 120
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 90
+    timeoutSeconds: 1
+    periodSeconds: 15
+    successThreshold: 1
+    failureThreshold: 3
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent

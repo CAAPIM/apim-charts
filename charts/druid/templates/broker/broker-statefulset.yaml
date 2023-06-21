@@ -51,17 +51,19 @@ spec:
           readinessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 90
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.broker.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.broker.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.broker.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.broker.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.broker.readinessProbe.failureThreshold }}
           livenessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 120
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.broker.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.broker.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.broker.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.broker.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.broker.livenessProbe.failureThreshold }}
           ports:
             - containerPort: 8082
           {{- if .Values.broker.resources }}
