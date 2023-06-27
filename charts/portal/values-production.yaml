@@ -172,7 +172,7 @@ analytics:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -208,7 +208,7 @@ apim:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -244,7 +244,7 @@ authenticator:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -278,7 +278,7 @@ dispatcher:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -342,7 +342,7 @@ portalData:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -378,7 +378,7 @@ portalEnterprise:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -412,7 +412,7 @@ pssg:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 2
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -448,7 +448,7 @@ tenantProvisioner:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -516,7 +516,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 4
+      minAvailable: ""
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
@@ -573,7 +573,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 3
+      minAvailable: ""
     resources:
       limits:
         memory: 256Mi
@@ -600,7 +600,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 2
+      minAvailable: ""
     resources:
       limits:
         memory: 512Mi
@@ -626,7 +626,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 3
+      minAvailable: ""
     resources:
       requests:
         cpu: 100m
@@ -654,7 +654,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 2
+      minAvailable: ""
     resources:
       requests:
         memory: 1Gi
@@ -680,7 +680,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 2
+      minAvailable: ""
     resources:
       requests:
         memory: 2Gi
@@ -706,7 +706,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 2
+      minAvailable: ""
     portName: ingestion-svc
     resources:
       requests:
@@ -735,7 +735,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 2
+      minAvailable: ""
     resources:
       requests:
         memory: 4Gi
@@ -778,7 +778,7 @@ rabbitmq:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   serviceAccount:
     create: true
   # name:
@@ -934,7 +934,7 @@ mysql:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     persistence:
       annotations:
         helm.sh/hook: pre-install

@@ -174,7 +174,7 @@ analytics:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -201,7 +201,7 @@ apim:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -228,7 +228,7 @@ authenticator:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -254,7 +254,7 @@ dispatcher:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -309,7 +309,7 @@ portalData:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -336,7 +336,7 @@ portalEnterprise:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -361,7 +361,7 @@ pssg:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -388,7 +388,7 @@ tenantProvisioner:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -442,7 +442,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
@@ -491,7 +491,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -508,7 +508,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -525,7 +525,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -544,7 +544,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -561,7 +561,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -578,7 +578,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -598,7 +598,7 @@ druid:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -635,7 +635,7 @@ rabbitmq:
   pdb:
     create: false
     maxUnavailable: ""
-    minAvailable: 1
+    minAvailable: ""
   serviceAccount:
     create: true
   # name:
@@ -781,7 +781,7 @@ mysql:
     pdb:
       create: false
       maxUnavailable: ""
-      minAvailable: 1
+      minAvailable: ""
     persistence:
       annotations:
         helm.sh/hook: pre-install
