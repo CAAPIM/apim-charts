@@ -461,6 +461,9 @@ this feature.
 | `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`true`|
 | `rabbitmq.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
 | `rabbitmq.rbac.create`| Create & use RBAC resources |`true`|
+| `rabbitmq.volumePermissions.enabled` | Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`. After enabling set the appropriate runAsUser and fsGroup values |`false`|
+| `rabbitmq.podSecurityContext.fsGroup` | Set RabbitMQ pod's Security Context fsGroup | `1001` |
+| `rabbitmq.containerSecurityContext.runAsUser` | Set RabbitMQ containers' Security Context runAsUser | `1001` |
 | `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`true`|
 | `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
 | `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
