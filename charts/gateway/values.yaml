@@ -104,35 +104,24 @@ pmtagger:
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
 
+# Override all lifecycle hooks. This will take precedence over the preStopScript section below.
+lifecycleHooks: {}
+  # postStart: {}
+  # preStop: {}
 
-# Cluster Hostname
-clusterHostname: my.localdomain
+# This preStop script checks for open connections and delays pod termination for the specified timeout seconds
+# Enabling this mounts the script to /opt/docker/gracefulshutdown.sh and adds a preStop lifecycle hook to the Gateway Deployment
+preStopScript:
+  enabled: false        # Enable/Disable
+  periodSeconds: 3      # Time between checks
+  timeoutSeconds: 60    # Timeout - must be lower than terminationGracePeriodSeconds
+  excludedPorts:
+  - 2124
+  - 8777
 
-# Database configuration
-database:
-  # DB Backed or ephemeral
-  enabled: true
-  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
-  # Do not use this demo database in production!!!
-  create: true
-  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
-  username: gateway
-  password: mypassword
-  name: ssg
-
-## If loading a TLS Key/Pair
-# This key will become the default ssl key. Can only have one.
-# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
-## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
-  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
-  # SSG_SSL_KEY_PASS
-tls:
-  useSignedCertificates: false
-  # existingSecretName: ssg-tls
-# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
-  key:
-  pass:
+## terminationGracePeriodSeconds default duration in seconds kubernetes waits for container to exit before sending kill signal.
+## Defaults to 30 if not set
+# terminationGracePeriodSeconds: 90
 
 # Configure autoscaling
 # this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
@@ -379,6 +368,35 @@ config:
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
 
+# Cluster Hostname
+clusterHostname: my.localdomain
+
+# Database configuration
+database:
+  # DB Backed or ephemeral
+  enabled: true
+  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+  # Do not use this demo database in production!!!
+  create: true
+  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
+  username: gateway
+  password: mypassword
+  name: ssg
+
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
 # Cluster Password
 clusterPassword: mypassword
 
@@ -492,12 +510,11 @@ otk:
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
-     # connectionName: OAuth
-    # existingSecretName: otkDbSecret
+    # connectionName: OAuth
+    # existingSecretName: otkdb-secret
     username: root
     password: 7layer
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
-    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
     sql:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
@@ -514,7 +531,7 @@ otk:
 
   # Install OTK Health check bundle on gateway. Uses config map.
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
-  # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otkhealthcheck.bundle
+  # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
   healthCheckBundle:
     enabled: true
     useExisting: false
