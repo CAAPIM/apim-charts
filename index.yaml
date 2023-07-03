@@ -94,6 +94,38 @@ entries:
   gateway:
   - apiVersion: v2
     appVersion: 11.0.00
+    created: "2023-07-03T13:53:24.941578948Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.4.0
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.12.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.0.11
+    - condition: database.create
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.2.6
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: ce4770321459ec9f8e976aeb5e75856e173ce8869535c50f723b20b4d54088fe
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-3.0.11/gateway-3.0.11.tgz
+    version: 3.0.11
+  - apiVersion: v2
+    appVersion: 11.0.00
     created: "2023-05-19T16:48:25.308133594Z"
     dependencies:
     - condition: hazelcast.enabled
@@ -1808,4 +1840,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2023-06-21T19:54:32.574216498Z"
+generated: "2023-07-03T13:53:24.942018152Z"
