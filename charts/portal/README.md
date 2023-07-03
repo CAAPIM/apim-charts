@@ -674,6 +674,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.rbac.create`       | Create and use RBAC resources   | `true` |
 | `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
 | `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
+| `rabbitmq.persistence.mountPath`            | The path the RMQ volume will be mounted at | `/bitnami/rabbitmq/mnesia` |
 | `rabbitmq.replicaCount`                | Number of replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
 | `rabbitmq.clustering.forceBoot`                | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true  | `false` |
 | `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
