@@ -37,6 +37,12 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.11 General Updates
+Updates to Gateway Container Lifecycle.
+- [A new preStop script has been added for graceful termination](#graceful-termination)
+  - terminationGracePeriodSeconds must be greater than preStopScript.timeoutSeconds
+- Container Lifecycle can be overridden for custom exec/http calls
+
 ## 3.0.10 General Updates
 Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
 
@@ -246,6 +252,7 @@ database:
 * [Custom Health Checks](#custom-health-checks)
 * [Custom Configuration Files](#custom-configuration-files)
 * [Logs & Audit Configuration](#logs--audit-configuration)
+* [Graceful Termination](#graceful-termination)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
@@ -859,6 +866,32 @@ customConfig:
   #       key: sampletrafficloggerca.properties
   #       path: sampletrafficloggerca.properties
 ```
+
+### Graceful Termination
+During upgrades and other events where Gateway pods are replaced you may have APIs/Services that have long running connections open.
+
+This functionality delays Kubernetes sending a SIGTERM to the container gateway while connections remain open. This works in conjunction with terminationGracePeriodSeconds which should always be higher than preStopScript.timeoutSeconds. If preStopScript.timeoutSeconds is exceeded, the script will exit 0 and normal pod termination will resume.
+
+The preStop script will monitor connections to <b>inbound (not outbound)</b> Gateway Application TCP ports (i.e. inbound listener ports opened by the Gateway Application and not some other process) except those that are explicitly excluded.
+
+The following ports are excluded from monitoring by default.
+- 8777 (Hazelcast) - Embedded Hazelcast.
+- 2124 (Internode-Communication) - not utilised by the Container Gateway.
+
+If there are no open connections, the preStop script will exit immediately ignoring preStopScript.timeoutSeconds to avoid unnecessary resource utilisation (pod stuck in terminating state) during upgrades.
+
+While there aren't any explicit limits on preStopScript.timeoutSeconds and terminationGracePeriodSeconds running these for extended periods of time (i.e. more than 5 minutes) may be less reliable where other Kubernetes processes may remove the pod before terminationGracePeriodSeconds is reached. If you do run services like this we recommend testing before any real life implementation or better, creating a dedicated workload without autoscaling enabled (HPA) where you have more control over when/how pods are replaced.
+
+The graceful termination (preStop script) is disabled by default.
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `lifecycleHooks`          | Custom lifecycle hooks, takes precedence over the preStopScript | `{}`  |
+| `preStopScript.enabled`          | Enable the preStop script | `false`  |
+| `preStopScript.periodSeconds`          | The time in seconds between checks | `3`  |
+| `preStopScript.timeoutSeconds`          | Timeout - must be lower than terminationGracePeriodSeconds  | `60`  |
+| `preStopScript.excludedPorts`          | Array of ports that should be excluded from the preStop script check | `[8777, 2124]`  |
+| `terminationGracePeriodSeconds`          | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml`  |
 
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
