@@ -1,0 +1,18 @@
+{{ if .Values.dispatcher.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: dispatcher
+  name: dispatcher-pdb
+spec:
+  {{- if .Values.dispatcher.pdb.minAvailable }}
+  minAvailable: {{ .Values.dispatcher.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.dispatcher.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.dispatcher.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: dispatcher
+{{ end }}

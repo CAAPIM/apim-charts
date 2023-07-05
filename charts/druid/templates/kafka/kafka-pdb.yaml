@@ -1,0 +1,18 @@
+{{ if .Values.kafka.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: kafka
+  name: kafka-pdb
+spec:
+  {{- if .Values.kafka.pdb.minAvailable }}
+  minAvailable: {{ .Values.kafka.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.kafka.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.kafka.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: kafka
+{{ end }}

@@ -1,0 +1,18 @@
+{{ if .Values.portalEnterprise.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: portal-enterprise
+  name: portal-enterprise-pdb
+spec:
+  {{- if .Values.portalEnterprise.pdb.minAvailable }}
+  minAvailable: {{ .Values.portalEnterprise.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.portalEnterprise.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.portalEnterprise.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: portal-enterprise
+{{ end }}

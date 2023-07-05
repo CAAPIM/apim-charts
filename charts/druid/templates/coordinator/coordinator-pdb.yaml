@@ -1,0 +1,18 @@
+{{ if .Values.coordinator.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: coordinator
+  name: coordinator-pdb
+spec:
+  {{- if .Values.coordinator.pdb.minAvailable }}
+  minAvailable: {{ .Values.coordinator.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.coordinator.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.coordinator.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: coordinator
+{{ end }}
