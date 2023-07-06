@@ -53,6 +53,8 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
+  # Set this to true if there is already an existing pull secret that has DB password as value and key name 'mysql-password' available.
+  useExistingDBSecret: false
   #Configuration to use custom registries to pull the container images with appropriate credentials.
   #This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:

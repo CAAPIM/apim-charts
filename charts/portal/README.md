@@ -210,6 +210,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
 | `portal.useExistingPullSecret` | Configures Portal Deployment to use **global.pullSecret** as imagePullSecret | `false` |
+| `portal.useExistingDBSecret` | Configures Portal Deployment to use **global.databaseSecret** for fetching the DB password | `false` |
 | `portal.imagePullSecret.enabled` | Configures Portal Deployment to use custom registry, this option is only evaluated only when portal.registryCredentials option is not used | `false` |
 | `portal.imagePullSecret.username`          | Custom registry Username | `nil`  |
 | `portal.imagePullSecret.password`          | Custom registry Password | `nil`  |
