@@ -9,6 +9,9 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
+  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
+  # If setupDemoDatabase is true ensure mysql.auth.existingSecret use the same secret is used and contain the keys `mysql-root-password`, `mysql-replication-password` along with `mysql-password`
+  useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
 # demoDatabaseRootPassword: 7layer
@@ -53,8 +56,6 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
-  # Set this to true if there is already an existing pull secret that has DB password as value and key name 'mysql-password' available.
-  useExistingDBSecret: false
   #Configuration to use custom registries to pull the container images with appropriate credentials.
   #This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:

@@ -172,7 +172,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.portalRepository` | Image Repository | `caapim/` |
 | `global.pullSecret` | Image Pull Secret name | `broadcom-apim` |
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
-| `global.databaseSecret` | Database secret name | `database-secret` |
+| `global.databaseSecret` | Database secret name. If **global.setupDemoDatabase** is true ensure **mysql.auth.existingSecret** use the same secret is used and contain the keys `mysql-root-password`, `mysql-replication-password` along with `mysql-password` | `database-secret` |
+| `global.useExistingDatabaseSecret` | Configures Portal Deployment to use **global.databaseSecret** for fetching the DB password | `false` |
 | `global.databaseUsername` | Database username | `admin` |
 | `global.demoDatabaseRootPassword` | Demo Database root password | `7layer`|
 | `global.demoDatabaseReplicationPassword` | Demo Database replication password | `7layer`|
@@ -210,7 +211,6 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portal.defaultTenantId` | **Important!** Do not change the default tenant ID unless you have been using a different tenant ID in your previous install/deployment. There is a 15 character limit. See [DNS Configuration](#dns-configuration) for tenant ID character limitations.  | `apim` |
 | `portal.registryCredentials` | Used to create image pull secret, see prerequisites | `` |
 | `portal.useExistingPullSecret` | Configures Portal Deployment to use **global.pullSecret** as imagePullSecret | `false` |
-| `portal.useExistingDBSecret` | Configures Portal Deployment to use **global.databaseSecret** for fetching the DB password | `false` |
 | `portal.imagePullSecret.enabled` | Configures Portal Deployment to use custom registry, this option is only evaluated only when portal.registryCredentials option is not used | `false` |
 | `portal.imagePullSecret.username`          | Custom registry Username | `nil`  |
 | `portal.imagePullSecret.password`          | Custom registry Password | `nil`  |
