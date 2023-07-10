@@ -10,7 +10,7 @@ global:
   databaseType: mysql
   databaseSecret: database-secret
   # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
-  # If setupDemoDatabase is true ensure mysql.auth.existingSecret use the same secret is used and contain the keys `mysql-root-password`, `mysql-replication-password` along with `mysql-password`
+  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
   useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
