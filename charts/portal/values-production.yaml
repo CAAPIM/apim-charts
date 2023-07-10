@@ -9,6 +9,9 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
+  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
 # demoDatabaseRootPassword: 7layer
