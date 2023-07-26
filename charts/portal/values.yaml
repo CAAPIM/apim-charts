@@ -193,6 +193,7 @@ analytics:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 apim:
   forceRedeploy: false
@@ -355,6 +356,7 @@ portalEnterprise:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 pssg:
   forceRedeploy: false
@@ -407,6 +409,7 @@ tenantProvisioner:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 image:
   dispatcher: dispatcher:5.2.1

@@ -200,6 +200,7 @@ analytics:
 #           values:
 #           - analytics
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 apim:
   forceRedeploy: false
@@ -272,6 +273,7 @@ authenticator:
 #           values:
 #           - authenticator
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 dispatcher:
   forceRedeploy: false
@@ -406,6 +408,7 @@ portalEnterprise:
 #           values:
 #           - portal-enterprise
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 pssg:
   forceRedeploy: false
@@ -476,6 +479,7 @@ tenantProvisioner:
 #           values:
 #           - tenant-provisioner
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 image:
   dispatcher: dispatcher:5.2.1
