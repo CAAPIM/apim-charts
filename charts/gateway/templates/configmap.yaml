@@ -18,7 +18,7 @@ data:
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
   {{- end }}
 {{- end }}
-{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }} 
+{{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
   EXTRA_JAVA_ARGS: {{ template "gateway.javaArgs" . }} -Dcom.l7tech.server.extension.sharedCounterProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedKeyValueStoreProvider=externalhazelcast -Dcom.l7tech.server.extension.sharedClusterInfoProvider=externalhazelcast
   hazelcast-xml: |+
     <hazelcast-client
