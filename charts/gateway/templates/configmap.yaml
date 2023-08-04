@@ -78,7 +78,7 @@ data:
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}
 {{- range $key, $val := .Values.config.additionalSystemProperties }}
-    {{ $key }}: {{ $val | quote }}
+    {{ $key }}={{ $val }}
 {{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
