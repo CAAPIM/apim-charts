@@ -77,7 +77,9 @@ data:
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}
-{{ .Values.config.additionalSystemProperties | indent 4 }}
+{{- range $key, $val := .Values.config.additionalSystemProperties }}
+    {{ $key }}: {{ $val }}
+{{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-
