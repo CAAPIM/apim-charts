@@ -154,7 +154,6 @@ config:
   # by default it is 50% - you should not go above 75%
   heapSize: "2g"
   javaArgs:
-    - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
     - -Dcom.l7tech.server.audit.admin.saveToInternal=false
     - -Dcom.l7tech.server.audit.system.saveToInternal=false
