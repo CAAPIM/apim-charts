@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.otk.healthCheckBundle.name }}
+  name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
   labels:
     app: {{ template "gateway.name" . }}
     chart: {{ template "gateway.chart" . }}

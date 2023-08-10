@@ -25,4 +25,4 @@ dependencies:
   - name: mysql
     version: 9.2.6
     repository: "https://charts.bitnami.com/bitnami"
-    condition: database.create
+    condition: database.create,otk.useDemoDb

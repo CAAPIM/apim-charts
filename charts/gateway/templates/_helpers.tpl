@@ -94,6 +94,15 @@ Create Image Pull Secret
 {{- end }}
 
 {{/*
+Create OTK Image Pull Secret
+*/}}
+{{- define "otkImagePullSecret" }}
+{{- if not .Values.otk.job.imagePullSecret.existingSecretName }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.otk.job.image.registry .Values.otk.job.imagePullSecret.username .Values.otk.job.imagePullSecret.password (printf "%s:%s" .Values.otk.job.imagePullSecret.username .Values.otk.job.imagePullSecret.password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
 Define Image Pull Secret Name
 */}}
 {{- define "gateway.imagePullSecret" -}}
@@ -103,6 +112,19 @@ Define Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "image-pull-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Define OTK Image Pull Secret Name
+*/}}
+{{- define "otkImagePullSecretName" -}}
+{{- if .Values.otk.job.imagePullSecret.existingSecretName -}}
+    {{ .Values.otk.job.imagePullSecret.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "otk-image-pull-secret" -}}
+{{- end -}}
+{{- end -}}
+
+
 
 {{/*
  Define Gateway TLS Secret Name
@@ -174,5 +196,48 @@ Define Image Pull Secret Name
     {{ .Values.otk.database.existingSecretName }}
 {{- else -}}
     {{- printf "%s-%s" (include "gateway.fullname" .) "otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK database ReadOnly Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.readOnly" -}}
+{{- if .Values.otk.database.readOnlyConnection.existingSecretName -}}
+    {{ .Values.otk.database.readOnlyConnection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+{{/*
+ Define OTK install image pullSecret
+ */}}
+{{- define "otk.imagePullSecret" -}}
+{{- if .Values.otk.job.imagePullSecret.enabled -}}
+    {{- printf "%s" (include "otkImagePullSecretName" .) -}}
+{{- else -}}
+    {{- printf "%s" (include "gateway.imagePullSecret" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK install image
+ */}}
+{{- define "otk.image" -}}
+{{- if empty .Values.otk.job.image.registry -}}
+    {{- printf "%s/%s:%s" .Values.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" .Values.otk.job.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK demo database name
+ */}}
+{{- define "otk.demoDBName" -}}
+{{- if empty .Values.otk.demoDBName -}}
+    {{- printf "%s" "ssg"  -}}
+{{- else -}}
+    {{ .Values.otk.demoDBName }}
 {{- end -}}
 {{- end -}}
