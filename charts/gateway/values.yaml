@@ -438,6 +438,11 @@ management:
     #   clientIP:
     #     timeoutSeconds: 10800
 
+    # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+    # internalTrafficPolicy: Cluster
+    # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    # externalTrafficPolicy: Cluster
+
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: LoadBalancer
@@ -471,6 +476,11 @@ service:
   # sessionAffinityConfig:
   #   clientIP:
   #     timeoutSeconds: 10800
+
+  # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+  # internalTrafficPolicy: Cluster
+  # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  # externalTrafficPolicy: Cluster
 
 # This enables/disables otk install or upgrade.
 # Prerequisites.
