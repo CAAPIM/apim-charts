@@ -489,6 +489,8 @@ service:
 # Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
+  dbUpgrade: true
+  useDemoDb: true
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
@@ -514,6 +516,8 @@ otk:
       repository: caapim/otk-install
       tag: 4.6.1
       pullPolicy: IfNotPresent
+    imagePullSecret:
+      enabled: false
     labels: {}
     # nodeSelector: {}
     # tolerations: []
