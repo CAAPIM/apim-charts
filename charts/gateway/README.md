@@ -37,6 +37,12 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.12 General Updates
+Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
+- [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)
+- [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
+
+
 ## 3.0.11 General Updates
 Updates to Gateway Container Lifecycle.
 - [A new preStop script has been added for graceful termination](#graceful-termination)
@@ -321,6 +327,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
+| `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
+| `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
 | `ingress.annotations`    | Additional ingress annotations               | `{}` |
 | `ingress.hostname`    | Sets Ingress Hostname  | `nil` |
