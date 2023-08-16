@@ -77,7 +77,7 @@ data:
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}
-{{- with index $.Values.config.additionalSystemProperties (sub $i 1 )}}
+{{- with .Values.config.additionalSystemProperties }}
     {{ .name }}={{ .value }}
 {{- end }}
 {{- end }}
