@@ -77,8 +77,10 @@ data:
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}
-{{- with .Values.config.additionalSystemProperties }}
+{{- if ne $i 0 }}
+{{- with index $.Values.config.additionalSystemProperties (sub $i 1 )}}
     {{ .name }}={{ .value }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
