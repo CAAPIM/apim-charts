@@ -460,6 +460,7 @@ database:
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}
 | `otk.job.image.tolerations`       | Job tolerations | []
+| `otk.database.update`             | Update database connection properties druring helm upgrade| `true`
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
@@ -474,6 +475,15 @@ database:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
+| `otk.database.readOnlyConnection.enabled`     | Enable OTK ReadOnly database connection | `false`
+| `otk.database.readOnlyConnection.connectionName`     | OTK ReadOnly database connection name | `OAuth_ReadOnly`
+| `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK ReadOnly database Secret |
+| `otk.database.readOnlyConnection.username`           | OTK ReadOnly database user name |
+| `otk.database.readOnlyConnection.password`           | OTK ReadOnly database password |
+| `otk.database.readOnlyConnection.properties`         | OTK ReadOnly database additional connection properties  | `{}`
+| `otk.database.readOnlyConnection.jdbcURL`        | OTK ReadOnly database sql jdbc URL (oracle/mysql) | `otk.database.sql.jdbcURL`
+| `otk.database.readOnlyConnection.jdbcDriverClass`| OTK ReadOnly database sql driver class name (oracle/mysql) | `otk.database.sql.jdbcDriverClass`
+| `otk.database.readOnlyConnection.databaseName`   | OTK ReadOnly database Oracle database name | `otk.database.sql.databaseName`
 | `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
 | `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
 | `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
