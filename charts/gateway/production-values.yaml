@@ -532,6 +532,8 @@ otk:
 
     username: root
     password: 7layer
+    # ddlUsername:
+    # ddlPassword:
     # readonly_username:
     # readonly_password:
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
