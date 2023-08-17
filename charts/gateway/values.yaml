@@ -489,6 +489,8 @@ service:
 # Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
+  dbUpgrade: true
+  useDemoDb: true
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
@@ -514,6 +516,8 @@ otk:
       repository: caapim/otk-install
       tag: 4.6.1
       pullPolicy: IfNotPresent
+    imagePullSecret:
+      enabled: false
     labels: {}
     # nodeSelector: {}
     # tolerations: []
@@ -527,9 +531,12 @@ otk:
     # readonly_existingSecretName: otkReadOnlyDbSecret
     username: root
     password: 7layer
+    # ddlUsername:
+    # ddlPassword:
     # readonly_username:
     # readonly_password:
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
     sql:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
@@ -884,6 +891,13 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers

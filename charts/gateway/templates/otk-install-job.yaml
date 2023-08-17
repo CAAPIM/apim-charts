@@ -31,7 +31,7 @@ spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       containers:
         - name: otk-install
-          image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
+          image: {{ template "otk.image" . }}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
           envFrom:
             - secretRef:
@@ -48,6 +48,10 @@ spec:
            - name: OTK_FORCE_INSTALL
              value: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
 {{ if ne .Values.otk.type "DMZ" }}
+           - name: OTK_SK_UPGRADE
+             value: "true"
+           - name: OTK_DATABASE_UPGRADE
+             value: "false"
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_CONNECTION_NAME
@@ -64,7 +68,11 @@ spec:
 {{ end }}
 {{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
            - name: OTK_JDBC_URL
+{{- if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+             value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
+{{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
+{{- end }}
            - name: OTK_JDBC_DRIVER_CLASS
              value: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
 {{if .Values.otk.database.readOnlyConnection.enabled }}
@@ -78,6 +86,7 @@ spec:
              value: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
 {{ end }}
 {{ end }}
+
 {{ if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
@@ -120,7 +129,7 @@ spec:
 
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
-        - name: {{ template "gateway.imagePullSecret" . }}
+        - name: {{ template "otk.imagePullSecret" . }}
 {{- end }}
 {{- if .Values.otk.job.nodeSelector }}
       nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
