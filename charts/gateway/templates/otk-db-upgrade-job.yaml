@@ -1,4 +1,4 @@
-{{ if and (.Values.otk.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
+{{ if and (.Values.otk.database.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -39,6 +39,10 @@ spec:
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
+{{- if and (ne .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
+           - name: OTK_LIQUIBASE_OPERATION
+             value: "changelogSync"
+{{ end }}
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_WAIT_TIMEOUT
@@ -48,7 +52,7 @@ spec:
            - name: OTK_DATABASE_UPGRADE
              value: "true"
            - name: OTK_JDBC_URL
-{{- if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
              value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
 {{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}

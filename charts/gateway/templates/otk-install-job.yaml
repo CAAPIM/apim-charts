@@ -68,7 +68,7 @@ spec:
 {{ end }}
 {{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
            - name: OTK_JDBC_URL
-{{- if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
              value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
 {{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
@@ -99,17 +99,13 @@ spec:
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
 {{ end }}
            - name: OTK_CREATE_RO_DATABASE_CONN
-<<<<<<< HEAD
-             value: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
-=======
-{{ if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+{{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
              value: "false"
 {{ else }}
              value: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
 {{ end }}
->>>>>>> 3c0151039920a7811b7109ba6563fecadefe7281
            - name:  OTK_UPDATE_DATABASE_CONNECTION
-             value: {{default false .Values.otk.database.update | quote }}
+             value: {{default true .Values.otk.database.updateConnection | quote }}
            - name: OTK_SKAR_RETRY_COUNT
              value: {{ default 1 .Values.otk.installRetry | quote}}
            - name: OTK_SKAR_BACKOFF_FACTOR

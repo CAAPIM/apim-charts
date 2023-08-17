@@ -486,15 +486,13 @@ service:
 # Prerequisites.
 #  1. OTK DB is installed.
 #  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
-# Note: In dual gateway installation, restart the pods after OTK install or upgrade.
+#  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
-  dbUpgrade: true
-  useDemoDb: true
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
-  # Force install or upgrade by uninstalling existing otk soluction kit and install.
+  # Force install or upgrade by uninstalling existing otk solution kit and install.
   # forceInstallOrUpgrade: false
 
   # Not applicable for DMZ and INTERNAL OTK types
@@ -509,8 +507,9 @@ otk:
   # dmzGatewayHost:
   # dmzGatewayPort:
 
-  # List of comma seperated sub soluction Kits to install or upgrade.
+  # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
+
   job:
     image:
       repository: caapim/otk-install
@@ -521,23 +520,28 @@ otk:
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+
   database:
-    # OTK database type - mysql/oracle/cassandra
-    update: true
+    # OTK database type - mysql/oracle/cassandra    
     type: mysql
     connectionName: OAuth
-    # readonly_connectionName: OAuth_ReadOnly
-    # existingSecretName: otkDbSecret
-    # readonly_existingSecretName: otkReadOnlyDbSecret
-    username: root
-    password: 7layer
+    dbUpgrade: true
+    useDemoDb: true
+  
     # ddlUsername:
     # ddlPassword:
-    # readonly_username:
-    # readonly_password:
+    # existingSecretName: otkDbSecret
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
+
+    # Update database connection properties during helm upgrade.
+    # updateConnection: true
+
+    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
+    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+    # changeLogSync: false
+
     sql:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
@@ -550,8 +554,8 @@ otk:
     #   keyspace:
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
-
-    # Optionally configure read only Data Base connection for mysql/oracle.
+    
+    # Optionally configure read only database connection for mysql/oracle.
     readOnlyConnection:
       enabled: false
       connectionName: OAuth_ReadOnly
@@ -575,28 +579,13 @@ otk:
   # OTK Specific configuration:
   # - The liveliness probe is not supported for OTK 4.6 & below versions.
   # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
-  # - In a dual gateway OTK setup, it is recomended enable liveness probe after the pods restart.
-  # - Should be enabled after otk installation.
+  # - In a dual gateway OTK setup, it is recommended enable liveness probe after the pods restart.
+  # - Should be enabled after OTK installation.
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
   livenessProbe:
-    enabled: false
-    type: httpGet
-    httpGet:
-      path:
-      port:
-  # OTK Specific configuration:
-  # - The readinessProbe probe is not supported for OTK 4.6 & below versions.
-  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
-  # - In a dual gateway OTK setup, it is recomended enable readiness probe after the pods restart.
-  # - Should be enabled after otk installation.
-  # - otk.readinessProbe.type as httpGet
-  # - otk.readinessProbe.path /auth/oauth/health
-  # - otk.readinessProbe.port 8443
-  # - otk.readinessProbe.scheme https
-  readinessProbe:
     enabled: false
     type: httpGet
     httpGet:
