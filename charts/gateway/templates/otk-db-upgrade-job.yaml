@@ -1,0 +1,73 @@
+{{ if and (.Values.otk.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "gateway.fullname" . }}-otk-db-upgrade
+  annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-4"
+  labels:
+    app: {{ template "gateway.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.otk.job.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      containers:
+        - name: otk-db-upgrade
+          image: {{ template "otk.image" . }}
+          imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ template "otk.dbSecretName" . }}
+          env:
+           - name: OTK_TYPE
+             value: {{ template "otk-install-type" .}}
+           - name: OTK_DATABASE_TYPE
+             value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
+           - name: OTK_DATABASE_WAIT_TIMEOUT
+             value: {{default 60 .Values.otk.database.waitTimeout | quote}}
+           - name: OTK_SK_UPGRADE
+             value: "false"
+           - name: OTK_DATABASE_UPGRADE
+             value: "true"
+           - name: OTK_JDBC_URL
+{{- if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+             value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
+{{- else }}
+             value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
+{{- end }}
+
+{{ if eq .Values.otk.database.type "oracle" }}
+           - name: OTK_DATABASE_NAME
+             value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
+{{ end }}
+
+{{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "otk.imagePullSecret" . }}
+{{- end }}
+{{- if .Values.otk.job.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
+{{- end }}
+{{- if .Values.otk.job.tolerations }}
+      tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
+{{- end }}
+      restartPolicy: "Never"
+{{ end }}
