@@ -3,6 +3,8 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.3 General Updates
+- This new version of the chart supports API Portal 5.2.1.
 ## 2.3.2 General Updates
 - Ingress-NGINX Subchart is upgraded to version 4.5.2 to support K8s 1.25+ version.
 - Ingress-NGINX Subchart deployment is disabled by default in values-production.yaml. Use any Ingress-controller that supports SSL/TLS Passthrough.
@@ -18,6 +20,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.2.8 General Updates
 - Updating the portal version doc link.
+
+## 2.3.0 General Updates
+- This new version of the chart supports API Portal 5.2.
 
 ## 2.2.7 General Updates
 - This new version of the chart supports API Portal 5.1.2.
@@ -42,7 +47,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - Depending on the platform and the Ingress setup in your environment, configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentation](https://kubernetes.github.io/ingress-nginx/#getting-started).
   - If you are not using the subchart use 'kubernetes.io/ingress.class' annotation to support backward compatibility.
   - [Learn more about configuring multiple ingress controllers in one cluster.](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
-- The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
+- The Demo database that is based on Bitnami MySQL subchart version is updated to 9.4.7.
 - Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
 - API Portal 5.1 no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
 - You can now configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
@@ -60,7 +65,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.22/8.0.26/8.0.31 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -306,10 +311,12 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.additionalEnv.PROBE_IP_RANGE` | IP address range in CIDR notation to whitelist readiness and liveness probes for Dispatcher | `not set`                                                    |
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS` |Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com| `not set`                                                   |
+| `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` |allowed rate limit per minute to the Portal health check endpoint| 	`6`                                                   |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
@@ -443,7 +450,6 @@ this feature.
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
 
-
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -539,18 +545,18 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.2` |
-| `image.pssg` | PSSG image | `pssg:5.2` |
-| `image.apim` | APIM ingress image | `ingress:5.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2` |
-| `image.data` | portal-data image | `portal-data:5.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2.0.1` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.2` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.2.1` |
+| `image.pssg` | PSSG image | `pssg:5.2.1` |
+| `image.apim` | APIM ingress image | `ingress:5.2.1` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2.1` |
+| `image.data` | portal-data image | `portal-data:5.2.1` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2.1` |
+| `image.analytics` | Analytics image | `analytics-server:5.2.1` |
+| `image.authenticator` | Authenticator image | `authenticator:5.2.1` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2.1` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2.1` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2.1` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.2.1` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -642,14 +648,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2.1`        |
+| `druid.image.broker`        | Broker image        | `druid:5.2.1`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.2.1`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.2.1`            |
+| `druid.image.minio`         | Minio image         | `minio:5.2.1`            |
+| `druid.image.historical`    | Historical image    | `druid:5.2.1`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.2.1`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2.1` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -658,7 +664,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2.1` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
@@ -688,7 +694,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.0.26-debian-10-r78` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.31-debian-11-r36` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |

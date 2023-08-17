@@ -57,6 +57,9 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: {{ .Values.global.schedulerName }}
       {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
+      {{- end }}
       {{- if .Values.initContainers }}
       initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
       {{- end }}
@@ -74,8 +77,22 @@ spec:
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
-          {{- if .Values.installSolutionKits.enabled}}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+          {{- else if .Values.installSolutionKits.enabled }}
           lifecycle:
+            {{- if .Values.preStopScript.enabled }}
+            preStop:
+              exec:
+                command:
+                - /bin/bash
+                - /opt/docker/gracefulshutdown.sh
+                - {{ .Values.preStopScript.timeoutSeconds | quote }}
+                - {{ .Values.preStopScript.periodSeconds | quote }}
+                {{- range .Values.preStopScript.excludedPorts}}
+                - {{ . | quote }}
+                {{- end }}
+            {{- end }}
             postStart:
               exec:
                 command:
@@ -95,6 +112,18 @@ spec:
                     curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
                     {{ .postInstallCommand }}
                     {{- end }}
+          {{- else if .Values.preStopScript.enabled }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/bash
+                - /opt/docker/gracefulshutdown.sh
+                - {{ .Values.preStopScript.timeoutSeconds | quote }}
+                - {{ .Values.preStopScript.periodSeconds | quote }}
+                {{- range .Values.preStopScript.excludedPorts}}
+                - {{ . | quote }}
+                {{- end }}
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -173,7 +202,6 @@ spec:
            {{- end }}
 {{- end }}
 {{- end }}
-
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
         {{- range .Values.customConfig.mounts }}
@@ -183,8 +211,6 @@ spec:
         {{- end }}
 {{- end }}
 {{- end }}
-
-
 {{- if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
             - name: {{ .name }}
@@ -206,12 +232,18 @@ spec:
               mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
               subPath: update-service-account-token.xml
 {{- end }}
-
 {{- if .Values.bootstrap }}
 {{- if .Values.bootstrap.script.enabled }}
             - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
               mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
               subPath: 003-parse-custom-files.sh
+{{- end }}
+{{- end }}
+{{- if .Values.preStopScript }}
+{{- if .Values.preStopScript.enabled }}
+            - name: {{ template "gateway.fullname" . }}-gracefulshutdown
+              mountPath: /opt/docker/gracefulshutdown.sh
+              subPath: gracefulshutdown.sh
 {{- end }}
 {{- end }}
 {{- if .Values.initContainers }}
@@ -441,6 +473,16 @@ spec:
             items:
             - key: 003-parse-custom-files
               path: 003-parse-custom-files.sh
+{{- end }}
+{{- end }}
+{{- if .Values.preStopScript }}
+{{- if .Values.preStopScript.enabled }}
+        - name: {{ template "gateway.fullname" . }}-gracefulshutdown
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: gracefulshutdown
+              path: gracefulshutdown.sh
 {{- end }}
 {{- end }}
 {{- if .Values.existingBundle.enabled }}

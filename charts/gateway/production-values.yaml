@@ -94,45 +94,34 @@ pmtagger:
 
   # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods
   topologySpreadConstraints: []
-  
+
   # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
-  
+
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
-  
+
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
 
+# Override all lifecycle hooks. This will take precedence over the preStopScript section below.
+lifecycleHooks: {}
+  # postStart: {}
+  # preStop: {}
 
-# Cluster Hostname
-clusterHostname: my.localdomain
+# This preStop script checks for open connections and delays pod termination for the specified timeout seconds
+# Enabling this mounts the script to /opt/docker/gracefulshutdown.sh and adds a preStop lifecycle hook to the Gateway Deployment
+preStopScript:
+  enabled: false        # Enable/Disable
+  periodSeconds: 3      # Time between checks
+  timeoutSeconds: 60    # Timeout - must be lower than terminationGracePeriodSeconds
+  excludedPorts:
+  - 2124
+  - 8777
 
-# Database configuration
-database:
-  # DB Backed or ephemeral
-  enabled: true
-  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
-  # Do not use this demo database in production!!!
-  create: false
-  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
-  username: gateway
-  password: mypassword
-  name: ssg
-
-## If loading a TLS Key/Pair
-# This key will become the default ssl key. Can only have one.
-# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
-## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
-  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
-  # SSG_SSL_KEY_PASS
-tls:
-  useSignedCertificates: false
-  # existingSecretName: ssg-tls
-# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
-  key:
-  pass:
+## terminationGracePeriodSeconds default duration in seconds kubernetes waits for container to exit before sending kill signal.
+## Defaults to 30 if not set
+# terminationGracePeriodSeconds: 90
 
 # Configure autoscaling
 # this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
@@ -249,8 +238,8 @@ config:
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          # - TLSv1.0
-          # - TLSv1.1
+        # - TLSv1.0
+        # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
@@ -310,8 +299,8 @@ config:
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          # - TLSv1.0
-          # - TLSv1.1
+        # - TLSv1.0
+        # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
@@ -379,6 +368,35 @@ config:
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
 
+# Cluster Hostname
+clusterHostname: my.localdomain
+
+# Database configuration
+database:
+  # DB Backed or ephemeral
+  enabled: true
+  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+  # Do not use this demo database in production!!!
+  create: false
+  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
+  username: gateway
+  password: mypassword
+  name: ssg
+
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
 # Cluster Password
 clusterPassword: mypassword
 
@@ -420,6 +438,11 @@ management:
     #   clientIP:
     #     timeoutSeconds: 10800
 
+    # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+    # internalTrafficPolicy: Cluster
+    # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    # externalTrafficPolicy: Cluster
+
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: ClusterIP
@@ -454,10 +477,16 @@ service:
   #   clientIP:
   #     timeoutSeconds: 10800
 
+  # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+  # internalTrafficPolicy: Cluster
+  # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  # externalTrafficPolicy: Cluster
+
 # This enables/disables otk install or upgrade.
 # Prerequisites.
-#  1. OTK DB is installed. 
-#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true) 
+#  1. OTK DB is installed.
+#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+# Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
@@ -471,11 +500,11 @@ otk:
   # skipPostInstallationTasks: false
 
   # Specify internal gateway host and port for DMZ OTK type
-  # internalGatewayHost: 
+  # internalGatewayHost:
   # internalGatewayPort:
 
   # Specify DMZ gateway host and port for interal OTK type
-  # dmzGatewayHost: 
+  # dmzGatewayHost:
   # dmzGatewayPort:
 
   # List of comma seperated sub soluction Kits to install or upgrade.
@@ -492,7 +521,7 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
-    #existingSecretName: otkdb-secret
+    # existingSecretName: otkdb-secret
     username: root
     password: 7layer
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
@@ -507,6 +536,7 @@ otk:
     #   connectionPoints: localhost
     #   port:
     #   keyspace:
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
 
   # Install OTK Health check bundle on gateway. Uses config map.
@@ -567,20 +597,20 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: default
   # - hosts:
   #   - dev1.ca.com
   #   secretName: default
-  
+
   rules:
-   - host: dev.ca.com
-     path: "/"
-     service:
-       port:
-         name: https
-        # number:
+  - host: dev.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+      # number:
   #  - host: dev1.ca.com
   #    path: "/"
   #    service:
@@ -622,7 +652,7 @@ existingBundle:
   #       secretProviderClass: "secret-provider-class-name"
  # - name: mysecretbundle2
 
- # This is limited to a single configmap or secret. ConfigMaps and Secrets can hold multiple scripts.
+# This is limited to a single configmap or secret. ConfigMaps and Secrets can hold multiple scripts.
 # See an example here - https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples
 # NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.
 existingHealthCheck:
@@ -639,7 +669,7 @@ existingHealthCheck:
     #   volumeAttributes:
     #     secretProviderClass: "vault-database"
 
-    # Certain folders on the Container Gateway are not writeable by design.
+# Certain folders on the Container Gateway are not writeable by design.
 # This configuration allows you to mount configMap/Secret keys to specific paths on the Gateway without
 # the need for a root user or a custom/derived image.
 customConfig:

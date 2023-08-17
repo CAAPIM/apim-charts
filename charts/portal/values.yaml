@@ -276,6 +276,8 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
+## Add whitelist IP Range for Dispatcher
+#    PROBE_IP_RANGE: <iprange-in-CIDR-notation>
 #    key1: value
 
 # Additional Secret variables to be added to the Dispatcher Secret
@@ -372,18 +374,18 @@ tenantProvisioner:
 # affinity: {}
 
 image:
-  dispatcher: dispatcher:5.2
-  pssg: pssg:5.2
-  apim: ingress:5.2
-  enterprise: portal-enterprise:5.2
-  data: portal-data:5.2
-  tps: tenant-provisioning-service:5.2
-  analytics: analytics-server:5.2
-  authenticator: authenticator:5.2.0.1
-  dbUpgrade: db-upgrade-portal:5.2
-  rbacUpgrade: db-upgrade-rbac:5.2
-  upgradeVerify: upgrade-verify:5.2
-  tlsManager: tls-automator:5.2
+  dispatcher: dispatcher:5.2.1
+  pssg: pssg:5.2.1
+  apim: ingress:5.2.1
+  enterprise: portal-enterprise:5.2.1
+  data: portal-data:5.2.1
+  tps: tenant-provisioning-service:5.2.1
+  analytics: analytics-server:5.2.1
+  authenticator: authenticator:5.2.1
+  dbUpgrade: db-upgrade-portal:5.2.1
+  rbacUpgrade: db-upgrade-rbac:5.2.1
+  upgradeVerify: upgrade-verify:5.2.1
+  tlsManager: tls-automator:5.2.1
 
 ##
 ## Subchart Configuration
@@ -546,14 +548,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.2
-    broker: druid:5.2
-    coordinator: druid:5.2
-    middlemanager: druid:5.2
-    minio: minio:5.2
-    historical: druid:5.2
-    kafka: kafka:5.2
-    ingestion: ingestion-server:5.2
+    zookeeper: zookeeper:5.2.1
+    broker: druid:5.2.1
+    coordinator: druid:5.2.1
+    middlemanager: druid:5.2.1
+    minio: minio:5.2.1
+    historical: druid:5.2.1
+    kafka: kafka:5.2.1
+    ingestion: ingestion-server:5.2.1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -563,7 +565,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.2"
+    tag: "5.2.1"
     pullSecrets:
       - broadcom-apim
   serviceAccount:
@@ -634,6 +636,9 @@ ingress-nginx:
   rbac:
     create: true
   controller:
+    config:
+      # 30MB is the max file size we allow for the custom pages and 15MB for GW Bundle.so max is set to 32
+      proxy-body-size: "32m"
     publishService:
       enabled: true
     extraArgs:
@@ -660,7 +665,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.26-debian-10-r78"
+    tag: "8.0.31-debian-11-r36"
   auth:
     username: portal
     existingSecret: database-secret

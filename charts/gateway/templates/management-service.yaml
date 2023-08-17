@@ -45,4 +45,10 @@ spec:
   {{- if .Values.management.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- toYaml .Values.management.service.sessionAffinityConfig | nindent 4 }}
   {{- end }}
+  {{- if .Values.management.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.management.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.management.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.management.service.internalTrafficPolicy }}
+  {{- end }}
   {{ end }}
