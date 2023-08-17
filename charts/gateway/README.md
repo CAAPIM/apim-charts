@@ -442,61 +442,6 @@ database:
   enabled: true
 ```
 
-<<<<<<< HEAD
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `otk.enabled`                     | Enable/Disable OTK installation or upgrade | `false`  |
-| `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
-| `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
-| `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway   | `false`
-| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
-| `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
-| `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
-| `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
-| `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
-| `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
-| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
-| `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
-| `otk.job.image.labels`            | Job lables | {}
-| `otk.job.image.nodeSelector`      | Job Node selector | {}
-| `otk.job.image.tolerations`       | Job tolerations | []
-| `otk.database.update`             | Update database connection properties druring helm upgrade| `true`
-| `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
-| `otk.database.connectionName`     | OTK database connection name | `OAuth`
-| `otk.database.existingSecretName` | Point to an existing OTK database Secret |
-| `otk.database.username`           | OTK database user name | 
-| `otk.database.password`           | OTK database password |
-| `otk.database.properties`         | OTK database additional properties  | `{}`
-| `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
-| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
-| `otk.database.sql.databaseName`   | OTK database Oracle database name | 
-| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
-| `otk.database.cassandra.port`              | OTK database cassandra connection port  |
-| `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
-| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.database.readOnlyConnection.enabled`     | Enable OTK ReadOnly database connection | `false`
-| `otk.database.readOnlyConnection.connectionName`     | OTK ReadOnly database connection name | `OAuth_ReadOnly`
-| `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK ReadOnly database Secret |
-| `otk.database.readOnlyConnection.username`           | OTK ReadOnly database user name |
-| `otk.database.readOnlyConnection.password`           | OTK ReadOnly database password |
-| `otk.database.readOnlyConnection.properties`         | OTK ReadOnly database additional connection properties  | `{}`
-| `otk.database.readOnlyConnection.jdbcURL`        | OTK ReadOnly database sql jdbc URL (oracle/mysql) | `otk.database.sql.jdbcURL`
-| `otk.database.readOnlyConnection.jdbcDriverClass`| OTK ReadOnly database sql driver class name (oracle/mysql) | `otk.database.sql.jdbcDriverClass`
-| `otk.database.readOnlyConnection.databaseName`   | OTK ReadOnly database Oracle database name | `otk.database.sql.databaseName`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
-| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
-| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
-| `otk.livenessProbe.type`                   |  | `httpGet`
-| `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
-| `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
-| `otk.readinessProbe.type`                  |  | `httpGet`
-| `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
-| `otk.readinessProbe.httpGet.port`          |  | `8443`
-=======
 | Parameter                                            | Description                                                                                                                                                                                                                                                                                                                                    | Default                                                      |
 |------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -----------------------------------------------------------  |
 | `otk.enabled`                                        | Enable/Disable OTK installation or upgrade                                                                                                                                                                                                                                                                                                     | `false`  |
@@ -555,7 +500,6 @@ database:
 | `otk.readinessProbe.type`                            |                                                                                                                                                                                                                                                                                                                                                | `httpGet`|
 | `otk.readinessProbe.httpGet.path`                    |                                                                                                                                                                                                                                                                                                                                                | `/auth/oauth/health`|
 | `otk.readinessProbe.httpGet.port`                    |                                                                                                                                                                                                                                                                                                                                                | `8443`|
->>>>>>> 3c0151039920a7811b7109ba6563fecadefe7281
 
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*

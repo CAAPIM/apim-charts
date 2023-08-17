@@ -99,7 +99,15 @@ spec:
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
 {{ end }}
            - name: OTK_CREATE_RO_DATABASE_CONN
+<<<<<<< HEAD
              value: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
+=======
+{{ if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+             value: "false"
+{{ else }}
+             value: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
+{{ end }}
+>>>>>>> 3c0151039920a7811b7109ba6563fecadefe7281
            - name:  OTK_UPDATE_DATABASE_CONNECTION
              value: {{default false .Values.otk.database.update | quote }}
            - name: OTK_SKAR_RETRY_COUNT
