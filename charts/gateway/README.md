@@ -37,6 +37,10 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.13 General Updates
+- The OTK Install job now uses podSecurity and containerSecurity contexts if set.
+- Updated how pod labels and annotations are templated in deployment.yaml  
+
 ## 3.0.12 General Updates
 Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
 - [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)

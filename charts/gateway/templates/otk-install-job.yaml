@@ -29,10 +29,16 @@ spec:
   template:
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: otk-install
           image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
