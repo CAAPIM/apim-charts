@@ -546,6 +546,7 @@ otk:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.mysql.jdbc.Driver
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # Oracle database name
       # databaseName:
     # cassandra:
@@ -563,6 +564,7 @@ otk:
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name

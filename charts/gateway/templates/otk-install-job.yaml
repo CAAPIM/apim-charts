@@ -84,6 +84,8 @@ spec:
              value: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConnection.jdbcDriverClass | quote }}
            - name: OTK_RO_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
+           - name: OTK_RO_DATABASE_CONN_PROPERTIES
+             value: {{ default "na" .Values.otk.database.readOnlyConnection.connectionProperties | toJson | b64enc | quote }}
 {{ end }}
 {{ end }}
 
@@ -94,9 +96,11 @@ spec:
            - name: OTK_RO_DATABASE_NAME
              value: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConnection.databaseName | quote }}           
 {{ end }}             
-{{ end }}           
+{{ end }}
            - name: OTK_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
+           - name: OTK_DATABASE_CONN_PROPERTIES
+             value: {{ default "na" .Values.otk.database.sql.connectionProperties | toJson | b64enc | quote }}
 {{ end }}
            - name: OTK_CREATE_RO_DATABASE_CONN
 {{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
@@ -130,7 +134,6 @@ spec:
              value: {{default false .Values.otk.enablePortalIngeration | quote }}
            - name: OTK_SKIP_POST_INSTALLATION_TASKS
              value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
-
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}

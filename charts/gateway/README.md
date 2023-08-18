@@ -475,7 +475,8 @@ database:
 | `otk.database.properties`         | OTK database additional properties  | `{}` |
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql` | 
 | `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
+| `otk.database.sql.connectionProperties`| OTK database mysql connection properties (mysql) | `{}`
 | `otk.database.sql.databaseName`   | OTK database Oracle database name |
 | `otk.database.readOnlyConnection.enabled`            | Enable/Disable OTK read only database connection | `false` | 
 | `otk.database.readOnlyConnection.connectionName`     | OTK read only database connection name | `OAuth_ReadOnly` | 
@@ -484,7 +485,8 @@ database:
 | `otk.database.readOnlyConnection.password`           | OTK read only database password |
 | `otk.database.readOnlyConnection.properties`         | OTK read only database additional properties  | `{}` | 
 | `otk.database.readOnlyConnection.jdbcURL`            | OTK read only database sql jdbc URL (oracle/mysql) | 
-| `otk.database.readOnlyConnection.jdbcDriverClass`    | OTK read only database sql driver class name (oracle/mysql) | 
+| `otk.database.readOnlyConnection.jdbcDriverClass`    | OTK read only database sql driver class name (oracle/mysql) |
+| `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (mysql) | `{}`
 | `otk.database.readOnlyConnection.databaseName`       | OTK read only Oracle database name |
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
