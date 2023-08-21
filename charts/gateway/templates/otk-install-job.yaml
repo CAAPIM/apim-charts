@@ -27,6 +27,16 @@ metadata:
 spec:
   backoffLimit: 1
   template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    {{- if  .Values.otk.job.podLabels }}
+        {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.otk.job.podAnnotations }}
+      annotations: {{- toYaml .Values.otk.job.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.podSecurityContext }}

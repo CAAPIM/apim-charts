@@ -37,6 +37,11 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.14 General Updates
+- Added pod labels and annotations to the otk-install job.
+  - otk.job.podLabels
+  - otk.job.podAnnotations
+
 ## 3.0.13 General Updates
 - The OTK Install job now uses podSecurity and containerSecurity contexts if set.
 - Updated how pod labels and annotations are templated in deployment.yaml  
@@ -464,6 +469,8 @@ database:
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}
 | `otk.job.image.tolerations`       | Job tolerations | []
+| `otk.job.podLabels`                   | OTK Job podLabels | {}
+| `otk.job.podAnnotations`              | OTK Job podAnnotations | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
