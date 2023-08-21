@@ -509,6 +509,15 @@ otk:
 
   # List of comma seperated sub soluction Kits to install or upgrade.
   # subSolutionKitNames:
+
+  ## Pod Labels for the OTK install Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the OTK install Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+
   job:
     image:
       repository: caapim/otk-install
