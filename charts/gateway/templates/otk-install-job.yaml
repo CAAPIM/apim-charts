@@ -27,12 +27,38 @@ metadata:
 spec:
   backoffLimit: 1
   template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    {{- if  .Values.otk.job.podLabels }}
+        {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.otk.job.podAnnotations }}
+      annotations: {{- toYaml .Values.otk.job.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
+      volumes:
+        - name: otk-script-files
+          configMap: 
+            name: {{ template "gateway.fullname" . }}-otk-scripts
+            items:
+            - key: install_otk.py
+              path: install_otk.py
+            - key: gateway_entities.py
+              path: gateway_entities.py
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       containers:
         - name: otk-install
           image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          volumeMounts:
+          - name: otk-script-files
+            mountPath: /install/scripts/install_otk.py
+            subPath: install_otk.py
+          - name: otk-script-files
+            mountPath: /install/scripts/gateway_entities.py
+            subPath: gateway_entities.py
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
@@ -70,6 +96,8 @@ spec:
 {{ end }}           
            - name: OTK_DATABASE_PROPERTIES
              value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
+           - name: OTK_DATABASE_CONN_PROPERTIES
+             value: {{ default "na" .Values.otk.database.sql.connectionProperties | toJson | b64enc | quote }}
 {{ end }}
            - name: OTK_SKAR_RETRY_COUNT
              value: {{ default 1 .Values.otk.installRetry | quote}}

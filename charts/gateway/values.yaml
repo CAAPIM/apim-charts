@@ -517,6 +517,13 @@ otk:
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+    ## Pod Labels for the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
+
+    # Pod Annotations apply to the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
@@ -530,6 +537,7 @@ otk:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # Oracle database name
       # databaseName:
     # cassandra:
