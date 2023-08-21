@@ -48,6 +48,9 @@ spec:
             - key: gateway_entities.py
               path: gateway_entities.py
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: otk-install
           image: {{.Values.image.registry}}/{{.Values.otk.job.image.repository}}:{{.Values.otk.job.image.tag}}
@@ -59,6 +62,10 @@ spec:
           - name: otk-script-files
             mountPath: /install/scripts/gateway_entities.py
             subPath: gateway_entities.py
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
