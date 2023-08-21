@@ -527,10 +527,15 @@ otk:
     connectionName: OAuth
     dbUpgrade: true
     useDemoDb: true
-  
+    
+    # username: root
+    # password: 7layer
+    
     # ddlUsername:
     # ddlPassword:
+    
     # existingSecretName: otkDbSecret
+    
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}

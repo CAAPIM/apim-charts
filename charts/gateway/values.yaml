@@ -485,7 +485,7 @@ service:
 # This enables/disables otk install or upgrade.
 # Prerequisites.
 #  1. OTK DB is installed.
-#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
 #  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
@@ -528,9 +528,14 @@ otk:
     dbUpgrade: true
     useDemoDb: true
   
+    # username: root
+    # password: 7layer
+
     # ddlUsername:
     # ddlPassword:
+
     # existingSecretName: otkDbSecret
+    
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
