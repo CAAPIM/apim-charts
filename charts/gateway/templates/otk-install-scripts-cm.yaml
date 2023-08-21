@@ -1,0 +1,826 @@
+{{ if .Values.otk.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-otk-scripts
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+data:
+  install_otk.py: |-
+    #!/usr/bin/env python3
+
+    import sys
+    import time
+    import json
+    import logging
+    import os
+    import requests
+    import gateway_entities
+    import base64
+    from lxml import etree
+    import urllib.parse
+    from socket import socket
+    import ssl
+    import re
+
+    from requests.adapters import HTTPAdapter, Retry
+
+    OTK_VERSION = os.getenv('OTK_VERSION')
+
+    BOOTSTRAP_DIR = os.getenv('BOOTSTRAP_DIR','.')
+    SSG_ADMIN_USERNAME = os.getenv('SSG_ADMIN_USERNAME')
+    SSG_ADMIN_PASSWORD = os.getenv('SSG_ADMIN_PASSWORD')
+    SSG_RESTMAN_PORT = os.getenv('SSG_RESTMAN_PORT')
+    SSG_RESTMAN_HOST = os.getenv('SSG_RESTMAN_HOST')
+
+    OTK_DATABASE_CONNECTION_NAME = os.getenv('OTK_DATABASE_CONNECTION_NAME')
+    OTK_DATABASE_TYPE = os.getenv('OTK_DATABASE_TYPE', default='mysql')
+    OTK_CASSANDRA_DRIVER_CONFIG = os.getenv('OTK_CASSANDRA_DRIVER_CONFIG')
+
+    OTK_TYPE = os.getenv('OTK_TYPE', default='SINGLE')
+    OTK_INTEGRATE_WITH_PORTAL = os.getenv('OTK_INTEGRATE_WITH_PORTAL', default='false')
+    OTK_INTERNAL_GW_HOST = os.getenv('OTK_INTERNAL_GW_HOST')
+    OTK_INTERNAL_GW_PORT = os.getenv('OTK_INTERNAL_GW_PORT')
+    OTK_DMZ_GW_HOST = os.getenv('OTK_DMZ_GW_HOST')
+    OTK_DMZ_GW_PORT = os.getenv('OTK_DMZ_GW_PORT')
+
+    OTK_SKIP_POST_INSTALLATION_TASKS = os.getenv('OTK_SKIP_POST_INSTALLATION_TASKS', default='false')
+    OTK_DELETE_ON_FAILURE = os.getenv('OTK_DELETE_ON_FAILURE', default='false')
+    OTK_FORCE_INSTALL = os.getenv('OTK_FORCE_INSTALL', default='false')
+
+    SKAR_RETRY_COUNT = os.getenv('OTK_SKAR_RETRY_COUNT', default='2')
+    SKAR_BACKOFF_FACTOR = os.getenv('OTK_SKAR_BACKOFF_FACTOR', default='0.1')
+    CONNECT_BACKOFF_FACTOR = os.getenv('OTK_CONNECT_BACKOFF_FACTOR', default='0.1')
+    CONNECT_RETRY_COUNT = os.getenv('OTK_CONNECT_RETRY_COUNT', default='10')
+    SSK_NAMES = os.getenv('OTK_SSK_NAMES')
+
+    RETRY_FORCE_LIST = [ 500, 502, 503, 504 ]
+    RESTMAN_URL = f'https://{SSG_RESTMAN_HOST}:{SSG_RESTMAN_PORT}/restman/1.0'
+    OTK_SSKAR_FILE = f'{BOOTSTRAP_DIR}/OAuthSolutionKit.sskar'
+    OTK_SSKAR_ID=os.getenv('OTK_SSKAR_ID', default='a6f9bbee-87c2-43d8-b613-5c072f7b6f7d')
+    ns = {"l7": "http://ns.l7tech.com/2010/04/gateway-management"}
+    headers = {'Content-Type': 'application/xml'}
+
+    solutionKitSelectIds = '''OTK Assertions,
+                          OTK Configuration,
+                          Shared OAuth Resources,
+                          Shared Portal Resources,
+                          Persistence Layer: MySQL or Oracle,
+                          Portal Persistence Layer: MySQL or Oracle,
+                          Persistence Layer: Cassandra,
+                          Portal Persistence Layer: Cassandra,
+                          Internal: OAuth Validation Point,
+                          DMZ: OAuth 2.0 and OpenID Connect endpoints,
+                          Internal: Server Tools,
+                          Internal: Endpoint to access the client persistence layer,
+                          Internal: Endpoint to access the session persistence layer,
+                          Internal: Endpoint to access the token persistence layer,
+                          Internal: Portal'''
+
+    solutionKitSelectNameIds= '''[{"name":"OTK Assertions","id":"b74b063c-5151-4f7d-b4db-71f032cc2d46","tag":"all","entityIdReplace" : "None"},
+                          {"name":"OTK Configuration","id":"b74b063c-5151-4f7d-b4db-71f032cc2d47","tag":"all","entityIdReplace" : "None"},
+                          {"name":"Shared OAuth Resources","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6001","tag":"all","entityIdReplace" : "None"},
+                          {"name":"Shared Portal Resources","id":"0b0f9534-94f4-4cca-a05a-4c9e7776f8a9","tag":"portal","entityIdReplace" : "None"},
+                          {"name":"Persistence Layer: MySQL or Oracle","id":"082be2e3-6399-4d51-8aad-a87715364537","tag":"mysql","entityIdReplace" : "4432207d16a1b505e8a6ed59993eaa24"},
+                          {"name":"Portal Persistence Layer: MySQL or Oracle","id":"39efbb1d-4c10-4a88-9774-ece574845c94","tag":"mysql_portal","entityIdReplace" : "4432207d16a1b505e8a6ed59993eaa24"},
+                          {"name":"Persistence Layer: Cassandra","id":"07191300-4596-4cea-92e4-a28bba142587","tag":"cass","entityIdReplace" : "c2e0825b2f52dc7819cd6e68893df156"},
+                          {"name":"Portal Persistence Layer: Cassandra","id":"7f173fe5-26c1-4290-b960-f1594b1e341e","tag":"cass_portal","entityIdReplace" : "c2e0825b2f52dc7819cd6e68893df156"},
+                          {"name":"Internal: OAuth Validation Point","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6004","tag":"internal","entityIdReplace" : "None"},
+                          {"name":"DMZ: OAuth 2.0 and OpenID Connect endpoints","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6003","tag":"dmz","entityIdReplace" : "None"},
+                          {"name":"Internal: Server Tools","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6008","tag":"internal","entityIdReplace" : "None"},
+                          {"name":"Internal: Endpoint to access the client persistence layer","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6005","tag":"internal","entityIdReplace" : "None"},
+                          {"name":"Internal: Endpoint to access the session persistence layer","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6006","tag":"internal","entityIdReplace" : "None"},
+                          {"name":"Internal: Endpoint to access the token persistence layer","id":"1f5dcaea-94a9-4bf7-8c9c-5a49be1a6007","tag":"internal","entityIdReplace" : "None"},
+                          {"name":"Internal: Portal","id":"8918de1b-d0ac-46c6-83a2-7ba4a0e5c1b0","tag":"portal","entityIdReplace" : "None"}]'''
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
+
+    def validate_response(valid_code,response,error_message,raise_error=True) :
+        if response.status_code != valid_code:
+            logging.error(f'{error_message} {response.status_code} Response: {response.content}')
+            if raise_error:
+                raise Exception(f'{error_message}')
+
+    def install_solution_kit(url, values):
+        success = False
+        maxRetryCount = SKAR_RETRY_COUNT
+        subSolutionKit = values['solutionKitSelect']
+        logging.info(f'Installing solution kit sub module: {subSolutionKit} With maximum attempts {SKAR_RETRY_COUNT} and backoff factor {SKAR_BACKOFF_FACTOR}')
+
+        session = requests.Session()
+        retries = Retry(total=int(SKAR_RETRY_COUNT), backoff_factor=float(SKAR_BACKOFF_FACTOR), status_forcelist=RETRY_FORCE_LIST)
+        session.mount('https://', HTTPAdapter(max_retries=retries))
+        values['file'] = open(OTK_SSKAR_FILE,'rb')
+
+        response = session.post(url, files=values, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        validate_response(200, response , f'Failed to install or update sub solution kit {subSolutionKit}')
+
+        return response
+
+    def check_connection():
+        logging.info(f'Trying to connect to restman {RESTMAN_URL}/doc/home.html With retry count {CONNECT_RETRY_COUNT} and backoff factor {CONNECT_BACKOFF_FACTOR}')
+        session = requests.Session()
+        retries = Retry(total=int(CONNECT_RETRY_COUNT), backoff_factor=float(CONNECT_BACKOFF_FACTOR), status_forcelist=RETRY_FORCE_LIST)
+        session.mount('https://', HTTPAdapter(max_retries=retries))
+
+        response = session.get(f'{RESTMAN_URL}/doc/home.html', verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        validate_response(200, response , 'Failed to connect to restman')
+        logging.info(f'Connected to restman')
+
+    def get_otk_version():
+        url = f'{RESTMAN_URL}/solutionKits?name=OAuthSolutionKit'
+        response = requests.get(url, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        root = etree.fromstring(response.content)
+        versionNode = root.xpath("//l7:Item/l7:Resource/l7:SolutionKit/l7:SolutionKitVersion", namespaces=ns)
+        if(len(versionNode) !=0):
+            return versionNode[0].text
+        else:
+            return None
+
+    def delete_solution_kit():
+        url = f'{RESTMAN_URL}/solutionKitManagers?name=OAuthSolutionKit'
+        response = requests.delete(url, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        if response.status_code != 204 and (b'not found' not in response.content) :
+            validate_response(204, response , 'Failed to delete otk solution kit')
+
+    def delete_otk_connection():
+        if OTK_DATABASE_TYPE == 'cassandra':
+            base_url = f'{RESTMAN_URL}/cassandraConnections'
+        else:
+            base_url = f'{RESTMAN_URL}/jdbcConnections'
+
+        url = f'{base_url}/?name={OTK_DATABASE_CONNECTION_NAME}'
+        response = requests.get(url, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        root = etree.fromstring(response.content)
+        name = root.xpath("//l7:List/l7:Item/l7:Name", namespaces=ns)
+
+        if(len(name) !=0):
+            #Delete cassandra password
+            if OTK_DATABASE_TYPE == 'cassandra':
+                password_id = root.xpath("//l7:List/l7:Item/l7:Resource/l7:CassandraConnection/l7:PasswordId", namespaces=ns)
+                url = f'{RESTMAN_URL}/passwords/{password_id[0].text}'
+                response = requests.delete(url, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+                validate_response(204, response , f'Failed delete cassandra password {url}', False)
+
+            id = root.xpath("//l7:List/l7:Item/l7:Id", namespaces=ns)
+            logging.info(f'Found jdbc connection with name: {OTK_DATABASE_CONNECTION_NAME} id {id[0].text}')
+            url = f'{base_url}/{id[0].text}'
+            response = requests.delete(url, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+            validate_response(204, response , 'Failed delete jdbc connection')
+
+        else:
+            logging.info(f'Can not find jdbc connection with name: {OTK_DATABASE_CONNECTION_NAME}')
+
+    def create_otk_connection():
+        goid = gateway_entities.new_goid()
+        logging.info(f'Generating bundle for otk connection')
+        user = os.getenv('OTK_DATABASE_USERNAME')
+        password = os.getenv('OTK_DATABASE_PASSWORD')
+        properties = json.loads(base64.b64decode(os.getenv('OTK_DATABASE_PROPERTIES', default='e30=')).decode("utf-8", "ignore"))
+
+        if OTK_DATABASE_TYPE == 'cassandra':
+            password_goid = gateway_entities.new_goid()
+            url = f'{RESTMAN_URL}/passwords/{password_goid}'
+            password_entity = gateway_entities.bundle_otk_cassandra_password(password, f'{OTK_DATABASE_CONNECTION_NAME}_password')
+            response = requests.put(url, data=password_entity, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+            validate_response(201, response , 'Failed to create or update cassandra stored password')
+            logging.info(f'Created otk cassandra db connection password: {password_goid} with status code {response.status_code}')
+            url = f'{RESTMAN_URL}/cassandraConnections/{goid}'
+            connectpoints = os.getenv('OTK_CASSANDRA_CONNECTION_POINTS')
+            port = os.getenv('OTK_CASSANDRA_PORT', default=9042)
+            keyspace = os.getenv('OTK_CASSANDRA_KEYSPACE')
+            driver_config = base64.b64decode(OTK_CASSANDRA_DRIVER_CONFIG).decode("utf-8", "ignore")
+            bundle_content = gateway_entities.bundle_otk_cassandra_connection_entity(connectpoints,port,keyspace,user,password_goid,driver_config,properties,OTK_DATABASE_CONNECTION_NAME)
+        elif OTK_DATABASE_TYPE == 'oracle':
+            url = f'{RESTMAN_URL}/jdbcConnections/{goid}'
+            jdbcUrl = os.getenv('OTK_JDBC_URL')
+            driverClass = os.getenv('OTK_JDBC_DRIVER_CLASS', default='com.l7tech.jdbc.oracle.OracleDriver')
+            databaseName = os.getenv('OTK_DATABASE_NAME')
+            bundle_content = gateway_entities.bundle_otk_oracle_connection_entity(jdbcUrl,driverClass,user,password,databaseName,properties, OTK_DATABASE_CONNECTION_NAME)
+        else:
+            url = f'{RESTMAN_URL}/jdbcConnections/{goid}'
+            jdbcUrl = os.getenv('OTK_JDBC_URL')
+            conProperties = json.loads(base64.b64decode(os.getenv('OTK_DATABASE_CONN_PROPERTIES', default='e30=')).decode("utf-8", "ignore"))
+            driverClass = os.getenv('OTK_JDBC_DRIVER_CLASS', default='com.l7tech.jdbc.mysql.MySQLDriver')
+            bundle_content = gateway_entities.bundle_otk_mysql_connection_entity(jdbcUrl,driverClass,user,password,properties,conProperties,OTK_DATABASE_CONNECTION_NAME)
+
+        response = requests.put(url, data=bundle_content, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        validate_response(201, response , 'Failed create or update jdbc connection')
+
+        logging.info(f'Created otk jdbc connection with goid: {goid} with status code {response.status_code}')
+        return goid
+
+    def allowed_tags():
+        allowed_ssk_tags = ['all']
+        # For dual GW installation, portal is not applicable.
+        if(OTK_TYPE == 'DMZ') :
+            allowed_ssk_tags.append('dmz')
+        elif(OTK_TYPE == 'INTERNAL') :
+            allowed_ssk_tags.append('internal')
+            if (OTK_DATABASE_TYPE == 'cassandra'):
+                allowed_ssk_tags.append('cass')
+            else:
+                allowed_ssk_tags.append('mysql')
+        elif(OTK_TYPE == 'SINGLE') :
+            allowed_ssk_tags.extend(('dmz', 'internal'))
+            if (OTK_DATABASE_TYPE == 'cassandra'):
+                allowed_ssk_tags.append('cass')
+                if (OTK_INTEGRATE_WITH_PORTAL == 'true') :
+                    allowed_ssk_tags.extend(('cass_portal','portal'))
+            else:
+                allowed_ssk_tags.append('mysql')
+                if (OTK_INTEGRATE_WITH_PORTAL == 'true') :
+                    allowed_ssk_tags.extend(('mysql_portal','portal'))
+        return allowed_ssk_tags
+
+    def install_ssk(item,db_connection_goid,is_upgrade):
+        ssk_name = item['name']
+        ssk_id = item['id']
+        ssk_tag = item['tag']
+        ssk_entityIdReplace = item['entityIdReplace']
+        values = {'solutionKitSelect': ssk_id}
+        allowed_ssk_tags = allowed_tags()
+
+        if(ssk_tag in allowed_ssk_tags):
+            if(db_connection_goid is not None and ssk_entityIdReplace != 'None') :
+                values['entityIdReplace']= f'{ssk_entityIdReplace}::{db_connection_goid}'
+
+            if(is_upgrade == False):
+                url = f'{RESTMAN_URL}/solutionKitManagers'
+                response = install_solution_kit(url, values)
+                logging.info(f'Installed OTK solution kit sub module: {item} with status code {response.status_code}')
+            else:
+                url = f'{RESTMAN_URL}/solutionKitManagers?id={ssk_id}'
+                response = install_solution_kit(url, values)
+                logging.info(f'Upgraded OTK solution kit sub module: {item} with status code {response.status_code}')
+        else:
+            logging.info(f'OTK solution kit sub module: {item} is not vaid for profile {OTK_TYPE} withe {OTK_DATABASE_TYPE} database')
+
+    def install_update_otk(db_connection_goid,is_upgrade):
+        ssk_names = list()
+        if(SSK_NAMES is None):
+            ssk_names = solutionKitSelectIds.split(',')
+        else:
+            ssk_names = SSK_NAMES.split(',')
+
+        ssk_names_set = set()
+        for item in ssk_names:
+            ssk_names_set.add(item.strip().lower())
+
+        ssk_name_ids = json.loads(solutionKitSelectNameIds)
+        for item in ssk_name_ids:
+            ssk_name = item['name'].lower()
+            if(ssk_name in ssk_names_set):
+                install_ssk(item,db_connection_goid,is_upgrade)
+
+    def update_hash_policy(id,host,port):
+        url = f'{RESTMAN_URL}/policies/{id}?active=true&versionComment=AutoDeployed'
+        #Get current version
+        response = requests.get(url, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        root = etree.fromstring(response.content)
+        version = root.xpath("//l7:Item/l7:Resource/l7:Policy/@version", namespaces=ns)
+
+        content = gateway_entities.bundle_otk_policy(id,host, port, version[0])
+        response = requests.put(url, data=content, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        validate_response(200, response , f'Failed to update hash policy : {id}')
+
+    def install_cert(trusteeGatewayHost, trusteeGatewayPort):
+        # Get current certs
+        url = f'{RESTMAN_URL}/trustedCertificates?name={trusteeGatewayHost}'
+        response = requests.get(url, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+        root = etree.fromstring(response.content)
+        cert_name = root.xpath("//l7:List/l7:Item/l7:Resource/l7:TrustedCertificate/l7:Name", namespaces=ns)
+
+        if(len(cert_name) !=0):
+            print(f'{SSG_RESTMAN_HOST} - SSL certificate of https://${trusteeGatewayHost}:{trusteeGatewayPort} is already trusted.')
+        else:
+            cert = ssl.get_server_certificate((trusteeGatewayHost, trusteeGatewayPort))
+            temp_cert = list()
+            for line in cert.split("\n"):
+                if ("CERTIFICATE" not in line):
+                    temp_cert.append(line)
+            cert_template = gateway_entities.bundle_trusted_certificate(trusteeGatewayHost, "".join(temp_cert))
+            url = f'{RESTMAN_URL}/trustedCertificates'
+            response = requests.post(url, data=cert_template, headers=headers, verify=False, auth=(SSG_ADMIN_USERNAME, SSG_ADMIN_PASSWORD))
+            validate_response(201, response , 'Failed add trusted cert')
+
+    def buildInfo(version):
+        buildno = 0
+        x = version.split("-")
+        version = int(x[0].replace(".",""))
+        if(len(x) == 2):
+            buildno = int(x[1])
+        return (version, buildno)
+
+    def main():
+        logging.info(f'Starting OTK Install/Upgrade Version : {OTK_VERSION}')
+        db_connection_goid = None
+        current_version = None
+        check_connection()
+
+        if OTK_FORCE_INSTALL == 'true' :
+            delete_otk_connection()
+            delete_solution_kit()
+        else :
+            current_version = get_otk_version()
+
+        if(current_version is None) :
+            logging.info(f'Current installed Version : None')
+            if(OTK_TYPE != 'DMZ') :
+                db_connection_goid = create_otk_connection()
+
+            #Install sub solution kits.
+            install_update_otk(db_connection_goid, False)
+
+            if(OTK_TYPE == 'DMZ' and OTK_SKIP_POST_INSTALLATION_TASKS.lower() == 'false') :
+                #OTK OVP Configuration. (host_oauth_ovp_server)
+                logging.info(f'Updating #OTK OVP Configuration. (host_oauth_ovp_server) https://{OTK_INTERNAL_GW_HOST}:{OTK_INTERNAL_GW_PORT}')
+                update_hash_policy('24e6fd7c5b6fb3a96690246c8ac492ec', OTK_INTERNAL_GW_HOST, OTK_INTERNAL_GW_PORT)
+                #OTK Storage Configuration. (host_oauth_tokenstore_server, host_oauth_clientstore_server, host_oauth_session_server)
+                logging.info(f'Updating OTK Storage Configuration. (host_oauth_tokenstore_server, host_oauth_clientstore_server, host_oauth_session_server) https://{OTK_INTERNAL_GW_HOST}:{OTK_INTERNAL_GW_PORT}')
+                update_hash_policy('24e6fd7c5b6fb3a96690246c8ac49304', OTK_INTERNAL_GW_HOST, OTK_INTERNAL_GW_PORT)
+                #Import SSL Certificate of internal gateway
+                logging.info(f'Importing SSL Certificate of internal gateway {OTK_INTERNAL_GW_HOST}')
+                install_cert(OTK_INTERNAL_GW_HOST, OTK_INTERNAL_GW_PORT)
+
+            if(OTK_TYPE == 'INTERNAL' and OTK_SKIP_POST_INSTALLATION_TASKS.lower() == 'false') :
+                #OTK Client Context Variables. (host_oauth2_auth_server, audience_recipient_restriction)
+                logging.info(f'Updating #OTK Client Context Variables. (host_oauth2_auth_server, audience_recipient_restriction) https://{OTK_DMZ_GW_HOST}:{OTK_DMZ_GW_PORT}')
+                update_hash_policy('bc9a31b7578652a08a514d7d4fef1fb7', OTK_DMZ_GW_HOST, OTK_DMZ_GW_PORT)
+                #OTK id_token configuration. (iss)
+                logging.info(f'Updating #OTK id_token configuration. (iss) https://{OTK_DMZ_GW_HOST}')
+                update_hash_policy('24e6fd7c5b6fb3a96690246c8ac492d4', OTK_DMZ_GW_HOST, OTK_DMZ_GW_PORT)
+                #Import SSL Certificate of DMZ gateway
+                logging.info(f'Importing SSL Certificate of DMZ gateway {OTK_DMZ_GW_HOST}')
+                install_cert(OTK_DMZ_GW_HOST, OTK_DMZ_GW_PORT)
+        else:
+            logging.info(f'Current installed Version : {current_version}')
+            current_buidInfo = buildInfo(current_version)
+            update_buidInfo = buildInfo(OTK_VERSION)
+            if (current_buidInfo[0] < update_buidInfo[0]) or (current_buidInfo[0] == update_buidInfo[0] and current_buidInfo[1] < update_buidInfo[1]):
+                logging.info(f'Upgrading OTK ({current_version}) with {OTK_VERSION}')
+                install_update_otk(db_connection_goid, True)
+            else:
+                logging.info(f'Installed OTK solution kit version ({current_version}) is >= {OTK_VERSION}')
+
+    if __name__ == '__main__':
+        main()
+  gateway_entities.py: |
+    from uuid import uuid4
+    from xml.sax.saxutils import escape as xml_escape
+    import base64
+
+    def new_goid():
+        return uuid4().hex
+
+    def bool_str(boolean):
+        return str(boolean).lower()
+
+    def connection_property_put_xml(key, value):
+        if isinstance(value,int) == True:
+            return f'''
+                        <l7:Property key="{xml_escape(key)}">
+                            <l7:IntegerValue>{value}</l7:IntegerValue>
+                        </l7:Property>'''
+        else:
+            return f'''
+                        <l7:Property key="{xml_escape(key)}">
+                            <l7:StringValue>{xml_escape(value)}</l7:StringValue>
+                        </l7:Property>'''
+
+    def bundle_otk_mysql_connection_entity(jdbcUrl,driverClass,user,password,properties={},conProperties={},name='OAuth'):
+        conProps = ''.join(connection_property_put_xml(key, value) for key, value in conProperties.items())
+        if (properties == 'na') :
+            return f'''<?xml version="1.0" encoding="UTF-8"?>
+                <l7:JDBCConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="0">
+                    <l7:Name>{name}</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Extension>
+                        <l7:DriverClass>{driverClass}</l7:DriverClass>
+                        <l7:JdbcUrl>{jdbcUrl}</l7:JdbcUrl>
+                        <l7:ConnectionProperties>
+                            <l7:Property key="EnableCancelTimeout">
+                                <l7:StringValue>true</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="user">
+                                <l7:StringValue>{user}</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="password">
+                                <l7:StringValue>{password}</l7:StringValue>
+                            </l7:Property>
+                            {conProps}
+                        </l7:ConnectionProperties>
+                    </l7:Extension>
+                </l7:JDBCConnection>'''
+
+        else:
+            props = ''.join(connection_property_put_xml(key, value) for key, value in properties.items())
+            return f'''<?xml version="1.0" encoding="UTF-8"?>
+                            <l7:JDBCConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="0">
+                                <l7:Name>{name}</l7:Name>
+                                <l7:Enabled>true</l7:Enabled>
+                                <l7:Properties>{props}
+                                </l7:Properties>
+                                <l7:Extension>
+                                    <l7:DriverClass>{driverClass}</l7:DriverClass>
+                                    <l7:JdbcUrl>{jdbcUrl}</l7:JdbcUrl>
+                                    <l7:ConnectionProperties>
+                                        <l7:Property key="EnableCancelTimeout">
+                                            <l7:StringValue>true</l7:StringValue>
+                                        </l7:Property>
+                                        <l7:Property key="user">
+                                            <l7:StringValue>{user}</l7:StringValue>
+                                        </l7:Property>
+                                        <l7:Property key="password">
+                                            <l7:StringValue>{password}</l7:StringValue>
+                                        </l7:Property>
+                                        {conProps}
+                                    </l7:ConnectionProperties>
+                                </l7:Extension>
+                            </l7:JDBCConnection>'''
+
+    def bundle_otk_oracle_connection_entity(jdbcUrl,driverClass,user,password,databaseName,properties={},name='OAuth'):
+        if (properties == 'na') :
+            return f'''<?xml version="1.0" encoding="UTF-8"?>
+                <l7:JDBCConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="0">
+                    <l7:Name>{name}</l7:Name>
+                    <l7:Enabled>true</l7:Enabled>
+                    <l7:Extension>
+                        <l7:DriverClass>{driverClass}</l7:DriverClass>
+                        <l7:JdbcUrl>{jdbcUrl}</l7:JdbcUrl>
+                        <l7:ConnectionProperties>
+                            <l7:Property key="Database">
+                                <l7:StringValue>{databaseName}</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="EnableCancelTimeout">
+                                <l7:StringValue>true</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="user">
+                                <l7:StringValue>{user}</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="password">
+                                <l7:StringValue>{password}</l7:StringValue>
+                            </l7:Property>
+                        </l7:ConnectionProperties>
+                    </l7:Extension>
+                </l7:JDBCConnection>'''
+        else:
+            props = ''.join(connection_property_put_xml(key, value) for key, value in properties.items())
+            return f'''<?xml version="1.0" encoding="UTF-8"?>
+                              <l7:JDBCConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="0">
+                                  <l7:Name>{name}</l7:Name>
+                                  <l7:Enabled>true</l7:Enabled>
+                                  <l7:Properties>{props}
+                                  </l7:Properties>
+                                  <l7:Extension>
+                                      <l7:DriverClass>{driverClass}</l7:DriverClass>
+                                      <l7:JdbcUrl>{jdbcUrl}</l7:JdbcUrl>
+                                      <l7:ConnectionProperties>
+                                          <l7:Property key="Database">
+                                              <l7:StringValue>{databaseName}</l7:StringValue>
+                                          </l7:Property>
+                                          <l7:Property key="EnableCancelTimeout">
+                                              <l7:StringValue>true</l7:StringValue>
+                                          </l7:Property>
+                                          <l7:Property key="user">
+                                              <l7:StringValue>{user}</l7:StringValue>
+                                          </l7:Property>
+                                          <l7:Property key="password">
+                                              <l7:StringValue>{password}</l7:StringValue>
+                                          </l7:Property>
+                                      </l7:ConnectionProperties>
+                                  </l7:Extension>
+                              </l7:JDBCConnection>'''
+
+    def bundle_otk_cassandra_connection_entity(connectpoints,port,keyspace,user,password_goid,driver_config,properties={},name='OAuth_Cassandra'):
+        if (driver_config == '"na"') :
+            props = ''.join(connection_property_put_xml(key, value) for key, value in properties.items())
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                    <l7:CassandraConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+                        <l7:Name>{name}</l7:Name>
+                        <l7:Keyspace>{keyspace}</l7:Keyspace>
+                        <l7:ContactPoint>{connectpoints}</l7:ContactPoint>
+                        <l7:Port>{port}</l7:Port>
+                        <l7:Username>{user}</l7:Username>
+                        <l7:PasswordId>{password_goid}</l7:PasswordId>
+                        <l7:Compression>NONE</l7:Compression>
+                        <l7:Ssl>false</l7:Ssl>
+                        <l7:Enabled>true</l7:Enabled>
+                        <l7:Properties>{props}</l7:Properties>
+                    </l7:CassandraConnection>'''
+        else:
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                                <l7:CassandraConnection xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+                                    <l7:Name>{name}</l7:Name>
+                                    <l7:Keyspace>{keyspace}</l7:Keyspace>
+                                    <l7:ContactPoint>{connectpoints}</l7:ContactPoint>
+                                    <l7:Port>{port}</l7:Port>
+                                    <l7:Username>{user}</l7:Username>
+                                    <l7:PasswordId>{password_goid}</l7:PasswordId>
+                                    <l7:Compression>NONE</l7:Compression>
+                                    <l7:Ssl>false</l7:Ssl>
+                                    <l7:Enabled>true</l7:Enabled>
+                                    <l7:Properties>
+                                    <l7:Property key="driverConfig"><l7:StringValue>{driver_config}</l7:StringValue> </l7:Property>
+                                    </l7:Properties>
+                                </l7:CassandraConnection>'''
+
+    def bundle_otk_cassandra_password(password, name='OAuth_Cassandra_Password'):
+        return f'''<?xml version="1.0" encoding="UTF-8"?>
+                    <l7:StoredPassword xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="0">
+                        <l7:Name>{name}</l7:Name>
+                        <l7:Password>${password}</l7:Password>
+                        <l7:Properties>
+                            <l7:Property key="description">
+                                <l7:StringValue>Cassandra password</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="type">
+                                <l7:StringValue>Password</l7:StringValue>
+                            </l7:Property>
+                            <l7:Property key="usageFromVariable">
+                                <l7:BooleanValue>true</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:StoredPassword>'''
+
+    def bundle_trusted_certificate(name,cert):
+        return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <l7:TrustedCertificate xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+                <l7:Name>{name}</l7:Name>
+                <l7:CertificateData>
+                    <l7:IssuerName>{name}</l7:IssuerName>
+                    <l7:SerialNumber>123</l7:SerialNumber>
+                    <l7:SubjectName>{name}</l7:SubjectName>
+                    <l7:Encoded>{cert}</l7:Encoded>
+                </l7:CertificateData>
+                <l7:Properties>
+                    <l7:Property key="revocationCheckingEnabled">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustAnchor">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustedAsSamlAttestingEntity">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustedAsSamlIssuer">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustedForSigningClientCerts">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustedForSigningServerCerts">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="trustedForSsl">
+                        <l7:BooleanValue>true</l7:BooleanValue>
+                    </l7:Property>
+                    <l7:Property key="verifyHostname">
+                        <l7:BooleanValue>false</l7:BooleanValue>
+                    </l7:Property>
+                </l7:Properties>
+            </l7:TrustedCertificate>'''
+
+    def bundle_otk_policy(id,host,port,version):
+        host_port = f'https://{host}:{port}'
+        host = f'https://{host}'
+        enc_host_port= base64.b64encode(host_port.encode('utf-8')).decode('utf-8')
+        enc_host= base64.b64encode(host.encode('utf-8')).decode('utf-8')
+
+        if (id == 'bc9a31b7578652a08a514d7d4fef1fb7') :
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                <l7:Policy guid="105d3617-d61c-4c83-a952-2ed5a93425e9" id="bc9a31b7578652a08a514d7d4fef1fb7" xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="{version}">
+                    <l7:PolicyDetail folderId="798f19000dd25ef4d6d8ff59a60eec6b" guid="105d3617-d61c-4c83-a952-2ed5a93425e9" id="bc9a31b7578652a08a514d7d4fef1fb7" version="{version}">
+                        <l7:Name>#OTK Client Context Variables</l7:Name>
+                        <l7:PolicyType>Include</l7:PolicyType>
+                        <l7:Properties>
+                            <l7:Property key="hasRouting">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                            <l7:Property key="soap">
+                                <l7:BooleanValue>false</l7:BooleanValue>
+                            </l7:Property>
+                        </l7:Properties>
+                    </l7:PolicyDetail>
+                    <l7:Resources>
+                        <l7:ResourceSet tag="policy">
+                            <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                                &lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+                                    &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                                        &lt;L7p:CommentAssertion&gt;
+                                            &lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK Client Context Variable&amp;quot;&quot;/&gt;
+                                        &lt;/L7p:CommentAssertion&gt;
+                                        &lt;L7p:CommentAssertion&gt;
+                                            &lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+                                        &lt;/L7p:CommentAssertion&gt;
+                                        &lt;L7p:CommentAssertion&gt;
+                                            &lt;L7p:Comment stringValue=&quot;=== Set Context Variables to override their values in the target policy below ===&quot;/&gt;
+                                        &lt;/L7p:CommentAssertion&gt;
+                                        &lt;L7p:SetVariable&gt;
+                                            &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                            &lt;L7p:VariableToSet stringValue=&quot;host_oauth2_auth_server&quot;/&gt;
+                                        &lt;/L7p:SetVariable&gt;
+                                        &lt;L7p:SetVariable&gt;
+                                            &lt;L7p:Base64Expression stringValue=&quot;{enc_host}&quot;/&gt;
+                                            &lt;L7p:VariableToSet stringValue=&quot;audience_recipient_restriction&quot;/&gt;
+                                        &lt;/L7p:SetVariable&gt;
+                                    &lt;/wsp:All&gt;
+                                &lt;/wsp:Policy&gt;
+                            </l7:Resource>
+                        </l7:ResourceSet>
+                    </l7:Resources>
+                </l7:Policy>'''
+        elif (id == '24e6fd7c5b6fb3a96690246c8ac492d4') :
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <l7:Policy guid="b8d40c59-c97f-455a-806a-2c1b98579dfc" id="24e6fd7c5b6fb3a96690246c8ac492d4" version="{version}" xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management">
+                <l7:PolicyDetail folderId="bc9a31b7578652a08a514d7d4fef25f3" guid="b8d40c59-c97f-455a-806a-2c1b98579dfc" id="24e6fd7c5b6fb3a96690246c8ac492d4" version="{version}">
+                    <l7:Name>#OTK id_token configuration</l7:Name>
+                    <l7:PolicyType>Include</l7:PolicyType>
+                    <l7:Properties>
+                        <l7:Property key="hasRouting">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="soap">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:PolicyDetail>
+                <l7:Resources>
+                    <l7:ResourceSet tag="policy">
+                        <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                        &lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+                            &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                                &lt;L7p:CommentAssertion&gt;
+                                    &lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK id_token configuration&amp;quot;&quot;/&gt;
+                                &lt;/L7p:CommentAssertion&gt;
+                                &lt;L7p:CommentAssertion&gt;
+                                    &lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+                                &lt;/L7p:CommentAssertion&gt;
+                                &lt;L7p:CommentAssertion&gt;
+                                    &lt;L7p:Comment stringValue=&quot;=== Add any new Context Variables or extensions below ===&quot;/&gt;
+                                &lt;/L7p:CommentAssertion&gt;
+                                &lt;L7p:SetVariable&gt;
+                                    &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                                        &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                                            &lt;L7p:entry&gt;
+                                                &lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+                                                &lt;L7p:value stringValue=&quot;==&quot;/&gt;
+                                            &lt;/L7p:entry&gt;
+                                            &lt;L7p:entry&gt;
+                                                &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                                                &lt;L7p:value stringValue=&quot;// Issuer Identifier (including protocol and port)&quot;/&gt;
+                                            &lt;/L7p:entry&gt;
+                                        &lt;/L7p:Properties&gt;
+                                    &lt;/L7p:AssertionComment&gt;
+                                    &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                    &lt;L7p:VariableToSet stringValue=&quot;iss&quot;/&gt;
+                                &lt;/L7p:SetVariable&gt;
+                            &lt;/wsp:All&gt;
+                        &lt;/wsp:Policy&gt;
+                        </l7:Resource>
+                    </l7:ResourceSet>
+                </l7:Resources>
+            </l7:Policy>'''
+        elif (id == '24e6fd7c5b6fb3a96690246c8ac49304') :
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                    <l7:Policy guid="cfa7239a-60e4-483a-9d45-c364f2fb673d" id="24e6fd7c5b6fb3a96690246c8ac49304" xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="{version}">
+                        <l7:PolicyDetail folderId="161861da3a78c5dcdc62696d16914781" guid="cfa7239a-60e4-483a-9d45-c364f2fb673d" id="24e6fd7c5b6fb3a96690246c8ac49304" version="{version}">
+                            <l7:Name>#OTK Storage Configuration</l7:Name>
+                            <l7:PolicyType>Include</l7:PolicyType>
+                            <l7:Properties>
+                                <l7:Property key="hasRouting">
+                                    <l7:BooleanValue>false</l7:BooleanValue>
+                                </l7:Property>                        
+                                <l7:Property key="soap">
+                                    <l7:BooleanValue>false</l7:BooleanValue>
+                                </l7:Property>
+                            </l7:Properties>
+                        </l7:PolicyDetail>
+                        <l7:Resources>
+                            <l7:ResourceSet tag="policy">
+                                <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                                    &lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+                                        &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                                            &lt;L7p:CommentAssertion&gt;
+                                                &lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK Storage Configuration&amp;quot;&quot;/&gt;
+                                            &lt;/L7p:CommentAssertion&gt;
+                                            &lt;L7p:CommentAssertion&gt;
+                                                &lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+                                            &lt;/L7p:CommentAssertion&gt;
+                                            &lt;L7p:CommentAssertion&gt;
+                                                &lt;L7p:Comment stringValue=&quot;=== Add any new Context Variables or extensions below ===&quot;/&gt;
+                                            &lt;/L7p:CommentAssertion&gt;
+                                            &lt;L7p:SetVariable&gt;
+                                                &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                                                    &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;Token DB&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/tokenstore is used on a remote gateway&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                    &lt;/L7p:Properties&gt;
+                                                &lt;/L7p:AssertionComment&gt;
+                                                &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                                &lt;L7p:VariableToSet stringValue=&quot;host_oauth_tokenstore_server&quot;/&gt;
+                                            &lt;/L7p:SetVariable&gt;
+                                            &lt;L7p:SetVariable&gt;
+                                                &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                                                    &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;Client DB&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/clientstore is used on a remote gateway&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                    &lt;/L7p:Properties&gt;
+                                                &lt;/L7p:AssertionComment&gt;
+                                                &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                                &lt;L7p:VariableToSet stringValue=&quot;host_oauth_clientstore_server&quot;/&gt;
+                                            &lt;/L7p:SetVariable&gt;
+                                            &lt;L7p:SetVariable&gt;
+                                                &lt;L7p:AssertionComment assertionComment=&quot;included&quot;&gt;
+                                                    &lt;L7p:Properties mapValue=&quot;included&quot;&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;LEFT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;Session DB&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                        &lt;L7p:entry&gt;
+                                                            &lt;L7p:key stringValue=&quot;RIGHT.COMMENT&quot;/&gt;
+                                                            &lt;L7p:value stringValue=&quot;This will usually be at localhost. Configure a hostname if /oauth/session is used on a remote gateway&quot;/&gt;
+                                                        &lt;/L7p:entry&gt;
+                                                    &lt;/L7p:Properties&gt;
+                                                &lt;/L7p:AssertionComment&gt;
+                                                &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                                &lt;L7p:VariableToSet stringValue=&quot;host_oauth_session_server&quot;/&gt;
+                                            &lt;/L7p:SetVariable&gt;
+                                        &lt;/wsp:All&gt;
+                                    &lt;/wsp:Policy&gt;
+                                </l7:Resource>
+                            </l7:ResourceSet>
+                        </l7:Resources>
+                    </l7:Policy>'''
+        elif (id == '24e6fd7c5b6fb3a96690246c8ac492ec') :
+            return f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <l7:Policy guid="a4448be1-9b0e-417f-b498-8a268cadf8a5" id="24e6fd7c5b6fb3a96690246c8ac492ec" xmlns:l7="http://ns.l7tech.com/2010/04/gateway-management" version="{version}">
+                <l7:PolicyDetail folderId="161861da3a78c5dcdc62696d16914781" guid="a4448be1-9b0e-417f-b498-8a268cadf8a5" id="24e6fd7c5b6fb3a96690246c8ac492ec" version="{version}">
+                    <l7:Name>#OTK OVP Configuration</l7:Name>
+                    <l7:PolicyType>Include</l7:PolicyType>
+                    <l7:Properties>
+                        <l7:Property key="hasRouting">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                        <l7:Property key="soap">
+                            <l7:BooleanValue>false</l7:BooleanValue>
+                        </l7:Property>
+                    </l7:Properties>
+                </l7:PolicyDetail>
+                <l7:Resources>
+                    <l7:ResourceSet tag="policy">
+                        <l7:Resource type="policy">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+                            &lt;wsp:Policy xmlns:L7p=&quot;http://www.layer7tech.com/ws/policy&quot; xmlns:wsp=&quot;http://schemas.xmlsoap.org/ws/2002/12/policy&quot;&gt;
+                                &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
+                                    &lt;L7p:CommentAssertion&gt;
+                                        &lt;L7p:Comment stringValue=&quot;Target Configuration Policy: &amp;quot;OTK OVP Configuration&amp;quot;&quot;/&gt;
+                                    &lt;/L7p:CommentAssertion&gt;
+                                    &lt;L7p:CommentAssertion&gt;
+                                        &lt;L7p:Comment stringValue=&quot;=== Set custom values for Context Variables below ===&quot;/&gt;
+                                    &lt;/L7p:CommentAssertion&gt;
+                                    &lt;L7p:CommentAssertion&gt;
+                                        &lt;L7p:Comment stringValue=&quot;=== Add any new Context Variables or extensions below ===&quot;/&gt;
+                                    &lt;/L7p:CommentAssertion&gt;
+                                    &lt;L7p:SetVariable&gt;
+                                        &lt;L7p:Base64Expression stringValue=&quot;{enc_host_port}&quot;/&gt;
+                                        &lt;L7p:VariableToSet stringValue=&quot;host_oauth_ovp_server&quot;/&gt;
+                                    &lt;/L7p:SetVariable&gt;
+                                &lt;/wsp:All&gt;
+                            &lt;/wsp:Policy&gt;
+                        </l7:Resource>
+                    </l7:ResourceSet>
+                </l7:Resources>
+            </l7:Policy>
+            ''' 
+{{ end }}
