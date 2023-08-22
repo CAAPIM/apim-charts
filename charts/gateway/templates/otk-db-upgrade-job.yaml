@@ -39,7 +39,7 @@ spec:
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
-{{- if and (ne .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
+{{- if and (not .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
            - name: OTK_LIQUIBASE_OPERATION
              value: "changelogSync"
 {{ end }}
