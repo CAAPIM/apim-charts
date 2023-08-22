@@ -1,4 +1,4 @@
-{{ if and (.Values.management.restman.enabled) (.Values.otk.enabled)}}
+{{ if and (.Values.management.restman.enabled) (.Values.otk.enabled) (.Values.database.enabled)}}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -45,6 +45,8 @@ spec:
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
+           - name: OTK_INSTALL_MODE
+             value: "job"
            - name: OTK_FORCE_INSTALL
              value: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
 {{ if ne .Values.otk.type "DMZ" }}
