@@ -27,12 +27,28 @@ metadata:
 spec:
   backoffLimit: 1
   template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    {{- if  .Values.otk.job.podLabels }}
+        {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.otk.job.podAnnotations }}
+      annotations: {{- toYaml .Values.otk.job.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: otk-install
           image: {{ template "otk.image" . }}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}

@@ -510,6 +510,7 @@ otk:
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 
+
   job:
     image:
       repository: caapim/otk-install
@@ -520,7 +521,13 @@ otk:
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+    ## Pod Labels for the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
 
+    # Pod Annotations apply to the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
   database:
     # OTK database type - mysql/oracle/cassandra    
     type: mysql
