@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: otk-db-scripts-cm
+  name: {{ .Values.mysql.initdbScriptsConfigMap }}
   labels:
-    app: {{ .Values.mysql.initdbScriptsConfigMap }}
+    app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
