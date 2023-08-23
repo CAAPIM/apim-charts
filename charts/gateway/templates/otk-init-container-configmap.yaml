@@ -21,14 +21,8 @@ data:
   OTK_TYPE: {{ template "otk-install-type" .}}
   OTK_INSTALL_MODE: "initContainer"
   BOOTSTRAP_DIR: "/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle"
-  OTK_FORCE_INSTALL: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
   OTK_SK_UPGRADE: "true"
-{{ if eq .Values.otk.type "DMZ" }}
-  OTK_INTERNAL_CERT_ENCODED: {{ default "" .Values.otk.cert.internalGatewayCert | quote }}
-  OTK_INTERNAL_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
-  OTK_INTERNAL_CERT_SERIAL: {{ default "" .Values.otk.cert.internalGatewaySerial | quote }}
-  OTK_INTERNAL_CERT_SUB: {{ default "" .Values.otk.cert.internalGatewaySubject | quote }}
-{{ end }}
+  OTK_FORCE_INSTALL: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
 {{ if ne .Values.otk.type "DMZ" }}
   OTK_DATABASE_UPGRADE: "false"
   OTK_DATABASE_TYPE: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
@@ -44,7 +38,7 @@ data:
   OTK_CASSANDRA_DRIVER_CONFIG: {{ default "na" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
 {{ end }}
 {{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
-{{- if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
   OTK_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
 {{- else }}
   OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
@@ -65,7 +59,7 @@ data:
 {{ end }}
   OTK_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
 {{ end }}
-{{ if and (.Values.otk.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+{{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
   OTK_CREATE_RO_DATABASE_CONN: "false"
 {{- else }}
   OTK_CREATE_RO_DATABASE_CONN: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
@@ -77,10 +71,10 @@ data:
   OTK_CONNECT_RETRY_COUNT: {{ default 10 .Values.otk.connectRetry | quote}}
   SSG_RESTMAN_PORT: {{ .Values.installSolutionKits.restmanPort | quote}}
   SSG_RESTMAN_HOST: {{ template "gateway.fullname" . }}
-  OTK_INTERNAL_GW_HOST: {{ .Values.otk.internalGatewayHost | quote }}
-  OTK_INTERNAL_GW_PORT: {{ .Values.otk.internalGatewayPort| quote }}
-  OTK_DMZ_GW_HOST: {{ .Values.otk.dmzGatewayHost| quote }}
-  OTK_DMZ_GW_PORT: {{ .Values.otk.dmzGatewayPort| quote }}
+  OTK_INTERNAL_GW_HOST: {{ default "" .Values.otk.internalGatewayHost | quote }}
+  OTK_INTERNAL_GW_PORT: {{ default "" .Values.otk.internalGatewayPort| quote }}
+  OTK_DMZ_GW_HOST: {{ default "" .Values.otk.dmzGatewayHost| quote }}
+  OTK_DMZ_GW_PORT: {{ default "" .Values.otk.dmzGatewayPort| quote }}
   OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIngeration | quote }}
   OTK_SKIP_POST_INSTALLATION_TASKS: {{default false .Values.otk.skipPostInstallationTasks | quote }}
 {{ end }}

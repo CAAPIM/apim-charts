@@ -57,31 +57,31 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-      {{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
-      {{- if not .Values.initContainers  }}
+
       initContainers:
+      {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+      - name: {{ .Chart.Name }}-otk-install-container
+        image: {{ template "otk.image" . }}
+        imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+        envFrom:
+        - secretRef:
+            name: {{ template "otk.dbSecretName" . }}
+        - secretRef:
+            name: {{ template "gateway.secretName" . }}
+      {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
-        - name: {{ .Chart.Name }}-otk-install-container
-          image: {{ template "otk.image" . }}
-          imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
-          envFrom:
-          - secretRef:
-              name: {{ template "otk.dbSecretName" . }}
-          - secretRef:
-              name: {{ template "gateway.secretName" . }}
-        {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
-          - secretRef:
-              name: {{ template "otk.dbSecretName.readOnly" . }}
-        {{ end }}
-          - configMapRef:
-              name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
-          volumeMounts:
-            - name: {{ template "gateway.fullname" . }}-otk-install-container
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
-        {{ end }}
+        - configMapRef:
+            name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
+        volumeMounts:
+          - name: {{ template "gateway.fullname" . }}-otk-install-container
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
+      {{- end }}
       {{- if .Values.initContainers }}
-      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
-      {{- end }}
+      {{toYaml .Values.initContainers | nindent 6 }}
+      {{ end }}
+
       {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
