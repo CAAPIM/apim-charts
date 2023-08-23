@@ -28,14 +28,11 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
-    {{- range $key, $val := .Values.podLabels }}
-        {{ $key }}: "{{ $val }}"
+    {{- if  .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
     {{- end }}
     {{- if  .Values.podAnnotations }}
-      annotations:
-    {{- range $key, $val := .Values.podAnnotations }}
-        {{ $key }}: "{{ $val }}"
-    {{- end }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
     {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}

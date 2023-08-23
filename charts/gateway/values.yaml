@@ -485,7 +485,7 @@ service:
 # This enables/disables otk install or upgrade.
 # Prerequisites.
 #  1. OTK DB is installed.
-#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
 #  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
@@ -510,6 +510,7 @@ otk:
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 
+
   job:
     image:
       repository: caapim/otk-install
@@ -520,7 +521,13 @@ otk:
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+    ## Pod Labels for the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
 
+    # Pod Annotations apply to the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
   database:
     # OTK database type - mysql/oracle/cassandra    
     type: mysql
@@ -528,9 +535,14 @@ otk:
     dbUpgrade: true
     useDemoDb: true
   
+    # username: root
+    # password: 7layer
+
     # ddlUsername:
     # ddlPassword:
+
     # existingSecretName: otkDbSecret
+    
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
@@ -546,6 +558,7 @@ otk:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.mysql.jdbc.Driver
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # Oracle database name
       # databaseName:
     # cassandra:
@@ -563,6 +576,7 @@ otk:
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name

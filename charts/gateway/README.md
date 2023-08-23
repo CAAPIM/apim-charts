@@ -37,6 +37,15 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.14 General Updates
+- Added pod labels and annotations to the otk-install job.
+  - otk.job.podLabels
+  - otk.job.podAnnotations
+
+## 3.0.13 General Updates
+- The OTK Install job now uses podSecurity and containerSecurity contexts if set.
+- Updated how pod labels and annotations are templated in deployment.yaml  
+
 ## 3.0.12 General Updates
 Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
 - [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)
@@ -461,6 +470,8 @@ database:
 | `otk.job.image.nodeSelector`      | Job Node selector | `{}` | 
 | `otk.job.image.tolerations`       | Job tolerations | `[]` | 
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds     | `60`|
+| `otk.job.podLabels`                   | OTK Job podLabels | {}
+| `otk.job.podAnnotations`              | OTK Job podAnnotations | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql` |
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade              | `true`  |
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB                 | `true`  |
@@ -475,7 +486,8 @@ database:
 | `otk.database.properties`         | OTK database additional properties  | `{}` |
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql` | 
 | `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
+| `otk.database.sql.connectionProperties`| OTK database mysql connection properties (mysql) | `{}`
 | `otk.database.sql.databaseName`   | OTK database Oracle database name |
 | `otk.database.readOnlyConnection.enabled`            | Enable/Disable OTK read only database connection | `false` | 
 | `otk.database.readOnlyConnection.connectionName`     | OTK read only database connection name | `OAuth_ReadOnly` | 
@@ -484,7 +496,8 @@ database:
 | `otk.database.readOnlyConnection.password`           | OTK read only database password |
 | `otk.database.readOnlyConnection.properties`         | OTK read only database additional properties  | `{}` | 
 | `otk.database.readOnlyConnection.jdbcURL`            | OTK read only database sql jdbc URL (oracle/mysql) | 
-| `otk.database.readOnlyConnection.jdbcDriverClass`    | OTK read only database sql driver class name (oracle/mysql) | 
+| `otk.database.readOnlyConnection.jdbcDriverClass`    | OTK read only database sql driver class name (oracle/mysql) |
+| `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (mysql) | `{}`
 | `otk.database.readOnlyConnection.databaseName`       | OTK read only Oracle database name |
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
