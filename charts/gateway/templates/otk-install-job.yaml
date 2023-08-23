@@ -65,9 +65,9 @@ spec:
              value: "job"
            - name: OTK_FORCE_INSTALL
              value: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
-{{ if ne .Values.otk.type "DMZ" }}
            - name: OTK_SK_UPGRADE
              value: "true"
+{{ if ne .Values.otk.type "DMZ" }}
            - name: OTK_DATABASE_UPGRADE
              value: "false"
            - name: OTK_DATABASE_TYPE

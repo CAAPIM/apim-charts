@@ -507,6 +507,19 @@ otk:
   # dmzGatewayHost:
   # dmzGatewayPort:
 
+  cert:
+  # Specify DMZ gateway certifiates that needs to be imported to Internal GW (for ephemeral gateway)
+    # dmzGatewayCert:
+    # dmzGatewayIssuer:
+    # dmzGatewaySerial:
+    # dmzGatewaySubject:
+  # Specify Internal gateway certifiates that needs to be imported for DMZ GW (for ephemeral gateway)
+    # internalGatewayCert:
+    # internalGatewayIssuer:
+    # internalGatewaySerial:
+    # internalGatewaySubject:
+
+
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 

@@ -23,10 +23,20 @@ data:
   BOOTSTRAP_DIR: "/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle"
   OTK_SK_UPGRADE: "true"
   OTK_FORCE_INSTALL: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
+{{ if eq .Values.otk.type "DMZ" }}
+  OTK_INTERNAL_CERT_ENCODED: {{ default "" .Values.otk.cert.internalGatewayCert | quote }}
+  OTK_INTERNAL_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
+  OTK_INTERNAL_CERT_SERIAL: {{ default "" .Values.otk.cert.internalGatewaySerial | quote }}
+  OTK_INTERNAL_CERT_SUB: {{ default "" .Values.otk.cert.internalGatewaySubject | quote }}
+  {{ end }}
 {{ if ne .Values.otk.type "DMZ" }}
   OTK_DATABASE_UPGRADE: "false"
   OTK_DATABASE_TYPE: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
   OTK_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
+  OTK_DMZ_CERT_ENCODED: {{ default "" .Values.otk.cert.dmzGatewayCert | quote }}
+  OTK_DMZ_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
+  OTK_DMZ_CERT_SERIAL: {{ default "" .Values.otk.cert.dmzGatewaySerial | quote }}
+  OTK_DMZ_CERT_SUB: {{ default "" .Values.otk.cert.dmzGatewaySubject | quote }}
 {{ if eq .Values.otk.database.type "cassandra" }}
   OTK_CASSANDRA_CONNECTION_POINTS: {{ required "Please fill in otk.database.cassandra.connectionPoints in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
   OTK_CASSANDRA_PORT: {{ required "Please fill in otk.database.cassandra.port in values.yaml" .Values.otk.database.cassandra.port | quote }}
