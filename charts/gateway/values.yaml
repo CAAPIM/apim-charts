@@ -573,6 +573,7 @@ otk:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or mysql demo db name
       databaseName: otk_db
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
     # cassandra:
     #   connectionPoints: localhost
     #   port:
