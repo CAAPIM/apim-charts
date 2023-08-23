@@ -45,7 +45,7 @@ data:
 {{ end }}
 {{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
 {{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
-  OTK_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ template "otk.demoDBName" . }}
+  OTK_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ default "otk_db" .Values.otk.database.sql.databaseName }}
 {{- else }}
   OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
 {{- end }}
