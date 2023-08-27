@@ -166,23 +166,6 @@ spec:
               name: apim-config
           - secretRef:
               name: apim-secret
-          readinessProbe:
-            httpGet:
-              path: /sys/probe/readinesscheck
-              port: 8080
-            initialDelaySeconds: 120
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
-            failureThreshold: 35
-          livenessProbe:
-            exec:
-              command: [sh, /opt/docker/diagnostic/health_check.sh]
-            initialDelaySeconds: 120
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
-            failureThreshold: 35
           {{- if .Values.apim.resources }}
           resources: {{- toYaml .Values.apim.resources | nindent 12 }}
           {{- end }}
