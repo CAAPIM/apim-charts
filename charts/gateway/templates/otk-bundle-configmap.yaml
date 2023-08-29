@@ -1,4 +1,4 @@
-{{ if .Values.otk.bundle.enabled }}
+{{- if .Values.otk.job.bundle.enabled }}
 {{- $this := . -}}
 apiVersion: v1
 kind: ConfigMap
@@ -19,9 +19,9 @@ metadata:
 {{- end }}
 {{- end }}
 data:
-  {{- range $path, $_ :=  .Files.Glob  .Values.otk.bundle.path }}
+  {{- range $path, $_ :=  .Files.Glob  .Values.otk.job.bundle.path }}
   {{ $path | replace "/" "-" }}: |-
   {{ base $path }}: |-
 {{ tpl ($this.Files.Get $path) $this | indent 4 }}
   {{- end }}
-{{ end }}
+{{- end }}
