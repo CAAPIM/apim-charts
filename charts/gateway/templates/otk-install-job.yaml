@@ -153,14 +153,14 @@ spec:
            - name: OTK_SKIP_POST_INSTALLATION_TASKS
              value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
            - name: OTK_CUSTOM_BUNDLE
-             value: {{default false .Values.otk.existingBundle.enabled | quote }}
+             value: {{default false .Values.otk.job.existingBundle.enabled | quote }}
 {{- if .Values.otk.job.existingBundle.enabled }}
           volumeMounts:
-  {{- range .Values.otk.job.existingBundle.configMaps }}
-           - name: { { .name } }
+{{- range .Values.otk.job.existingBundle.configMaps }}
+           - name: {{ .name }}
              mountPath: /tmp/{{ .name }}
-  {{- end }}
-{{ end }}
+{{- end }}
+{{- end }}
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}
@@ -174,7 +174,7 @@ spec:
       restartPolicy: "Never"
 {{- if .Values.otk.job.existingBundle.enabled }}
       volumes:
-  {{- range .Values.otk.job.existingBundle.configMaps }}
+{{- range .Values.otk.job.existingBundle.configMaps }}
        - name: {{ .name }}
         {{- if .configMap }}
          configMap: {{ toYaml .configMap | nindent 12 }}
@@ -184,6 +184,6 @@ spec:
           optional: false
            name: {{ .name }}
         {{- end }}
-  {{- end }}
-{{ end }}
+{{- end }}
+{{- end }}
 {{ end }}
