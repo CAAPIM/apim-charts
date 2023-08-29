@@ -57,13 +57,35 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- if .Values.initContainers }}
-      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
+
+      initContainers:
+      {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+      - name: {{ .Chart.Name }}-otk-install-container
+        image: {{ template "otk.image" . }}
+        imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+        envFrom:
+        - secretRef:
+            name: {{ template "otk.dbSecretName" . }}
+        - secretRef:
+            name: {{ template "gateway.secretName" . }}
+      {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
-{{- if .Values.imagePullSecret.enabled }}
+        - configMapRef:
+            name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
+        volumeMounts:
+          - name: {{ template "gateway.fullname" . }}-otk-install-container
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+      {{- end }}
+      {{- if .Values.initContainers }}
+      {{toYaml .Values.initContainers | nindent 6 }}
+      {{ end }}
+
+      {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
-{{- end }}
+      {{- end }}
       containers:
         {{- if .Values.sidecars }}
         {{- toYaml .Values.sidecars | nindent 8 }}
@@ -172,7 +194,7 @@ spec:
 {{- end }}
 {{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
             - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/otkhealthcheck
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/1otkhealthcheck
 {{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
@@ -253,6 +275,10 @@ spec:
               {{ end }}
            {{- end }}
            {{- end }}
+{{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-otk-install-container
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
            {{- range .Values.sidecars }}
@@ -531,6 +557,10 @@ spec:
           emptyDir: {}
      {{- end }}
      {{- end }}
+{{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-otk-install-container
+          emptyDir: {}
 {{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
