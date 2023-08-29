@@ -152,6 +152,15 @@ spec:
              value: {{default false .Values.otk.enablePortalIngeration | quote }}
            - name: OTK_SKIP_POST_INSTALLATION_TASKS
              value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
+           - name: OTK_CUSTOM_BUNDLE
+             value: {{default false .Values.otk.existingBundle.enabled | quote }}
+{{- if .Values.otk.existingBundle.enabled }}
+          volumeMounts:
+  {{ - range .Values.otk.existingBundle.configMaps }}
+           - name: { { .name } }
+             mountPath: /tmp/{{ .name }}
+  {{ - end }}
+{{ end }}
 {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}
@@ -163,4 +172,18 @@ spec:
       tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
 {{- end }}
       restartPolicy: "Never"
+{{- if .Values.otk.existingBundle.enabled }}
+      volumes:
+  {{- range .Values.otk.existingBundle.configMaps }}
+       - name: {{ .name }}
+        {{- if .configMap }}
+         configMap: {{ toYaml .configMap | nindent 12 }}
+        {{- else }}
+         configMap:
+          defaultMode: 292
+          optional: false
+           name: {{ .name }}
+        {{- end }}
+  {{- end }}
+{{ end }}
 {{ end }}

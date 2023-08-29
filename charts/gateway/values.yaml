@@ -532,6 +532,13 @@ otk:
     imagePullSecret:
       enabled: false
     labels: {}
+    bundle:
+      enabled: false
+      path: "bundles/*.bundle"
+    existingBundle:
+      enabled: false
+      configMaps: [ ]
+
     # nodeSelector: {}
     # tolerations: []
     ## Pod Labels for the OTK install Pod
@@ -550,7 +557,7 @@ otk:
 
     username: otk_user
     password: mypassword
-  
+
     # ddlUsername:
     # ddlPassword:
 
