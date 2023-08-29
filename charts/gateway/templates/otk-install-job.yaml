@@ -182,7 +182,7 @@ spec:
          configMap:
           defaultMode: 292
           optional: false
-           name: {{ .name }}
+          name: {{ .name }}
         {{- end }}
 {{- end }}
 {{- end }}
