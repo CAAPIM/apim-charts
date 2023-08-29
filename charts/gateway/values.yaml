@@ -508,12 +508,12 @@ otk:
   # dmzGatewayPort:
 
   cert:
-  # Specify DMZ gateway certifiates that needs to be imported to Internal GW (for ephemeral gateway)
+  # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
     # dmzGatewayCert:
     # dmzGatewayIssuer:
     # dmzGatewaySerial:
     # dmzGatewaySubject:
-  # Specify Internal gateway certifiates that needs to be imported for DMZ GW (for ephemeral gateway)
+  # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
     # internalGatewayCert:
     # internalGatewayIssuer:
     # internalGatewaySerial:

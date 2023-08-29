@@ -76,7 +76,7 @@ spec:
             name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
         volumeMounts:
           - name: {{ template "gateway.fullname" . }}-otk-install-container
-            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
       {{- end }}
       {{- if .Values.initContainers }}
       {{toYaml .Values.initContainers | nindent 6 }}
@@ -278,7 +278,7 @@ spec:
 {{- end }}
 {{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
             - name: {{ template "gateway.fullname" . }}-otk-install-container
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
            {{- range .Values.sidecars }}
