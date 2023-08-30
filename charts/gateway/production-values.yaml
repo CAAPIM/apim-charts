@@ -525,6 +525,12 @@ otk:
     existingBundle:
       enabled: false
       configMaps: [ ]
+     # - name: mybundle1
+        # configMap:
+        #   defaultMode: 420
+        #   optional: false
+        #   name: mybundle1
+     # - name: mybundle2
     # nodeSelector: {}
     # tolerations: []
     ## Pod Labels for the OTK install Pod
