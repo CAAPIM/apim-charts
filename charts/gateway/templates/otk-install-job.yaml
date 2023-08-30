@@ -158,7 +158,7 @@ spec:
 {{- if .Values.otk.job.existingBundle.enabled }}
 {{- range .Values.otk.job.existingBundle.configMaps }}
            - name: {{ .name }}
-             mountPath: /tmp/bundles/
+             mountPath: /tmp/bundles/{{ .name }}
 {{- end }}
 {{- end }}
 {{- if .Values.otk.job.bundle.enabled }}
