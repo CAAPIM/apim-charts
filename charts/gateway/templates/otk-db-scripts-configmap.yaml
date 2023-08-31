@@ -12,8 +12,6 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }} 
   annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-11"
     {{- if  .Values.additionalAnnotations }}
     {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"

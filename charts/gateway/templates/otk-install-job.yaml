@@ -42,10 +42,6 @@ spec:
       {{- if .Values.podSecurityContext }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- end }}
-      initContainers:
-      {{- if .Values.otk.customizations.initContainers }}
-      {{toYaml .Values.otk.customizations.initContainers | nindent 6 }}
-      {{ end }}
       containers:
         - name: otk-install
           image: {{ template "otk.image" . }}
@@ -54,17 +50,6 @@ spec:
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if .Values.otk.customizations.initContainers }}
-          {{- range .Values.otk.customizations.initContainers }}
-          {{- range .volumeMounts }}
-          - name: {{ .name }}
-            mountPath: {{ .mountPath }}
-            {{ if .subPath }}
-            subPath: {{ .subPath }}
-            {{ end }}
-          {{- end }}
-          {{- end }}
-          {{- end }}
           {{- if .Values.otk.customizations.existingBundle.enabled }}
           {{- range .Values.otk.customizations.existingBundle.configMaps }}
           - name: {{ .name }}
@@ -116,14 +101,6 @@ spec:
           secret:
             secretName: {{ .name }}
           {{- end }}
-        {{- end }}        
-        {{- end }}
-        {{- if .Values.otk.customizations.initContainers }}
-        {{- range .Values.otk.customizations.initContainers }}
-        {{- range .volumeMounts }}
-        - name: {{ .name }}
-          emptyDir: {}
-        {{- end }}
         {{- end }}
         {{- end }}
         {{- if .Values.otk.customizations.bundle.enabled }}

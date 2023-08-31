@@ -523,20 +523,23 @@ otk:
   # subSolutionKitNames:
 
   customizations:
-    enable: false
-    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
-    # When creating these secrets/configmaps the format should be
-    # key: bundle1.bundle value: <xml value>
-    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
-    # TODO Naming convention.
 
     # This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
     # Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
     # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
     # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
     bundle:
+      enabled: false
       path: "bundles-otk/**.bundle"
-      
+
+    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+    # When creating these secrets/configmaps the format should be
+    # key: bundle1.bundle value: <xml value>
+    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
     existingBundle:
       enabled: false
       configMaps: []
@@ -555,15 +558,6 @@ otk:
       #     volumeAttributes:
       #       secretProviderClass: "secret-provider-class-name"
       # - name: mysecretbundle2
-
-    initContainers: []
-    # initContainers:
-    # - name: simple-init
-    #   image: docker.io/layer7api/simple-init:1.0.1
-    #   imagePullPolicy: Always
-    #   volumeMounts:
-    #   - name: config-directory
-    #     mountPath: /opt/docker/custom
 
   job:
     image:
@@ -969,14 +963,7 @@ mysql:
       [manager]
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-10"
-  commonAnnotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-weight: "-10"
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid    
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers

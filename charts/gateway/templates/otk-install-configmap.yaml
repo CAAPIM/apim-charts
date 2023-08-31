@@ -95,4 +95,5 @@ data:
   OTK_DMZ_GW_PORT: {{ default "" .Values.otk.dmzGatewayPort| quote }}
   OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIngeration | quote }}
   OTK_SKIP_POST_INSTALLATION_TASKS: {{default false .Values.otk.skipPostInstallationTasks | quote }}
+  OTK_CUSTOM_BUNDLE: "true"
 {{- end }}
