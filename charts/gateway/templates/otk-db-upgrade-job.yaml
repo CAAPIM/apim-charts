@@ -20,10 +20,10 @@ metadata:
     {{- end }}
   {{- if  .Values.additionalAnnotations }}
   annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
-{{- end }}
-{{- end }}
+  {{- end }}
+  {{- end }}
 spec:
   backoffLimit: 1
   template:
@@ -39,10 +39,10 @@ spec:
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
-{{- if and (not .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
+           {{- if and (not .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
            - name: OTK_LIQUIBASE_OPERATION
              value: "changelogSync"
-{{ end }}
+           {{ end }}
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_WAIT_TIMEOUT
@@ -52,26 +52,26 @@ spec:
            - name: OTK_DATABASE_UPGRADE
              value: "true"
            - name: OTK_JDBC_URL
-{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+           {{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
              value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{default "otk_db" .Values.otk.database.sql.databaseName }}
-{{- else }}
+           {{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
-{{- end }}
+           {{- end }}
 
-{{ if eq .Values.otk.database.type "oracle" }}
+           {{ if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-{{ end }}
+           {{ end }}
 
-{{- if .Values.imagePullSecret.enabled }}
+      {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}
-{{- end }}
-{{- if .Values.otk.job.nodeSelector }}
+      {{- end }}
+      {{- if .Values.otk.job.nodeSelector }}
       nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
-{{- end }}
-{{- if .Values.otk.job.tolerations }}
+      {{- end }}
+      {{- if .Values.otk.job.tolerations }}
       tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
-{{- end }}
+      {{- end }}
       restartPolicy: "Never"
-{{ end }}
+      {{ end }}

@@ -532,6 +532,49 @@ otk:
     imagePullSecret:
       enabled: false
     labels: {}
+
+    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+    # When creating these secrets/configmaps the format should be
+    # key: bundle1.bundle value: <xml value>
+    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+    # TODO Naming convention.
+
+    # This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
+    # Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
+    # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
+    # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
+    bundle:
+      enabled: true
+      path: "bundles-otk/*.bundle"
+      
+    existingBundle:
+      enabled: false
+      configMaps:
+      - name: mybundle1
+        configMap:
+          defaultMode: 420
+          optional: false
+          name: mybundle1
+      - name: mybundle2
+
+      secrets:
+      - name: mysecretbundle1
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "secret-provider-class-name"
+      - name: mysecretbundle2
+
+    initContainers: []
+    # initContainers:
+    # - name: simple-init
+    #   image: docker.io/layer7api/simple-init:1.0.1
+    #   imagePullPolicy: Always
+    #   volumeMounts:
+    #   - name: config-directory
+    #     mountPath: /opt/docker/custom
+
     # nodeSelector: {}
     # tolerations: []
     ## Pod Labels for the OTK install Pod
@@ -573,7 +616,7 @@ otk:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or mysql demo db name
       databaseName: otk_db
-      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
     # cassandra:
     #   connectionPoints: localhost
     #   port:

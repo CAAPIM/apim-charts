@@ -1,8 +1,8 @@
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+{{ if (.Values.otk.enabled) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
+  name: {{ template "gateway.fullname" . }}-otk-install-configmap
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -19,57 +19,70 @@ metadata:
 {{- end }}
 data:
   OTK_TYPE: {{ template "otk-install-type" .}}
+  {{- if .Values.database.enabled }}
+  OTK_INSTALL_MODE: "job"
+  {{- else }}
   OTK_INSTALL_MODE: "initContainer"
+  {{- end }}
   BOOTSTRAP_DIR: "/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK"
   OTK_SK_UPGRADE: "true"
+  OTK_DATABASE_UPGRADE: "false"
   OTK_FORCE_INSTALL: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
-{{ if eq .Values.otk.type "DMZ" }}
+  {{- if eq .Values.otk.type "DMZ" }}
   OTK_INTERNAL_CERT_ENCODED: {{ default "" .Values.otk.cert.internalGatewayCert | quote }}
   OTK_INTERNAL_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
   OTK_INTERNAL_CERT_SERIAL: {{ default "12345" .Values.otk.cert.internalGatewaySerial | quote }}
   OTK_INTERNAL_CERT_SUB: {{ default "" .Values.otk.cert.internalGatewaySubject | quote }}
-{{ end }}
-{{ if ne .Values.otk.type "DMZ" }}
-  OTK_DATABASE_UPGRADE: "false"
-  OTK_DATABASE_TYPE: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
-  OTK_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
+  {{- end }}
+  {{- if eq .Values.otk.type "INTERNAL" }}
   OTK_DMZ_CERT_ENCODED: {{ default "" .Values.otk.cert.dmzGatewayCert | quote }}
   OTK_DMZ_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
   OTK_DMZ_CERT_SERIAL: {{ default "12345" .Values.otk.cert.dmzGatewaySerial | quote }}
   OTK_DMZ_CERT_SUB: {{ default "" .Values.otk.cert.dmzGatewaySubject | quote }}
-{{ if eq .Values.otk.database.type "cassandra" }}
+  {{- end }}
+  
+  {{- if ne .Values.otk.type "DMZ" }}
+  OTK_DATABASE_TYPE: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
+  OTK_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
+  {{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+  OTK_CREATE_RO_DATABASE_CONN: "false"
+  {{- else }}
+  OTK_CREATE_RO_DATABASE_CONN: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
+  {{- end }}  
+  {{- if eq .Values.otk.database.type "cassandra" }}
   OTK_CASSANDRA_CONNECTION_POINTS: {{ required "Please fill in otk.database.cassandra.connectionPoints in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
   OTK_CASSANDRA_PORT: {{ required "Please fill in otk.database.cassandra.port in values.yaml" .Values.otk.database.cassandra.port | quote }}
   OTK_CASSANDRA_KEYSPACE: {{ required "Please fill in otk.database.cassandra.keyspace in values.yaml" .Values.otk.database.cassandra.keyspace | quote }}
   OTK_CASSANDRA_DRIVER_CONFIG: {{ default "na" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
-{{ end }}
-{{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
-{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
-  OTK_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ default "otk_db" .Values.otk.database.sql.databaseName }}
-{{- else }}
-  OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
-{{- end }}
+  {{- end }}
+  {{- if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
   OTK_JDBC_DRIVER_CLASS: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
-{{if .Values.otk.database.readOnlyConnection.enabled }}
+  OTK_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
+  OTK_DATABASE_CONN_PROPERTIES: {{ default "na" .Values.otk.database.sql.connectionProperties | toJson | b64enc | quote }}
+  {{- if .Values.otk.database.readOnlyConnection.enabled }}
   OTK_RO_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.readOnlyConnection.connectionName in values.yaml" .Values.otk.database.readOnlyConnection.connectionName | quote }}
   OTK_RO_JDBC_URL: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.readOnlyConnection.jdbcURL | quote }}
   OTK_RO_JDBC_DRIVER_CLASS: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConnection.jdbcDriverClass | quote }}
   OTK_RO_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
-{{ end }}
-{{ end }}
-{{ if eq .Values.otk.database.type "oracle" }}
+  OTK_RO_DATABASE_CONN_PROPERTIES: {{ default "na" .Values.otk.database.readOnlyConnection.connectionProperties | toJson | b64enc | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if eq .Values.otk.database.type "oracle" }}
+  OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
   OTK_DATABASE_NAME: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-{{if .Values.otk.database.readOnlyConnection.enabled }}
+  {{- if .Values.otk.database.readOnlyConnection.enabled }}
   OTK_RO_DATABASE_NAME: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConnection.databaseName | quote }}
-{{ end }}
-{{ end }}
-  OTK_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
-{{ end }}
-{{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
-  OTK_CREATE_RO_DATABASE_CONN: "false"
-{{- else }}
-  OTK_CREATE_RO_DATABASE_CONN: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
-{{ end }}
+  {{- end }}
+  {{- end }}  
+  {{- if eq .Values.otk.database.type "mysql" }}
+  {{- if (.Values.otk.database.useDemoDb)}}
+  OTK_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ default "otk_db" .Values.otk.database.sql.databaseName }}
+  {{- else }}
+  OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
+  {{- end }}
+  {{- end }}  
+  {{- end }}  
+  OTK_CUSTOM_BUNDLE: "true"
   OTK_UPDATE_DATABASE_CONNECTION: {{default false .Values.otk.database.update | quote }}
   OTK_SKAR_RETRY_COUNT: {{ default 1 .Values.otk.installRetry | quote}}
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
@@ -83,4 +96,4 @@ data:
   OTK_DMZ_GW_PORT: {{ default "" .Values.otk.dmzGatewayPort| quote }}
   OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIngeration | quote }}
   OTK_SKIP_POST_INSTALLATION_TASKS: {{default false .Values.otk.skipPostInstallationTasks | quote }}
-{{ end }}
+{{- end }}

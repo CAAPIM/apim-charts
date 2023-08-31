@@ -1,3 +1,4 @@
+{{- if .Values.database.create }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,7 +13,7 @@ metadata:
     {{- end }} 
   annotations:
     "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-weight": "-11"
     {{- if  .Values.additionalAnnotations }}
     {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
@@ -28,3 +29,4 @@ data:
       GRANT SELECT ON {{ .Values.otk.database.sql.databaseName}}.* TO '{{ .Values.otk.database.readOnlyConnection.username  }}'@'%';
       {{- end }}
       flush privileges;
+{{ end }}

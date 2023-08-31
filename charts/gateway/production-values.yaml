@@ -507,9 +507,20 @@ otk:
   # dmzGatewayHost:
   # dmzGatewayPort:
 
+  cert:
+  # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
+    # dmzGatewayCert:
+    # dmzGatewayIssuer:
+    # dmzGatewaySerial:
+    # dmzGatewaySubject:
+  # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
+    # internalGatewayCert:
+    # internalGatewayIssuer:
+    # internalGatewaySerial:
+    # internalGatewaySubject:
+
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
-
 
   job:
     image:
@@ -533,7 +544,7 @@ otk:
     type: mysql
     connectionName: OAuth
     dbUpgrade: true
-    useDemoDb: true
+    useDemoDb: false
     
     # username: root
     # password: 7layer
@@ -559,8 +570,8 @@ otk:
       jdbcURL:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
-      # Oracle database name
-      # databaseName:
+      # Oracle database name or mysql demo db name
+      databaseName: otk_db
     # cassandra:
     #   connectionPoints: localhost
     #   port:

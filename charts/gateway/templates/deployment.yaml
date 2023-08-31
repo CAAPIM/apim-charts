@@ -73,7 +73,7 @@ spec:
             name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
         - configMapRef:
-            name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
+            name: {{ template "gateway.fullname" . }}-otk-install-configmap
         volumeMounts:
           - name: {{ template "gateway.fullname" . }}-otk-install-container
             mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK

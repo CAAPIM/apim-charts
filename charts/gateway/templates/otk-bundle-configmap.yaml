@@ -1,0 +1,27 @@
+{{ if .Values.otk.job.bundle.enabled }}
+{{- $this := . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+data:
+  {{- range $path, $_ :=  .Files.Glob  .Values.otk.job.bundle.path }}
+  {{ $path | replace "/" "-" }}: |-
+  {{ base $path }}: |-
+{{ tpl ($this.Files.Get $path) $this | indent 4 }}
+  {{- end }}
+{{ end }}
