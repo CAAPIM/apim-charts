@@ -6,10 +6,10 @@ metadata:
   annotations:
     chartversion: {{ .Chart.AppVersion | quote }}
     {{- if  .Values.additionalAnnotations }}
-    {{ - range $key, $val := .Values.additionalAnnotations }}
+    {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
-    {{ - end }}
-    {{ - end }}
+    {{- end }}
+    {{- end }}
   labels:
     app: {{ template "gateway.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
