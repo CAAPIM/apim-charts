@@ -584,7 +584,7 @@ otk:
     ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     podAnnotations: {}
   database:
-    # OTK database type - mysql/oracle/cassandra    
+    # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
     dbUpgrade: true
@@ -592,12 +592,12 @@ otk:
 
     username: otk_user
     password: mypassword
-  
+
     # ddlUsername:
     # ddlPassword:
 
     # existingSecretName: otkDbSecret
-    
+
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
@@ -622,7 +622,11 @@ otk:
     #   keyspace:
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
-    
+
+    # For mysql & oracle setup test clients
+    #  createTestClients: false
+    #  testClientsRedirectUrlPrefix:
+
     # Optionally configure read only database connection for mysql/oracle.
     readOnlyConnection:
       enabled: false

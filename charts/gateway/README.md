@@ -435,6 +435,7 @@ config:
         value: 443
 ```
 * Restman is enabled. Can be disabled once the install/upgrage is complete.
+  * This is not applicable for ephemeral GW
 ```
 management:
   restman:
@@ -496,6 +497,8 @@ database:
 | `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql)                                                                                                                                                                                                                                                                                              |
 | `otk.database.sql.connectionProperties`| OTK database mysql connection properties (mysql)                                                                                                                                                                                                                                                                                               | `{}`
 | `otk.database.sql.databaseName`   | OTK database Oracle database name                                                                                                                                                                                                                                                                                                              |
+| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients                                                                                                                                                                                                                                                                                                   |
+| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients                                                                                                                                                                                                                                                                 |
 | `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection                                                                                                                                                                                                                                                                                               | `false` | 
 | `otk.database.readOnlyConnection.connectionName` | OTK read only database connection name                                                                                                                                                                                                                                                                                                         | `OAuth_ReadOnly` | 
 | `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK read only database Secret                                                                                                                                                                                                                                                                                             |
@@ -521,6 +524,9 @@ database:
 | `otk.readinessProbe.type`         |                                                                                                                                                                                                                                                                                                                                                | `httpGet` | 
 | `otk.readinessProbe.httpGet.path` |                                                                                                                                                                                                                                                                                                                                                | `/auth/oauth/health` | 
 | `otk.readinessProbe.httpGet.port` |                                                                                                                                                                                                                                                                                                                                                | `8443` | 
+
+#### Note:
+* In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
 
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
