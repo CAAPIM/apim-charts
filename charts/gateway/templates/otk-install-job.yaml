@@ -7,6 +7,11 @@ metadata:
     chartversion: {{ .Chart.AppVersion | quote }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-4"
+    {{ - if  .Values.additionalAnnotations }}
+    {{ - range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+    {{ - end }}
+    {{ - end }}
   labels:
     app: {{ template "gateway.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -18,12 +23,6 @@ metadata:
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.additionalAnnotations }}
-  annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-{{- end }}
-{{- end }}
 spec:
   backoffLimit: 1
   template:
