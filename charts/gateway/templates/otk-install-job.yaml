@@ -43,8 +43,8 @@ spec:
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- end }}
       initContainers:
-      {{- if .Values.otk.job.initContainers }}
-      {{toYaml .Values.otk.job.initContainers | nindent 6 }}
+      {{- if .Values.otk.customizations.initContainers }}
+      {{toYaml .Values.otk.customizations.initContainers | nindent 6 }}
       {{ end }}
       containers:
         - name: otk-install
@@ -54,8 +54,8 @@ spec:
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if .Values.otk.job.initContainers }}
-          {{- range .Values.otk.job.initContainers }}
+          {{- if .Values.otk.customizations.initContainers }}
+          {{- range .Values.otk.customizations.initContainers }}
           {{- range .volumeMounts }}
           - name: {{ .name }}
             mountPath: {{ .mountPath }}
@@ -65,12 +65,12 @@ spec:
           {{- end }}
           {{- end }}
           {{- end }}
-          {{- if .Values.otk.job.existingBundle.enabled }}
-          {{- range .Values.otk.job.existingBundle.configMaps }}
+          {{- if .Values.otk.customizations.existingBundle.enabled }}
+          {{- range .Values.otk.customizations.existingBundle.configMaps }}
           - name: {{ .name }}
             mountPath: /docker/custom_bundles/{{ .name }}
           {{- end }}
-          {{- range .Values.otk.job.existingBundle.secrets }}
+          {{- range .Values.otk.customizations.existingBundle.secrets }}
           - name: {{ .name }}
             mountPath: /docker/custom_bundles/{{ .name }}
             {{ if .csi }}
@@ -78,7 +78,7 @@ spec:
             {{ end }}
           {{- end }}
           {{- end }}
-          {{- if .Values.otk.job.bundle.enabled }}
+          {{- if .Values.otk.customizations.bundle.enabled }}
           - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
             mountPath: /docker/custom_bundles/configmap
           {{- end }}
@@ -96,8 +96,8 @@ spec:
                 name: {{ template "gateway.fullname" . }}-otk-install-configmap
       
       volumes:         
-        {{- if .Values.otk.job.existingBundle.enabled }}
-        {{- range .Values.otk.job.existingBundle.configMaps }}
+        {{- if .Values.otk.customizations.existingBundle.enabled }}
+        {{- range .Values.otk.customizations.existingBundle.configMaps }}
         - name: {{ .name }}
         {{- if .configMap }}
           configMap: {{ toYaml .configMap | nindent 12 }}
@@ -108,7 +108,7 @@ spec:
             name: {{ .name }}
           {{- end }}
         {{- end }}        
-        {{- range .Values.otk.job.existingBundle.secrets }}
+        {{- range .Values.otk.customizations.existingBundle.secrets }}
         - name: {{ .name }}
           {{- if .csi }}
           csi: {{ toYaml .csi | nindent 12 }}
@@ -118,15 +118,15 @@ spec:
           {{- end }}
         {{- end }}        
         {{- end }}
-        {{- if .Values.otk.job.initContainers }}
-        {{- range .Values.otk.job.initContainers }}
+        {{- if .Values.otk.customizations.initContainers }}
+        {{- range .Values.otk.customizations.initContainers }}
         {{- range .volumeMounts }}
         - name: {{ .name }}
           emptyDir: {}
         {{- end }}
         {{- end }}
         {{- end }}
-        {{- if .Values.otk.job.bundle.enabled }}
+        {{- if .Values.otk.customizations.bundle.enabled }}
         - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
           configMap:
             defaultMode: 292

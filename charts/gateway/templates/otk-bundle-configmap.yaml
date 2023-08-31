@@ -1,4 +1,4 @@
-{{ if .Values.otk.job.bundle.enabled }}
+{{ if .Values.otk.customizations.bundle.enabled }}
 {{- $this := . -}}
 apiVersion: v1
 kind: ConfigMap
@@ -19,5 +19,5 @@ metadata:
 {{- end }}
 {{- end }}
 data:
-  {{- (.Files.Glob .Values.otk.job.bundle.path ).AsConfig | nindent 2 }}
+  {{- (.Files.Glob .Values.otk.customizations.bundle.path ).AsConfig | nindent 2 }}
 {{ end }}

@@ -82,7 +82,6 @@ data:
   {{- end }}
   {{- end }}  
   {{- end }}  
-  OTK_CUSTOM_BUNDLE: "true"
   OTK_UPDATE_DATABASE_CONNECTION: {{default false .Values.otk.database.update | quote }}
   OTK_SKAR_RETRY_COUNT: {{ default 1 .Values.otk.installRetry | quote}}
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
