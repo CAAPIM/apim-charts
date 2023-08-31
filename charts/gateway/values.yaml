@@ -544,27 +544,27 @@ otk:
     # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
     # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
     bundle:
-      enabled: true
-      path: "bundles-otk/*.bundle"
+      enabled: false
+      path: "bundles-otk/**.bundle"
       
     existingBundle:
       enabled: false
-      configMaps:
-      - name: mybundle1
-        configMap:
-          defaultMode: 420
-          optional: false
-          name: mybundle1
-      - name: mybundle2
+      configMaps: []
+      # - name: mybundle1
+      #   configMap:
+      #     defaultMode: 420
+      #     optional: false
+      #     name: mybundle1
+      # - name: mybundle2
 
-      secrets:
-      - name: mysecretbundle1
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: "secret-provider-class-name"
-      - name: mysecretbundle2
+      secrets: []
+      # - name: mysecretbundle1
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: "secret-provider-class-name"
+      # - name: mysecretbundle2
 
     initContainers: []
     # initContainers:

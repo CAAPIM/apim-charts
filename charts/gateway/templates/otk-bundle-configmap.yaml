@@ -19,9 +19,5 @@ metadata:
 {{- end }}
 {{- end }}
 data:
-  {{- range $path, $_ :=  .Files.Glob  .Values.otk.job.bundle.path }}
-  {{ $path | replace "/" "-" }}: |-
-  {{ base $path }}: |-
-{{ tpl ($this.Files.Get $path) $this | indent 4 }}
-  {{- end }}
+  {{- (.Files.Glob .Values.otk.job.bundle.path ).AsConfig | nindent 2 }}
 {{ end }}
