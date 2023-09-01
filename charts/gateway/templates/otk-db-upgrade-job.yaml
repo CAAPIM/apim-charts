@@ -62,7 +62,7 @@ spec:
 
            - name: OTK_CREATE_TEST_CLIENTS
              value: {{ default "false" .Values.otk.database.sql.createTestClients | quote }}
-           {{ if .Values.otk.database.sql.createTestClients }}  
+           {{ if .Values.otk.database.sql.createTestClients }}
            - name: OTK_TEST_CLIENTS_REDIRECT_URL_PREFIX
              value: {{ required "Please provide test clients redirect url prefix otk.database.sql.testClientsRedirectUrlPrefix in values.yaml" .Values.otk.database.sql.testClientsRedirectUrlPrefix | quote }}
            {{ end }}

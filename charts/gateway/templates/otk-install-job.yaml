@@ -78,8 +78,8 @@ spec:
             {{ end }}
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-otk-install-configmap
-      
-      volumes:         
+
+      volumes:
         {{- if .Values.otk.customizations.existingBundle.enabled }}
         {{- range .Values.otk.customizations.existingBundle.configMaps }}
         - name: {{ .name }}
@@ -91,7 +91,7 @@ spec:
             optional: false
             name: {{ .name }}
           {{- end }}
-        {{- end }}        
+        {{- end }}
         {{- range .Values.otk.customizations.existingBundle.secrets }}
         - name: {{ .name }}
           {{- if .csi }}
@@ -118,7 +118,7 @@ spec:
       {{- if .Values.otk.job.nodeSelector }}
       nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
       {{- end }}
-      
+
       {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}

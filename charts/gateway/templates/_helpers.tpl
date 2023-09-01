@@ -230,14 +230,3 @@ Define OTK Image Pull Secret Name
     {{- printf "%s/%s:%s" .Values.otk.job.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
- Define OTK demo database name
- */}}
-{{- define "otk.demoDBName" -}}
-{{- if empty .Values.otk.demoDBName -}}
-    {{- printf "%s" "ssg"  -}}
-{{- else -}}
-    {{ .Values.otk.demoDBName }}
-{{- end -}}
-{{- end -}}

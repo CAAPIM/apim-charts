@@ -10,14 +10,14 @@ metadata:
     heritage: {{ .Release.Service }}
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
-    {{- end }} 
+    {{- end }}
   annotations:
     {{- if  .Values.additionalAnnotations }}
     {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
     {{- end }}
-data:  
+data:
   create_otk_db.sql: |-
       CREATE DATABASE {{ .Values.otk.database.sql.databaseName }};
       CREATE USER '{{ .Values.otk.database.username }}'@'%' identified by '{{ .Values.otk.database.password }}';
