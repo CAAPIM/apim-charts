@@ -73,10 +73,27 @@ spec:
             name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
         - configMapRef:
-            name: {{ template "gateway.fullname" . }}-otk-install-container-configmap
+            name: {{ template "gateway.fullname" . }}-otk-install-configmap
         volumeMounts:
           - name: {{ template "gateway.fullname" . }}-otk-install-container
             mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+          {{- if .Values.otk.customizations.existingBundle.enabled }}
+          {{- range .Values.otk.customizations.existingBundle.configMaps }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+          {{- end }}
+          {{- range .Values.otk.customizations.existingBundle.secrets }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+            {{ if .csi }}
+            readOnly: {{ .csi.readOnly }}
+            {{ end }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.otk.customizations.bundle.enabled }}
+          - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+            mountPath: /docker/custom_bundles/configmap
+          {{- end }}
       {{- end }}
       {{- if .Values.initContainers }}
       {{toYaml .Values.initContainers | nindent 6 }}
@@ -561,6 +578,35 @@ spec:
 {{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
         - name: {{ template "gateway.fullname" . }}-otk-install-container
           emptyDir: {}
+        {{- if .Values.otk.customizations.bundle.enabled }}
+        - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+        {{- end }}
+        {{- if .Values.otk.customizations.existingBundle.enabled }}
+        {{- range .Values.otk.customizations.existingBundle.configMaps }}
+        - name: {{ .name }}
+        {{- if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+        {{- else }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .name }}
+          {{- end }}
+        {{- end }}        
+        {{- range .Values.otk.customizations.existingBundle.secrets }}
+        - name: {{ .name }}
+          {{- if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ .name }}
+          {{- end }}
+        {{- end }}
+        {{- end }}  
 {{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}

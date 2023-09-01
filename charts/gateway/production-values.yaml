@@ -485,7 +485,7 @@ service:
 # This enables/disables otk install or upgrade.
 # Prerequisites.
 #  1. OTK DB is installed.
-#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrade is complete (management.restman.enabled: true)
 #  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
@@ -498,18 +498,66 @@ otk:
   # Not applicable for DMZ and INTERNAL OTK types
   # enablePortalIngeration: false
   # skipPostInstallationTasks: false
+  # skipServerTools: false
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
   # internalGatewayPort:
 
-  # Specify DMZ gateway host and port for interal OTK type
+  # Specify DMZ gateway host and port for internal OTK type
   # dmzGatewayHost:
   # dmzGatewayPort:
+
+  cert:
+  # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
+    # dmzGatewayCert:
+    # dmzGatewayIssuer:
+    # dmzGatewaySerial:
+    # dmzGatewaySubject:
+  # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
+    # internalGatewayCert:
+    # internalGatewayIssuer:
+    # internalGatewaySerial:
+    # internalGatewaySubject:
 
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 
+  customizations:
+    # This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
+    # Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
+    # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
+    # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
+    bundle:
+      enabled: false
+      path: "bundles-otk/**.bundle"
+
+    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+    # When creating these secrets/configmaps the format should be
+    # key: bundle1.bundle value: <xml value>
+    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
+    existingBundle:
+      enabled: false
+      configMaps: []
+      # - name: otkbundle1
+      #   configMap:
+      #     defaultMode: 420
+      #     optional: false
+      #     name: otkbundle1
+      # - name: otkbundlee
+
+      secrets: []
+      # - name: secretotkbundle1
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: "secret-provider-class-name"
+      # - name: secretotkbundle2
 
   job:
     image:
@@ -533,14 +581,13 @@ otk:
     type: mysql
     connectionName: OAuth
     dbUpgrade: true
-    useDemoDb: true
+    useDemoDb: false
     
     # username: root
     # password: 7layer
     
     # ddlUsername:
-    # ddlPassword:
-    
+    # ddlPassword:    
     # existingSecretName: otkDbSecret
     
     # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
@@ -558,16 +605,21 @@ otk:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.mysql.jdbc.Driver
-      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
-      # Oracle database name
-      # databaseName:
+      # Oracle database name or MySQL demo db name
+      databaseName: otk_db
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
+      # For mysql & oracle setup test clients
+      createTestClients: false
+      # Test clients redirect Url prefix. Required if createTestClients is true. 
+      # testClientsRedirectUrlPrefix:
+
     # cassandra:
     #   connectionPoints: localhost
     #   port:
     #   keyspace:
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     #   driverConfig: {"localDataCenterName" : "DC1"}
-    
+
     # Optionally configure read only database connection for mysql/oracle.
     readOnlyConnection:
       enabled: false
@@ -576,7 +628,7 @@ otk:
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
-      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
@@ -911,13 +963,6 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-10"
-  commonAnnotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers

@@ -7,6 +7,11 @@ metadata:
     chartversion: {{ .Chart.AppVersion | quote }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-4"
+    {{- if  .Values.additionalAnnotations }}
+    {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
   labels:
     app: {{ template "gateway.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -18,12 +23,6 @@ metadata:
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.additionalAnnotations }}
-  annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-{{- end }}
-{{- end }}
 spec:
   backoffLimit: 1
   template:
@@ -49,118 +48,90 @@ spec:
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
+          volumeMounts:
+          {{- if .Values.otk.customizations.existingBundle.enabled }}
+          {{- range .Values.otk.customizations.existingBundle.configMaps }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+          {{- end }}
+          {{- range .Values.otk.customizations.existingBundle.secrets }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+            {{ if .csi }}
+            readOnly: {{ .csi.readOnly }}
+            {{ end }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.otk.customizations.bundle.enabled }}
+          - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+            mountPath: /docker/custom_bundles/configmap
+          {{- end }}
+
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
             - secretRef:
                 name: {{ template "gateway.secretName" . }}
-{{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+            {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
             - secretRef:
                 name: {{ template "otk.dbSecretName.readOnly" . }}
-{{ end }}      
-          env:
-           - name: OTK_TYPE
-             value: {{ template "otk-install-type" .}}
-           - name: OTK_INSTALL_MODE
-             value: "job"
-           - name: OTK_FORCE_INSTALL
-             value: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
-           - name: OTK_SK_UPGRADE
-             value: "true"
-{{ if ne .Values.otk.type "DMZ" }}
-           - name: OTK_DATABASE_UPGRADE
-             value: "false"
-           - name: OTK_DATABASE_TYPE
-             value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
-           - name: OTK_DATABASE_CONNECTION_NAME
-             value: {{ required "Please fill in otk.database.connectionName in values.yaml" .Values.otk.database.connectionName | quote }}
-{{ if eq .Values.otk.database.type "cassandra" }}
-           - name: OTK_CASSANDRA_CONNECTION_POINTS
-             value: {{ required "Please fill in otk.database.cassandra.connectionPoints in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
-           - name: OTK_CASSANDRA_PORT
-             value: {{ required "Please fill in otk.database.cassandra.port in values.yaml" .Values.otk.database.cassandra.port | quote }}
-           - name: OTK_CASSANDRA_KEYSPACE
-             value: {{ required "Please fill in otk.database.cassandra.keyspace in values.yaml" .Values.otk.database.cassandra.keyspace | quote }}
-           - name: OTK_CASSANDRA_DRIVER_CONFIG
-             value: {{ default "na" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
-{{ end }}
-{{ if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
-           - name: OTK_JDBC_URL
-{{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
-             value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ default "otk_db" .Values.otk.database.sql.databaseName }}
-{{- else }}
-             value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
-{{- end }}
-           - name: OTK_JDBC_DRIVER_CLASS
-             value: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
-{{if .Values.otk.database.readOnlyConnection.enabled }}
-           - name: OTK_RO_DATABASE_CONNECTION_NAME
-             value: {{ required "Please fill in otk.database.readOnlyConnection.connectionName in values.yaml" .Values.otk.database.readOnlyConnection.connectionName | quote }}
-           - name: OTK_RO_JDBC_URL
-             value: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.readOnlyConnection.jdbcURL | quote }}
-           - name: OTK_RO_JDBC_DRIVER_CLASS
-             value: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.readOnlyConnection.jdbcDriverClass | quote }}
-           - name: OTK_RO_DATABASE_PROPERTIES
-             value: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
-           - name: OTK_RO_DATABASE_CONN_PROPERTIES
-             value: {{ default "na" .Values.otk.database.readOnlyConnection.connectionProperties | toJson | b64enc | quote }}
-{{ end }}
-{{ end }}
+            {{ end }}
+            - configMapRef:
+                name: {{ template "gateway.fullname" . }}-otk-install-configmap
+      
+      volumes:         
+        {{- if .Values.otk.customizations.existingBundle.enabled }}
+        {{- range .Values.otk.customizations.existingBundle.configMaps }}
+        - name: {{ .name }}
+        {{- if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+        {{- else }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .name }}
+          {{- end }}
+        {{- end }}        
+        {{- range .Values.otk.customizations.existingBundle.secrets }}
+        - name: {{ .name }}
+          {{- if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ .name }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.otk.customizations.bundle.enabled }}
+        - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
+        {{- end }}
 
-{{ if eq .Values.otk.database.type "oracle" }}
-           - name: OTK_DATABASE_NAME
-             value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-{{if .Values.otk.database.readOnlyConnection.enabled }}
-           - name: OTK_RO_DATABASE_NAME
-             value: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConnection.databaseName | quote }}           
-{{ end }}             
-{{ end }}
-           - name: OTK_DATABASE_PROPERTIES
-             value: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
-           - name: OTK_DATABASE_CONN_PROPERTIES
-             value: {{ default "na" .Values.otk.database.sql.connectionProperties | toJson | b64enc | quote }}
-{{ end }}
-           - name: OTK_CREATE_RO_DATABASE_CONN
-{{ if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
-             value: "false"
-{{ else }}
-             value: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
-{{ end }}
-           - name:  OTK_UPDATE_DATABASE_CONNECTION
-             value: {{default true .Values.otk.database.updateConnection | quote }}
-           - name: OTK_SKAR_RETRY_COUNT
-             value: {{ default 1 .Values.otk.installRetry | quote}}
-           - name: OTK_SKAR_BACKOFF_FACTOR
-             value: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
-           - name: OTK_CONNECT_BACKOFF_FACTOR
-             value: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}
-           - name: OTK_CONNECT_RETRY_COUNT
-             value: {{ default 10 .Values.otk.connectRetry | quote}}
-           - name: SSG_RESTMAN_PORT             
-             value: {{ .Values.installSolutionKits.restmanPort | quote}}
-           - name: SSG_RESTMAN_HOST
-             value: {{ template "gateway.fullname" . }}
-           - name: OTK_INTERNAL_GW_HOST
-             value: {{ .Values.otk.internalGatewayHost | quote }}
-           - name: OTK_INTERNAL_GW_PORT
-             value: {{ .Values.otk.internalGatewayPort| quote }}
-           - name: OTK_DMZ_GW_HOST
-             value: {{ .Values.otk.dmzGatewayHost| quote }}
-           - name: OTK_DMZ_GW_PORT
-             value: {{ .Values.otk.dmzGatewayPort| quote }}
-           - name: OTK_INTEGRATE_WITH_PORTAL
-             value: {{default false .Values.otk.enablePortalIngeration | quote }}
-           - name: OTK_SKIP_POST_INSTALLATION_TASKS
-             value: {{default false .Values.otk.skipPostInstallationTasks | quote }}
-{{- if .Values.imagePullSecret.enabled }}
+      {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}
-{{- end }}
-{{- if .Values.otk.job.nodeSelector }}
+      {{- end }}
+
+      {{- if .Values.otk.job.nodeSelector }}
       nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
-{{- end }}
-{{- if .Values.otk.job.tolerations }}
+      {{- end }}
+      
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "otk.imagePullSecret" . }}
+      {{- end }}
+
+      {{- if .Values.otk.job.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
+      {{- end }}
+
+      {{- if .Values.otk.job.tolerations }}
       tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
-{{- end }}
+      {{- end }}
+
       restartPolicy: "Never"
+
 {{ end }}
