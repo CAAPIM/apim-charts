@@ -37,6 +37,16 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.15 General Updates
+  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**. Support for liveness and readiness probes using OTK health check service. 
+  - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
+  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.*** 
+  - OTK install/upgrade on Ephemeral gateways using initContainer (TODO).
+  - Added OTK Connection properties to support c3p0 settings.
+  - Added support OTK read-only connections.
+  - Added support for OTK policies customization through config maps and secrets.
+  - OTK DMZ/Internal gateway certs can now be configured using values file.
+
 ## 3.0.14 General Updates
 - Added pod labels and annotations to the otk-install job.
   - otk.job.podLabels
@@ -419,13 +429,18 @@ management:
         protocol: TCP
 ```
 ### OTK install or upgrade
-OTK job is used to install or upgrade otk on gateway. It supports Single, Internal and DMZ type of OTK installations.
+OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
+
+On a DB backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
+
+On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
+
+On a Ephemeral or DB backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
 ***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
 
 Prerequisites:
-* Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
-* Configure cluster wide property for otk.port pointing to gateway ingress port.
+* Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
 ```
 config:
   cwp:
@@ -433,6 +448,8 @@ config:
     properties:
       - name: otk.port
         value: 443
+      - name: otk.dbsystem
+        value: mysql
 ```
 * Restman is enabled. Can be disabled once the install/upgrage is complete.
   * This is not applicable for ephemeral GW
@@ -441,7 +458,6 @@ management:
   restman:
     enabled: true
 ```
-* Management is enabled with restman (management.enabled: true, management.restman.enabled: true)
 
 Limitations:
 * OTK Instance modifiers are not supported.
@@ -469,6 +485,9 @@ database:
 | `otk.cert.internalGatewayIssuer`  | INTERNAL gateway certificate issuer for OTK type INTERNAL     |
 | `otk.cert.internalGatewaySerial`  | INTERNAL gateway certificate serial for OTK type INTERNAL     |
 | `otk.cert.internalGatewaySubject` | INTERNAL gateway certificate subject for OTK type INTERNAL    |
+| `otk.customizations.bundle.enabled`         | Creates a configmap with bundles from the ./bundles-otk folder | `false`  |
+| `otk.customizations.bundle.path`            | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles-otk/*.bundle"`  |
+| `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
 | `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
