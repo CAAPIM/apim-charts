@@ -519,7 +519,7 @@ otk:
     # internalGatewayIssuer:
     # internalGatewaySerial:
     # internalGatewaySubject:
-  
+
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 
@@ -612,7 +612,7 @@ otk:
       # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
       # For mysql & oracle setup test clients
       createTestClients: false
-      # Test clients redirect Url prefix. Required if createTestClients is true. 
+      # Test clients redirect Url prefix. Required if createTestClients is true.
       # testClientsRedirectUrlPrefix:
 
     # cassandra:
@@ -964,7 +964,7 @@ mysql:
       [manager]
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid    
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
