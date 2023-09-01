@@ -37,15 +37,25 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
-## 3.0.15 General Updates
-  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**. Support for liveness and readiness probes using OTK health check service. 
+## 3.0.15 OTK 4.6.2 Released
+  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
+    - otk.job.image.tag: 4.6.2 
   - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
-  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.*** 
-  - OTK install/upgrade on Ephemeral gateways using initContainer (TODO).
+    - otk.database.dbupgrade
+  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.***
+    - otk.database.useDemodb
+  - Install/upgrade OTK of type SINGLE on Ephemeral gateways using initContainer is now supported.
+    - database.enabled: false
+    - otk.type: SINGLE
   - Added OTK Connection properties to support c3p0 settings.
-  - Added support OTK read-only connections.
+    - otk.database.connectionProperties 
+  - Added support OTK read-only connections for MySQL and Oracle.
+    - otk.database.readOnlyConnection.*
   - Added support for OTK policies customization through config maps and secrets.
+    - otk.customizations.bundle.enabled
+    - otk.customizations.existingBundle.enabled
   - OTK DMZ/Internal gateway certs can now be configured using values file.
+    - otk.cert
 
 ## 3.0.14 General Updates
 - Added pod labels and annotations to the otk-install job.
@@ -431,11 +441,9 @@ management:
 ### OTK install or upgrade
 OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
 
-On a DB backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
-
-On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
-
-On a Ephemeral or DB backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
+- On a database backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
+- On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
+- On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
 ***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
 
@@ -461,11 +469,9 @@ management:
 
 Limitations:
 * OTK Instance modifiers are not supported.
-```
-database:
-  # DB Backed or ephemeral
-  enabled: true
-```
+* Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
+* Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
