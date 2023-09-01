@@ -55,9 +55,9 @@ data:
   OTK_CASSANDRA_KEYSPACE: {{ required "Please fill in otk.database.cassandra.keyspace in values.yaml" .Values.otk.database.cassandra.keyspace | quote }}
   OTK_CASSANDRA_DRIVER_CONFIG: {{ default "na" .Values.otk.database.cassandra.driverConfig | toJson | b64enc| quote }}
   {{- end }}
+  OTK_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
   {{- if or (eq .Values.otk.database.type "mysql") (eq .Values.otk.database.type "oracle") }}
   OTK_JDBC_DRIVER_CLASS: {{ required "Please fill in otk.database.sql.jdbcDriverClass in values.yaml" .Values.otk.database.sql.jdbcDriverClass | quote }}
-  OTK_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.properties | toJson | b64enc | quote }}
   OTK_DATABASE_CONN_PROPERTIES: {{ default "na" .Values.otk.database.sql.connectionProperties | toJson | b64enc | quote }}
   {{- if .Values.otk.database.readOnlyConnection.enabled }}
   OTK_RO_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.readOnlyConnection.connectionName in values.yaml" .Values.otk.database.readOnlyConnection.connectionName | quote }}
