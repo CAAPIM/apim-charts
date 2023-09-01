@@ -562,7 +562,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.1
+      tag: 4.6.2
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
