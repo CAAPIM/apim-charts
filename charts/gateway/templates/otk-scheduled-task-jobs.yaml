@@ -1,4 +1,4 @@
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) (.Values.otk.job.scheuledTasks)}}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) (ne .Values.otk.database.type "cassandra") (.Values.otk.job.scheuledTasks)}}
 {{- range $name, $schedule := .Values.otk.job.scheuledTasks }}
 apiVersion: batch/v1
 kind: CronJob
