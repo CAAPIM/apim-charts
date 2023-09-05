@@ -24,12 +24,28 @@ metadata:
 spec:
   backoffLimit: 1
   template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    {{- if  .Values.otk.job.podLabels }}
+        {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.otk.job.podAnnotations }}
+      annotations: {{- toYaml .Values.otk.job.podAnnotations | nindent 8 }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: otk-db-upgrade
           image: {{ template "otk.image" . }}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
@@ -54,18 +70,16 @@ spec:
            {{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
            {{- end }}
-
-           {{ if eq .Values.otk.database.type "oracle" }}
+           {{- if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-           {{ end }}
-
+           {{- end }}
            - name: OTK_CREATE_TEST_CLIENTS
              value: {{ default "false" .Values.otk.database.sql.createTestClients | quote }}
-           {{ if .Values.otk.database.sql.createTestClients }}
+           {{- if .Values.otk.database.sql.createTestClients }}
            - name: OTK_TEST_CLIENTS_REDIRECT_URL_PREFIX
              value: {{ required "Please provide test clients redirect url prefix otk.database.sql.testClientsRedirectUrlPrefix in values.yaml" .Values.otk.database.sql.testClientsRedirectUrlPrefix | quote }}
-           {{ end }}
+           {{- end }}
 
       {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:

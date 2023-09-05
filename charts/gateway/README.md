@@ -499,9 +499,10 @@ Limitations:
 | `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
 | `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
 | `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
-| `otk.job.image.labels`            | Job lables | {}
-| `otk.job.image.nodeSelector`      | Job Node selector | {}
-| `otk.job.image.tolerations`       | Job tolerations | []
+| `otk.job.scheuledTasks`           | Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks |
+| `otk.job.labels`                  | Job lables | {}
+| `otk.job.nodeSelector`            | Job Node selector | {}
+| `otk.job.tolerations`             | Job tolerations | []
 | `otk.job.podLabels`               | OTK Job podLabels | {}
 | `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`

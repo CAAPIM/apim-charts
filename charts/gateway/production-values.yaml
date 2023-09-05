@@ -566,6 +566,22 @@ otk:
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
+
+    # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
+    scheuledTasks:
+    - name: client
+      schedule: "*/31 * * * *"
+    - name: idtoken
+      schedule: "*/29 * * * *" 
+    - name: sessions
+      schedule: "*/7 * * * *"
+    - name: token
+      schedule: "*/5 * * * *" 
+    - name: trl
+      schedule: "0 */1 * * *"
+    - name: miscellaneous
+      schedule: "*/5 * * * *"
+    
     labels: {}
     # nodeSelector: {}
     # tolerations: []
