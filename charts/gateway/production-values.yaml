@@ -498,7 +498,7 @@ otk:
   # Not applicable for DMZ and INTERNAL OTK types
   # enablePortalIngeration: false
   # skipPostInstallationTasks: false
-  # skipServerTools: false
+  # skipInternalServerTools: false
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
