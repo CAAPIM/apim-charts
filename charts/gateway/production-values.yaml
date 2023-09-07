@@ -498,7 +498,7 @@ otk:
   # Not applicable for DMZ and INTERNAL OTK types
   # enablePortalIngeration: false
   # skipPostInstallationTasks: false
-  # skipServerTools: false
+  # skipInternalServerTools: false
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
@@ -623,7 +623,7 @@ otk:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or MySQL demo db name
       databaseName: otk_db
-      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
+      # connectionProperties: {"c3p0.maxPoolSize":"15","c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
       # For mysql & oracle setup test clients
       createTestClients: false
       # Test clients redirect Url prefix. Required if createTestClients is true.
@@ -644,7 +644,7 @@ otk:
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
-      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":100,"c3p0.maxIdleTime":1000}
+      # connectionProperties: {"c3p0.maxPoolSize":"15","c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
