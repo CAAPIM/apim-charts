@@ -53,7 +53,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - "curl -v --request POST 'https://{{ template "gateway.fullname" $ }}:8443/oauth/dbmaintenance?task={{ .name }}' --insecure"
+            - "curl -v --request POST 'https://{{ template "gateway.fullname" $ }}:8443/oauth/db-maintenance?task={{ .name }}' --insecure"
           restartPolicy: Never
 ---
 {{- end }}
