@@ -27,6 +27,7 @@ data:
   BOOTSTRAP_DIR: "/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK"
   OTK_SK_UPGRADE: "true"
   OTK_DATABASE_UPGRADE: "false"
+  OTK_SKIP_INTERNAL_SERVER_TOOLS: {{default false .Values.otk.skipInternalServerTools | quote }}
   OTK_FORCE_INSTALL: {{default false .Values.otk.forceInstallOrUpgrade | quote}}
   {{- if eq .Values.otk.type "DMZ" }}
   OTK_INTERNAL_CERT_ENCODED: {{ default "" .Values.otk.cert.internalGatewayCert | quote }}

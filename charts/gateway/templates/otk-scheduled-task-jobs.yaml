@@ -39,7 +39,7 @@ spec:
         {{- if  $.Values.otk.job.podAnnotations }}
           annotations: {{- toYaml $.Values.otk.job.podAnnotations | nindent 12 }}
         {{- end }}
-        spec:                      
+        spec:
           {{- if $.Values.podSecurityContext }}
           securityContext: {{- toYaml $.Values.podSecurityContext | nindent 12 }}
           {{- end }}

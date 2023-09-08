@@ -498,7 +498,7 @@ otk:
   # Not applicable for DMZ and INTERNAL OTK types
   # enablePortalIngeration: false
   # skipPostInstallationTasks: false
-  # skipServerTools: false
+  # skipInternalServerTools: false
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
@@ -567,17 +567,17 @@ otk:
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
-    
+
     # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
     scheduledTasks:
     - name: client
       schedule: "*/31 * * * *"
     - name: idtoken
-      schedule: "*/29 * * * *" 
+      schedule: "*/29 * * * *"
     - name: sessions
       schedule: "*/7 * * * *"
     - name: token
-      schedule: "*/5 * * * *" 
+      schedule: "*/5 * * * *"
     - name: trl
       schedule: "0 */1 * * *"
     - name: miscellaneous
@@ -625,6 +625,7 @@ otk:
       # Oracle database name or MySQL demo db name
       databaseName: otk_db
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
       # For mysql & oracle setup test clients
       createTestClients: false
       # Test clients redirect Url prefix. Required if createTestClients is true.
@@ -646,6 +647,7 @@ otk:
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       # jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
