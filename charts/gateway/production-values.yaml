@@ -496,7 +496,7 @@ otk:
   # forceInstallOrUpgrade: false
 
   # Not applicable for DMZ and INTERNAL OTK types
-  # enablePortalIngeration: false
+  # enablePortalIntegration: false
   # skipPostInstallationTasks: false
   # skipInternalServerTools: false
 
@@ -548,7 +548,7 @@ otk:
       #     defaultMode: 420
       #     optional: false
       #     name: otkbundle1
-      # - name: otkbundlee
+      # - name: otkbundle1
 
       secrets: []
       # - name: secretotkbundle1
