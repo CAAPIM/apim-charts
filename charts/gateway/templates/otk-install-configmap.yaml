@@ -94,6 +94,6 @@ data:
   OTK_INTERNAL_GW_PORT: {{ default "" .Values.otk.internalGatewayPort| quote }}
   OTK_DMZ_GW_HOST: {{ default "" .Values.otk.dmzGatewayHost| quote }}
   OTK_DMZ_GW_PORT: {{ default "" .Values.otk.dmzGatewayPort| quote }}
-  OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIngeration | quote }}
+  OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIntegration | quote }}
   OTK_SKIP_POST_INSTALLATION_TASKS: {{default false .Values.otk.skipPostInstallationTasks | quote }}
 {{- end }}
