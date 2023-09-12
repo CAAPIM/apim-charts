@@ -11,7 +11,7 @@ OTK installation involves
 | OTK Type | Database backed Gateway </br> (database.enabled=true) | Ephemeral Gateway </br> (database.enabled=false) |
 | ------------------------   | ---------------------- | ---------------------  |
 | Solution Kit Install/Upgrade | <ul><li>Uses post-install kubernetes Job (Headless installation - Restman)</li><li>Runs after Gateway startup</li></ul> |  <ul><li>Uses kubernetes init-container to bootstrap Gateway with OTK solution kits </li><li> Runs before start of Gateway</li><li> OTK Dual Gateway (DMZ/INTERNAL) configuration is not supported. </li></ul> |
-| OTK Database Install/upgrade </br> ***(NA for OTK type DMZ and OTK DB type - Cassandra)*** | <ul><li>Uses pre-install kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> | <ul><li>Uses pre-install kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> |
+| OTK Database Install/upgrade </br> ***(Not applicable for OTK type DMZ and OTK DB type - Cassandra)*** | <ul><li>Uses pre-install kubernetes Job (Liqiubase scripts)</li><li>Runs before Gateway startup</li></ul> | <ul><li>Uses pre-install kubernetes Job (Liqiubase scripts)</li><li>Runs before Gateway startup</li></ul> |
 | Customizations | <ul><li> Restman bundles applied using restman calls after Gateway startup which can be Kubernetes Config Maps and/or Secrets </li><li>Init containers - Bootstrapped on to Gateway</li></ul>  | <ul><li>Restman bundles bootstrapped on to gateway which can be Kubernetes Config Maps and/or Secrets</li><li> Init Containers - Bootstrapped on to Gateway</li></ul> |
 
 * [Quick Start](#quick-start)
@@ -21,7 +21,7 @@ OTK installation involves
 
 ### Quick Start
 
-OTK can be installed by okt.enabled=true. This will create OTK database using MySQL subchart and then bootstraps the OTK bundles on to the gateway (type SINGLE). The usage of MySQL subchart for OTK database do not represent production configuration.
+OTK can be installed by otk.enabled=true. This will create OTK database using MySQL subchart and then bootstraps the OTK bundles on to the gateway (type SINGLE). The usage of MySQL subchart for OTK database do not represent production configuration.
 
 Add the layer7 repository:
 
@@ -30,7 +30,7 @@ Add the layer7 repository:
 
 Then, you can install OTK by:
 
-    helm install my-ssg layer7/gateway --set-file "license.value=path/to/license.xml"  --set "otk.enabled=true" --set "license.accept=true"
+    helm install my-otk layer7/gateway --set-file "license.value=path/license.xml" --set "license.accept=true,otk.enabled=true"
 
 # High Level
 
