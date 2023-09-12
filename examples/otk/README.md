@@ -11,8 +11,8 @@ OTK installation involves
 | OTK Type | Database backed Gateway </br> (database.enabled=true) | Ephemeral Gateway </br> (database.enabled=false) |
 | ------------------------   | ---------------------- | ---------------------  |
 | Solution Kit Install/Upgrade | <ul><li>Uses post-install kubernetes Job (Headless installation - Restman)</li><li>Runs after Gateway startup</li></ul> |  <ul><li>Uses kubernetes init-container to bootstrap Gateway with OTK solution kits </li><li> Runs before start of Gateway</li><li> OTK Dual Gateway (DMZ/INTERNAL) configuration is not supported. </li></ul> |
-| OTK Database Install/upgrade </br> ***(NA for OTK type DMZ and OTK DB type - Cassandra)*** | <ul><li>Uses pre-install kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> | <ul><li>Uses pre-intall kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> |
-| Customizations | <ul><li> Restman bundles applied using restman calls after Gateway startup which can be Kubernetes Config Maps and/or Secrets </li><li>Init containers - Bootstraped on to Gateway</li></ul>  | <ul><li>Restman bundles bootstrapped on to gateway which can be Kubernetes Config Maps and/or Secrets</li><li> Init Containers - Bootstraped on to Gateway</li></ul> |
+| OTK Database Install/upgrade </br> ***(NA for OTK type DMZ and OTK DB type - Cassandra)*** | <ul><li>Uses pre-install kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> | <ul><li>Uses pre-install kubernetes Job (Lisqubase scripts)</li><li>Runs before Gateway startup</li></ul> |
+| Customizations | <ul><li> Restman bundles applied using restman calls after Gateway startup which can be Kubernetes Config Maps and/or Secrets </li><li>Init containers - Bootstrapped on to Gateway</li></ul>  | <ul><li>Restman bundles bootstrapped on to gateway which can be Kubernetes Config Maps and/or Secrets</li><li> Init Containers - Bootstrapped on to Gateway</li></ul> |
 
 * [Quick Start](#quick-start)
 * [OTK with MySQL/Oracle database](#otk-with-mysql-or-oracle-database)
@@ -21,7 +21,7 @@ OTK installation involves
 
 ### Quick Start
 
-OTK can be installed by okt.enabled=true. This will create OTK database using MySQL subchart and then bootstaps the OTK bundles on to the gateway (type SINGLE). The usage of MySQL subchart for OTK database do not represent production configuration.
+OTK can be installed by okt.enabled=true. This will create OTK database using MySQL subchart and then bootstraps the OTK bundles on to the gateway (type SINGLE). The usage of MySQL subchart for OTK database do not represent production configuration.
 
 Add the layer7 repository:
 
@@ -34,10 +34,10 @@ Then, you can install OTK by:
 
 # High Level
 
-Determine OTK architecture and optional sub soultion kits
+Determine OTK architecture and optional sub solution kits
 Configure Database
 Configure customizations
-Configure health checks - libeness/readiness probes (optional)
+Configure health checks - liveness/readiness probes (optional)
 Miscellaneous configurations
 
 ## OTK Solution Kits
@@ -49,7 +49,7 @@ The sub solution kits that are used in the installation or upgrade process are d
 | ---------------------- | ---------------------  | ------------------ |
 | `SINGLE` | <ul> <li>OTK Assertions</li> <li>OTK Configuration</li> <li>OAuth Resources</li> <li>Internal: OAuth Validation Point</li> <li>Internal: Endpoint to access the client persistence layer</li> <li>Internal: Endpoint to access the session persistence layer</li> <li>Internal: Endpoint to access the token persistence layer</li> <li>DMZ: OAuth 2.0 and OpenID Connect endpoints</li> <li>If `otk.skipInternalServerTools` is `false` <ul> <li>Internal: Server Tools</li> </ul> </li> <li>If `otk.database.type` is `mysql` or `oracle` <ul> <li>Persistence Layer: MySQL or Oracle</li> </ul> </li> <li>If `otk.database.type` is `cassandra` <ul> <li>Persistence Layer: Cassandra</li> </ul> </li> <li>if `otk.enablePortalIntegration` is `true` <ul> <li>Shared Portal Resources</li> <li> if `otk.database.type` is `mysql` or `oracle` <ul><li>Portal Persistence Layer: MySQL or Oracle</li></ul> </li> <li> if `otk.database.type` is `cassandra` <ul><li>Portal Persistence Layer: Cassandra</li></ul> </li> </ul> </li> <ul>  | 
 | `INTERNAL` </br></br> Does not support <ul><li>Portal integration</li><li>Ephemeral Gateway</li><ul> | <ul> <li>OTK Assertions</li><li>OTK Configuration</li> <li>OAuth Resources</li> <li>Internal: OAuth Validation Point</li> <li>Internal: Endpoint to access the client persistence layer</li> <li>Internal: Endpoint to access the session persistence layer</li> <li>Internal: Endpoint to access the token persistence layer</li> <li>If `skipInternalServerTools` is `false` <ul> <li>Internal: Server Tools</li> </ul> </li> <li>If `otk.database.type` is `mysql` or `oracle` <ul> <li>Persistence Layer: MySQL or Oracle</li> </ul> </li> <li>If `otk.database.type` is `cassandra` <ul> <li>Persistence Layer: Cassandra</li> </ul> </li> <ul> | <ul><li>DMZ Gateway details: <ul><li>`otk.dmzGatewayHost`</li><li>`otk.dmzGatewayPort`</li><li>`otk.cert.dmzGatewayCert`</li><li>`otk.cert.dmzGatewayIssuer`</li><li>`otk.cert.dmzGatewaySerial`</li><li>`otk.cert.dmzGatewaySubject`</li></ul></li></ul>
-| `DMZ` </br></br> Does not support <ul><li>Portal integration</li><li>Ephemeral Gateway</li><ul> | <ul><li>OTK Assertions</li> <li>OTK Configuration</li> <li>OAuth Resources</li> <li>DMZ: OAuth 2.0 and OpenID Connect endpoints</li><ul>|<ul><li>Interal Gateway details: <ul><li>`otk.internalGatewayHost`</li><li>`otk.internalGatewayPort`</li><li>`otk.cert.internalGatewayCert`</li><li>`otk.cert.internalGatewayIssuer`</li><li>`otk.cert.internalGatewaySerial`</li><li>`otk.cert.internalGatewaySubject`</li></ul></li></ul>
+| `DMZ` </br></br> Does not support <ul><li>Portal integration</li><li>Ephemeral Gateway</li><ul> | <ul><li>OTK Assertions</li> <li>OTK Configuration</li> <li>OAuth Resources</li> <li>DMZ: OAuth 2.0 and OpenID Connect endpoints</li><ul>|<ul><li>Internal Gateway details: <ul><li>`otk.internalGatewayHost`</li><li>`otk.internalGatewayPort`</li><li>`otk.cert.internalGatewayCert`</li><li>`otk.cert.internalGatewayIssuer`</li><li>`otk.cert.internalGatewaySerial`</li><li>`otk.cert.internalGatewaySubject`</li></ul></li></ul>
 
 ## OTK Database
 ### MySQL or Oracle database (`otk.database.type:mysql/oracle`) 
@@ -68,7 +68,7 @@ Properties related to OTK database install/Upgrade.
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
 | `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 
-To configure exteranl mysql/oracle database as OTK db, configure properties in below table.
+To configure external mysql/oracle database as OTK db, configure properties in below table.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -86,7 +86,7 @@ To configure exteranl mysql/oracle database as OTK db, configure properties in b
 | `otk.database.properties`         | OTK database additional properties  | `{}`
 | `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
 
-Optionally, OTK also supportes read only database connectiond for MySQL and Oracle
+Optionally, OTK also supports read only database connection for MySQL and Oracle
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
