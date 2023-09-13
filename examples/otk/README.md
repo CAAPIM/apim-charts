@@ -28,9 +28,15 @@ Add the layer7 repository:
     helm repo add layer7 https://caapim.github.io/apim-charts/
     helm repo update
 
-Then, you can install OTK by:
+Then, you can install OTK on ephemeral gateway:
 
-    helm install my-otk layer7/gateway --set-file "license.value=path/license.xml" --set "license.accept=true,otk.enabled=true"
+    helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+    --set "license.accept=true,database.enabled=false,otk.enabled=true"
+
+Or, install OTK on db backed gateway:
+
+    helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+    --set "license.accept=true,management.restman.enabled=true,otk.enabled=true"
 
 # High Level
 
