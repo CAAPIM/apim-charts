@@ -11,8 +11,8 @@ license:
 
 image:
   registry: docker.io
-  repository: caapim/gateway
-  tag: 11.0.00
+  repository: layer7api/gateway
+  tag: 11.0.00_COMBINED
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -43,7 +43,10 @@ podLabels: {}
 
 # Pod Annotations apply to the Gateway Pod
 ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
+podAnnotations:
+  instrumentation.opentelemetry.io/inject-java: "true"
+  instrumentation.opentelemetry.io/container-names: "gateway"
+  sidecar.opentelemetry.io/inject: "ssg-eck"
 
 serviceAccount:
   # name:
@@ -562,8 +565,8 @@ otk:
 
   job:
     image:
-      repository: caapim/otk-install
-      tag: 4.6.2
+      repository: layer7api/otk-install
+      tag: latest
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
