@@ -84,10 +84,10 @@ data:
   {{- end }}
   {{- end }}
   OTK_UPDATE_DATABASE_CONNECTION: {{default false .Values.otk.database.update | quote }}
-  OTK_SKAR_RETRY_COUNT: {{ default 1 .Values.otk.installRetry | quote}}
+  OTK_SKAR_RETRY_COUNT: {{ default 15 .Values.otk.installRetry | quote}}
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
   OTK_CONNECT_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}
-  OTK_CONNECT_RETRY_COUNT: {{ default 10 .Values.otk.connectRetry | quote}}
+  OTK_CONNECT_RETRY_COUNT: {{ default 15 .Values.otk.connectRetry | quote}}
   SSG_RESTMAN_PORT: {{ .Values.installSolutionKits.restmanPort | quote}}
   SSG_RESTMAN_HOST: {{ template "gateway.fullname" . }}
   OTK_INTERNAL_GW_HOST: {{ default "" .Values.otk.internalGatewayHost | quote }}
