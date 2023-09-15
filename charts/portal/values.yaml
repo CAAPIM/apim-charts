@@ -120,7 +120,7 @@ ingress:
 # Use a kubernetes/openshift ingress
   class:
     name: nginx
-    enabled: true
+    enabled: false
   type:
     kubernetes: true
     openshift: false
