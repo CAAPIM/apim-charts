@@ -14,6 +14,9 @@ metadata:
   annotations:
 {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
+{{ if  and (eq $key "restartOnConfigChange") (eq $val true)  }}
+    checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+{{- end }}
 {{- end }}
 {{- end }}
 spec:
@@ -126,13 +129,13 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           ports:
             {{- range .Values.service.ports }}
-            - name: {{ .name }} 
+            - name: {{ .name }}
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
             {{ if .Values.management.service.enabled}}
             {{- range .Values.management.service.ports }}
-            - name: {{ .name }} 
+            - name: {{ .name }}
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
@@ -299,7 +302,7 @@ spec:
               {{- range.Values.livenessProbe.httpHeaders }}
               - name: {{ .name }}
                 value: {{ .value }}
-              {{- end }}     
+              {{- end }}
 {{- else }}
             exec:
               command:
