@@ -33,7 +33,7 @@ imagePullSecret:
 
 # Additional Annotations apply to all deployed objects
 additionalAnnotations: {}
-  #restartOnConfigChange: false
+  # restartOnConfigChange: false
 
 # Additional Labels apply to all deployed objects
 additionalLabels: {}
