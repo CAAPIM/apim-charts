@@ -239,4 +239,4 @@ Gateway health checks can be replaced with OTK health checks if needed. If enabl
   1. #OTK OVP Configuration
   2. #OTK Storage Configuration
  `otk.skipInternalServerTools` (true/false) - Skip installation of the optional sub solution Kit: Internal, Server Tools. The Oauth Manager & Oauth Test Client will not be installed
- `otk.job.scheduledTasks` - List of database maintenance jobs [cron-jobs] (https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/). Applicable only in case of ephemeral gateways. Gateway schedule tasks are disabled and crron-job is used to perform database maintenance of OTK MySQL/Oracle db.
+ `otk.job.scheduledTasks` - List of database maintenance jobs [cron-jobs](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/). Applicable only in case of ephemeral gateways. Gateway schedule tasks are disabled and crron-job is used to perform database maintenance of OTK MySQL/Oracle db.
