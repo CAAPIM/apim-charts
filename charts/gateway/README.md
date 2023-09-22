@@ -472,7 +472,7 @@ Limitations:
 * Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
 * Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
 
-OTK Deploymnet examples can be found [here](/examples/otk)
+OTK Deployment examples can be found [here](/examples/otk)
 
 
 | Parameter                        | Description                               | Default                                                      |
