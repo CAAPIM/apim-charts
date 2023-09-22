@@ -472,6 +472,8 @@ Limitations:
 * Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
 * Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
 
+OTK Deploymnet examples can be found [here](/examples/otk)
+
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -479,7 +481,7 @@ Limitations:
 | `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
 | `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
 | `otk.enablePortalIntegration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway | `false`
+| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Internal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/>DMZ Gateway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration | `false`
 | `otk.skipInternalServerTools`     | Skip installation of the optional sub soluction Kit: Internal, Server Tools.<br/> The Oauth Manager & Oauth Test Client will not be installed  | `false`
 | `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
@@ -510,8 +512,8 @@ Limitations:
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
-| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `true` |
-| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
+| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
+| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
 | `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 | `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
@@ -540,7 +542,7 @@ Limitations:
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
 | `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
 | `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
 | `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`

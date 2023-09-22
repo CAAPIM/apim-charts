@@ -654,7 +654,7 @@ otk:
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
   # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
   healthCheckBundle:
-    enabled: true
+    enabled: false
     useExisting: false
     name: otk-health-check-bundle-config
 

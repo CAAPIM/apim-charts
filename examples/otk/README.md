@@ -17,7 +17,9 @@ OTK installation involves
 * [Quick Start](#quick-start)
 * [OTK with MySQL/Oracle database](#otk-with-mysql-or-oracle-database)
 * [OTK With Cassandra database](#otk-with-cassandra-database)
-* [Customizations](#customizations)
+* [Customizations (optional)](#customizations)
+* [Health checks (optional)](#health-checks)
+* [Miscellaneous configurations (optional)](#miscellaneous-configurations)
 
 ### Quick Start
 
@@ -197,14 +199,44 @@ otk:
 ....
 .....
 ```
-***NOTE:***
-```
-- In Ephemeral Gateway, the sequence of bundles are determined by alphabetical order of directory names & subsequent bundlefile names within the directories
-- By default, OTK skmult & bundle files are hosted in a directory by name '000OTK' so that they are executed first
-- Even the bundle names are prefixed appropriately to ensure an alphabetical order
-- Any custom bundles related to OTK should be executed after these are executed.
-- It is recommended to host custom bundles within folder names prefixed with '1' or '2' so as to maintain the order
-```
 
+> :information_source: **Important** <br>
+> In Ephemeral Gateway, the sequence of bundles are determined by alphabetical order of directory names & subsequent bundlefile names within the directories
+> By default, OTK skmult & bundle files are hosted in a directory by name '000OTK' so that they are executed first
+> Even the bundle names are prefixed appropriately to ensure an alphabetical order
+> Any custom bundles related to OTK should be executed after these are executed.
+> It is recommended to host custom bundles within folder names prefixed with '1' or '2' so as to maintain the order
 
+### Health checks
+> :information_source: **Note** <br>
+> In Database backed Gateway, its recomended not to enable health checks of OTK at the time of install.
+> Also, OTK version should be >= 4.6.1 and valid only for SINGLE and INTERNAL OTK type installation.
 
+Gateway health checks can be replaced with OTK health checks if needed. If enabled, OTK health check bundle which has the health check service is applied to the gateway. The bundle can be found [here](../../charts/gateway/bundles/otk-healthcheck.bundle) and can be customized. Existing bundle config map can also be provided by setting the `otk.healthCheckBundle.useExisting` to `true` and providing the bundle name at `otk.healthCheckBundle.name`
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
+| `otk.livenessProbe.type`                   |  | `httpGet`
+| `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
+| `otk.livenessProbe.httpGet.port`           |  | `8443`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
+| `otk.readinessProbe.type`                  |  | `httpGet`
+| `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
+| `otk.readinessProbe.httpGet.port`          |  | `8443`
+
+### Miscellaneous configurations
+
+`otk.forceInstallOrUpgrade` (true/false) - If true uninstalls OTK and installs it. Valid only for DB backed Gateway.
+`otk.skipPostInstallationTasks` (true/false) - In case of dual Gateway installation, the post install tasks will update the INTERNAL/DMZ gateways configuration by updating customizations 
+- Internal Gateway
+  1. #OTK Client Context Variables 
+  2. #OTK id_token configuration 
+- DMZ Gateway:
+  1. #OTK OVP Configuration
+  2. #OTK Storage Configuration
+ `otk.skipInternalServerTools` (true/false) - Skip installation of the optional sub solution Kit: Internal, Server Tools. The Oauth Manager & Oauth Test Client will not be installed
+ `otk.job.scheduledTasks` - List of database maintenance jobs [cron-jobs] (https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/). Applicable only in case of ephemeral gateways. Gateway schedule tasks are disabled and crron-job is used to perform database maintenance of OTK MySQL/Oracle db.
