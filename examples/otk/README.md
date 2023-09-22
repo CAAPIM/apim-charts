@@ -177,7 +177,6 @@ Customizations can also by configuring the directory which contains the bundles.
 | `otk.customizations.bundle.enabled`         | Creates a configmap with bundles from the ./bundles-otk folder | `false`  |
 | `otk.customizations.bundle.path`            | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles-otk/*.bundle"`  |
 
-
 ```
 otk:
   ....
@@ -197,6 +196,14 @@ otk:
        - name: otkbundle1
 ....
 .....
+```
+***NOTE:***
+```
+- In Ephemeral Gateway, the sequence of bundles are determined by alphabetical order of directory names & subsequent bundlefile names within the directories
+- By default, OTK skmult & bundle files are hosted in a directory by name '000OTK' so that they are executed first
+- Even the bundle names are prefixed appropriately to ensure an alphabetical order
+- Any custom bundles related to OTK should be executed after these are executed.
+- It is recommended to host custom bundles within folder names prefixed with '1' or '2' so as to maintain the order
 ```
 
 
