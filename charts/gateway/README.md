@@ -61,6 +61,14 @@ Updates to Gateway Container Lifecycle.
 ## 3.0.10 General Updates
 Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
 
+- restartOnConfigChange flag will allow automatic roll deployments on any configMap chnage
+```
+# restartOnConfigChange flag is disabled by default
+restartOnConfigChange:
+enabled: false
+
+```
+
 - Additional Labels/Annotations apply to everything in this Chart's templates
 ```
 # Additional Annotations apply to all deployed objects
@@ -69,6 +77,7 @@ additionalAnnotations: {}
 # Additional Labels apply to all deployed objects
 additionalLabels: {}
 ```
+
 
 - Pod Labels/Annotations at the base level apply to the Gateway Pod
 ```
