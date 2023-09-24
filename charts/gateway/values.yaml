@@ -33,7 +33,6 @@ imagePullSecret:
 
 # Additional Annotations apply to all deployed objects
 additionalAnnotations: {}
-  # restartOnConfigChange: false
 
 # Additional Labels apply to all deployed objects
 additionalLabels: {}
@@ -53,6 +52,10 @@ serviceAccount:
 # list/patch permissions for Pods.
 rbac:
   create: true
+
+# If restartOnConfigChange is enabled , it will restart Deployment on ConfigMap change
+restartOnConfigChange:
+  enabled: false
 
 # Number of Gateways to deploy
 replicas: 1

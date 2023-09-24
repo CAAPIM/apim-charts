@@ -10,15 +10,18 @@ metadata:
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.additionalAnnotations }}
   annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-{{ if  and (eq $key "restartOnConfigChange") (eq $val true)  }}
-    checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
-{{- end }}
-{{- end }}
-{{- end }}
+  {{- if .Values.restartOnConfigChange.enabled  }}
+     checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+  {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+      {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+  {{- if .Values.restartOnConfigChange.enabled  }}
+     checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
