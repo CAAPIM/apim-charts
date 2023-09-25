@@ -538,6 +538,7 @@ otk:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+      # connectionProperties: {"c3p0.maxPoolSize":15,"c3p0.maxConnectionAge":0,"c3p0.maxIdleTime":0}
       # Oracle database name
       # databaseName:
     # cassandra:
