@@ -187,19 +187,12 @@ config:
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.level = CONFIG
   cwp:
-    enabled: false
+    enabled: true
     properties:
-      - name: io.httpsHostAllowWildcard
-        value: true
-      - name: log.levels
-        value: |
-          com.l7tech.level = CONFIG
-          com.l7tech.server.policy.variable.ServerVariables.level = SEVERE
-          com.l7tech.external.assertions.odata.server.producer.jdbc.GenerateSqlQuery.level = SEVERE
-          com.l7tech.server.policy.assertion.ServerSetVariableAssertion.level = SEVERE
-          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
-      - name: audit.setDetailLevel.FINE
-        value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+      - name: otk.port
+        value: 443
+      - name: otk.dbsystem
+        value: mysql
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
@@ -369,7 +362,7 @@ config:
   # SSG_DATABASE_PASSWORD
 
 # Cluster Hostname
-clusterHostname: my.localdomain
+clusterHostname: scott.localdomain
 
 # Database configuration
 database:
@@ -406,7 +399,7 @@ management:
   enabled: true
   # Enable Restman, if DBbacked this setting will persist until manually deleted via Policy Manager.
   restman:
-    enabled: false
+    enabled: true
   # Enable Graphman (placeholder)
   graphman:
     enabled: false
@@ -488,7 +481,7 @@ service:
 #  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrade is complete (management.restman.enabled: true)
 #  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
-  enabled: false
+  enabled: true
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
@@ -563,7 +556,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.2
+      tag: 4.6.1
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
