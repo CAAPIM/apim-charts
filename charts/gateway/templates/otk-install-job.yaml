@@ -96,9 +96,9 @@ spec:
            - name: OTK_CONNECT_RETRY_COUNT
              value: {{ default 10 .Values.otk.connectRetry | quote}}
            - name: SSG_RESTMAN_PORT             
-             value: {{ .Values.installSolutionKits.restmanPort | quote}}
+             value: {{ default 8443 .Values.otk.restmanPort | quote}}
            - name: SSG_RESTMAN_HOST
-             value: {{ template "gateway.fullname" . }}
+             value: {{ .Values.otk.restmanHost | default (template "gateway.fullname" .)}}
            - name: OTK_INTERNAL_GW_HOST
              value: {{ .Values.otk.internalGatewayHost | quote }}
            - name: OTK_INTERNAL_GW_PORT
