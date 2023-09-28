@@ -129,7 +129,7 @@ preStopScript:
 # most cloud vendors provide metrics server by default
 # https://github.com/kubernetes-sigs/metrics-server
 autoscaling:
-  enabled: false
+  enabled: true
   hpa:
     minReplicas: 1
     maxReplicas: 3
@@ -486,12 +486,12 @@ otk:
   type: SINGLE
 
   # Force install or upgrade by uninstalling existing otk solution kit and install.
-  # forceInstallOrUpgrade: false
+  forceInstallOrUpgrade: false
 
   # Not applicable for DMZ and INTERNAL OTK types
-  # enablePortalIntegration: false
-  # skipPostInstallationTasks: false
-  # skipInternalServerTools: false
+  enablePortalIngeration: false
+  skipPostInstallationTasks: false
+  skipInternalServerTools: false
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
@@ -502,12 +502,13 @@ otk:
   # dmzGatewayPort:
 
   cert:
-  # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
+    # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
     # dmzGatewayCert:
     # dmzGatewayIssuer:
     # dmzGatewaySerial:
     # dmzGatewaySubject:
-  # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
+
+    # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
     # internalGatewayCert:
     # internalGatewayIssuer:
     # internalGatewaySerial:
@@ -523,7 +524,7 @@ otk:
     # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
     # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
     # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
-    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restman/1.0/bundle)
     bundle:
       enabled: false
       path: "bundles-otk/**.bundle"
@@ -533,7 +534,7 @@ otk:
     # key: bundle1.bundle value: <xml value>
     # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
     # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
-    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restmao/1.0/bundle)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restman/1.0/bundle)
     existingBundle:
       enabled: false
       configMaps: []
@@ -566,18 +567,18 @@ otk:
 
     # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
     scheduledTasks:
-    - name: client
-      schedule: "*/31 * * * *"
-    - name: idtoken
-      schedule: "*/29 * * * *"
-    - name: sessions
-      schedule: "*/7 * * * *"
-    - name: token
-      schedule: "*/5 * * * *"
-    - name: trl
-      schedule: "0 */1 * * *"
-    - name: miscellaneous
-      schedule: "*/5 * * * *"
+      - name: client
+        schedule: "*/31 * * * *"
+      - name: idtoken
+        schedule: "*/29 * * * *"
+      - name: sessions
+        schedule: "*/7 * * * *"
+      - name: token
+        schedule: "*/5 * * * *"
+      - name: trl
+        schedule: "0 */1 * * *"
+      - name: miscellaneous
+        schedule: "*/5 * * * *"
 
     labels: {}
     # nodeSelector: {}
@@ -589,6 +590,7 @@ otk:
     # Pod Annotations apply to the OTK install Pod
     ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     podAnnotations: {}
+
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
@@ -603,16 +605,16 @@ otk:
     # ddlPassword:
     # existingSecretName: otkDbSecret
 
-    # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+    properties: {"maximumPoolSize":15, "minimumPoolSize":3}
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
 
     # Update database connection properties during helm upgrade.
-    # updateConnection: true
+    updateConnection: true
 
     # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
     # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    # changeLogSync: false
+    changeLogSync: false
 
     sql:
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
@@ -625,29 +627,29 @@ otk:
       # For mysql & oracle setup test clients
       createTestClients: false
       # Test clients redirect Url prefix. Required if createTestClients is true.
-      # testClientsRedirectUrlPrefix:
+      testClientsRedirectUrlPrefix:
 
-    # cassandra:
-    #   connectionPoints: localhost
-    #   port:
-    #   keyspace:
-    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
-    #   driverConfig: {"localDataCenterName" : "DC1"}
+    cassandra:
+      # connectionPoints:
+      # port:
+      # keyspace:
+      # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
+      # driverConfig: {"localDataCenterName" : "DC1"}
 
     # Optionally configure read only database connection for MySQL/Oracle.
     readOnlyConnection:
       enabled: false
-      connectionName: OAuth_ReadOnly
+      # connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
 
-      # jdbcURL: jdbc:mysql://<host>:<port>/<database>
-      # jdbcDriverClass: com.mysql.jdbc.Driver
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
-      # databaseName:
+      databaseName:
 
   # Install OTK Health check bundle on gateway. Uses config map.
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
@@ -670,8 +672,8 @@ otk:
     enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
+      path: /auth/oauth/health
+      port: 8443
 
   # OTK Specific configuration:
   # - The readinessProbe probe is not supported for OTK 4.6 & below versions.
@@ -686,8 +688,8 @@ otk:
     enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
+      path: /auth/oauth/health
+      port: 8443
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
@@ -978,6 +980,13 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers

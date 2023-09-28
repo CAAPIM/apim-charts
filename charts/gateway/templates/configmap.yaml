@@ -159,7 +159,7 @@ data:
         echo "***************************************************************************"
         echo "scanning for $TYPE in $SOURCE_DIR"
         echo "***************************************************************************"
-        FILES=$(find $3 -type f -name '*'$2 2>/dev/null)
+        FILES=$(du -a $3 | grep -e ".\\$2$" | awk '{ print $2 }' 2>/dev/null)
         for file in $FILES; do
             name=$(basename "$file")
             cp $file $4/$name
@@ -174,7 +174,7 @@ data:
         echo "***************************************************************************"
         echo "scanning for $TYPE in $SOURCE_DIR"
         echo "***************************************************************************"
-        FILES=$(find $3 -type f -name '*'$2 2>/dev/null)
+        FILES=$(du -a $3 | grep -e ".\\$2$" | awk '{ print $2 }' 2>/dev/null)
         for file in $FILES; do
             name=$(basename "$file")
             echo -e "running $name"

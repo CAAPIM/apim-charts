@@ -110,22 +110,13 @@ spec:
             name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
         {{- end }}
 
-      {{- if .Values.imagePullSecret.enabled }}
-      imagePullSecrets:
-        - name: {{ template "otk.imagePullSecret" . }}
-      {{- end }}
-
       {{- if .Values.otk.job.nodeSelector }}
       nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
       {{- end }}
 
-      {{- if .Values.imagePullSecret.enabled }}
+      {{- if or (.Values.imagePullSecret.enabled) (.Values.otk.job.imagePullSecret.enabled) }}
       imagePullSecrets:
         - name: {{ template "otk.imagePullSecret" . }}
-      {{- end }}
-
-      {{- if .Values.otk.job.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
       {{- end }}
 
       {{- if .Values.otk.job.tolerations }}
