@@ -10,10 +10,10 @@ license:
   # existingSecretName: ssg-license
 
 image:
-  registry: docker.io
-  repository: caapim/gateway
-  tag: 11.0.00
-  pullPolicy: IfNotPresent
+  registry: apim-docker-dev-local.usw1.packages.broadcom.com
+  repository: apim-gateway/gateway-enterprise
+  tag: latest
+  pullPolicy: Always
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
 # and use the following Gateway image docker.io/caapim/gateway:10.1.00_20220802
@@ -26,7 +26,7 @@ image:
 # Set this if you would like to add an image pull secret directly to the Gateway deployment
 # Alternatively, leave this disabled and reference a service account that has the image pull secret associated with it.
 imagePullSecret:
-  enabled: false
+  enabled: true
   # existingSecretName: private-registry-secret
   username:
   password:
@@ -555,11 +555,14 @@ otk:
 
   job:
     image:
-      repository: caapim/otk-install
-      tag: 4.6.1
-      pullPolicy: IfNotPresent
+      registry: apim-docker-dev-local.usw1.packages.broadcom.com
+      repository: apim-mobile/otk-install
+      tag: feature-F135722_container_improvements
+      pullPolicy: Always
     imagePullSecret:
-      enabled: false
+      enabled: true
+      username:
+      password:
 
     # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
     scheduledTasks:
