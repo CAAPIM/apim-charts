@@ -129,7 +129,7 @@ preStopScript:
 # most cloud vendors provide metrics server by default
 # https://github.com/kubernetes-sigs/metrics-server
 autoscaling:
-  enabled: false
+  enabled: true
   hpa:
     minReplicas: 1
     maxReplicas: 3
@@ -594,7 +594,7 @@ otk:
     # Pod Annotations apply to the OTK install Pod
     ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     podAnnotations: {}
-  
+
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
@@ -626,7 +626,7 @@ otk:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or MySQL demo db name
       databaseName: otk_db
-      #connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
 
       # For mysql & oracle setup test clients
       createTestClients: false
@@ -984,6 +984,13 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
