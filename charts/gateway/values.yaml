@@ -129,7 +129,7 @@ preStopScript:
 # most cloud vendors provide metrics server by default
 # https://github.com/kubernetes-sigs/metrics-server
 autoscaling:
-  enabled: true
+  enabled: false
   hpa:
     minReplicas: 1
     maxReplicas: 3
