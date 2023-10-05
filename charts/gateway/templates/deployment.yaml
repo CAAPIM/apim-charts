@@ -10,12 +10,17 @@ metadata:
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.additionalAnnotations }}
   annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-{{- end }}
-{{- end }}
+  {{- if .Values.restartOnConfigChange }}
+     {{- if .Values.restartOnConfigChange.enabled }}
+     checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+     {{- end }}
+  {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+      {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -126,13 +131,13 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           ports:
             {{- range .Values.service.ports }}
-            - name: {{ .name }} 
+            - name: {{ .name }}
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
             {{ if .Values.management.service.enabled}}
             {{- range .Values.management.service.ports }}
-            - name: {{ .name }} 
+            - name: {{ .name }}
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
@@ -299,7 +304,7 @@ spec:
               {{- range.Values.livenessProbe.httpHeaders }}
               - name: {{ .name }}
                 value: {{ .value }}
-              {{- end }}     
+              {{- end }}
 {{- else }}
             exec:
               command:
