@@ -49,6 +49,7 @@ spec:
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
+          resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}

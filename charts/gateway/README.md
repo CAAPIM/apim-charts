@@ -37,6 +37,10 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.16 General Updates
+- Added resources to otk install job
+  - otk.job.resources
+
 ## 3.0.15 General Updates
 - Updated [bootstrap script](#bootstrap-script)
   - 'find' replaced with 'du'
@@ -475,6 +479,7 @@ database:
 | `otk.job.image.tolerations`       | Job tolerations | []
 | `otk.job.podLabels`                   | OTK Job podLabels | {}
 | `otk.job.podAnnotations`              | OTK Job podAnnotations | {}
+| `otk.job.resources`               | OTK Job resources | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
