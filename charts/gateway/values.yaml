@@ -54,8 +54,8 @@ rbac:
   create: true
 
 # If restartOnConfigChange flag is enabled, it will add checksum/config annotation to Gateway configMap
-#restartOnConfigChange:
-  #enabled: false
+# restartOnConfigChange:
+  # enabled: false
 
 # Number of Gateways to deploy
 replicas: 1
