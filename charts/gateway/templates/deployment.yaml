@@ -11,16 +11,15 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }}
   annotations:
-  {{- if .Values.restartOnConfigChange.enabled  }}
+  {{- if .Values.restartOnConfigChange }}
+     {{- if .Values.restartOnConfigChange.enabled }}
      checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+     {{- end }}
   {{- end }}
   {{- if  .Values.additionalAnnotations }}
   {{- range $key, $val := .Values.additionalAnnotations }}
       {{ $key }}: "{{ $val }}"
   {{- end }}
-  {{- end }}
-  {{- if .Values.restartOnConfigChange.enabled  }}
-     checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
   {{- end }}
 spec:
   selector:

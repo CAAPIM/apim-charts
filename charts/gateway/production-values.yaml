@@ -53,7 +53,7 @@ serviceAccount:
 rbac:
   create: true
 
-# If restartOnConfigChange is enabled , it will restart Deployment on ConfigMap change
+# If restartOnConfigChange flag is enabled, it will add checksum/config annotation to Gateway configMap
 restartOnConfigChange:
   enabled: false
 

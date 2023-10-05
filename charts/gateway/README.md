@@ -37,6 +37,17 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.16 General Updates
+- Added annotation to the Gateway , to allow automatic roll deployments if any value change like SSG_DATABASE_JDBC_URL in Gateway configMap
+
+- restartOnConfigChange flag when enabled will add checksum/config annotation to Gateway configMap
+```
+# restartOnConfigChange flag is disabled by default
+restartOnConfigChange:
+enabled: false
+
+```
+
 ## 3.0.15 General Updates
 - Updated [bootstrap script](#bootstrap-script)
   - 'find' replaced with 'du'
@@ -64,14 +75,6 @@ Updates to Gateway Container Lifecycle.
 
 ## 3.0.10 General Updates
 Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
-
-- restartOnConfigChange flag will allow automatic roll deployments on any configMap chnage
-```
-# restartOnConfigChange flag is disabled by default
-restartOnConfigChange:
-enabled: false
-
-```
 
 - Additional Labels/Annotations apply to everything in this Chart's templates
 ```
@@ -124,7 +127,7 @@ The bootstrap script has been updated to reflect changes to the Container Gatewa
 The PM Tagger image default version tag been updated to 1.0.1.
 
 ## 3.0.6 General Updates
-The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service.
 
 ## 3.0.5 General Updates
 The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
@@ -155,7 +158,7 @@ The following configuration options have been added
 - SubCharts now show image repository and tags
 
 ### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -206,7 +209,7 @@ Ingress configuration has been updated to include multiple hosts, please see [In
 
 ## 2.0.4 General Updates
 - Added support for sidecars and initContainers
-  - volumeMounts are automatically configured with emptyDir 
+  - volumeMounts are automatically configured with emptyDir
 - Updated default values update to reflect empty objects/arrays for optional fields.
 - Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
   - management.kubernetes.loadServiceAccountToken
@@ -387,7 +390,7 @@ There are two types of port configuration available in the Gateway Helm Chart th
 ### Container/Service Level Ports
 
 ### Default Gateway Service
-Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer. 
+Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer.
 ```
 service:
   type: LoadBalancer
@@ -471,7 +474,7 @@ database:
 | `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
 | `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
 | `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway   | `false`
-| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
+| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
@@ -487,14 +490,14 @@ database:
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
-| `otk.database.username`           | OTK database user name | 
+| `otk.database.username`           | OTK database user name |
 | `otk.database.password`           | OTK database password |
 | `otk.database.properties`         | OTK database additional properties  | `{}`
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
-| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
-| `otk.database.sql.databaseName`   | OTK database Oracle database name | 
-| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
+| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) |
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
+| `otk.database.sql.databaseName`   | OTK database Oracle database name |
+| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
@@ -536,7 +539,7 @@ config:
     ports:
       - name: Default HTTPS (8443)
         port: 8443
-      
+
         enabled: true
         protocol: HTTPS
         managementFeatures:
@@ -638,13 +641,13 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: tls-secret-1
 #  - hosts:
 #    - dev1.ca.com
 #    secretName: tls-secret-2
-  
+
   rules:
    - host: dev.ca.com
      path: "/"
