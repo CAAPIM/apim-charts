@@ -525,6 +525,15 @@ otk:
     # Pod Annotations apply to the OTK install Pod
     ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     podAnnotations: {}
+
+    resources:
+      requests:
+        memory: 32Mi
+        cpu: 200m
+      limits:
+        memory: 64Mi
+        cpu: 250m
+
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
