@@ -94,6 +94,38 @@ entries:
   gateway:
   - apiVersion: v2
     appVersion: 11.0.00
+    created: "2023-10-09T08:00:24.086122566Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.4.0
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.12.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.0.11
+    - condition: database.create
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.2.6
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: 817b93d0753661407a5c9445d9cde813a45e41d58d760c122ef7799807e62f74
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-3.0.16/gateway-3.0.16.tgz
+    version: 3.0.16
+  - apiVersion: v2
+    appVersion: 11.0.00
     created: "2023-09-20T10:54:03.355553308Z"
     dependencies:
     - condition: hazelcast.enabled
@@ -1017,6 +1049,34 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/gateway-1.0.2/gateway-1.0.2.tgz
     version: 1.0.2
   gateway-otk:
+  - apiVersion: v2
+    appVersion: 10.1.00
+    created: "2023-10-09T08:00:24.368989704Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.4.0
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.12.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 8.0.11
+    - condition: database.create
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.2.6
+    description: This alpha Helm Chart deploys the Layer7 Gateway with OTK in Kubernetes.
+    digest: cab477ac85ab1eea431567dfe12b7a2029927928ce600fe26cdc32ff8b37a65b
+    maintainers:
+    - name: Gazza7205
+    name: gateway-otk
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-otk-2.0.3/gateway-otk-2.0.3.tgz
+    version: 2.0.3
   - apiVersion: v2
     appVersion: 10.1.00
     created: "2023-05-12T07:53:08.104867882Z"
@@ -1968,4 +2028,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2023-09-20T10:54:03.355924714Z"
+generated: "2023-10-09T08:00:24.369598511Z"
