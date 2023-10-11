@@ -9,6 +9,9 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
+  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
 # demoDatabaseRootPassword: 7layer
@@ -169,6 +172,10 @@ analytics:
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -193,6 +200,7 @@ analytics:
 #           values:
 #           - analytics
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 apim:
   forceRedeploy: false
@@ -201,6 +209,10 @@ apim:
     pullPolicy: IfNotPresent
   otkDb:
     name: otk_db
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -233,6 +245,10 @@ authenticator:
   javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -257,12 +273,17 @@ authenticator:
 #           values:
 #           - authenticator
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 dispatcher:
   forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -323,6 +344,10 @@ portalData:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -355,6 +380,10 @@ portalEnterprise:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -379,12 +408,17 @@ portalEnterprise:
 #           values:
 #           - portal-enterprise
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 pssg:
   forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -417,6 +451,10 @@ tenantProvisioner:
   javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -441,20 +479,21 @@ tenantProvisioner:
 #           values:
 #           - tenant-provisioner
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.2.1
-  pssg: pssg:5.2.1
-  apim: ingress:5.2.1
-  enterprise: portal-enterprise:5.2.1
-  data: portal-data:5.2.1
-  tps: tenant-provisioning-service:5.2.1
-  analytics: analytics-server:5.2.1
-  authenticator: authenticator:5.2.1
-  dbUpgrade: db-upgrade-portal:5.2.1
-  rbacUpgrade: db-upgrade-rbac:5.2.1
-  upgradeVerify: upgrade-verify:5.2.1
-  tlsManager: tls-automator:5.2.1
+  dispatcher: dispatcher:5.2.2
+  pssg: pssg:5.2.2
+  apim: ingress:5.2.2
+  enterprise: portal-enterprise:5.2.2
+  data: portal-data:5.2.2
+  tps: tenant-provisioning-service:5.2.2
+  analytics: analytics-server:5.2.2
+  authenticator: authenticator:5.2.2
+  dbUpgrade: db-upgrade-portal:5.2.2
+  rbacUpgrade: db-upgrade-rbac:5.2.2
+  upgradeVerify: upgrade-verify:5.2.2
+  tlsManager: tls-automator:5.2.2
 
 ##
 ## Subchart Configuration
@@ -481,6 +520,10 @@ druid:
     replicaCount: 4
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
@@ -534,6 +577,10 @@ druid:
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       limits:
         memory: 256Mi
@@ -557,6 +604,10 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       limits:
         memory: 512Mi
@@ -579,6 +630,10 @@ druid:
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       requests:
         cpu: 100m
@@ -603,6 +658,10 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       requests:
         memory: 1Gi
@@ -625,6 +684,10 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       requests:
         memory: 2Gi
@@ -647,6 +710,10 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     portName: ingestion-svc
     resources:
       requests:
@@ -672,6 +739,10 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     resources:
       requests:
         memory: 4Gi
@@ -691,14 +762,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.2.1
-    broker: druid:5.2.1
-    coordinator: druid:5.2.1
-    middlemanager: druid:5.2.1
-    minio: minio:5.2.1
-    historical: druid:5.2.1
-    kafka: kafka:5.2.1
-    ingestion: ingestion-server:5.2.1
+    zookeeper: zookeeper:5.2.2
+    broker: druid:5.2.2
+    coordinator: druid:5.2.2
+    middlemanager: druid:5.2.2
+    minio: minio:5.2.2
+    historical: druid:5.2.2
+    kafka: kafka:5.2.2
+    ingestion: ingestion-server:5.2.2
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -708,9 +779,13 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.2.1"
+    tag: "5.2.2"
     pullSecrets:
       - broadcom-apim
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   serviceAccount:
     create: true
   # name:
@@ -815,8 +890,6 @@ jobs:
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
-# We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
-# in any production environment.
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
@@ -865,6 +938,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     persistence:
       annotations:
         helm.sh/hook: pre-install

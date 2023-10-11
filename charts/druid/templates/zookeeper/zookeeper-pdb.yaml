@@ -1,0 +1,18 @@
+{{ if .Values.zookeeper.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: zookeeper
+  name: zookeeper-pdb
+spec:
+  {{- if .Values.zookeeper.pdb.minAvailable }}
+  minAvailable: {{ .Values.zookeeper.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.zookeeper.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.zookeeper.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: zookeeper
+{{ end }}
