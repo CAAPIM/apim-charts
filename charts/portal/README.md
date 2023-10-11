@@ -3,10 +3,11 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
-## 2.3.6 General Updates
+## 2.3.4 General Updates
+- This new version of the chart supports API Portal 5.2.2
 - Ingress-NGINX Subchart is upgraded to version 4.7.2 to support K8s 1.26+ version.
-## 2.3.5 General Updates
-- This new version of the chart supports API Portal 5.2.2.
+- Rabbitmq chart is upgraded to 12.0.3. Updated additional documentation w.r.t rabbitmq persistence.[Refer rabbitmq.volumePermissions.enabled](https://github.com/CAAPIM/apim-charts/blob/develop/portal/charts/portal/README.md#global-parameters)
+- Introduced global.useExistingDatabaseSecret to avoid specifying the external MySQL password. [Refer for global.useExistingDatabaseSecret](https://github.com/CAAPIM/apim-charts/blob/develop/portal/charts/portal/README.md#global-parameters).
 ## 2.3.3 General Updates
 - This new version of the chart supports API Portal 5.2.1.
 ## 2.3.2 General Updates
