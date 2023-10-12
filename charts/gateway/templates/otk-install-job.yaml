@@ -67,6 +67,7 @@ spec:
             mountPath: /docker/custom_bundles/configmap
           {{- end }}
 
+          resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}

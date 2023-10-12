@@ -37,7 +37,7 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
-## 3.0.16 OTK 4.6.2 Released
+## 3.0.17 OTK 4.6.2 Released
   - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
     - otk.job.image.tag: 4.6.2 
   - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
@@ -56,6 +56,10 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
     - otk.customizations.existingBundle.enabled
   - OTK DMZ/Internal gateway certs can now be configured using values file.
     - otk.cert
+
+## 3.0.16 General Updates
+- Added resources to otk install job
+  - otk.job.resources
 
 ## 3.0.15 General Updates
 - Updated [bootstrap script](#bootstrap-script)
@@ -506,12 +510,12 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
 | `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
 | `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
-| `otk.job.scheduledTasks`           | Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks |
-| `otk.job.labels`                  | Job lables | {}
-| `otk.job.nodeSelector`            | Job Node selector | {}
-| `otk.job.tolerations`             | Job tolerations | []
+| `otk.job.image.labels`            | Job lables | {}
+| `otk.job.image.nodeSelector`      | Job Node selector | {}
+| `otk.job.image.tolerations`       | Job tolerations | []
 | `otk.job.podLabels`               | OTK Job podLabels | {}
 | `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
+| `otk.job.resources`               | OTK Job resources | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
