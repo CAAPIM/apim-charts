@@ -499,6 +499,12 @@ otk:
   enablePortalIngeration: false
   skipPostInstallationTasks: false
   skipInternalServerTools: false
+  
+  # Restman host and port (optional). Valid only for db backed gateways
+  # Default - gateway service
+  # restmanHost:
+  # Default -  installSolutionKits.restmanPort
+  # restmanPort:
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:

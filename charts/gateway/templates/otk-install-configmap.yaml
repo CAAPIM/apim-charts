@@ -88,8 +88,8 @@ data:
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
   OTK_CONNECT_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}
   OTK_CONNECT_RETRY_COUNT: {{ default 10 .Values.otk.connectRetry | quote}}
-  SSG_RESTMAN_PORT: {{ .Values.installSolutionKits.restmanPort | quote}}
-  SSG_RESTMAN_HOST: {{ template "gateway.fullname" . }}
+  SSG_RESTMAN_PORT: {{ default .Values.installSolutionKits.restmanPort .Values.otk.restmanPort | quote}}
+  SSG_RESTMAN_HOST: {{ template "otk.restmanhost" . }}
   OTK_INTERNAL_GW_HOST: {{ default "" .Values.otk.internalGatewayHost | quote }}
   OTK_INTERNAL_GW_PORT: {{ default "" .Values.otk.internalGatewayPort| quote }}
   OTK_DMZ_GW_HOST: {{ default "" .Values.otk.dmzGatewayHost| quote }}

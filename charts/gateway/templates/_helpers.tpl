@@ -230,3 +230,14 @@ Define OTK Image Pull Secret Name
     {{- printf "%s/%s:%s" .Values.otk.job.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define OTK Restman host
+ */}}
+{{- define "otk.restmanhost" -}}
+{{- if empty .Values.otk.restmanHost -}}
+    {{- printf "%s" (include "gateway.fullname" .) -}}
+{{- else -}}
+    {{- printf "%s" .Values.otk.restmanHost -}}
+{{- end -}}
+{{- end -}}
