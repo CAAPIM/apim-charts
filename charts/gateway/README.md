@@ -39,7 +39,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 
 ## 3.0.17 OTK 4.6.2 Released
   - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
-    - otk.job.image.tag: 4.6.2 
+    - otk.job.image.tag: 4.6.2
   - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
     - otk.database.dbupgrade
   - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.***
@@ -48,7 +48,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
     - database.enabled: false
     - otk.type: SINGLE
   - Added OTK Connection properties to support c3p0 settings.
-    - otk.database.connectionProperties 
+    - otk.database.connectionProperties
   - Added support OTK read-only connections for MySQL and Oracle.
     - otk.database.readOnlyConnection.*
   - Added support for OTK policies customization through config maps and secrets.
@@ -72,7 +72,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 
 ## 3.0.13 General Updates
 - The OTK Install job now uses podSecurity and containerSecurity contexts if set.
-- Updated how pod labels and annotations are templated in deployment.yaml  
+- Updated how pod labels and annotations are templated in deployment.yaml
 
 ## 3.0.12 General Updates
 Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
@@ -139,7 +139,7 @@ The bootstrap script has been updated to reflect changes to the Container Gatewa
 The PM Tagger image default version tag been updated to 1.0.1.
 
 ## 3.0.6 General Updates
-The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service.
 
 ## 3.0.5 General Updates
 The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
@@ -170,7 +170,7 @@ The following configuration options have been added
 - SubCharts now show image repository and tags
 
 ### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -221,7 +221,7 @@ Ingress configuration has been updated to include multiple hosts, please see [In
 
 ## 2.0.4 General Updates
 - Added support for sidecars and initContainers
-  - volumeMounts are automatically configured with emptyDir 
+  - volumeMounts are automatically configured with emptyDir
 - Updated default values update to reflect empty objects/arrays for optional fields.
 - Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
   - management.kubernetes.loadServiceAccountToken
@@ -402,7 +402,7 @@ There are two types of port configuration available in the Gateway Helm Chart th
 ### Container/Service Level Ports
 
 ### Default Gateway Service
-Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer. 
+Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer.
 ```
 service:
   type: LoadBalancer
@@ -591,7 +591,7 @@ config:
     ports:
       - name: Default HTTPS (8443)
         port: 8443
-      
+
         enabled: true
         protocol: HTTPS
         managementFeatures:
@@ -693,13 +693,13 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: tls-secret-1
 #  - hosts:
 #    - dev1.ca.com
 #    secretName: tls-secret-2
-  
+
   rules:
    - host: dev.ca.com
      path: "/"

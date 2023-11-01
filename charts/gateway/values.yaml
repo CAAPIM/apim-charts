@@ -499,7 +499,7 @@ otk:
   enablePortalIngeration: false
   skipPostInstallationTasks: false
   skipInternalServerTools: false
-  
+
   # Restman host and port (optional). Valid only for db backed gateways
   # Default - gateway service
   # restmanHost:
