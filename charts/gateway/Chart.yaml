@@ -19,7 +19,7 @@ dependencies:
     repository: "https://helm.influxdata.com/"
     condition: influxdb.enabled
   - name: grafana
-    version: 8.0.11
+    version: 9.5.2
     repository: "https://charts.bitnami.com/bitnami"
     condition: grafana.enabled
   - name: mysql
