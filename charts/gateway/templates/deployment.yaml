@@ -10,11 +10,11 @@ metadata:
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.additionalAnnotations }}
+{{- if  .Values.additionalAnnotations }}
   annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
-{{- end }}
+  {{- end }}
 {{- end }}
 spec:
   selector:
@@ -33,6 +33,19 @@ spec:
     {{- end }}
     {{- if  .Values.podAnnotations }}
       annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- if .Values.restartOnConfigChange }}
+    {{- if .Values.restartOnConfigChange.enabled }}
+        checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if not .Values.podAnnotations }}
+     {{- if .Values.restartOnConfigChange }}
+     {{- if .Values.restartOnConfigChange.enabled }}
+      annotations:
+         checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+     {{- end }}
+     {{- end }}
     {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
@@ -182,6 +195,18 @@ spec:
         {{- if .Values.management.graphman.enabled }}
             - name: {{ template "gateway.fullname" . }}-graphman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+        {{- end }}
+{{- end }}
+{{- if .Values.config.redis  }}
+        {{- if .Values.config.redis.enabled }}
+            - name: {{ template "gateway.fullname" . }}-redis-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
+              subPath: redis.properties
+        {{- if and (.Values.config.redis.tls.enabled)  (.Values.config.redis.sentinel.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-redis-crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
+              subPath: redis.crt
+        {{- end }}
         {{- end }}
 {{- end }}
 {{- if .Values.existingHealthCheck }}
@@ -375,6 +400,25 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
+{{- if .Values.config.redis }}
+       {{- if .Values.config.redis.enabled }}
+        - name: {{ template "gateway.fullname" . }}-redis-properties
+          secret:
+            secretName: {{ template "redisConfigSecretName" . }}
+            items:
+            - key: redis.properties
+              path: redis.properties
+       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.sentinel.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-redis-crt
+          secret:
+            secretName: {{ template "redisTlsSecretName" . }}
+            items:
+            - key: tls.crt
+              path: redis.crt
+      {{- end }}
+      {{- end }}
+{{- end }}
+
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
      {{- range .Values.customConfig.mounts }}

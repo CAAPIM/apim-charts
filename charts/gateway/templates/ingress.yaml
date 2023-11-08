@@ -35,7 +35,11 @@ spec:
         path: {{ .path }}
         backend:
           service:
+           {{- if eq .backend "management" }}
+            name: {{ $gatewayFullName }}-management
+           {{- else }}
             name: {{ $gatewayFullName }}
+           {{- end }}
             port:
             {{- if .service.port.number }}
               number: {{ .service.port.number }}
