@@ -698,7 +698,14 @@ ingress:
 | `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
 
 ### Redis Configuration
-This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be uncommented
+This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
+
+Comment out the following
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+# com.l7tech.server.extension.sharedCounterProvider=ssgdb
+```
+Uncomment the following
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
 # com.l7tech.server.extension.sharedCounterProvider=redis
@@ -710,12 +717,11 @@ This enables integration with [Redis](https://redis.io/). The following sections
 | `config.redis.enabled`          | Enable redis configuration | `false`  |
 | `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `false`  |
 | `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
-| `config.redis.groupName`          | Redis Group name | ``  |
+| `config.redis.groupName`          | Redis Group name | `l7GW`  |
 | `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
 | `config.redis.auth.username`          | Redis username | ``  |
 | `config.redis.auth.password.encoded`          | Password is encoded | `false`  |
 | `config.redis.auth.password.value`          | Redis password | `mypassword`  |
-
 | `config.redis.sentinel.enabled`                | Enable sentinel configuration   | `true` |
 | `config.redis.sentinel.masterSet`          | Redis Master set | `mymaster`  |
 | `config.redis.sentinel.nodes`          | Array of sentinel nodes and ports | `[]`  |

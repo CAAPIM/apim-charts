@@ -370,7 +370,7 @@ config:
       # changes will be required
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
-  # groupName:
+    groupName: l7GW
     auth:
       enabled: false
     # username: username
@@ -929,14 +929,14 @@ redis:
       accessModes:
         - ReadWriteOnce
       size: 20Gi
-    service:
-     # type: LoadBalancer
-     # externalTrafficPolicy: Local
+  # service:
+    # type: LoadBalancer
+    # externalTrafficPolicy: Local
   sentinel:
     enabled: true
-    service:
-      # type: LoadBalancer
-      # externalTrafficPolicy: Local
+  # service:
+    # type: LoadBalancer
+    # externalTrafficPolicy: Local
     image:
       registry: docker.io
       repository: bitnami/redis-sentinel
