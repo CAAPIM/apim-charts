@@ -55,7 +55,6 @@ spec:
             - /bin/sh
             - -c
             - "curl -v --request POST 'https://{{ template "gateway.fullname" $ }}:8443/oauth/db-maintenance?task={{ .name }}' --insecure"
-                {{- if or (.Values.imagePullSecret.enabled) (.Values.otk.job.imagePullSecret.enabled) }}
 
           {{- if .Values.otk.job.nodeSelector }}
           nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
