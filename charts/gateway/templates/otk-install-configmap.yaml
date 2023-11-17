@@ -83,7 +83,7 @@ data:
   {{- end }}
   {{- end }}
   {{- end }}
-  OTK_UPDATE_DATABASE_CONNECTION: {{default false .Values.otk.database.update | quote }}
+  OTK_UPDATE_DATABASE_CONNECTION: {{default false .Values.otk.database.updateConnection | quote }}
   OTK_SKAR_RETRY_COUNT: {{ default 10 .Values.otk.installRetry | quote}}
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
   OTK_CONNECT_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}

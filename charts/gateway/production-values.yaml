@@ -531,15 +531,6 @@ otk:
   # subSolutionKitNames:
 
   customizations:
-    # This mounts a bundle folder to the Gateway. This requires you to clone the chart repo and populate the bundle folder.
-    # Note that there is a 1MB limit for Configmaps/Secrets so if your bundles exceed that total, the Chart will fail to install/upgrade.
-    # Helm also keeps a revision of each deployment that will include the bundle definition, if that exceeds 1MB then the same error will occur.
-    # We recommend using the existingBundle configuration below. This allows you to manage Gateway Deployment Config and Services separately.
-    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
-    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restman/1.0/bundle)
-    bundle:
-      enabled: false
-      path: "bundles-otk/**.bundle"
 
     # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
     # When creating these secrets/configmaps the format should be
@@ -615,14 +606,15 @@ otk:
     dbUpgrade: true
     useDemoDb: true
 
+    # OTK database user name and password used to create Gateway Database/cassandra connection.
     username: otk_user
     password: mypassword
 
-    # ddlUsername:
-    # ddlPassword:
     # existingSecretName: otkDbSecret
 
+    # Database connection properties
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
 
@@ -634,11 +626,18 @@ otk:
     changeLogSync: false
 
     sql:
+
+      # If provided, used to create OTK schema and tables.
+      # ddlUsername:
+      # ddlPassword:
+
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or MySQL demo db name
       databaseName: otk_db
+
+      # c3p0 connection properties.
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
 
       # For mysql & oracle setup test clients

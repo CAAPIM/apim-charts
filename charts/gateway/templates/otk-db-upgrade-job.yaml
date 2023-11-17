@@ -45,6 +45,7 @@ spec:
         - name: otk-db-upgrade
           image: {{ template "otk.image" . }}
           imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}

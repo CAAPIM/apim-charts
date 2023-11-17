@@ -502,8 +502,6 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.cert.internalGatewayIssuer`  | INTERNAL gateway certificate issuer for OTK type INTERNAL     |
 | `otk.cert.internalGatewaySerial`  | INTERNAL gateway certificate serial for OTK type INTERNAL     |
 | `otk.cert.internalGatewaySubject` | INTERNAL gateway certificate subject for OTK type INTERNAL    |
-| `otk.customizations.bundle.enabled`         | Creates a configmap with bundles from the ./bundles-otk folder | `false`  |
-| `otk.customizations.bundle.path`            | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles-otk/*.bundle"`  |
 | `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
@@ -529,8 +527,8 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.username`           | OTK database user name |
 | `otk.database.password`           | OTK database password |
 | `otk.database.properties`         | OTK database additional properties  | `{}`
-| `otk.database.ddlUsername`        | OTK database user name used for OTK DB creation |
-| `otk.database.ddlPassword`        | OTK database password used for OTK DB creation |
+| `otk.database.sql.ddlUsername`        | OTK database user name used for OTK DB creation |
+| `otk.database.sql.ddlPassword`        | OTK database password used for OTK DB creation |
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
 | `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) |
 | `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |

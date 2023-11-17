@@ -172,34 +172,6 @@ OTK customizations can be configured using Kubernetes config maps or secrets. Ex
 | `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
 
 
-Customizations can also by configuring the directory which contains the bundles. Chart creates config map and mounts them on to the gateway.
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `otk.customizations.bundle.enabled`         | Creates a configmap with bundles from the ./bundles-otk folder | `false`  |
-| `otk.customizations.bundle.path`            | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles-otk/*.bundle"`  |
-
-```
-otk:
-  ....
-  ......
-  bundle:
-    enabled: true
-    path: "bundles-otk/**.bundle"
-  customizations:
-    existingBundle:
-      enabled: true
-      configMaps:
-      - name: otkbundle1
-        configMap:
-           defaultMode: 420
-           optional: false
-           name: otkbundle1
-       - name: otkbundle1
-....
-.....
-```
-
 > :information_source: **Important** <br>
 > In Ephemeral Gateway, the sequence of bundles are determined by alphabetical order of directory names & subsequent bundlefile names within the directories
 > By default, OTK skmult & bundle files are hosted in a directory by name '000OTK' so that they are executed first
