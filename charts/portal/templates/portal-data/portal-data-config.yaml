@@ -25,10 +25,9 @@ data:
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   FILE_REPOSITORY_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
-  JAVA_OPTIONS: {{ .Values.portalData.javaOptions | default "-Xms2g -Xmx2g" | quote }}
+  JAVA_OPTIONS: {{ .Values.portalData.javaOptions | default "-Xms2048m -Xmx2048m" | quote }}
   # TODO: Find out why this is hardcoded, can it be ommitted??
   HOST_NAME_ID: MTAuMTc1LjI0Ny4yNDQgMTcyLjE4LjAuMSAxNzIuMTcuMC4xIAo=
-  JAVA_OPTIONS: -Xms2048m -Xmx2048m
   NSS_SDB_USE_CACHE: "no"
   PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   PORTAL_SUBDOMAIN: {{ required "Please fill in domain in values.yaml" .Values.portal.domain | quote }}
