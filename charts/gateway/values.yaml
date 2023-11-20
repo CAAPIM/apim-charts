@@ -602,7 +602,7 @@ otk:
       # memory: 64Mi
       # cpu: 200m
       limits: {}
-      # memory: 64Mi
+      # memory: 128Mi
       # cpu: 250m
 
   database:
