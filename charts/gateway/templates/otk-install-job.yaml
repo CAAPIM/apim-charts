@@ -62,10 +62,6 @@ spec:
             {{ end }}
           {{- end }}
           {{- end }}
-          {{- if .Values.otk.customizations.bundle.enabled }}
-          - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
-            mountPath: /docker/custom_bundles/configmap
-          {{- end }}
 
           resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           envFrom:
@@ -102,13 +98,6 @@ spec:
             secretName: {{ .name }}
           {{- end }}
         {{- end }}
-        {{- end }}
-        {{- if .Values.otk.customizations.bundle.enabled }}
-        - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
-          configMap:
-            defaultMode: 292
-            optional: false
-            name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
         {{- end }}
 
       {{- if .Values.otk.job.nodeSelector }}

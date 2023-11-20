@@ -96,4 +96,6 @@ data:
   OTK_DMZ_GW_PORT: {{ default "" .Values.otk.dmzGatewayPort| quote }}
   OTK_INTEGRATE_WITH_PORTAL: {{default false .Values.otk.enablePortalIntegration | quote }}
   OTK_SKIP_POST_INSTALLATION_TASKS: {{default false .Values.otk.skipPostInstallationTasks | quote }}
+  OTK_DBMAINTENANCE_NET_MASK: {{ default "16" .Values.otk.networkMask| quote }}
+  OTK_DBMAINTENANCE_START_IP: {{ default "240.224.2.1" .Values.otk.startIP | quote }}
 {{- end }}
