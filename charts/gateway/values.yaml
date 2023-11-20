@@ -599,7 +599,7 @@ otk:
 
     resources:
       requests: {}
-      # memory: 32Mi
+      # memory: 64Mi
       # cpu: 200m
       limits: {}
       # memory: 64Mi
