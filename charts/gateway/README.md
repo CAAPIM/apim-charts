@@ -52,7 +52,6 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
   - Added support OTK read-only connections for MySQL and Oracle.
     - otk.database.readOnlyConnection.*
   - Added support for OTK policies customization through config maps and secrets.
-    - otk.customizations.bundle.enabled
     - otk.customizations.existingBundle.enabled
   - OTK DMZ/Internal gateway certs can now be configured using values file.
     - otk.cert
@@ -494,6 +493,8 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
+| `otk.networkMask`                 | Network mask used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `16` |
+| `otk.startIP`                 | Start IP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `240.224.2.1` |
 | `otk.cert.dmzGatewayCert`         | DMZ gateway certificate (encoded) for OTK type DMZ            |
 | `otk.cert.internalGatewayIssuer`  | DMZ gateway certificate issuer for OTK type DMZ               |
 | `otk.cert.dmzGatewaySerial`       | DMZ gateway certificate serial for OTK type DMZ               |

@@ -62,10 +62,6 @@ spec:
             {{ end }}
           {{- end }}
           {{- end }}
-          {{- if .Values.otk.customizations.bundle.enabled }}
-          - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
-            mountPath: /docker/custom_bundles/configmap
-          {{- end }}
 
           resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           envFrom:
@@ -103,16 +99,9 @@ spec:
           {{- end }}
         {{- end }}
         {{- end }}
-        {{- if .Values.otk.customizations.bundle.enabled }}
-        - name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
-          configMap:
-            defaultMode: 292
-            optional: false
-            name: {{ template "gateway.fullname" . }}-otk-bundle-configmap
-        {{- end }}
 
       {{- if .Values.otk.job.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
+      nodeSelector: {{- toYaml .Values.otk.job.nodeSelector | nindent 8 }}
       {{- end }}
 
       {{- if or (.Values.imagePullSecret.enabled) (.Values.otk.job.imagePullSecret.enabled) }}
@@ -121,7 +110,7 @@ spec:
       {{- end }}
 
       {{- if .Values.otk.job.tolerations }}
-      tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
+      tolerations: {{- toYaml .Values.otk.job.tolerations | nindent 8 }}
       {{- end }}
 
       restartPolicy: "Never"

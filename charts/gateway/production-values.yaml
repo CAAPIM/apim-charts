@@ -514,6 +514,12 @@ otk:
   # dmzGatewayHost:
   # dmzGatewayPort:
 
+  # Network mask and startIP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.
+  # The db maintenance and health check services can accessible based on the IP address.
+  # https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/10-1/policy-assertions/assertion-palette/service-availability-assertions/restrict-access-to-ip-address-range-assertion.html
+  # networkMask: 16
+  # startIP: 240.224.2.1
+
   cert:
     # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
     # dmzGatewayCert:
@@ -593,10 +599,10 @@ otk:
 
     resources:
       requests:
-        memory: 32Mi
+        memory: 64Mi
         cpu: 200m
       limits:
-        memory: 64Mi
+        memory: 128Mi
         cpu: 250m
 
   database:
