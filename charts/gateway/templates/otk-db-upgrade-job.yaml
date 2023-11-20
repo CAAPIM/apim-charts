@@ -89,10 +89,10 @@ spec:
         - name: {{ template "otk.imagePullSecret" . }}
       {{- end }}
       {{- if .Values.otk.job.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.otk.jobs.nodeSelector | nindent 12 }}
+      nodeSelector: {{- toYaml .Values.otk.job.nodeSelector | nindent 8 }}
       {{- end }}
       {{- if .Values.otk.job.tolerations }}
-      tolerations: {{- toYaml .Values.otk.jobs.tolerations | nindent 12 }}
+      tolerations: {{- toYaml .Values.otk.job.tolerations | nindent 6 }}
       {{- end }}
       restartPolicy: "Never"
       {{ end }}
