@@ -374,7 +374,7 @@ clusterHostname: my.localdomain
 # Database configuration
 database:
   # DB Backed or ephemeral
-  enabled: false
+  enabled: true
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   # Do not use this demo database in production!!!
   create: true
