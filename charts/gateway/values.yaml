@@ -499,6 +499,10 @@ otk:
   # enablePortalIngeration: false
   # skipPostInstallationTasks: false
 
+  # Specify restman host and port
+  # restmanHost:
+  # restmanPort:
+
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
   # internalGatewayPort:
