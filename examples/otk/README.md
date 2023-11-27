@@ -45,7 +45,7 @@ Or, install OTK on db backed gateway:
 ![image](https://github.com/APIM-KiranVaddadi/apim-charts/assets/59958248/0ea19c0d-5aee-4083-aacc-7f8c9c537592)
 
 ## OTK Solution Kits
-The sub solution kits that are used in the installation or upgrade process are determined based on `otk.type` and the `otk.database.type`. This also determines additional configuration needed in case of `DMZ` and `INTERNAL` otk type installation. Optional configurations that also determine the sub solutions that are installed are
+The sub solution kits that are used in the installation or upgrade process are determined based on `otk.type` and the `otk.database.type`. This also determines additional configuration needed in case of `DMZ` and `INTERNAL` otk type installation. Optional configurations that also determine the sub solutions that are installed.
 - `enablePortalIntegration`
 - `skipInternalServerTools` 
 
