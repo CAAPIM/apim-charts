@@ -55,6 +55,9 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
     - otk.customizations.existingBundle.enabled
   - OTK DMZ/Internal gateway certs can now be configured using values file.
     - otk.cert
+> [!Important]  
+> To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install. 
+
 
 ## 3.0.16 General Updates
 - Added resources to otk install job
