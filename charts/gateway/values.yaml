@@ -627,15 +627,15 @@ otk:
     # Update database connection properties during helm upgrade.
     updateConnection: true
 
+    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
+    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+    changeLogSync: false
+
     sql:
 
       # If provided, used to create OTK schema and tables.
       # ddlUsername:
       # ddlPassword:
-
-      # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-      # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-      changeLogSync: false
 
       # jdbcURL: jdbc:mysql://<host>:<port>/<database>
       jdbcURL:
@@ -677,7 +677,7 @@ otk:
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
   # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
   healthCheckBundle:
-    enabled: false
+    enabled: true
     useExisting: false
     name: otk-health-check-bundle-config
 
