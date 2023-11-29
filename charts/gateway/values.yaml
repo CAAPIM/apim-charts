@@ -677,7 +677,7 @@ otk:
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
   # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
   healthCheckBundle:
-    enabled: true
+    enabled: false
     useExisting: false
     name: otk-health-check-bundle-config
 
@@ -1004,10 +1004,10 @@ mysql:
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
     persistence:
       annotations:
-        helm.sh/hook: pre-install
+        helm.sh/hook: pre-install,post-upgrade
         helm.sh/hook-weight: "-10"
   commonAnnotations:
-    helm.sh/hook: pre-install
+    helm.sh/hook: pre-install,post-upgrade
     helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
