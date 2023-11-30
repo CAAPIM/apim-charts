@@ -1,0 +1,98 @@
+{{ if and (.Values.otk.database.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "gateway.fullname" . }}-otk-db-upgrade
+  annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": pre-install,post-upgrade
+    "helm.sh/hook-weight": "-4"
+    {{- if  .Values.additionalAnnotations }}
+    {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
+  labels:
+    app: {{ template "gateway.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.otk.job.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}
+        release: {{ .Release.Name }}
+    {{- if  .Values.otk.job.podLabels }}
+        {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.otk.job.podAnnotations }}
+      annotations: {{- toYaml .Values.otk.job.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: otk-db-upgrade
+          image: {{ template "otk.image" . }}
+          imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+          resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ template "otk.dbSecretName" . }}
+          env:
+           - name: OTK_TYPE
+             value: {{ template "otk-install-type" .}}
+           {{- if and (not .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
+           - name: OTK_LIQUIBASE_OPERATION
+             value: "changelogSync"
+           {{ end }}
+           - name: OTK_DATABASE_TYPE
+             value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
+           - name: OTK_DATABASE_WAIT_TIMEOUT
+             value: {{default 60 .Values.otk.database.waitTimeout | quote}}
+           - name: OTK_SK_UPGRADE
+             value: "false"
+           - name: OTK_DATABASE_UPGRADE
+             value: "true"
+           - name: OTK_JDBC_URL
+           {{- if and (.Values.otk.database.useDemoDb) (eq .Values.otk.database.type "mysql")}}
+             value: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{default "otk_db" .Values.otk.database.sql.databaseName }}
+           {{- else }}
+             value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
+           {{- end }}
+           {{- if eq .Values.otk.database.type "oracle" }}
+           - name: OTK_DATABASE_NAME
+             value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
+           {{- end }}
+           - name: OTK_CREATE_TEST_CLIENTS
+             value: {{ default "false" .Values.otk.database.sql.createTestClients | quote }}
+           {{- if .Values.otk.database.sql.createTestClients }}
+           - name: OTK_TEST_CLIENTS_REDIRECT_URL_PREFIX
+             value: {{ required "Please provide test clients redirect url prefix otk.database.sql.testClientsRedirectUrlPrefix in values.yaml" .Values.otk.database.sql.testClientsRedirectUrlPrefix | quote }}
+           {{- end }}
+
+      {{- if or (.Values.imagePullSecret.enabled) (.Values.otk.job.imagePullSecret.enabled) }}
+      imagePullSecrets:
+        - name: {{ template "otk.imagePullSecret" . }}
+      {{- end }}
+      {{- if .Values.otk.job.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.otk.job.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.otk.job.tolerations }}
+      tolerations: {{- toYaml .Values.otk.job.tolerations | nindent 6 }}
+      {{- end }}
+      restartPolicy: "Never"
+      {{ end }}

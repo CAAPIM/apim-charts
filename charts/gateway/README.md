@@ -37,6 +37,28 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.17 OTK 4.6.2 Released
+  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
+    - otk.job.image.tag: 4.6.2
+  - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
+    - otk.database.dbupgrade
+  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.***
+    - otk.database.useDemodb
+  - Install/upgrade OTK of type SINGLE on Ephemeral gateways using initContainer is now supported.
+    - database.enabled: false
+    - otk.type: SINGLE
+  - Added OTK Connection properties to support c3p0 settings.
+    - otk.database.connectionProperties
+  - Added support OTK read-only connections for MySQL and Oracle.
+    - otk.database.readOnlyConnection.*
+  - Added support for OTK policies customization through config maps and secrets.
+    - otk.customizations.existingBundle.enabled
+  - OTK DMZ/Internal gateway certs can now be configured using values file.
+    - otk.cert
+> [!Important]  
+> To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install. 
+
+
 ## 3.0.16 General Updates
 - Added resources to otk install job
   - otk.job.resources
@@ -52,7 +74,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 
 ## 3.0.13 General Updates
 - The OTK Install job now uses podSecurity and containerSecurity contexts if set.
-- Updated how pod labels and annotations are templated in deployment.yaml  
+- Updated how pod labels and annotations are templated in deployment.yaml
 
 ## 3.0.12 General Updates
 Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
@@ -119,7 +141,7 @@ The bootstrap script has been updated to reflect changes to the Container Gatewa
 The PM Tagger image default version tag been updated to 1.0.1.
 
 ## 3.0.6 General Updates
-The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service. 
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service.
 
 ## 3.0.5 General Updates
 The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
@@ -150,7 +172,7 @@ The following configuration options have been added
 - SubCharts now show image repository and tags
 
 ### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -201,7 +223,7 @@ Ingress configuration has been updated to include multiple hosts, please see [In
 
 ## 2.0.4 General Updates
 - Added support for sidecars and initContainers
-  - volumeMounts are automatically configured with emptyDir 
+  - volumeMounts are automatically configured with emptyDir
 - Updated default values update to reflect empty objects/arrays for optional fields.
 - Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
   - management.kubernetes.loadServiceAccountToken
@@ -382,7 +404,7 @@ There are two types of port configuration available in the Gateway Helm Chart th
 ### Container/Service Level Ports
 
 ### Default Gateway Service
-Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer. 
+Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer.
 ```
 service:
   type: LoadBalancer
@@ -427,13 +449,16 @@ management:
         protocol: TCP
 ```
 ### OTK install or upgrade
-OTK job is used to install or upgrade otk on gateway. It supports Single, Internal and DMZ type of OTK installations.
+OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
+
+- On a database backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
+- On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
+- On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
 ***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
 
 Prerequisites:
-* Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
-* Configure cluster wide property for otk.port pointing to gateway ingress port.
+* Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
 ```
 config:
   cwp:
@@ -441,34 +466,47 @@ config:
     properties:
       - name: otk.port
         value: 443
+      - name: otk.dbsystem
+        value: mysql
 ```
 * Restman is enabled. Can be disabled once the install/upgrage is complete.
+  * This is not applicable for ephemeral GW
 ```
 management:
   restman:
     enabled: true
 ```
-* Management is enabled with restman (management.enabled: true, management.restman.enabled: true)
 
 Limitations:
 * OTK Instance modifiers are not supported.
-* OTK not supported on ephemeral gateway.
-```
-database:
-  # DB Backed or ephemeral
-  enabled: true
-```
+* Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
+* Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+
+OTK Deployment examples can be found [here](/examples/otk)
+
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.enabled`                     | Enable/Disable OTK installation or upgrade | `false`  |
 | `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
 | `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
-| `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway   | `false`
-| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
+| `otk.enablePortalIntegration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
+| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Internal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/>DMZ Gateway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration | `false`
+| `otk.skipInternalServerTools`     | Skip installation of the optional sub soluction Kit: Internal, Server Tools.<br/> The Oauth Manager & Oauth Test Client will not be installed  | `false`
+| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
+| `otk.networkMask`                 | Network mask used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `16` |
+| `otk.startIP`                 | Start IP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `240.224.2.1` |
+| `otk.cert.dmzGatewayCert`         | DMZ gateway certificate (encoded) for OTK type DMZ            |
+| `otk.cert.internalGatewayIssuer`  | DMZ gateway certificate issuer for OTK type DMZ               |
+| `otk.cert.dmzGatewaySerial`       | DMZ gateway certificate serial for OTK type DMZ               |
+| `otk.cert.dmzGatewaySubject`      | DMZ gateway certificate subject for OTK type DMZ              |
+| `otk.cert.internalGatewayCert`    | INTERNAL gateway certificate (encoded) for OTK type INTERNAL  |
+| `otk.cert.internalGatewayIssuer`  | INTERNAL gateway certificate issuer for OTK type INTERNAL     |
+| `otk.cert.internalGatewaySerial`  | INTERNAL gateway certificate serial for OTK type INTERNAL     |
+| `otk.cert.internalGatewaySubject` | INTERNAL gateway certificate subject for OTK type INTERNAL    |
+| `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
 | `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
@@ -477,24 +515,44 @@ database:
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}
 | `otk.job.image.tolerations`       | Job tolerations | []
-| `otk.job.podLabels`                   | OTK Job podLabels | {}
-| `otk.job.podAnnotations`              | OTK Job podAnnotations | {}
+| `otk.job.podLabels`               | OTK Job podLabels | {}
+| `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
 | `otk.job.resources`               | OTK Job resources | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
+| `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
+| `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
+| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
+| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
+| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
+| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
-| `otk.database.username`           | OTK database user name | 
+| `otk.database.username`           | OTK database user name |
 | `otk.database.password`           | OTK database password |
 | `otk.database.properties`         | OTK database additional properties  | `{}`
+| `otk.database.sql.ddlUsername`        | OTK database user name used for OTK DB creation |
+| `otk.database.sql.ddlPassword`        | OTK database password used for OTK DB creation |
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
-| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
-| `otk.database.sql.databaseName`   | OTK database Oracle database name | 
-| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
+| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) |
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
+| `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
+| `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection   | `false` |
+| `otk.database.readOnlyConnection.connectionName` | OTK read only database connection name  | `OAuth_ReadOnly` |
+| `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK read only database Secret |
+| `otk.database.readOnlyConnection.username`  | OTK read only database user name|
+| `otk.database.readOnlyConnection.password`  | OTK read only database password |
+| `otk.database.readOnlyConnection.properties` | OTK read only database additional properties  | `{}` |
+| `otk.database.readOnlyConnection.jdbcURL`   | OTK read only database sql jdbc URL (oracle/mysql) |
+| `otk.database.readOnlyConnection.jdbcDriverClass` | OTK read only database sql driver class name (oracle/mysql)  |
+| `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
+| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
 | `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
 | `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
 | `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
@@ -505,6 +563,9 @@ database:
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`
+
+#### Note:
+* In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
 
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
@@ -532,7 +593,7 @@ config:
     ports:
       - name: Default HTTPS (8443)
         port: 8443
-      
+
         enabled: true
         protocol: HTTPS
         managementFeatures:
@@ -634,13 +695,13 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: tls-secret-1
 #  - hosts:
 #    - dev1.ca.com
 #    secretName: tls-secret-2
-  
+
   rules:
    - host: dev.ca.com
      path: "/"

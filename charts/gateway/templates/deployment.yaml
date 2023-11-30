@@ -57,13 +57,48 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-      {{- if .Values.initContainers }}
-      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
+
+      initContainers:
+      {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+      - name: {{ .Chart.Name }}-otk-install-container
+        image: {{ template "otk.image" . }}
+        imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+        envFrom:
+        - secretRef:
+            name: {{ template "otk.dbSecretName" . }}
+        - secretRef:
+            name: {{ template "gateway.secretName" . }}
+      {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
-{{- if .Values.imagePullSecret.enabled }}
+        - configMapRef:
+            name: {{ template "gateway.fullname" . }}-otk-install-configmap
+        volumeMounts:
+          - name: {{ template "gateway.fullname" . }}-otk-install-container
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+          {{- if .Values.otk.customizations.existingBundle.enabled }}
+          {{- range .Values.otk.customizations.existingBundle.configMaps }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+          {{- end }}
+          {{- range .Values.otk.customizations.existingBundle.secrets }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+            {{ if .csi }}
+            readOnly: {{ .csi.readOnly }}
+            {{ end }}
+          {{- end }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.initContainers }}
+      {{toYaml .Values.initContainers | nindent 6 }}
+      {{ end }}
+
+      {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
-{{- end }}
+      {{- end }}
       containers:
         {{- if .Values.sidecars }}
         {{- toYaml .Values.sidecars | nindent 8 }}
@@ -171,8 +206,8 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
 {{- end }}
 {{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
-            - name: {{ .Values.otk.healthCheckBundle.name }}
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/otkhealthcheck
+            - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/1otkhealthcheck
 {{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
@@ -253,6 +288,10 @@ spec:
               {{ end }}
            {{- end }}
            {{- end }}
+{{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-otk-install-container
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
            {{- range .Values.sidecars }}
@@ -425,11 +464,11 @@ spec:
             name: {{ template "gateway.fullname" . }}-bundle-configmap
 {{- end }}
 {{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting) }}
-        - name: {{ .Values.otk.healthCheckBundle.name }}
+        - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
           configMap:
             defaultMode: 292
             optional: false
-            name: {{ .Values.otk.healthCheckBundle.name }}
+            name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
 {{- end }}
 {{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
@@ -531,6 +570,32 @@ spec:
           emptyDir: {}
      {{- end }}
      {{- end }}
+{{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-otk-install-container
+          emptyDir: {}
+        {{- if .Values.otk.customizations.existingBundle.enabled }}
+        {{- range .Values.otk.customizations.existingBundle.configMaps }}
+        - name: {{ .name }}
+        {{- if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+        {{- else }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .name }}
+          {{- end }}
+        {{- end }}        
+        {{- range .Values.otk.customizations.existingBundle.secrets }}
+        - name: {{ .name }}
+          {{- if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ .name }}
+          {{- end }}
+        {{- end }}
+        {{- end }}  
 {{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
