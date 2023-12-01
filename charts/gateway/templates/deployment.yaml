@@ -207,7 +207,7 @@ spec:
 {{- end }}
 {{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
             - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/1otkhealthcheck
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/otkhealthcheck
 {{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
