@@ -37,6 +37,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.18 General Updates
+- OTK documentation updates.
+
 ## 3.0.17 OTK 4.6.2 Released
   - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
     - otk.job.image.tag: 4.6.2
@@ -56,7 +59,12 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
   - OTK DMZ/Internal gateway certs can now be configured using values file.
     - otk.cert
 > [!Important]  
-> To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install. 
+> - To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install.
+> - When upgrading OTK 4.6.2 on a db backed gateway, the gateway will restart as there is a change related to OTK health check bundle in gateway deployment. This can lead to failure of OTK upgrade. To circumvent this, please perform a helm upgrade `otk.healthCheckBundle.enabled` set to `false` and then upgrade to the 3.0.17.
+> ```
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" layer7/gateway --version 3.0.16 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway --version 3.0.17 -f ./values-production.yaml
+> ```
 
 
 ## 3.0.16 General Updates
