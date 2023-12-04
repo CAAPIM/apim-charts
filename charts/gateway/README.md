@@ -37,6 +37,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.17 General Updates
+- OTK documentation updates.
+
 ## 3.0.17 OTK 4.6.2 Released
   - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
     - otk.job.image.tag: 4.6.2
