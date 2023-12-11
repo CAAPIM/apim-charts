@@ -363,14 +363,31 @@ config:
     enabled: false
     # Use an existing secret for Redis configuration
     # redis configuration must have a key called redis.properties
-    # existingConfigSecret: redis-properties
+    # existingConfigSecret: redis-config-secret
+    # below is an example configuration for Redis Sentinel
+    #### redis.properties
+    ## Redis type can be sentinel or standalone
+    ## standalone does not support SSL or Auth
+    # redis.type=sentinel
+    # redis.sentinel.nodes=node1:26379,node2:26379,node3:26379
+    ### Credentials are optional
+    # redis.sentinel.username=redisuser
+    ## Password can be plaintext or encoded
+    # redis.sentinel.password=redispassword
+    # redis.sentinel.encodedPassword=redisencodedpassword
+    ## SSL is optional
+    # redis.ssl=true
+    # redis.ssl.cert=redis.crt
+    # redis.ssl.verifypeer=false
+
+    # kubectl create secret generic redis-config-secret --from-file redis.properties
     subChart:
       # If the subChart is enabled, configuration from redis in the subCharts section
       # will need to match the auth and tls settings here. This is true by default so no
       # changes will be required
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
-  # groupName:
+    groupName: l7GW
     auth:
       enabled: false
     # username: username
@@ -394,7 +411,7 @@ config:
     tls:
       enabled: true
       existingSecret: ""
-      verifyPeer: false
+      verifyPeer: true
       # redisCrt: |+
       #   -----BEGIN CERTIFICATE-----
       #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
