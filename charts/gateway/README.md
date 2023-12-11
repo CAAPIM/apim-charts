@@ -797,7 +797,7 @@ Uncomment the following
 | `config.redis.standalone.port`                | Redis port if sentinel is not enabled   | `6379` |
 | `config.redis.tls.enabled`    | Enable SSL/TLS              | `false` |
 | `config.redis.tls.existingSecret`    | Use an existing secret - must contain a key called tls.crt        | `` |
-| `config.redis.tls.verifyPeer`    | Verify Peer             | `false` |
+| `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
 | `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
 
 ### Database Configuration
