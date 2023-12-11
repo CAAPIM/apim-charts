@@ -206,8 +206,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `imagePullSecret.username`          | Registry Username | `nil`  |
 | `imagePullSecret.password`          | Registry Password | `nil`  |
 | `pdb.create`          | Create a PodDisruptionBudget (PDB) object | `false` |
-| `pdb.maxUnavailable`         | PodDisruptionBudget maximum unavailable pod count         |
-| `pdb.minAvailable`         | PodDisruptionBudget minimum available pod count          |
+| `pdb.maxUnavailable`         | PodDisruptionBudget maximum unavailable pod count         | `nil` |
+| `pdb.minAvailable`         | PodDisruptionBudget minimum available pod count          | `nil` |
 | `replicas`                   | Number of Gateway replicas        | `1`                                                          |
 | `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
 | `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
@@ -564,6 +564,9 @@ ingress:
 | `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
+| `pmtagger.pdb.create`                | Create a PodDisruptionBudget object | `false` |
+| `pmtagger.pdb.maxUnavailable`                | PodDisruptionBudget maximum unavailable pod count         | `nil` |
+| `pmtagger.pdb.minAvailable`                | PodDisruptionBudget minimum available pod count          | `nil` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |
 
 ### Database Configuration
