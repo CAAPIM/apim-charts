@@ -783,7 +783,7 @@ Uncomment the following
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `config.redis.enabled`          | Enable redis configuration | `false`  |
-| `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `false`  |
+| `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `redis-config-secret`  |
 | `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
 | `config.redis.groupName`          | Redis Group name | `l7GW`  |
 | `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
