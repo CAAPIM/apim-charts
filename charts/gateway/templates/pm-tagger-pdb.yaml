@@ -1,4 +1,4 @@
-{{ if .Values.pdb.create }}
+{{ if .Values.pmtagger.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -6,11 +6,11 @@ metadata:
     app: {{ template "gateway.fullname" . }}-pm-tagger-pdb
   name: {{ template "gateway.fullname" . }}-pm-tagger-pdb
 spec:
-  {{- if .Values.pdb.minAvailable }}
-  minAvailable: {{ .Values.pdb.minAvailable }}
+  {{- if .Values.pmtagger.pdb.minAvailable }}
+  minAvailable: {{ .Values.pmtagger.pdb.minAvailable }}
   {{- end }}
-  {{- if .Values.pdb.maxUnavailable }}
-  maxUnavailable: {{ .Values.pdb.maxUnavailable }}
+  {{- if .Values.pmtagger.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.pmtagger.pdb.maxUnavailable }}
   {{- end }}
   selector:
     matchLabels:
