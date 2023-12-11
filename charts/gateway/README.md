@@ -37,7 +37,7 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
-## 3.0.17 General Updates
+## 3.0.19 General Updates
 - Updated image
   - Updated to Gateway 11.0.00_CR1
     - this will cause a restart if you are not overriding the default image
@@ -729,7 +729,7 @@ Uncomment the following
 | `config.redis.standalone.port`                | Redis port if sentinel is not enabled   | `6379` |
 | `config.redis.tls.enabled`    | Enable SSL/TLS              | `false` |
 | `config.redis.tls.existingSecret`    | Use an existing secret - must contain a key called tls.crt        | `` |
-| `config.redis.tls.verifyPeer`    | Verify Peer             | `false` |
+| `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
 | `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
 
 ### Database Configuration
