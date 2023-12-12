@@ -9,6 +9,9 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
+  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
 # demoDatabaseRootPassword: 7layer
@@ -20,7 +23,7 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-1-2/
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
 # storageClass: "_"
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
@@ -171,6 +174,10 @@ analytics:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -186,6 +193,7 @@ analytics:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 apim:
   forceRedeploy: false
@@ -194,6 +202,10 @@ apim:
     pullPolicy: IfNotPresent
   otkDb:
     name: otk_db
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -217,6 +229,10 @@ authenticator:
   javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -239,6 +255,10 @@ dispatcher:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -276,6 +296,8 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
+## Add whitelist IP Range for Dispatcher
+#    PROBE_IP_RANGE: <iprange-in-CIDR-notation>
 #    key1: value
 
 # Additional Secret variables to be added to the Dispatcher Secret
@@ -288,6 +310,10 @@ portalData:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -311,6 +337,10 @@ portalEnterprise:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -326,12 +356,17 @@ portalEnterprise:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 pssg:
   forceRedeploy: false
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -355,6 +390,10 @@ tenantProvisioner:
   javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -370,20 +409,21 @@ tenantProvisioner:
 # nodeSelector: {}
 # tolerations: []
 # affinity: {}
+  additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.1.2
-  pssg: pssg:5.1.2
-  apim: ingress:5.1.2
-  enterprise: portal-enterprise:5.1.2
-  data: portal-data:5.1.2
-  tps: tenant-provisioning-service:5.1.2
-  analytics: analytics-server:5.1.2
-  authenticator: authenticator:5.1.2
-  dbUpgrade: db-upgrade-portal:5.1.2
-  rbacUpgrade: db-upgrade-rbac:5.1.2
-  upgradeVerify: upgrade-verify:5.1.2
-  tlsManager: tls-automator:5.1.2
+  dispatcher: dispatcher:5.2.2
+  pssg: pssg:5.2.2
+  apim: ingress:5.2.2
+  enterprise: portal-enterprise:5.2.2
+  data: portal-data:5.2.2
+  tps: tenant-provisioning-service:5.2.2
+  analytics: analytics-server:5.2.2
+  authenticator: authenticator:5.2.2
+  dbUpgrade: db-upgrade-portal:5.2.2
+  rbacUpgrade: db-upgrade-rbac:5.2.2
+  upgradeVerify: upgrade-verify:5.2.2
+  tlsManager: tls-automator:5.2.2
 
 ##
 ## Subchart Configuration
@@ -405,6 +445,10 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
@@ -450,6 +494,10 @@ druid:
   # affinity: {}
 
   zookeeper:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -463,6 +511,10 @@ druid:
   # affinity: {}
 
   coordinator:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -476,6 +528,10 @@ druid:
   # affinity: {}
 
   kafka:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -491,6 +547,10 @@ druid:
   # affinity: {}
 
   broker:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -504,6 +564,10 @@ druid:
   # affinity: {}
 
   historical:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -517,6 +581,10 @@ druid:
   # affinity: {}
 
   ingestion:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -533,6 +601,10 @@ druid:
   # affinity: {}
 
   middlemanager:
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
@@ -546,14 +618,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.1.2
-    broker: druid:5.1.2
-    coordinator: druid:5.1.2
-    middlemanager: druid:5.1.2
-    minio: minio:5.1.2
-    historical: druid:5.1.2
-    kafka: kafka:5.1.2
-    ingestion: ingestion-server:5.1.2
+    zookeeper: zookeeper:5.2.2
+    broker: druid:5.2.2
+    coordinator: druid:5.2.2
+    middlemanager: druid:5.2.2
+    minio: minio:5.2.2
+    historical: druid:5.2.2
+    kafka: kafka:5.2.2
+    ingestion: ingestion-server:5.2.2
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -563,9 +635,13 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.1.2"
+    tag: "5.2.2"
     pullSecrets:
       - broadcom-apim
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   serviceAccount:
     create: true
   # name:
@@ -634,6 +710,9 @@ ingress-nginx:
   rbac:
     create: true
   controller:
+    config:
+      # 30MB is the max file size we allow for the custom pages and 15MB for GW Bundle.so max is set to 32
+      proxy-body-size: "32m"
     publishService:
       enabled: true
     extraArgs:
@@ -660,7 +739,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.26-debian-10-r78"
+    tag: "8.0.31-debian-11-r36"
   auth:
     username: portal
     existingSecret: database-secret
@@ -705,6 +784,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     persistence:
       annotations:
         helm.sh/hook: pre-install

@@ -1,0 +1,18 @@
+{{ if .Values.minio.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: minio
+  name: minio-pdb
+spec:
+  {{- if .Values.minio.pdb.minAvailable }}
+  minAvailable: {{ .Values.minio.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.minio.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.minio.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: minio
+{{ end }}

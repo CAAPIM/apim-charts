@@ -30,3 +30,8 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion }}
   PORTAL_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+{{ if .Values.tenantProvisioner.additionalEnv }}
+{{- range $key, $val := .Values.tenantProvisioner.additionalEnv }}
+  {{ $key }}: {{ $val | quote }}
+{{- end }}
+{{ end }}

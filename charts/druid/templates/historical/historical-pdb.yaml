@@ -1,0 +1,18 @@
+{{ if .Values.historical.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: historical
+  name: historical-pdb
+spec:
+  {{- if .Values.historical.pdb.minAvailable }}
+  minAvailable: {{ .Values.historical.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.historical.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.historical.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: historical
+{{ end }}
