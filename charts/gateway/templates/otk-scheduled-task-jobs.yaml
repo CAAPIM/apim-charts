@@ -1,0 +1,76 @@
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) (ne .Values.otk.database.type "cassandra") (ne .Values.otk.type "DMZ") (.Values.otk.job.scheduledTasks)}}
+{{- range $name, $schedule := .Values.otk.job.scheduledTasks }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ template "gateway.fullname" $ }}-dbmaintenance-{{ .name }}
+  annotations:
+    chartversion: {{ $.Chart.AppVersion | quote }}
+    {{- if  $.Values.additionalAnnotations }}
+    {{- range $key, $val := $.Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
+  labels:
+    app: {{ template "gateway.fullname" $ }}
+    chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.otk.job.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  schedule: {{ .schedule | quote }}
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ template "gateway.fullname" $}}
+            release: {{ $.Release.Name }}
+        {{- if  $.Values.otk.job.podLabels }}
+            {{- toYaml $.Values.otk.job.podLabels | nindent 12}}
+        {{- end }}
+        {{- if  $.Values.otk.job.podAnnotations }}
+          annotations: {{- toYaml $.Values.otk.job.podAnnotations | nindent 12 }}
+        {{- end }}
+        spec:
+          {{- if $.Values.podSecurityContext }}
+          securityContext: {{- toYaml $.Values.podSecurityContext | nindent 12 }}
+          {{- end }}
+          containers:
+          - name: otk-schedule-task
+            image: {{ template "otk.image" $ }}
+            imagePullPolicy: {{ $.Values.otk.job.image.pullPolicy }}
+            resources: {{- toYaml $.Values.otk.job.resources | nindent 14 }}
+            {{- if $.Values.containerSecurityContext }}
+            securityContext: {{- toYaml $.Values.containerSecurityContext | nindent 14 }}
+            {{- end }}
+            env:
+            - name: SCHEDULE_TASK_URL
+              value: https://{{ template "gateway.fullname" $ }}:8443/oauth/db-maintenance?task={{ .name }}
+            - name: OTK_SCHEDULE_JOB_SERVICE
+              value: "true"
+          
+          {{- if $.Values.otk.job.nodeSelector }}
+          nodeSelector: {{- toYaml $.Values.otk.job.nodeSelector | nindent 12 }}
+          {{- end }}
+
+          {{- if or ($.Values.imagePullSecret.enabled) ($.Values.otk.job.imagePullSecret.enabled) }}
+          imagePullSecrets:
+            - name: {{ template "otk.imagePullSecret" $ }}
+          {{- end }}
+
+          {{- if $.Values.otk.job.tolerations }}
+          tolerations: {{- toYaml $.Values.otk.job.tolerations | nindent 10 }}
+          {{- end }}
+
+          restartPolicy: Never
+---
+{{- end }}
+{{- end }}

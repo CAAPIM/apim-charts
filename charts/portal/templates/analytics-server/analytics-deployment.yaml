@@ -17,7 +17,7 @@ spec:
   {{- if .Values.analytics.strategy }}
   strategy: {{- toYaml .Values.analytics.strategy | nindent 12 }}
   {{- end }}
-  {{- if and (eq .Values.portal.analytics.aggregation true) (lt .Values.analytics.replicaCount 2.0) }}
+  {{- if and (eq .Values.portal.analytics.aggregation true) (lt (.Values.analytics.replicaCount | int) 2) }}
   replicas: 2
   {{- else}}
   replicas: {{ .Values.analytics.replicaCount }}
@@ -80,8 +80,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
           envFrom:
           - configMapRef:

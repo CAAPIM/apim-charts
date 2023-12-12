@@ -8,6 +8,15 @@ metadata:
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -21,6 +30,15 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}-pm-tagger
         release: {{ .Release.Name }}
+    {{- range $key, $val := .Values.pmtagger.podLabels }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- if  .Values.pmtagger.podAnnotations }}
+      annotations:
+    {{- range $key, $val := .Values.pmtagger.podAnnotations }}
+        {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.pmtagger.affinity }}
@@ -28,6 +46,12 @@ spec:
       {{- end }}
       {{- if .Values.pmtagger.tolerations }}
       tolerations: {{- toYaml .Values.pmtagger.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.pmtagger.topologySpreadConstraints | nindent 12 }}
+      {{- end }}
+      {{- if .Values.pmtagger.podSecurityContext }}
+      securityContext: {{- toYaml .Values.pmtagger.podSecurityContext | nindent 12 }}
       {{- end }}
       {{- if .Values.pmtagger.nodeSelector }}
       nodeSelector: {{- toYaml .Values.pmtagger.nodeSelector | nindent 12 }}
@@ -43,6 +67,9 @@ spec:
         - name: {{ .Chart.Name }}
           image: {{.Values.pmtagger.image.registry}}/{{.Values.pmtagger.image.repository}}:{{.Values.pmtagger.image.tag}}
           imagePullPolicy: {{ .Values.pmtagger.image.pullPolicy }}
+          {{- if .Values.pmtagger.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.pmtagger.containerSecurityContext | nindent 12 }}
+          {{- end }}
           command:
           - /pm-tagger
           resources:

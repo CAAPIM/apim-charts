@@ -6,6 +6,9 @@ metadata:
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+{{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
   name: {{ template "gateway.fullname" . }}-management
   annotations:
     description: "The Gateway Management service"
@@ -41,5 +44,11 @@ spec:
   {{- end }}
   {{- if .Values.management.service.sessionAffinityConfig }}
   sessionAffinityConfig: {{- toYaml .Values.management.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  {{- if .Values.management.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.management.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.management.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.management.service.internalTrafficPolicy }}
   {{- end }}
   {{ end }}

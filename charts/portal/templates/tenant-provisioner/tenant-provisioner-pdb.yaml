@@ -1,0 +1,18 @@
+{{ if .Values.tenantProvisioner.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: tenant-provisioner
+  name: tenant-provisioner-pdb
+spec:
+  {{- if .Values.tenantProvisioner.pdb.minAvailable }}
+  minAvailable: {{ .Values.tenantProvisioner.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.tenantProvisioner.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.tenantProvisioner.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: tenant-provisioner
+{{ end }}
