@@ -1098,7 +1098,6 @@ mysql:
     password: mypassword
     database: ssg
     rootPassword: mypassword
-  initdbScriptsConfigMap: otk-db-scripts-cm
   primary:
     # persistence:
     #   enabled: true
