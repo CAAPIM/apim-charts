@@ -789,6 +789,7 @@ Uncomment the following
 | `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `redis-config-secret`  |
 | `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
 | `config.redis.groupName`          | Redis Group name | `l7GW`  |
+| `config.redis.commandTimeout`          | Redis Command Timeout | `5000`  |
 | `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
 | `config.redis.auth.username`          | Redis username | ``  |
 | `config.redis.auth.password.encoded`          | Password is encoded | `false`  |

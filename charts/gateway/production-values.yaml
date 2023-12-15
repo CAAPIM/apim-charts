@@ -388,6 +388,7 @@ config:
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
     groupName: l7GW
+    commandTimeout: 5000
     auth:
       enabled: false
     # username: username
