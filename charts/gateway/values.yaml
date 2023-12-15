@@ -380,6 +380,9 @@ config:
     # redis.ssl=true
     # redis.ssl.cert=redis.crt
     # redis.ssl.verifypeer=true
+    ## Additional Config
+    # redis.key.prefix.grpname=l7GW
+    # redis.commandTimeout=5000
 
     # kubectl create secret generic redis-config-secret --from-file redis.properties
     subChart:
