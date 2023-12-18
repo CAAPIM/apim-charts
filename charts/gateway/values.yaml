@@ -12,7 +12,7 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 10.1.00_CR2
+  tag: 11.0.00
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -30,6 +30,20 @@ imagePullSecret:
   # existingSecretName: private-registry-secret
   username:
   password:
+
+# Additional Annotations apply to all deployed objects
+additionalAnnotations: {}
+
+# Additional Labels apply to all deployed objects
+additionalLabels: {}
+
+## Pod Labels for the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+# Pod Annotations apply to the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
 
 # Create PodDisruptionBudget
 pdb:
@@ -64,7 +78,7 @@ pmtagger:
   image:
     registry: docker.io
     repository: layer7api/pm-tagger
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -76,40 +90,48 @@ pmtagger:
     limits:
       memory: 64Mi
       cpu: 250m
+  ## Pod Labels for the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+
   # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   # nodeSelector: {}
   # affinity: {}
+
+  # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods
+  topologySpreadConstraints: []
+
   # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
 
-# Cluster Hostname
-clusterHostname: my.localdomain
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
 
-# Database configuration
-database:
-  # DB Backed or ephemeral
-  enabled: true
-  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
-  # Do not use this demo database in production!!!
-  create: true
-  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
-  username: gateway
-  password: mypassword
-  name: ssg
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
 
-## If loading a TLS Key/Pair
-# This key will become the default ssl key. Can only have one.
-# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
-## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
-  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
-  # SSG_SSL_KEY_PASS
-tls:
-  useSignedCertificates: false
-  # existingSecretName: ssg-tls
-# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
-  key:
-  pass:
+# Override all lifecycle hooks. This will take precedence over the preStopScript section below.
+lifecycleHooks: {}
+  # postStart: {}
+  # preStop: {}
+
+# This preStop script checks for open connections and delays pod termination for the specified timeout seconds
+# Enabling this mounts the script to /opt/docker/gracefulshutdown.sh and adds a preStop lifecycle hook to the Gateway Deployment
+preStopScript:
+  enabled: false        # Enable/Disable
+  periodSeconds: 3      # Time between checks
+  timeoutSeconds: 60    # Timeout - must be lower than terminationGracePeriodSeconds
+  excludedPorts:
+  - 2124
+  - 8777
+
+## terminationGracePeriodSeconds default duration in seconds kubernetes waits for container to exit before sending kill signal.
+## Defaults to 30 if not set
+# terminationGracePeriodSeconds: 90
 
 # Configure autoscaling
 # this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
@@ -356,6 +378,35 @@ config:
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
 
+# Cluster Hostname
+clusterHostname: my.localdomain
+
+# Database configuration
+database:
+  # DB Backed or ephemeral
+  enabled: true
+  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+  # Do not use this demo database in production!!!
+  create: true
+  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
+  username: gateway
+  password: mypassword
+  name: ssg
+
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
 # Cluster Password
 clusterPassword: mypassword
 
@@ -397,6 +448,11 @@ management:
     #   clientIP:
     #     timeoutSeconds: 10800
 
+    # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+    # internalTrafficPolicy: Cluster
+    # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    # externalTrafficPolicy: Cluster
+
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: LoadBalancer
@@ -431,88 +487,241 @@ service:
   #   clientIP:
   #     timeoutSeconds: 10800
 
+  # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+  # internalTrafficPolicy: Cluster
+  # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  # externalTrafficPolicy: Cluster
+
 # This enables/disables otk install or upgrade.
 # Prerequisites.
 #  1. OTK DB is installed.
-#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true)
+#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrade is complete (management.restman.enabled: true)
+#  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
-  # Force install or upgrade by uninstalling existing otk soluction kit and install.
-  # forceInstallOrUpgrade: false
+  # Force install or upgrade by uninstalling existing otk solution kit and install.
+  forceInstallOrUpgrade: false
 
-  # Not applicable for DMZ and INTERNAL OTK types
-  # enablePortalIngeration: false
-  # skipPostInstallationTasks: false
+  # Not applicable for DMZ and INTERNAL OTK types. Install/Upgrade portal sub solution kits.
+  enablePortalIntegration: false
+  skipPostInstallationTasks: false
+  skipInternalServerTools: false
+
+  # Restman host and port (optional). Valid only for db backed gateways
+  # Default - gateway service
+  # restmanHost:
+  # Default -  installSolutionKits.restmanPort
+  # restmanPort:
 
   # Specify internal gateway host and port for DMZ OTK type
   # internalGatewayHost:
   # internalGatewayPort:
 
-  # Specify DMZ gateway host and port for interal OTK type
+  # Specify DMZ gateway host and port for internal OTK type
   # dmzGatewayHost:
   # dmzGatewayPort:
 
-  # List of comma seperated sub soluction Kits to install or upgrade.
+  # Network mask and startIP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.
+  # The db maintenance and health check services can accessible based on the IP address.
+  # https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/10-1/policy-assertions/assertion-palette/service-availability-assertions/restrict-access-to-ip-address-range-assertion.html
+  # networkMask: 16
+  # startIP: 240.224.2.1
+
+  cert:
+    # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
+    # dmzGatewayCert:
+    # dmzGatewayIssuer:
+    # dmzGatewaySerial:
+    # dmzGatewaySubject:
+
+    # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
+    # internalGatewayCert:
+    # internalGatewayIssuer:
+    # internalGatewaySerial:
+    # internalGatewaySubject:
+
+  # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
+
+  customizations:
+
+    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+    # When creating these secrets/configmaps the format should be
+    # key: bundle1.bundle value: <xml value>
+    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restman/1.0/bundle)
+    existingBundle:
+      enabled: false
+      configMaps: []
+      # - name: otkbundle1
+      #   configMap:
+      #     defaultMode: 420
+      #     optional: false
+      #     name: otkbundle1
+      # - name: otkbundle1
+
+      secrets: []
+      # - name: secretotkbundle1
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: "secret-provider-class-name"
+      # - name: secretotkbundle2
+
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.0
+      tag: 4.6.2
       pullPolicy: IfNotPresent
+    imagePullSecret:
+      enabled: false
+
+    # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
+    scheduledTasks:
+      - name: client
+        schedule: "*/31 * * * *"
+      - name: idtoken
+        schedule: "*/29 * * * *"
+      - name: sessions
+        schedule: "*/7 * * * *"
+      - name: token
+        schedule: "*/5 * * * *"
+      - name: trl
+        schedule: "0 */1 * * *"
+      - name: miscellaneous
+        schedule: "*/5 * * * *"
+
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+    ## Pod Labels for the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
+
+    # Pod Annotations apply to the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+
+    resources:
+      requests: {}
+      # memory: 64Mi
+      # cpu: 200m
+      limits: {}
+      # memory: 128Mi
+      # cpu: 250m
+
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
-     # connectionName: OAuth
+    connectionName: OAuth
+    dbUpgrade: true
+    useDemoDb: true
+
+    # OTK database user name and password used to create Gateway Database/cassandra connection.
+    username: otk_user
+    password: mypassword
+
     # existingSecretName: otkDbSecret
-    username: root
-    password: 7layer
-    # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+
+    # Database connection properties
+    properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+
     # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
+
+    # Update database connection properties during helm upgrade.
+    updateConnection: true
+
+    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
+    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+    changeLogSync: false
+
     sql:
-      jdbcURL: mysql://localhost:3306/otk_db
-      jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+
+      # If provided, used to create OTK schema and tables.
+      # ddlUsername:
+      # ddlPassword:
+
+      # jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcURL:
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name or MySQL demo db name
+      databaseName: otk_db
+
+      # c3p0 connection properties.
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      # For mysql & oracle setup test clients
+      createTestClients: false
+      # Test clients redirect Url prefix. Required if createTestClients is true.
+      testClientsRedirectUrlPrefix:
+
+    cassandra:
+      # connectionPoints:
+      # port:
+      # keyspace:
+      # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
+      # driverConfig: {"localDataCenterName" : "DC1"}
+
+    # Optionally configure read only database connection for MySQL/Oracle.
+    readOnlyConnection:
+      enabled: false
+      # connectionName: OAuth_ReadOnly
+      # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
-      # databaseName:
-    # cassandra:
-    #   connectionPoints: localhost
-    #   port:
-    #   keyspace:
-    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
-    #   driverConfig: {"localDataCenterName" : "DC1"}
+      databaseName:
+
+  # Install OTK Health check bundle on gateway. Uses config map.
+  # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
+  # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
+  healthCheckBundle:
+    enabled: false
+    useExisting: false
+    name: otk-health-check-bundle-config
 
   # OTK Specific configuration:
-  # - The liveliness probe is not supported for OTK 4.6 & below versions
+  # - The liveliness probe is not supported for OTK 4.6 & below versions.
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recommended enable liveness probe after the pods restart.
+  # - Should be enabled after OTK installation.
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
-  # Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete
   livenessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
+      path: /auth/oauth/health
+      port: 8443
+
   # OTK Specific configuration:
-  # - The readinessProbe probe is not supported for OTK 4.6 & below versions
+  # - The readinessProbe probe is not supported for OTK 4.6 & below versions.
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recommended enable readiness probe after the pods restart.
+  # - Should be enabled after OTK installation.
   # - otk.readinessProbe.type as httpGet
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
-  # Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete
   readinessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
+      path: /auth/oauth/health
+      port: 8443
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
@@ -689,13 +898,12 @@ containerSecurityContext: {}
 bootstrap:
   script:
     enabled: false
-  cleanup: false
 
 # Add initContainers to the Gateway
 initContainers: []
 # initContainers:
 # - name: simple-init
-#   image: docker.io/layer7api/simple-init:1.0.0
+#   image: docker.io/layer7api/simple-init:1.0.1
 #   imagePullPolicy: Always
 #   volumeMounts:
 #   - name: config-directory
@@ -769,6 +977,7 @@ mysql:
     password: mypassword
     database: ssg
     rootPassword: mypassword
+  initdbScriptsConfigMap: otk-db-scripts-cm
   primary:
     # persistence:
     #   enabled: true
@@ -803,6 +1012,13 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install,post-upgrade
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
@@ -818,7 +1034,7 @@ hazelcast:
   # url: hazelcast.example.com:5701
   image:
     repository: "hazelcast/hazelcast"
-    tag: "5.1.1"
+    tag: "5.2.1"
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName

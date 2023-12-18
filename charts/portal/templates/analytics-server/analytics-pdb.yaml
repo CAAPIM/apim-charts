@@ -1,0 +1,18 @@
+{{ if .Values.analytics.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: analytics-server
+  name: analytics-pdb
+spec:
+  {{- if .Values.analytics.pdb.minAvailable }}
+  minAvailable: {{ .Values.analytics.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.analytics.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.analytics.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: analytics-server
+{{ end }}

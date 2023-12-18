@@ -37,8 +37,131 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.18 General Updates
+- OTK documentation updates.
+
+## 3.0.17 OTK 4.6.2 Released
+  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
+    - otk.job.image.tag: 4.6.2
+  - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
+    - otk.database.dbupgrade
+  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.***
+    - otk.database.useDemodb
+  - Install/upgrade OTK of type SINGLE on Ephemeral gateways using initContainer is now supported.
+    - database.enabled: false
+    - otk.type: SINGLE
+  - Added OTK Connection properties to support c3p0 settings.
+    - otk.database.connectionProperties
+  - Added support OTK read-only connections for MySQL and Oracle.
+    - otk.database.readOnlyConnection.*
+  - Added support for OTK policies customization through config maps and secrets.
+    - otk.customizations.existingBundle.enabled
+  - OTK DMZ/Internal gateway certs can now be configured using values file.
+    - otk.cert
+> [!Important]  
+> - To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install.
+> - When upgrading OTK 4.6.2 on a db backed gateway, the gateway will restart as there is a change related to OTK health check bundle in gateway deployment. This can lead to failure of OTK upgrade. To circumvent this, please perform a helm upgrade `otk.healthCheckBundle.enabled` set to `false` and then upgrade to the 3.0.17.
+> ```
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" layer7/gateway --version 3.0.16 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway --version 3.0.17 -f ./values-production.yaml
+> ```
+
+
+## 3.0.16 General Updates
+- Added resources to otk install job
+  - otk.job.resources
+
+## 3.0.15 General Updates
+- Updated [bootstrap script](#bootstrap-script)
+  - 'find' replaced with 'du'
+
+## 3.0.14 General Updates
+- Added pod labels and annotations to the otk-install job.
+  - otk.job.podLabels
+  - otk.job.podAnnotations
+
+## 3.0.13 General Updates
+- The OTK Install job now uses podSecurity and containerSecurity contexts if set.
+- Updated how pod labels and annotations are templated in deployment.yaml
+
+## 3.0.12 General Updates
+Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
+- [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)
+- [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
+
+
+## 3.0.11 General Updates
+Updates to Gateway Container Lifecycle.
+- [A new preStop script has been added for graceful termination](#graceful-termination)
+  - terminationGracePeriodSeconds must be greater than preStopScript.timeoutSeconds
+- Container Lifecycle can be overridden for custom exec/http calls
+
+## 3.0.10 General Updates
+Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
+
+- Additional Labels/Annotations apply to everything in this Chart's templates
+```
+# Additional Annotations apply to all deployed objects
+additionalAnnotations: {}
+
+# Additional Labels apply to all deployed objects
+additionalLabels: {}
+```
+
+- Pod Labels/Annotations at the base level apply to the Gateway Pod
+```
+## Pod Labels for the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+# Pod Annotations apply to the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+```
+
+- PM-Tagger pod labels/annotations are separate
+```
+pmtagger:
+  ...
+  ## Pod Labels for the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+```
+
+## 3.0.9 Updates to PM-Tagger
+PM tagger has following additional configuration options
+- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
+- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
+- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+- [All PM-Tagger Configuration](#pm-tagger-configuration)
+
+## 3.0.8 Updates to Hazelcast
+The default image tag in values.yaml is updated to **5.2.1** and xsd version in configmap.yaml to **5.2**. The updates are due to vulnerability from CVE-2022-36437.
+The updates are applied to both the gateway and gateway-otk chart.
+
+## 3.0.7 General Updates
+The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info .
+
+The PM Tagger image default version tag been updated to 1.0.1.
+
+## 3.0.6 General Updates
+The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service.
+
+## 3.0.5 General Updates
+The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
+
+Before upgrading existing deployments, please see the [Container Gateway 11.0 Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw.html) for important information regarding the procedure.
+
+## 3.0.4 General Updates
+OTK installation and upgrade is now supported as part of Gateway charts.  Please refer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
+[Gateway-OTK](../gateway-otk) is now deprecated.
+
 ## 3.0.2 General Updates
-***The default image tag in values.yaml and production-values.yaml now points at specific CR versions of the API Gateway. The appVersion in Chart.yaml has also be updated to reflect that. As of this release that is 10.1.00_CR2***
+***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also been updated to reflect that. As of this release, that is 10.1.00_CR2***
 
 To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
 
@@ -57,7 +180,7 @@ The following configuration options have been added
 - SubCharts now show image repository and tags
 
 ### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info. 
+Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
 
 ## 3.0.0 Updates to Hazelcast
 ***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
@@ -108,7 +231,7 @@ Ingress configuration has been updated to include multiple hosts, please see [In
 
 ## 2.0.4 General Updates
 - Added support for sidecars and initContainers
-  - volumeMounts are automatically configured with emptyDir 
+  - volumeMounts are automatically configured with emptyDir
 - Updated default values update to reflect empty objects/arrays for optional fields.
 - Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
   - management.kubernetes.loadServiceAccountToken
@@ -172,7 +295,7 @@ database:
 * [Gateway Application Ports](#gateway-application-ports)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
-* [OTK Install or Upgrage](#otk-install-or-upgrage)
+* [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
@@ -182,6 +305,7 @@ database:
 * [Custom Health Checks](#custom-health-checks)
 * [Custom Configuration Files](#custom-configuration-files)
 * [Logs & Audit Configuration](#logs--audit-configuration)
+* [Graceful Termination](#graceful-termination)
 * [Autoscaling](#autoscaling)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
@@ -199,12 +323,16 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `10.1.00_CR2`  |
+| `image.tag`          | Image tag | `11.0.00`  |
 | `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
 | `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
 | `imagePullSecret.username`          | Registry Username | `nil`  |
 | `imagePullSecret.password`          | Registry Password | `nil`  |
+| `additionalAnnotations`          | Additional Annotations apply to all deployed objects | `{}`  |
+| `additionalLabels`          | Additional Labels apply to all deployed objects | `{}`  |
+| `podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
+| `podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
 | `pdb.create`          | Create a PodDisruptionBudget (PDB) object | `false` |
 | `pdb.maxUnavailable`         | PodDisruptionBudget maximum unavailable pod count         | `nil` |
 | `pdb.minAvailable`         | PodDisruptionBudget minimum available pod count          | `nil` |
@@ -249,6 +377,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
+| `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
+| `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
 | `ingress.annotations`    | Additional ingress annotations               | `{}` |
 | `ingress.hostname`    | Sets Ingress Hostname  | `nil` |
@@ -286,7 +416,7 @@ There are two types of port configuration available in the Gateway Helm Chart th
 ### Container/Service Level Ports
 
 ### Default Gateway Service
-Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer. 
+Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer.
 ```
 service:
   type: LoadBalancer
@@ -330,12 +460,17 @@ management:
         external: 9443
         protocol: TCP
 ```
-### OTK install or upgrage
-OTK job is used to install or upgrade otk on gateway. It supports single, internal and external type of OTK installations.
+### OTK install or upgrade
+OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
+
+- On a database backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
+- On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
+- On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
+
+***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
 
 Prerequisites:
-* Create or upgrade the OTK Database https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html
-* Configure cluster wide property for otk.port pointing to gateway ingress port.
+* Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
 ```
 config:
   cwp:
@@ -343,34 +478,47 @@ config:
     properties:
       - name: otk.port
         value: 443
+      - name: otk.dbsystem
+        value: mysql
 ```
 * Restman is enabled. Can be disabled once the install/upgrage is complete.
+  * This is not applicable for ephemeral GW
 ```
 management:
   restman:
     enabled: true
 ```
-* Management is enabled with restman (management.enabled: true, management.restman.enabled: true)
 
 Limitations:
 * OTK Instance modifiers are not supported.
-* OTK not supported on ephemeral gateway.
-```
-database:
-  # DB Backed or ephemeral
-  enabled: true
-```
+* Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
+* Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+
+OTK Deployment examples can be found [here](/examples/otk)
+
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.enabled`                     | Enable/Disable OTK installation or upgrade | `false`  |
 | `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
 | `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
-| `otk.enablePortalIngeration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Intrenal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/> - Import SSL Certificate of DMZ gateway <br/>DMZ Gareway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration<br/> - Import SSL Certificate of Internal gateway   | `false`
-| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ| 
+| `otk.enablePortalIntegration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
+| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Internal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/>DMZ Gateway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration | `false`
+| `otk.skipInternalServerTools`     | Skip installation of the optional sub soluction Kit: Internal, Server Tools.<br/> The Oauth Manager & Oauth Test Client will not be installed  | `false`
+| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
 | `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
 | `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
+| `otk.networkMask`                 | Network mask used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `16` |
+| `otk.startIP`                 | Start IP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `240.224.2.1` |
+| `otk.cert.dmzGatewayCert`         | DMZ gateway certificate (encoded) for OTK type DMZ            |
+| `otk.cert.internalGatewayIssuer`  | DMZ gateway certificate issuer for OTK type DMZ               |
+| `otk.cert.dmzGatewaySerial`       | DMZ gateway certificate serial for OTK type DMZ               |
+| `otk.cert.dmzGatewaySubject`      | DMZ gateway certificate subject for OTK type DMZ              |
+| `otk.cert.internalGatewayCert`    | INTERNAL gateway certificate (encoded) for OTK type INTERNAL  |
+| `otk.cert.internalGatewayIssuer`  | INTERNAL gateway certificate issuer for OTK type INTERNAL     |
+| `otk.cert.internalGatewaySerial`  | INTERNAL gateway certificate serial for OTK type INTERNAL     |
+| `otk.cert.internalGatewaySubject` | INTERNAL gateway certificate subject for OTK type INTERNAL    |
+| `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
 | `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
 | `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
 | `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
@@ -379,28 +527,57 @@ database:
 | `otk.job.image.labels`            | Job lables | {}
 | `otk.job.image.nodeSelector`      | Job Node selector | {}
 | `otk.job.image.tolerations`       | Job tolerations | []
+| `otk.job.podLabels`               | OTK Job podLabels | {}
+| `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
+| `otk.job.resources`               | OTK Job resources | {}
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
+| `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
+| `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
+| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
+| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
+| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
+| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
-| `otk.database.username`           | OTK database user name | 
+| `otk.database.username`           | OTK database user name |
 | `otk.database.password`           | OTK database password |
 | `otk.database.properties`         | OTK database additional properties  | `{}`
+| `otk.database.sql.ddlUsername`        | OTK database user name used for OTK DB creation |
+| `otk.database.sql.ddlPassword`        | OTK database password used for OTK DB creation |
 | `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
-| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) | 
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) | 
-| `otk.database.sql.databaseName`   | OTK database Oracle database name | 
-| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  | 
+| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) |
+| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
+| `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
+| `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection   | `false` |
+| `otk.database.readOnlyConnection.connectionName` | OTK read only database connection name  | `OAuth_ReadOnly` |
+| `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK read only database Secret |
+| `otk.database.readOnlyConnection.username`  | OTK read only database user name|
+| `otk.database.readOnlyConnection.password`  | OTK read only database password |
+| `otk.database.readOnlyConnection.properties` | OTK read only database additional properties  | `{}` |
+| `otk.database.readOnlyConnection.jdbcURL`   | OTK read only database sql jdbc URL (oracle/mysql) |
+| `otk.database.readOnlyConnection.jdbcDriverClass` | OTK read only database sql driver class name (oracle/mysql)  |
+| `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
+| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
 | `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.livenessProbe.enabled`                |  Enable/Disable Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete | `false`
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
 | `otk.livenessProbe.type`                   |  | `httpGet`
 | `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
 | `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete  | `false`
+| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
 | `otk.readinessProbe.type`                  |  | `httpGet`
 | `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
 | `otk.readinessProbe.httpGet.port`          |  | `8443`
+
+#### Note:
+* In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
 
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
@@ -428,7 +605,7 @@ config:
     ports:
       - name: Default HTTPS (8443)
         port: 8443
-      
+
         enabled: true
         protocol: HTTPS
         managementFeatures:
@@ -530,13 +707,13 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: tls-secret-1
 #  - hosts:
 #    - dev1.ca.com
 #    secretName: tls-secret-2
-  
+
   rules:
    - host: dev.ca.com
      path: "/"
@@ -561,13 +738,21 @@ ingress:
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
 | `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.0`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.1`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.pdb.create`                | Create a PodDisruptionBudget object | `false` |
 | `pmtagger.pdb.maxUnavailable`                | PodDisruptionBudget maximum unavailable pod count         | `nil` |
 | `pmtagger.pdb.minAvailable`                | PodDisruptionBudget minimum available pod count          | `nil` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |
+| `pmtagger.podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
+| `pmtagger.podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
+| `pmtagger.nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
+| `pmtagger.affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
+| `pmtagger.topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
+| `pmtagger.tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
+| `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
+| `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
@@ -786,6 +971,32 @@ customConfig:
   #       path: sampletrafficloggerca.properties
 ```
 
+### Graceful Termination
+During upgrades and other events where Gateway pods are replaced you may have APIs/Services that have long running connections open.
+
+This functionality delays Kubernetes sending a SIGTERM to the container gateway while connections remain open. This works in conjunction with terminationGracePeriodSeconds which should always be higher than preStopScript.timeoutSeconds. If preStopScript.timeoutSeconds is exceeded, the script will exit 0 and normal pod termination will resume.
+
+The preStop script will monitor connections to <b>inbound (not outbound)</b> Gateway Application TCP ports (i.e. inbound listener ports opened by the Gateway Application and not some other process) except those that are explicitly excluded.
+
+The following ports are excluded from monitoring by default.
+- 8777 (Hazelcast) - Embedded Hazelcast.
+- 2124 (Internode-Communication) - not utilised by the Container Gateway.
+
+If there are no open connections, the preStop script will exit immediately ignoring preStopScript.timeoutSeconds to avoid unnecessary resource utilisation (pod stuck in terminating state) during upgrades.
+
+While there aren't any explicit limits on preStopScript.timeoutSeconds and terminationGracePeriodSeconds running these for extended periods of time (i.e. more than 5 minutes) may be less reliable where other Kubernetes processes may remove the pod before terminationGracePeriodSeconds is reached. If you do run services like this we recommend testing before any real life implementation or better, creating a dedicated workload without autoscaling enabled (HPA) where you have more control over when/how pods are replaced.
+
+The graceful termination (preStop script) is disabled by default.
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `lifecycleHooks`          | Custom lifecycle hooks, takes precedence over the preStopScript | `{}`  |
+| `preStopScript.enabled`          | Enable the preStop script | `false`  |
+| `preStopScript.periodSeconds`          | The time in seconds between checks | `3`  |
+| `preStopScript.timeoutSeconds`          | Timeout - must be lower than terminationGracePeriodSeconds  | `60`  |
+| `preStopScript.excludedPorts`          | Array of ports that should be excluded from the preStop script check | `[8777, 2124]`  |
+| `terminationGracePeriodSeconds`          | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml`  |
+
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
 In order for Kubernetes to determine when to scale, you will also need to configure resources
@@ -906,7 +1117,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
 | `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
-| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.1.1` |
+| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.2.1` |
 | `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |

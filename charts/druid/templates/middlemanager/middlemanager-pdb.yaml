@@ -1,0 +1,18 @@
+{{ if .Values.middlemanager.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: middlemanager
+  name: middlemanager-pdb
+spec:
+  {{- if .Values.middlemanager.pdb.minAvailable }}
+  minAvailable: {{ .Values.middlemanager.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.middlemanager.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.middlemanager.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: middlemanager
+{{ end }}
