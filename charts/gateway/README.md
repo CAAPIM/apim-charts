@@ -6,9 +6,9 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 
 ## Prerequisites
 - Kubernetes 1.24.x
-  - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/release-notes_cgw/container-gateway-platform-support.html#concept.dita_3277fc35fde9c5232f0d64d7a360181d5d18fd6c) for the latest version support
+  - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw/requirements-and-compatibility.html#concept.dita_req_comp_refresh_gw10cr2_platforms) for the latest version support
 - Helm v3.7.x
-- Gateway v10.x License
+- Gateway v10.x or v11.x License
 
 ## Optional
 - Persistent Volume Provisioner (if using PVC for the Demo MySQL Database or Service Metrics example with Grafana or InfluxDb)
@@ -36,6 +36,26 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+
+## 3.0.19 General Updates
+- Updated image
+  - Updated to Gateway 11.0.00_CR1
+    - this will cause a restart if you are not overriding the default image
+- Redis Integration
+  - [Redis Configuration](#redis-configuration) options for the Gateway (future use)
+  - Added Redis SubChart
+- Ingress
+  - Backend service is now more configurable allowing the management service to be exposed via ingress controller
+    - ***this should only be done in environments where the ingress controller does not have a Public Address***
+    - ingress.rules[n]backend can be set to "management"
+- Restart on config change
+  - A new flag has been added to facilitate auto redeploy of Gateways when there is a config change
+  - Applies to the default config map only
+    - does not include config.cwp, config.listenPorts or the Gateway Secret
+- MySQL subChart updated
+- Grafana subChart updated
+
 
 ## 3.0.18 General Updates
 - OTK documentation updates.
@@ -295,6 +315,7 @@ database:
 * [Gateway Application Ports](#gateway-application-ports)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
+* [Redis Configuration](#redis-configuration)
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
@@ -750,6 +771,42 @@ ingress:
 | `pmtagger.tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
 | `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
 | `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+
+### Redis Configuration
+This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
+
+Comment out the following
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+# com.l7tech.server.extension.sharedCounterProvider=ssgdb
+```
+Uncomment the following
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
+# com.l7tech.server.extension.sharedCounterProvider=redis
+# com.l7tech.server.extension.sharedRateLimiterProvider=redis
+```
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `config.redis.enabled`          | Enable redis configuration | `false`  |
+| `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `redis-config-secret`  |
+| `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
+| `config.redis.groupName`          | Redis Group name | `l7GW`  |
+| `config.redis.commandTimeout`          | Redis Command Timeout | `5000`  |
+| `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
+| `config.redis.auth.username`          | Redis username | ``  |
+| `config.redis.auth.password.encoded`          | Password is encoded | `false`  |
+| `config.redis.auth.password.value`          | Redis password | `mypassword`  |
+| `config.redis.sentinel.enabled`                | Enable sentinel configuration   | `true` |
+| `config.redis.sentinel.masterSet`          | Redis Master set | `mymaster`  |
+| `config.redis.sentinel.nodes`          | Array of sentinel nodes and ports | `[]`  |
+| `config.redis.standalone.host`                | Redis host if sentinel is not enabled   | `redis-standalone` |
+| `config.redis.standalone.port`                | Redis port if sentinel is not enabled   | `6379` |
+| `config.redis.tls.enabled`    | Enable SSL/TLS              | `false` |
+| `config.redis.tls.existingSecret`    | Use an existing secret - must contain a key called tls.crt        | `` |
+| `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
+| `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
