@@ -38,6 +38,11 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 
+## 3.0.20 General Updates
+- Updated image
+  - Updated to Gateway 11.0.00_CR2
+    - this will cause a restart if you are not overriding the default image
+
 ## 3.0.19 General Updates
 - Updated image
   - Updated to Gateway 11.0.00_CR1
