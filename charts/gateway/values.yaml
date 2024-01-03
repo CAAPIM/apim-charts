@@ -70,6 +70,10 @@ updateStrategy:
 
 pmtagger:
   enabled: true
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   replicas: 1
   image:
     registry: docker.io
