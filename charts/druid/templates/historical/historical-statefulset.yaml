@@ -41,12 +41,20 @@ spec:
       {{- if .Values.historical.tolerations }}
       tolerations: {{- toYaml .Values.historical.tolerations | nindent 12 }}
       {{- end }}
-      securityContext:
-        fsGroup: 1010
+      {{- if .Values.historical.podSecurityContext }}
+      securityContext: {{- toYaml .Values.historical.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: historical
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.historical }}"
           imagePullPolicy: "{{ .Values.historical.image.pullPolicy }}"
+          {{- if .Values.historical.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.historical.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: MINIO_ACCESS_KEY
               valueFrom:

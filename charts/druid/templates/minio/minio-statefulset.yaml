@@ -42,8 +42,16 @@ spec:
       {{- if .Values.minio.tolerations }}
       tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
       {{- end }}
-      securityContext:
-        fsGroup: 1010
+      {{- if .Values.minio.podSecurityContext }}
+      securityContext: {{- toYaml .Values.minio.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.containerSecurityContext }}
+      securityContext: {{- toYaml .Values.minio.containerSecurityContext | nindent 12 }}
+      {{- else if .Values.global.containerSecurityContext }}
+      securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
       {{ $address := print ".minio." .Release.Namespace ".svc.cluster.local/opt/data" }}
       - command:
@@ -56,7 +64,7 @@ spec:
         {{ end }}
         name: minio
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.minio }}"
-        imagePullPolicy: "{{ .Values.minio.image.pullPolicy }}"  
+        imagePullPolicy: "{{ .Values.minio.image.pullPolicy }}"
         env:
           - name: MINIO_ACCESS_KEY
             valueFrom:

@@ -23,6 +23,11 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
 # storageClass: "_"
 # schedulerName:
@@ -183,6 +188,10 @@ analytics:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 100m
@@ -211,6 +220,10 @@ apim:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 1000m
@@ -238,6 +251,10 @@ authenticator:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 250m
@@ -264,6 +281,10 @@ dispatcher:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 100m
@@ -319,6 +340,10 @@ portalData:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 100m
@@ -346,6 +371,10 @@ portalEnterprise:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 250m
@@ -372,6 +401,10 @@ pssg:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 100m
@@ -399,6 +432,10 @@ tenantProvisioner:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests: {}
     # cpu: 100m
@@ -452,6 +489,11 @@ druid:
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
+    podSecurityContext:
+      fsGroup: 1001
+      runAsNonRoot: true   
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     image:
       pullPolicy: IfNotPresent
     auth:
@@ -501,6 +543,11 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    podSecurityContext:
+      fsGroup: 1001
+      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       limits: {}
       # memory: 256Mi
@@ -518,6 +565,10 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       limits: {}
       # memory: 512Mi
@@ -535,6 +586,11 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    podSecurityContext:
+      fsGroup: 1001
+      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests: {}
       # cpu: 100m
@@ -554,6 +610,10 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests: {}
       # memory: 1Gi
@@ -571,6 +631,11 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    podSecurityContext:
+      fsGroup: 1001
+      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests: {}
       # memory: 2Gi
@@ -589,6 +654,10 @@ druid:
     image:
       pullPolicy: IfNotPresent
     portName: ingestion-svc
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests: {}
       # cpu: 100m
@@ -608,6 +677,10 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests: {}
       # memory: 4Gi
@@ -740,6 +813,9 @@ jobs:
 mysql:
   image:
     tag: "8.0.31-debian-11-r36"
+  serviceAccount:
+    create: false
+    name: "default"
   auth:
     username: portal
     existingSecret: database-secret
@@ -754,6 +830,12 @@ mysql:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
   primary:
+    # podSecurityContext:
+    #   enabled: true
+    #   fsGroup: 1000760000
+    # containerSecurityContext:
+    #   enabled: true
+    #   runAsUser: 1000760000
     configuration: |-
       [client]
       port=3306
