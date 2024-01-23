@@ -554,9 +554,8 @@ druid:
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 4
-    podSecurityContext:
-      fsGroup: 1001
-      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext: {}
     image:
@@ -622,9 +621,8 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    podSecurityContext:
-      fsGroup: 1001
-      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext: {}
     resources:
@@ -684,9 +682,8 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    podSecurityContext:
-      fsGroup: 1001
-      runAsNonRoot: true
+     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext: {}
     resources:
@@ -747,9 +744,8 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    podSecurityContext:
-      fsGroup: 1001
-      runAsNonRoot: true
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext: {}
     resources:
