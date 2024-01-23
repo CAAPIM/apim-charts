@@ -56,7 +56,7 @@ spec:
         securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
         {{- else }}
         securityContext:
-          fsGroup: 1010 
+          fsGroup: 1010
         {{- end }}
         envFrom:
         - configMapRef:
