@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.12
+  version: 1.0.13
 - name: mysql
   repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 9.4.7
@@ -11,5 +11,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.7.2
-digest: sha256:77bef6109e5ced4a4f00e93044d4bbfd15d0c4b619bae3419dd692a8620a696b
-generated: "2023-11-15T10:29:33.351726-05:00"
+digest: sha256:52ddb3e04c6f6b75b023041b9cca016beb93590982f57379950b0ee18b6691c1
+generated: "2024-01-23T15:57:52.7895836+05:30"

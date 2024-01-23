@@ -44,12 +44,23 @@ spec:
       {{- if .Values.zookeeper.tolerations }}
       tolerations: {{- toYaml .Values.zookeeper.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.zookeeper.podSecurityContext }}
+      securityContext: {{- toYaml .Values.zookeeper.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- else }}
       securityContext:
         fsGroup: 1010
+      {{- end }}
       containers:
         - name: zookeeper
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.zookeeper }}"
           imagePullPolicy: "{{ .Values.zookeeper.image.pullPolicy }}"
+          {{- if .Values.zookeeper.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.zookeeper.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           ports:
           - containerPort: 2181
           - containerPort: 2888

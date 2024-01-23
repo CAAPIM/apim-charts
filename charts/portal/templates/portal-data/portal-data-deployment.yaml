@@ -43,6 +43,11 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
+      {{- if .Values.portalData.podSecurityContext }}
+      securityContext: {{- toYaml .Values.portalData.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       initContainers:
         - name: liquidbase-upgrade-portal
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
@@ -54,6 +59,11 @@ spec:
         - name: portal-data
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.data }}"
           imagePullPolicy: "{{ .Values.portalData.image.pullPolicy }}"
+          {{- if .Values.portalData.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.portalData.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
