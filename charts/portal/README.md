@@ -195,8 +195,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
 | `global.additionalLabels` | A list of custom key: value labels applied to all components | `not set` |
-| `global.podSecurityContext`    | Same settings are applied to all portal microservices. For more details see [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
-| `global.containerSecurityContext`    | Same settings are applied to all portal microservices. For more details see [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+| `global.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod) settings are applied to all portal microservices.               | `[]` |
+| `global.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) settings are applied to all portal microservices.           | `{}` |
 
 
 ### Portal Parameters
@@ -275,8 +275,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
-| `analytics.podSecurityContext`       | Pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
-| `analytics.containerSecurityContext` | Container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
+| `analytics.podSecurityContext`       | Analytics Pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.containerSecurityContext` | Analytics Container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -290,6 +290,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
+| `apim.podSecurityContext`            | APIM Pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `apim.containerSecurityContext`      | APIM Container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
