@@ -25,8 +25,13 @@ global:
   subdomainPrefix: dev-portal
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
+  #   podSecurityContext:
+  #     fsGroup: 1001
+  #     runAsNonRoot: true
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
+  #   containerSecurityContext:
+  #     runAsUser: 1001
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
 # storageClass: "_"
 # schedulerName:
