@@ -195,6 +195,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
 | `global.additionalLabels` | A list of custom key: value labels applied to all components | `not set` |
+| `global.podSecurityContext`    | Same settings are applied to all portal microservices. For more details see [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
+| `global.containerSecurityContext`    | Same settings are applied to all portal microservices. For more details see [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -272,6 +275,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
+| `analytics.podSecurityContext`       | Pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.containerSecurityContext` | Container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |

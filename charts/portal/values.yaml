@@ -25,7 +25,6 @@ global:
   subdomainPrefix: dev-portal
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
-
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
@@ -491,7 +490,7 @@ druid:
     replicaCount: 1
     podSecurityContext:
       fsGroup: 1001
-      runAsNonRoot: true   
+      runAsNonRoot: true
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
     containerSecurityContext: {}
     image:
@@ -813,9 +812,6 @@ jobs:
 mysql:
   image:
     tag: "8.0.31-debian-11-r36"
-  serviceAccount:
-    create: false
-    name: "default"
   auth:
     username: portal
     existingSecret: database-secret
@@ -830,12 +826,13 @@ mysql:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
   primary:
-    # podSecurityContext:
-    #   enabled: true
-    #   fsGroup: 1000760000
-    # containerSecurityContext:
-    #   enabled: true
-    #   runAsUser: 1000760000
+    # primary:
+    #   podSecurityContext:
+    #     enabled: true
+    #     fsGroup: 100
+    #   containerSecurityContext:
+    #     enabled: true
+    #     runAsUser: 1001
     configuration: |-
       [client]
       port=3306
