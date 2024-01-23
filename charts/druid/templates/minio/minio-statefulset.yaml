@@ -51,6 +51,9 @@ spec:
       securityContext: {{- toYaml .Values.minio.containerSecurityContext | nindent 12 }}
       {{- else if .Values.global.containerSecurityContext }}
       securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+      {{- else }}
+      securityContext:
+        fsGroup: 1010
       {{- end }}
       containers:
       {{ $address := print ".minio." .Release.Namespace ".svc.cluster.local/opt/data" }}

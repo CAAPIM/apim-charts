@@ -48,6 +48,9 @@ spec:
       securityContext: {{- toYaml .Values.zookeeper.podSecurityContext | nindent 12 }}
       {{- else if .Values.global.podSecurityContext }}
       securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- else }}
+      securityContext:
+        fsGroup: 1010
       {{- end }}
       containers:
         - name: zookeeper

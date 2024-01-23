@@ -54,6 +54,9 @@ spec:
         securityContext: {{- toYaml .Values.kafka.containerSecurityContext | nindent 12 }}
         {{- else if .Values.global.containerSecurityContext }}
         securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+        {{- else }}
+        securityContext:
+          fsGroup: 1010 
         {{- end }}
         envFrom:
         - configMapRef:
