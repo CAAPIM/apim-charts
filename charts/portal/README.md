@@ -925,6 +925,19 @@ Resulting hostnames:
 | TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` |
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
+## Installting in OpenShift
+Fetch the OC namespace openshift.io/sa.scc.uid-range values(<runAsUser-start>/<end>) and openshift.io/sa.scc.supplemental-groups(<fsGroupId-start>/<end>) annotation values.
+[Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
+
+Set the following global values in the override-values.yaml and do the helm install.
+```
+global:
+   podSecurityContext:
+     fsGroup: <OC namespace starting value of openshift.io/sa.scc.supplemental-groups annotation>
+     runAsNonRoot: true
+   containerSecurityContext:    
+     runAsUser: <OC namespace starting value of openshift.io/sa.scc.uid-range annotation>
+```
 ## Persistent Volumes
 With the deployment of API Portal, PersistentVolumeClaims (PVC) are created for components as below:
 
