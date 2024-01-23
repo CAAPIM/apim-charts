@@ -822,13 +822,6 @@ mysql:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
   primary:
-    # primary:
-    #   podSecurityContext:
-    #     enabled: true
-    #     fsGroup: 100
-    #   containerSecurityContext:
-    #     enabled: true
-    #     runAsUser: 1001
     configuration: |-
       [client]
       port=3306
