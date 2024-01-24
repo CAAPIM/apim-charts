@@ -361,17 +361,13 @@ config:
   redis:
     # enable or disable redis integration
     # please uncomment the 3 redis properties in config.systemProperties
+    # Redis client properties for configuring Redis Standalone or Redis Sentinel connections
     enabled: false
-    # Use an existing secret for Redis configuration
+    # We recommend using an existing secret for Redis configuration in production environments
+    # for separation of concerns and to better secure Redis client property secrets.
     # redis configuration must have a key called redis.properties (see the Redis Configuration in the readme for more details)
     # existingConfigSecret: redis-config-secret
-    # The Redis Helm Chart from Bitnami is available as a subChart. To enable it set subChart.enabled below to true
-    subChart:
-      # If the subChart is enabled, configuration from redis in the subCharts section
-      # will need to match the auth and tls settings here. This is true by default so no
-      # changes will be required
-      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
-      enabled: false
+    # To configure the Redis client directly in this values file uncomment and/or set the following client properties
     groupName: l7GW
     commandTimeout: 5000
     # The Gateway supports Redis master auth only.
@@ -406,6 +402,14 @@ config:
       #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
       #   ....
       #   -----END CERTIFICATE-----
+    # Enable subChart to have Helm optionally deploy Redis Sentinel/Standalone with your gateways.
+    subChart:
+      # If the subChart is enabled, configuration from redis in the subCharts section
+      # will need to match the auth and tls settings here. This is true by default so no
+      # changes will be required
+      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
+      enabled: false
+
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
