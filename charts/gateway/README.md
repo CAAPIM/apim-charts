@@ -5,10 +5,39 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Prerequisites
-- Kubernetes 1.24.x
+- Kubernetes
   - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw/requirements-and-compatibility.html#concept.dita_req_comp_refresh_gw10cr2_platforms) for the latest version support
-- Helm v3.7.x
+- Helm v3.x
+  - Refer to the [Helm Documentation](https://helm.sh/docs/topics/version_skew/#supported-version-skew) for their compatibility matrix
 - Gateway v10.x or v11.x License
+
+#### Note
+It's important that your Kubernetes Client and Server versions are compatible.
+
+You can verify this by running the following
+```
+kubectl version
+```
+output
+```
+Client Version: v1.29.1
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Server Version: v1.27.6+b49f9d1
+WARNING: version difference between client (1.29) and server (1.27) exceeds the supported minor version skew of +/-1
+```
+The above message indicates that the client version (kubectl) is greater than the server version by more than 1 minor version. This may cause unforseen errors when using Kubectl or Helm.
+
+Please also check your Helm version against [this](https://helm.sh/docs/topics/version_skew/#supported-version-skew) compatibility matrix
+```
+helm version
+```
+output
+```
+version.BuildInfo{Version:"v3.13.3", GitCommit:"c8b948945e52abba22ff885446a1486cb5fd3474", GitTreeState:"clean", GoVersion:"go1.21.5"}
+
+Helm Version    Supported Kubernetes Versions
+3.13.x         	1.28.x - 1.25.x
+```
 
 ## Optional
 - Persistent Volume Provisioner (if using PVC for the Demo MySQL Database or Service Metrics example with Grafana or InfluxDb)
@@ -36,6 +65,13 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.21 General Updates
+- Updated [Redis Configuration](#redis-configuration)
+  - More context added for creating your own redis properties file
+  - Removed comments from values.yaml
+- Added Graphman Bundle support to the bootstrap script
+  - files that end in .json will be copied into the bootstrap folder
 
 
 ## 3.0.20 General Updates
@@ -809,6 +845,56 @@ Uncomment the following
 | `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
 | `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
 
+#### Creating your own Redis Configuration
+Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-redis-datastore.html) for more context on the available configuration options
+
+##### Redis Sentinel
+redis.properties
+```
+# Redis type can be sentinel or standalone
+# standalone does not support SSL or Auth
+ redis.type=sentinel
+ redis.sentinel.nodes=node1:26379,node2:26379,node3:26379
+## Credentials are optional
+ redis.sentinel.username=redisuser
+# Password can be plaintext or encoded
+ redis.sentinel.password=redispassword
+ redis.sentinel.encodedPassword=redisencodedpassword
+# SSL is optional
+ redis.ssl=true
+ redis.ssl.cert=redis.crt
+ redis.ssl.verifypeer=true
+# Additional Config
+ redis.key.prefix.grpname=l7GW
+ redis.commandTimeout=5000
+ ```
+
+##### Redis Standalone (11.0.00_CR2 and later)
+The Gateway does not support SSL or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
+
+redis.properties
+```
+# Redis type can be sentinel or standalone
+# standalone does not support SSL or Auth
+ redis.type=standalone
+ redis.hostname=redis-standalone
+ redis.port=6379
+ redis.key.prefix.grpname=l7GW
+ redis.commandTimeout=5000
+ ```
+
+##### Create a secret from this configuration
+```
+kubectl create secret generic redis-config-secret --from-file=redis.properties=/path/to/redis.properties
+```
+my-values.yaml
+```
+redis:
+    enabled: true
+    existingConfigSecret: redis-config-secret
+```
+
+
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
 ```
@@ -1202,7 +1288,8 @@ The following table lists the configured parameters of the Grafana Subchart - se
 | `grafana.datasources.secretName`                | Configures an InfluxDb Datasource.   | `see values.yaml` |
 
 ### Subcharts
-*  Hazelcast (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
-*  MySQL (default: enabled)  ==> https://github.com/bitnami/charts/tree/master/bitnami/mysql
-*  InfluxDb (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-*  Grafana (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
+*  Hazelcast  (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
+*  MySQL      (default: enabled)  ==> https://github.com/bitnami/charts/tree/master/bitnami/mysql
+*  InfluxDb   (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
+*  Grafana    (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
+*  Redis      (default: disabled) ==>https://github.com/bitnami/charts/tree/master/bitnami/redis

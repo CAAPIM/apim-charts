@@ -186,7 +186,8 @@ data:
         done
     }
     
-    copy "bundles" ".bundle" $BUNDLE_DIR $TARGET_BUNDLE_DIR
+    copy "restman bundles" ".bundle" $BUNDLE_DIR $TARGET_BUNDLE_DIR
+    copy "graphman bundles" ".json" $BUNDLE_DIR $TARGET_BUNDLE_DIR
     copy "custom assertions" ".jar" $CUSTOM_ASSERTIONS_DIR $TARGET_CUSTOM_ASSERTIONS_DIR
     copy "modular assertions" ".aar" $MODULAR_ASSERTIONS_DIR $TARGET_MODULAR_ASSERTIONS_DIR
     copy "external libraries" ".jar" $EXTERNAL_LIBRARIES_DIR $TARGET_EXTERNAL_LIBRARIES_DIR
