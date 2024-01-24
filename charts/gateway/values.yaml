@@ -374,6 +374,9 @@ config:
       enabled: false
     groupName: l7GW
     commandTimeout: 5000
+    # The Gateway supports Redis master auth only.
+    # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
+    # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
     auth:
       enabled: false
     # username: username
@@ -1011,7 +1014,9 @@ installSolutionKits:
 # Settings for Redis - https://github.com/bitnami/charts/tree/master/bitnami/redis
 redis:
   auth:
+    # The Gateway supports Redis master auth in sentinel mode only, set this value to true to enable auth.
     enabled: false
+    # Sentinel auth which enables password authentication on sentinels too is not supported by the Gateway and should remain false
     sentinel: false
     password: "mypassword"
   tls:

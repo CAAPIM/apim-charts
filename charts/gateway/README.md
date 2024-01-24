@@ -69,6 +69,8 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 ## 3.0.21 General Updates
 - Updated [Redis Configuration](#redis-configuration)
   - More context added for creating your own redis properties file
+  - More context added for Redis auth
+    - note: the Gateway only supports Redis master auth
   - Removed comments from values.yaml
 - Added Graphman Bundle support to the bootstrap script
   - files that end in .json will be copied into the bootstrap folder
@@ -847,6 +849,9 @@ Uncomment the following
 
 #### Creating your own Redis Configuration
 Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-redis-datastore.html) for more context on the available configuration options
+
+#### Note
+The Gateway supports Redis master auth only. The Gateway will not be able to connect to Redis if your Sentinel nodes have passwords. Please refer to the notes in values.yaml for details on config.redis.auth and redis.auth (subChart)
 
 ##### Redis Sentinel
 redis.properties
