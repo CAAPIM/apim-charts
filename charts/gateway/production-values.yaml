@@ -219,6 +219,7 @@ config:
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
     # Additional properties go here
+
  # If enabled this will override the default listen ports and their configuration in the API Gateway
   listenPorts:
     custom:
@@ -360,38 +361,18 @@ config:
   redis:
     # enable or disable redis integration
     # please uncomment the 3 redis properties in config.systemProperties
+    # Redis client properties for configuring Redis Standalone or Redis Sentinel connections
     enabled: false
-    # Use an existing secret for Redis configuration
-    # redis configuration must have a key called redis.properties
+    # We recommend using an existing secret for Redis configuration in production environments
+    # for separation of concerns and to better secure Redis client property secrets.
+    # redis configuration must have a key called redis.properties (see the Redis Configuration in the readme for more details)
     # existingConfigSecret: redis-config-secret
-    # below is an example configuration for Redis Sentinel
-    #### redis.properties
-    ## Redis type can be sentinel or standalone
-    ## standalone does not support SSL or Auth
-    # redis.type=sentinel
-    # redis.sentinel.nodes=node1:26379,node2:26379,node3:26379
-    ### Credentials are optional
-    # redis.sentinel.username=redisuser
-    ## Password can be plaintext or encoded
-    # redis.sentinel.password=redispassword
-    # redis.sentinel.encodedPassword=redisencodedpassword
-    ## SSL is optional
-    # redis.ssl=true
-    # redis.ssl.cert=redis.crt
-    # redis.ssl.verifypeer=true
-    ## Additional Config
-    # redis.key.prefix.grpname=l7GW
-    # redis.commandTimeout=5000
-
-    # kubectl create secret generic redis-config-secret --from-file redis.properties
-    subChart:
-      # If the subChart is enabled, configuration from redis in the subCharts section
-      # will need to match the auth and tls settings here. This is true by default so no
-      # changes will be required
-      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
-      enabled: false
+    # To configure the Redis client directly in this values file uncomment and/or set the following client properties
     groupName: l7GW
     commandTimeout: 5000
+    # The Gateway supports Redis master auth only.
+    # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
+    # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
     auth:
       enabled: false
     # username: username
@@ -421,6 +402,14 @@ config:
       #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
       #   ....
       #   -----END CERTIFICATE-----
+    # Enable subChart to have Helm optionally deploy Redis Sentinel/Standalone with your gateways.
+    subChart:
+      # If the subChart is enabled, configuration from redis in the subCharts section
+      # will need to match the auth and tls settings here. This is true by default so no
+      # changes will be required
+      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
+      enabled: false
+
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
@@ -1029,7 +1018,9 @@ installSolutionKits:
 # Settings for Redis - https://github.com/bitnami/charts/tree/master/bitnami/redis
 redis:
   auth:
+    # The Gateway supports Redis master auth in sentinel mode only, set this value to true to enable auth.
     enabled: false
+    # Sentinel auth which enables password authentication on sentinels too is not supported by the Gateway and should remain false
     sentinel: false
     password: "mypassword"
   tls:
