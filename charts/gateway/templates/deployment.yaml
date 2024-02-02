@@ -319,15 +319,28 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
-           {{- range .Values.sidecars }}
-           {{- range .volumeMounts }}
+         {{- range .Values.sidecars }}
+         {{- range .volumeMounts }}
+         {{- $vn := .name }}
+         {{ $duplicate := false}}
+         {{- if $.Values.initContainers}}
+           {{- range $_,$ic := $.Values.initContainers }}
+             {{- range $_,$icvm := $ic.volumeMounts }}
+               {{- if eq $vn $icvm.name }}
+                 {{ $duplicate = true}}
+               {{- end }}
+             {{- end }}
+           {{- end }}
+         {{- end }}
+         {{ if not $duplicate }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{ if .subPath }}
               subPath: {{ .subPath }}
               {{ end }}
-           {{- end }}
-           {{- end }}
+         {{- end }}
+         {{- end }}
+         {{- end }}
 {{- end }}
           envFrom:
             - configMapRef:
@@ -608,9 +621,27 @@ spec:
 {{- end }}
 {{- if .Values.initContainers }}
      {{- range .Values.initContainers }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $cvIndex = 0 }}
+       {{- if $.Values.customInitVolumes }}
+       {{- range $i,$cv := $.Values.customInitVolumes }}
+       {{- if eq $vn $cv.name }}
+        {{- $found = true }}
+        {{- $cvIndex = $i }}
+       {{- end }}
+       {{- end }}
+       {{- end }}
+       {{- if eq $found true }}
+        {{- with (index $.Values.customInitVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}
@@ -642,9 +673,39 @@ spec:
 {{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $duplicate := false }}
+       {{- $cvIndex = 0 }}
+      {{- if $.Values.initContainers }}
+        {{- range  $_,$ic :=  $.Values.initContainers }}
+          {{- range $_,$icvm :=  $ic.volumeMounts }}
+            {{- if eq $vn $icvm.name }}
+              {{- $duplicate = true }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+       {{- if $.Values.customSideCarVolumes }}
+         {{- range $i,$cv := $.Values.customSideCarVolumes }}
+         {{- if eq $vn $cv.name }}
+           {{- $found = true }}
+           {{- $cvIndex = $i }}
+         {{- end }}
+         {{- end }}
+       {{- end }}
+       {{- if not $duplicate }}
+       {{- if $found }}
+        {{- with (index $.Values.customSideCarVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
+     {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}

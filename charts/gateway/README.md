@@ -66,6 +66,12 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.22 General Updates
+- Custom Volumes for initContainers and Sidecars
+  - This allows configmaps/secrets to be mounted to initContainers and sideCars
+    - customSideCarVolumes
+    - customInitVolumes
+
 ## 3.0.21 General Updates
 - Updated [Redis Configuration](#redis-configuration)
   - More context added for creating your own redis properties file
