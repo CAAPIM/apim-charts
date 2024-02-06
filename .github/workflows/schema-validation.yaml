@@ -5,8 +5,7 @@ on:
     branches:
       - stable
       - unstable
-      - develop/gateway
-      - develop/portal
+
 
 jobs:
   kubeval-chart:
