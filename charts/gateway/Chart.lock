@@ -7,9 +7,12 @@ dependencies:
   version: 4.12.0
 - name: grafana
   repository: https://charts.bitnami.com/bitnami
-  version: 8.0.11
+  version: 9.5.2
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 9.2.6
-digest: sha256:0db027a0602128156cbcb7b23f694bde96686411367a8cb640a081978112a418
-generated: "2022-08-11T11:15:13.621619+01:00"
+  version: 9.14.2
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.2.1
+digest: sha256:ad87dbcf8a73e3780500b3bda4157820b4a214bcbdf07db4ccdb3e5063f32ccb
+generated: "2023-12-12T13:13:58.809885Z"
