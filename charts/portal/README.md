@@ -195,6 +195,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
 | `global.additionalLabels` | A list of custom key: value labels applied to all components | `not set` |
+| `global.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod) settings are applied to all portal microservices.               | `[]` |
+| `global.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) settings are applied to all portal microservices.           | `{}` |
+
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -272,6 +275,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
+| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.containerSecurityContext` | Analytics container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -285,6 +290,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
+| `apim.podSecurityContext`            | APIM pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `apim.containerSecurityContext`      | APIM container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -310,6 +317,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
+| `authenticator.podSecurityContext`   | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `authenticator.containerSecurityContext`      | authenticator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
 | `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -322,6 +331,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
+| `dispatcher.podSecurityContext`      | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `dispatcher.containerSecurityContext`| Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -348,6 +359,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalData.podSecurityContext`      | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `portalData.containerSecurityContext`| Portal-data container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalEnterprise.replicaCount`      | Number of portal-enterprise nodes                            | `1`                                                          |
 | `portalEnterprise.javaOptions`       | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
@@ -361,6 +374,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
+| `portalEnterprise.podSecurityContext`| Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `portalEnterprise.containerSecurityContext`| Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `pssg.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `pssg.replicaCount`                  | Number of PSSG nodes                                         | `1`                                                          |
 | `pssg.image.pullPolicy`              | PSSG image pull policy                                       | `IfNotPresent`                                               |
@@ -373,6 +389,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `pssg.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `pssg.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `pssg.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `pssg.podSecurityContext`            | PSSG pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `pssg.containerSecurityContext`| PSSG container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `pssg.additionalEnv.CONFIG_8443_TLS` | Enabled Port 8443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled.` see [Portal TLS Defaults](#portal-tls-defaults)                                                    |
 | `pssg.additionalEnv.CONFIG_9443_TLS` | Enabled Port 9443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled`  see [Portal TLS Defaults](#portal-tls-defaults)                                                  |
 | `pssg.additionalEnv.CONFIG_9446_TLS` | Enabled Port 9446 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled`  see [Portal TLS Defaults](#portal-tls-defaults)                                                  |
@@ -396,10 +414,14 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
+| `tenantProvisioner.podSecurityContext`| Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `tenantProvisioner.containerSecurityContext`| Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set`                                 |
 | `jobs.image.PullPolicy`              | Image pull policy applied to jobs                            | `IfNotPresent`                                 |
+| `jobs.podSecurityContext`            | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `jobs.containerSecurityContext`| Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
 ### Database Node Pool Configurations
 
@@ -683,6 +705,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.minio.podSecurityContext` | Minio pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.minio.containerSecurityContext` | Minio container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.zookeeper.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.zookeeper.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.zookeeper.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -693,6 +717,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.zookeeper.podSecurityContext` | Zookeeper pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.zookeeper.containerSecurityContext` | Zookeeper container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.coordinator.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.coordinator.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.coordinator.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -703,6 +729,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.coordinator.podSecurityContext` | Coordinator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.coordinator.containerSecurityContext` | Coordinator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.kafka.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.kafka.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.kafka.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -713,6 +741,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.kafka.podSecurityContext` | Kafka pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.kafka.containerSecurityContext` | Kafka container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.broker.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.broker.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.broker.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -723,6 +753,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.broker.podSecurityContext` | Broker pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.broker.containerSecurityContext` | Broker container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.historical.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.historical.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.historical.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -733,6 +765,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.historical.podSecurityContext` | Historical pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.historical.containerSecurityContext` | Historical container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.ingestion.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.ingestion.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.ingestion.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -743,6 +777,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.ingestion.podSecurityContext` | Ingestion pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.ingestion.containerSecurityContext` | Ingestion container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.middlemanager.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
 | `druid.middlemanager.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
 | `druid.middlemanager.pdb.minAvailable` | Minimum number of available pods   | `not set` |
@@ -753,6 +789,8 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.middlemanager.podSecurityContext` | Middle manager pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.middlemanager.containerSecurityContext` | Middle manager container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
 ## Druid Images
 The following table lists the configured parameters of the Druid Subchart
@@ -887,6 +925,23 @@ Resulting hostnames:
 | TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` |
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
+## Installing in OpenShift
+Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
+[Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
+
+Set the following global values in the override-values.yaml and do the helm install.
+```
+global:
+   podSecurityContext:
+     fsGroup: <OC namespace starting value of openshift.io/sa.scc.supplemental-groups annotation>
+     runAsNonRoot: true
+   containerSecurityContext:    
+     runAsUser: <OC namespace starting value of openshift.io/sa.scc.uid-range annotation>
+ingress:
+  type:
+    kubernetes: false
+    openshift: true
+```
 ## Persistent Volumes
 With the deployment of API Portal, PersistentVolumeClaims (PVC) are created for components as below:
 

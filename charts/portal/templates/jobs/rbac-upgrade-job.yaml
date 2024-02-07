@@ -22,10 +22,16 @@ spec:
   template:
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
         - name: rbac-upgrade
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.rbacUpgrade }}"
           imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
+          {{- if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}

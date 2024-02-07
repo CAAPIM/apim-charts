@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.otk.healthCheckBundle.name }}
+  name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
   labels:
     app: {{ template "gateway.name" . }}
     chart: {{ template "gateway.chart" . }}
@@ -64,8 +64,8 @@ data:
         &lt;wsp:All wsp:Usage=&quot;Required&quot;&gt;
             &lt;L7p:SslAssertion/&gt;
             &lt;L7p:RemoteIpAddressRange&gt;
-                &lt;L7p:NetworkMask stringValue=&quot;16&quot;/&gt;
-                &lt;L7p:StartIp stringValue=&quot;240.224.2.1&quot;/&gt;
+                &lt;L7p:NetworkMask stringValue=&quot;{{ default "16" .Values.otk.networkMask}}&quot;/&gt;
+                &lt;L7p:StartIp stringValue=&quot;{{ default "240.224.2.1" .Values.otk.startIP }}&quot;/&gt;
             &lt;/L7p:RemoteIpAddressRange&gt;
             &lt;L7p:SetVariable&gt;
                 &lt;L7p:Base64Expression stringValue=&quot;YWR2YW5jZWQ=&quot;/&gt;

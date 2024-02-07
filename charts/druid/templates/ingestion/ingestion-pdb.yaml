@@ -14,5 +14,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: ingestion
+      app: ingestion-server
 {{ end }}

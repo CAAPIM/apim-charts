@@ -85,11 +85,54 @@ Create java args to apply.
 {{- end -}}
 
 {{/*
+Redis sentinel nodes
+*/}}
+{{- define "gateway.redisSentinelNodes" -}}
+{{- if .Values.config.redis.sentinel.enabled }}
+ {{- if empty .Values.config.redis.sentinel.nodes }}
+        {{- fail "config.redis.sentinel.nodes is required." }}
+ {{- end }}
+  {{- join "," .Values.config.redis.sentinel.nodes }}
+{{- end  -}}
+{{- end -}}
+
+{{/*
+Redis config secret name
+*/}}
+{{- define "redisConfigSecretName" }}
+{{- if not .Values.config.redis.existingConfigSecret }}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "redis-configuration" -}}
+{{- else }}
+{{- .Values.config.redis.existingConfigSecret }}
+{{- end }}
+{{- end }}
+
+{{/*
+Redis TLS secret name
+*/}}
+{{- define "redisTlsSecretName" }}
+{{- if not .Values.config.redis.tls.existingSecret }}
+{{- printf "%s-%s" .Release.Name "redis-crt" -}}
+{{- else }}
+{{- .Values.config.redis.tls.existingSecret }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create Image Pull Secret
 */}}
 {{- define "imagePullSecret" }}
 {{- if not .Values.imagePullSecret.existingSecretName }}
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.image.registry .Values.imagePullSecret.username .Values.imagePullSecret.password (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create OTK Image Pull Secret
+*/}}
+{{- define "otkImagePullSecret" }}
+{{- if not .Values.otk.job.imagePullSecret.existingSecretName }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.otk.job.image.registry .Values.otk.job.imagePullSecret.username .Values.otk.job.imagePullSecret.password (printf "%s:%s" .Values.otk.job.imagePullSecret.username .Values.otk.job.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
 
@@ -103,6 +146,19 @@ Define Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "image-pull-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Define OTK Image Pull Secret Name
+*/}}
+{{- define "otkImagePullSecretName" -}}
+{{- if .Values.otk.job.imagePullSecret.existingSecretName -}}
+    {{ .Values.otk.job.imagePullSecret.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "otk-image-pull-secret" -}}
+{{- end -}}
+{{- end -}}
+
+
 
 {{/*
  Define Gateway TLS Secret Name
@@ -174,5 +230,48 @@ Define Image Pull Secret Name
     {{ .Values.otk.database.existingSecretName }}
 {{- else -}}
     {{- printf "%s-%s" (include "gateway.fullname" .) "otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK database ReadOnly Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.readOnly" -}}
+{{- if .Values.otk.database.readOnlyConnection.existingSecretName -}}
+    {{ .Values.otk.database.readOnlyConnection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+{{/*
+ Define OTK install image pullSecret
+ */}}
+{{- define "otk.imagePullSecret" -}}
+{{- if .Values.otk.job.imagePullSecret.enabled -}}
+    {{- printf "%s" (include "otkImagePullSecretName" .) -}}
+{{- else -}}
+    {{- printf "%s" (include "gateway.imagePullSecret" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK install image
+ */}}
+{{- define "otk.image" -}}
+{{- if empty .Values.otk.job.image.registry -}}
+    {{- printf "%s/%s:%s" .Values.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" .Values.otk.job.image.registry .Values.otk.job.image.repository .Values.otk.job.image.tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define OTK Restman host
+ */}}
+{{- define "otk.restmanhost" -}}
+{{- if empty .Values.otk.restmanHost -}}
+    {{- printf "%s" (include "gateway.fullname" .) -}}
+{{- else -}}
+    {{- printf "%s" .Values.otk.restmanHost -}}
 {{- end -}}
 {{- end -}}

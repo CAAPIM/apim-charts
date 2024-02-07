@@ -43,10 +43,20 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
+      {{- if .Values.dispatcher.podSecurityContext }}
+      securityContext: {{- toYaml .Values.dispatcher.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: dispatcher
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.dispatcher }}"
           imagePullPolicy: "{{ .Values.dispatcher.image.pullPolicy }}"
+          {{- if .Values.dispatcher.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.dispatcher.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
           - name: HTTPD_SSL_KEY
             valueFrom:
