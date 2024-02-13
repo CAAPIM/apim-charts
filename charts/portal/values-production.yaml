@@ -341,7 +341,7 @@ dispatcher:
 portalData:
   forceRedeploy: false
   replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
+  javaOptions: -Xms2048m -Xmx2048m
   image:
     pullPolicy: IfNotPresent
   pdb:
