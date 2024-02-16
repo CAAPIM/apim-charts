@@ -20,6 +20,8 @@ jobs:
         uses: azure/setup-helm@v4.0.0
         with:
           version: v3.13.3
+      - name: Add Repositories
+        run: .github/helm-repo.sh
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
