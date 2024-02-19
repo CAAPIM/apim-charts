@@ -109,6 +109,42 @@ entries:
   gateway:
   - apiVersion: v2
     appVersion: 11.0.00_CR2
+    created: "2024-02-19T11:50:40.414897752Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.4.0
+    - condition: influxdb.enabled
+      name: influxdb
+      repository: https://helm.influxdata.com/
+      version: 4.12.0
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.5.2
+    - condition: database.create
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.14.2
+    - condition: config.redis.subChart.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 18.2.1
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: 0dbc50ce6f934fe261b424ff9faf0582ced72f4baff3921ed936b8bb0542000e
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-3.0.22/gateway-3.0.22.tgz
+    version: 3.0.22
+  - apiVersion: v2
+    appVersion: 11.0.00_CR2
     created: "2024-01-25T09:50:27.691633865Z"
     dependencies:
     - condition: hazelcast.enabled
@@ -1481,6 +1517,38 @@ entries:
   portal:
   - apiVersion: v2
     appVersion: 5.2.2
+    created: "2024-02-19T11:50:40.587146581Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: global.setupDemoDatabase
+      name: mysql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.4.7
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.3
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.7.2
+    description: CA API Developer Portal
+    digest: 1d59672f333dccef1c5483b08dff1a0f3896af6825dcab0844b18b55dde71096
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.6/portal-2.3.6.tgz
+    version: 2.3.6
+  - apiVersion: v2
+    appVersion: 5.2.2
     created: "2024-02-15T13:57:34.624284678Z"
     dependencies:
     - condition: portal.analytics.enabled
@@ -2279,4 +2347,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2024-02-15T13:57:34.624713139Z"
+generated: "2024-02-19T11:50:40.587551124Z"
