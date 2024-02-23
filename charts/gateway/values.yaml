@@ -627,7 +627,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.2
+      tag: 4.6.2_DE592330
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
@@ -708,9 +708,9 @@ otk:
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
 
       # For mysql & oracle setup test clients
-      createTestClients: false
+      createTestClients: true
       # Test clients redirect Url prefix. Required if createTestClients is true.
-      testClientsRedirectUrlPrefix:
+      testClientsRedirectUrlPrefix: https://kv664763-otk.gke-us-west-1-cluster-01.apim.broadcom.net:443
 
     cassandra:
       # connectionPoints:
