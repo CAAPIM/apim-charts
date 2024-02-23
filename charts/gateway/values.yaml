@@ -711,6 +711,7 @@ otk:
       createTestClients: false
       # Test clients redirect Url prefix. Required if createTestClients is true.
       testClientsRedirectUrlPrefix:
+
     cassandra:
       # connectionPoints:
       # port:
