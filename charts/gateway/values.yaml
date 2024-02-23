@@ -708,10 +708,9 @@ otk:
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
 
       # For mysql & oracle setup test clients
-      createTestClients: true
+      createTestClients: false
       # Test clients redirect Url prefix. Required if createTestClients is true.
-      testClientsRedirectUrlPrefix: https://kv664763-otk.gke-us-west-1-cluster-01.apim.broadcom.net:443
-
+      testClientsRedirectUrlPrefix:
     cassandra:
       # connectionPoints:
       # port:
