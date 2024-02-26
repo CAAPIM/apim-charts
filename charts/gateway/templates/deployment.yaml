@@ -294,6 +294,9 @@ spec:
             - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
               mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
               subPath: 003-parse-custom-files.sh
+            - name: {{ template "gateway.fullname" . }}-parse-init-script
+              mountPath: /opt/docker/init.d/003-parse-init.sh
+              subPath: 003-parse-init.sh
 {{- end }}
 {{- end }}
 {{- if .Values.preStopScript }}
@@ -552,6 +555,12 @@ spec:
             items:
             - key: 003-parse-custom-files
               path: 003-parse-custom-files.sh
+        - name: {{ template "gateway.fullname" . }}-parse-init-script
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: 003-parse-init
+              path: 003-parse-init.sh
 {{- end }}
 {{- end }}
 {{- if .Values.preStopScript }}
