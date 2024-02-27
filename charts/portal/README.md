@@ -3,6 +3,8 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.6 General Updates
+- This new version of the chart supports API Portal 5.2.2.1
 ## 2.3.5-6 General Updates
 - Updated ci values
   - no impact
@@ -637,7 +639,7 @@ Portal Analytics
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `image.dispatcher` | dispatcher image | `dispatcher:5.2.2` |
 | `image.pssg` | PSSG image | `pssg:5.2.2` |
-| `image.apim` | APIM ingress image | `ingress:5.2.2` |
+| `image.apim` | APIM ingress image | `ingress:5.2.2.1` |
 | `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2.2` |
 | `image.data` | portal-data image | `portal-data:5.2.2` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2.2` |

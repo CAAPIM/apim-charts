@@ -414,7 +414,7 @@ tenantProvisioner:
 image:
   dispatcher: dispatcher:5.2.2
   pssg: pssg:5.2.2
-  apim: ingress:5.2.2
+  apim: ingress:5.2.2.1
   enterprise: portal-enterprise:5.2.2
   data: portal-data:5.2.2
   tps: tenant-provisioning-service:5.2.2
