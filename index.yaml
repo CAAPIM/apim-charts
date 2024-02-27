@@ -1516,6 +1516,38 @@ entries:
     version: 0.0.1
   portal:
   - apiVersion: v2
+    appVersion: 5.2.2.1
+    created: "2024-02-27T18:10:23.260581222Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: global.setupDemoDatabase
+      name: mysql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 9.4.7
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.3
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.7.2
+    description: CA API Developer Portal
+    digest: 5baeb60e62e00e36e138c084d5fcd4331dc882b740c82c5689cf270f8624e233
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.7/portal-2.3.7.tgz
+    version: 2.3.7
+  - apiVersion: v2
     appVersion: 5.2.2
     created: "2024-02-19T11:50:40.587146581Z"
     dependencies:
@@ -2347,4 +2379,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2024-02-19T11:50:40.587551124Z"
+generated: "2024-02-27T18:10:23.260862857Z"
