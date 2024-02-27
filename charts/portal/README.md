@@ -3,8 +3,11 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.7 General Updates
+- This new version of the chart supports API Portal 5.2.2.1
 ## 2.3.6 General Updates
-- This new version of the chart supports API Portal 5.2.3
+- Updated ci values
+  - no impact
 ## 2.3.4 General Updates
 - This new version of the chart supports API Portal 5.2.2
 - Ingress-NGINX Subchart is upgraded to version 4.7.2 to support K8s 1.26+ version.
@@ -937,7 +940,7 @@ global:
    podSecurityContext:
      fsGroup: <OC namespace starting value of openshift.io/sa.scc.supplemental-groups annotation>
      runAsNonRoot: true
-   containerSecurityContext:    
+   containerSecurityContext:
      runAsUser: <OC namespace starting value of openshift.io/sa.scc.uid-range annotation>
 ingress:
   type:
