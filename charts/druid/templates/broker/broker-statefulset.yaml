@@ -41,10 +41,20 @@ spec:
       {{- if .Values.broker.tolerations }}
       tolerations: {{- toYaml .Values.broker.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.broker.podSecurityContext }}
+      securityContext: {{- toYaml .Values.broker.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: broker
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.broker }}"
           imagePullPolicy: "{{ .Values.broker.image.pullPolicy }}"
+          {{- if .Values.broker.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.broker.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           envFrom:
           - configMapRef:
               name: broker-config
