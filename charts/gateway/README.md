@@ -66,6 +66,12 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.24 General Updates
+- Custom Volumes for initContainers and Sidecars
+  - This allows configmaps/secrets to be mounted to initContainers and sideCars
+    - customSideCarVolumes
+    - customInitVolumes
+
 ## 3.0.23 OTK 4.6.2_202402 Released 
 - Updated OTK image version value
 

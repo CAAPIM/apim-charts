@@ -973,6 +973,14 @@ sidecars: []
 ##         containerPort: 1234
 ##
 
+# customSideCarVolumes applies to sidecars. By default volumes of type emptyDir are automatically created for sidecars and initContainers. This config allows you to override that
+# Filtering is done by name, make sure that the volumeMount and volume names are the same.
+customSideCarVolumes: []
+
+# customInitVolumes applies to initContainers. By default volumes of type emptyDir are automatically created for volumeMounts in initContainers. This config allows you to override that
+# Filtering is done by name, make sure that the volumeMount and volume names are the same.
+customInitVolumes: []
+
 # Configure custom hosts
 customHosts:
   enabled: false
