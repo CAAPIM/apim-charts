@@ -67,7 +67,7 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
 ## 3.0.25 OTK Schedule job success and failure limts
-- Added sucess and failure job limit for OTK database maintenance schedule jobs 
+- Added configurable success and failure job history limit for OTK database maintenance schedule jobs.
 
 ## 3.0.24 General Updates
 - Custom Volumes for initContainers and Sidecars
