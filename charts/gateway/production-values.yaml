@@ -647,6 +647,9 @@ otk:
       - name: miscellaneous
         schedule: "*/5 * * * *"
 
+    scheduledTasksSuccessfulJobsHistoryLimit: 1
+    scheduledTasksFailedJobsHistoryLimit: 1
+
     labels: {}
     # nodeSelector: {}
     # tolerations: []
