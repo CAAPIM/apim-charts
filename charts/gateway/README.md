@@ -66,6 +66,9 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.25 OTK Schedule job success and failure limts
+- Added configurable success and failure job history limit for OTK database maintenance schedule jobs.
+
 ## 3.0.24 General Updates
 - Custom Volumes for initContainers and Sidecars
   - This allows configmaps/secrets to be mounted to initContainers and sideCars
@@ -603,6 +606,8 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.podLabels`               | OTK Job podLabels | {}
 | `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
 | `otk.job.resources`               | OTK Job resources | {}
+| `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
+| `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
