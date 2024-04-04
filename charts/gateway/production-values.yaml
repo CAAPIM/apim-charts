@@ -937,6 +937,14 @@ topologySpreadConstraints: []
 # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
 
+# PodDisruptionBudget
+# ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+# Only maxUnavailable or minAvailable can be set - both values cannot be set at the same time.
+pdb:
+  create: false
+  maxUnavailable: ""
+  minAvailable: ""
+
 # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext: {}
 
@@ -1160,7 +1168,7 @@ hazelcast:
   # url: hazelcast.example.com:5701
   image:
     repository: "hazelcast/hazelcast"
-    tag: "5.2.1"
+    tag: "5.3.6"
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName
