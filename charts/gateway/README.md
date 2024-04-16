@@ -66,6 +66,26 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.26 General Updates
+- Commented out Nginx specific annotations in the ingress configuration
+  - If you are using an Nginx ingress controller you will need to add or uncomment the following annotation manually
+    - nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    - [production-values.yaml](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/production-values.yaml#L792) sets this if you would like to use that as a starting point.
+- Upgraded Hazelcast SubChart and set default image to latest versions.
+- Added Gateway [Pod Disruption Budget](#pod-disruption-budgets)
+
+## 3.0.25 OTK Schedule job success and failure limts
+- Added configurable success and failure job history limit for OTK database maintenance schedule jobs.
+
+## 3.0.24 General Updates
+- Custom Volumes for initContainers and Sidecars
+  - This allows configmaps/secrets to be mounted to initContainers and sideCars
+    - customSideCarVolumes
+    - customInitVolumes
+
+## 3.0.23 OTK 4.6.2_202402 Released 
+- Updated OTK image version value
+
 ## 3.0.22 General Updates
 - Updated Chart ci values
   - no impact
@@ -375,6 +395,7 @@ database:
 * [Logs & Audit Configuration](#logs--audit-configuration)
 * [Graceful Termination](#graceful-termination)
 * [Autoscaling](#autoscaling)
+* [Pod Disruption Budgets](#pod-disruption-budgets)
 * [RBAC Parameters](#rbac-parameters)
 * [Service Metrics Demo](#service-metrics-demo)
 * [SubChart Configuration](#subchart-configuration)
@@ -594,6 +615,8 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.podLabels`               | OTK Job podLabels | {}
 | `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
 | `otk.job.resources`               | OTK Job resources | {}
+| `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
+| `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
@@ -1188,6 +1211,22 @@ autoscaling:
         - type: Percent
           value: 100
           periodSeconds: 15
+```
+
+### Pod Disruption Budgets
+[Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) allow you to limit the number of concurrent disruptions that your application experiences, allowing for higher availability while permitting the cluster administrator to manage the clusters nodes.
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `pdb.create`    | Create a PodDisruptionBudget for your Gateway Release            | `false` |
+| `pdb.maxUnavailable`    |   number of pods from that set that can be unavailable after the eviction. It can be either an absolute number or a percentage. | `""` |
+| `pdb.minAvailable`    |  number of pods from that set that must still be available after the eviction, even in the absence of the evicted pod. minAvailable can be either an absolute number or a percentage. | `""` |
+
+Example - note that only ***maxUnavailable*** or ***minAvailable*** can be set - both values ***cannot*** be set at the same time.
+```
+pdb:
+  create: true
+  maxUnavailable: 1
+  minAvailable: ""
 ```
 
 ### RBAC Parameters

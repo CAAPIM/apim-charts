@@ -64,7 +64,7 @@ spec:
         - name: {{ template "gateway.imagePullSecret" . }}
 {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Chart.Name }}-pm-tagger
           image: {{.Values.pmtagger.image.registry}}/{{.Values.pmtagger.image.repository}}:{{.Values.pmtagger.image.tag}}
           imagePullPolicy: {{ .Values.pmtagger.image.pullPolicy }}
           {{- if .Values.pmtagger.containerSecurityContext }}
