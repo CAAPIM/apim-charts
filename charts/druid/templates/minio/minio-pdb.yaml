@@ -1,4 +1,4 @@
-{{ if .Values.minio.pdb.create }}
+{{ if and .Values.minio.pdb.create .Values.global.deepStorage.enableDataMigration }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:

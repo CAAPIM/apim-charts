@@ -18,6 +18,16 @@ global:
   subdomainPrefix: dev-portal
   legacyHostnames: false
   legacyDatabaseNames: false
+  deepStorage:
+    enableDataMigration: true
+    s3SsecretName: minio-secret
+    # Auto-generated s3-auth
+    # s3AdminAccessKey:
+    # s3AdminSecretKey:
+    # s3ReadAccessKey:
+    # s3ReadSecretKey:
+    # s3existingConfigSecret:
+    bucketName: api-metrics
 # databasePassword: 7layer
 
 forceRedeploy: false
@@ -45,6 +55,10 @@ serviceAccount:
 # name:
 
 minio:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   auth:
     secretName: minio-secret
     # Auto-generated minio-auth
@@ -67,6 +81,8 @@ minio:
     projectId: ""
   azuregateway:
     enabled: false
+  ossgateway:
+    enabled: false
   replicaCount: 1
   port: 9000
   image:
@@ -81,6 +97,10 @@ minio:
 
 
 zookeeper:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   hostname: zookeeper
   port: 2181
   replicaCount: 1
@@ -95,6 +115,10 @@ zookeeper:
 # affinity:
 
 middlemanager:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   replicaCount: 1
   loglevel: WARN
   indexer:
@@ -111,6 +135,10 @@ middlemanager:
 # affinity:
 
 broker:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   replicaCount: 1
   loglevel: WARN
   image:
@@ -124,6 +152,10 @@ broker:
 # affinity:
 
 coordinator:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   hostname: coordinator
   loglevel: WARN
   port: 8081
@@ -139,6 +171,10 @@ coordinator:
 # affinity:
 
 historical:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   livenessProbe:
     initialDelaySeconds: 120
     timeoutSeconds: 1
@@ -164,6 +200,10 @@ historical:
 # affinity:
 
 ingestion:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
@@ -181,6 +221,10 @@ ingestion:
 # affinity:
 
 kafka:
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent

@@ -59,13 +59,13 @@ spec:
             - name: MINIO_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.minio.auth.secretName }}
-                  key: MINIO_ACCESS_KEY
+                  name: {{ .Values.global.deepStorage.secretName }}
+                  key: admin_access_key_id
             - name: MINIO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.minio.auth.secretName }}
-                  key: MINIO_SECRET_KEY
+                  name: {{ .Values.global.deepStorage.secretName }}
+                  key: admin_secret_access_key
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -78,6 +78,8 @@ spec:
               name: coordinator-config
           - secretRef:
               name: coordinator-secret
+          - secretRef:
+              name: seaweedfs-s3-secret
           readinessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]

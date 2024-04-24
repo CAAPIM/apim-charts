@@ -11,7 +11,7 @@ data:
   SERVICE_NAME: historical
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
-  MINIO_URL: http://minio:9000
+  MINIO_URL: http://seaweedfs-s3:8333
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
   CONTAINER_LOG_LEVEL: {{ .Values.historical.loglevel }}
   runtime.properties: |-

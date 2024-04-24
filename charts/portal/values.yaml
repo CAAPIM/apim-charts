@@ -478,6 +478,18 @@ druid:
   serviceAccount:
     create: true
   # name:
+
+  deepStorage:
+    enableDataMigration: true
+    secretName: seaweedfs-s3-secret
+    # Auto-generated s3-auth
+    # s3AdminAccessKey:
+    # s3AdminSecretKey:
+    # s3ReadAccessKey:
+    # s3ReadSecretKey:
+    # s3existingConfigSecret:
+    bucketName: api-metrics
+    
   persistence:
     storage:
       historical: 50Gi
@@ -699,6 +711,150 @@ druid:
     historical: druid:5.2.3
     kafka: kafka:5.2.3
     ingestion: ingestion-server:5.2.3
+
+seaweedfs:
+  createClusterRole: true
+  registry: ""
+  repository: ""
+  imageName: chrislusf/seaweedfs
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: "broadcom-apim"
+  restartPolicy: Always
+  loggingLevel: 1
+  # we will use this serviceAccountName for all ClusterRoles/ClusterRoleBindings
+  serviceAccountName: "seaweedfs"
+  # if enabled will use global.replicationPlacment and override master & filer defaultReplicaPlacement config
+  enableReplication: true
+  #  replication type is XYZ:
+  # X number of replica in other data centers
+  # Y number of replica in other racks in the same data center
+  # Z number of replica in other servers in the same rack
+  replicationPlacment: "001"
+  
+  master:
+    enabled: true
+    replicas: 1
+    volumePreallocate: false
+    volumeSizeLimitMB: 1024
+    #  replication type is XYZ:
+    # X number of replica in other data centers
+    # Y number of replica in other racks in the same data center
+    # Z number of replica in other servers in the same rack
+    defaultReplication: "001"
+
+    data:
+      type: "persistentVolumeClaim"
+      size: "2Gi"
+      storageClass: ""
+
+    logs:
+      type: "logtostderr"
+    
+    resources: |-
+      limits:
+        cpu: 1000m
+        memory: 3072Mi
+      requests:
+        cpu: 100m
+        memory: 1500Mi
+
+    affinity: ""
+    tolerations: ""
+    nodeSelector: ""
+
+    extraEnvironmentVars:
+      WEED_MASTER_VOLUME_GROWTH_COPY_1: '7'
+      WEED_MASTER_VOLUME_GROWTH_COPY_2: '6'
+      WEED_MASTER_VOLUME_GROWTH_COPY_3: '3'
+      WEED_MASTER_VOLUME_GROWTH_COPY_OTHER: '1'
+
+  volume:
+    enabled: true
+    replicas: 6
+    # Choose [memory|leveldb|leveldbMedium|leveldbLarge] mode for memory~performance balance., default memory
+    index: leveldb
+    # limit file size to avoid out of memory, default 256mb
+    fileSizeLimitMB: 256
+    # minimum free disk space(in percents). If free disk space lower this value - all volumes marks as ReadOnly
+    minFreeSpacePercent: 1
+
+    dataDirs:
+      - name: data
+        type: "persistentVolumeClaim"
+        storageClass: ""
+        size: "8Gi"
+        maxVolumes: 0
+      
+    idx: 
+      type: "persistentVolumeClaim"
+      storageClass: ""
+      size: "1Gi"
+
+    # Volume server's rack name
+    rack: rack1
+
+    # Volume server's data center name
+    dataCenter: dc1
+    
+    resources: |-
+      limits:
+        cpu: 1000m
+        memory: 3072Mi
+      requests:
+        cpu: 100m
+        memory: 1500Mi
+    
+    affinity: ""
+    tolerations: ""
+    nodeSelector: ""
+  
+  filer:
+    enabled: true
+    replicas: 1
+    defaultReplicaPlacement: "001"
+    # turn off directory listing
+    disableDirListing: false
+    # split files larger than the limit, default 32
+    maxMB: 32
+    # Limit sub dir listing size (default 100000)
+    dirListLimit: 100000
+
+    data:
+      type: "persistentVolumeClaim"
+      size: "4Gi"
+      storageClass: ""
+    
+    logs:
+      type: "logtostderr"
+
+    resources: |-
+      limits:
+        cpu: 1000m
+        memory: 3072Mi
+      requests:
+        cpu: 100m
+        memory: 1500Mi
+  
+    affinity: ""
+    tolerations: ""
+    nodeSelector: ""
+
+    # extraEnvVars is a list of extra enviroment variables to set with the stateful set.
+    extraEnvironmentVars:
+      WEED_LEVELDB2_ENABLED: "true"
+      # with http DELETE, by default the filer would check whether a folder is empty.
+      # recursive_delete will delete all sub folders and files, similar to "rm -Rf"
+      WEED_FILER_OPTIONS_RECURSIVE_DELETE: "true"
+      # directories under this folder will be automatically creating a separate bucket
+      WEED_FILER_BUCKETS_FOLDER: "/buckets"
+
+    s3:
+      enabled: true
+      # allow empty folders
+      allowEmptyFolder: true
+      # enable user & permission to s3 (need to inject to all services)
+      enableAuth: true
+      existingConfigSecret: null
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:

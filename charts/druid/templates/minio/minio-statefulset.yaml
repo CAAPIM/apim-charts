@@ -1,4 +1,4 @@
-{{- if not .Values.minio.cloudStorage }}
+{{- if and (not .Values.minio.cloudStorage) .Values.global.deepStorage.enableDataMigration }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
