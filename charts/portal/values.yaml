@@ -713,7 +713,7 @@ druid:
     ingestion: ingestion-server:5.2.3
 
 seaweedfs:
-  createClusterRole: true
+  createClusterRole: false
   registry: ""
   repository: ""
   imageName: chrislusf/seaweedfs
@@ -724,18 +724,17 @@ seaweedfs:
   # we will use this serviceAccountName for all ClusterRoles/ClusterRoleBindings
   serviceAccountName: "seaweedfs"
   # if enabled will use global.replicationPlacment and override master & filer defaultReplicaPlacement config
-  enableReplication: true
+  enableReplication: false
   #  replication type is XYZ:
   # X number of replica in other data centers
   # Y number of replica in other racks in the same data center
   # Z number of replica in other servers in the same rack
-  replicationPlacment: "001"
+  replicationPlacment: "000"
   
   master:
-    enabled: true
     replicas: 1
     volumePreallocate: false
-    volumeSizeLimitMB: 1024
+    volumeSizeLimitMB: 512
     #  replication type is XYZ:
     # X number of replica in other data centers
     # Y number of replica in other racks in the same data center
@@ -744,7 +743,7 @@ seaweedfs:
 
     data:
       type: "persistentVolumeClaim"
-      size: "2Gi"
+      size: "1Gi"
       storageClass: ""
 
     logs:
@@ -761,16 +760,17 @@ seaweedfs:
     affinity: ""
     tolerations: ""
     nodeSelector: ""
+    priorityClassName: ""
 
     extraEnvironmentVars:
-      WEED_MASTER_VOLUME_GROWTH_COPY_1: '1'
-      WEED_MASTER_VOLUME_GROWTH_COPY_2: '2'
-      WEED_MASTER_VOLUME_GROWTH_COPY_3: '3'
+      WEED_MASTER_VOLUME_GROWTH_COPY_1: '2'
+      WEED_MASTER_VOLUME_GROWTH_COPY_2: '1'
+      WEED_MASTER_VOLUME_GROWTH_COPY_3: '1'
       WEED_MASTER_VOLUME_GROWTH_COPY_OTHER: '1'
 
   volume:
-    enabled: true
-    replicas: 6
+    replicas: 1
+    loggingOverrideLevel: null
     # Choose [memory|leveldb|leveldbMedium|leveldbLarge] mode for memory~performance balance., default memory
     index: leveldb
     # limit file size to avoid out of memory, default 256mb
@@ -779,10 +779,10 @@ seaweedfs:
     minFreeSpacePercent: 1
 
     dataDirs:
-      - name: data
+      - name: data1
         type: "persistentVolumeClaim"
         storageClass: ""
-        size: "8Gi"
+        size: "40Gi"
         maxVolumes: 0
       
     idx: 
@@ -807,21 +807,20 @@ seaweedfs:
     affinity: ""
     tolerations: ""
     nodeSelector: ""
+    priorityClassName: ""
+
   
   filer:
     enabled: true
+    loggingOverrideLevel: null
     replicas: 1
-    defaultReplicaPlacement: "001"
-    # turn off directory listing
-    disableDirListing: false
+    defaultReplicaPlacement: "000"    
     # split files larger than the limit, default 32
     maxMB: 32
-    # Limit sub dir listing size (default 100000)
-    dirListLimit: 100000
 
     data:
       type: "persistentVolumeClaim"
-      size: "4Gi"
+      size: "1Gi"
       storageClass: ""
     
     logs:
@@ -838,6 +837,7 @@ seaweedfs:
     affinity: ""
     tolerations: ""
     nodeSelector: ""
+    priorityClassName: ""
 
     # extraEnvVars is a list of extra enviroment variables to set with the stateful set.
     extraEnvironmentVars:
@@ -854,6 +854,7 @@ seaweedfs:
       allowEmptyFolder: true
       # enable user & permission to s3 (need to inject to all services)
       enableAuth: true
+      auditLogConfig: {}
       existingConfigSecret: null
       createBuckets:
         - name: file-storage
