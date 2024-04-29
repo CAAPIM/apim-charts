@@ -61,10 +61,28 @@ Helm Version    Supported Kubernetes Versions
 * [Upgrade the Chart](#upgrading-the-chart)
 * [Uninstall the Chart](#uninstalling-the-chart)
 
+# Java 17
+The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
+
+If you use Policy Manager, you will need to update to v11.1.00.
+
 # Java 11
 The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.27 General Updates
+- Default image updated to v11.1.00
+- Added preview support for [OpenTelemetry](https://opentelemetry.io/)
+  - Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration
+  - Preview feature (only available on Gateway v11.1.00)
+  - Created an integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure observability backend to use with the Gateway
+    - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
+      - You are ***not required*** to use the observability stack that we provide as an example.
+      - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
+  - Gateway Chart configuration [options](#open-telemetry)
+- Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
+  - see [Redis configuration](#redis-configuration)
 
 ## 3.0.26 General Updates
 - Commented out Nginx specific annotations in the ingress configuration
@@ -838,6 +856,81 @@ ingress:
 | `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
 | `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
 
+### OpenTelemetry Configuration
+The Gateway from v11.1.00 can be configured to send telemetry to Observability backends [that support OpenTelemetry](https://opentelemetry.io/ecosystem/vendors/). Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration.
+
+This feature is a ***preview feature*** for v11.1.00 and is ***intentionally disabled*** by default. As with any integration that generates telemetry, there is a performance drop when turning on the OpenTelemetry integration with all of the features enabled.
+
+There is an integration example avaialable [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway.
+- You are ***not required*** to use the observability stack that we provide as an example.
+- The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
+- OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
+- In our example we inject the OpenTelemetry Java Agent to the Container Gateway, this emits additional telemetry like JVM metrics. The Gateway has the OpenTelemetry SDK built-in, the difference between that and the agent is that the SDK only captures Gateway application level traces and metrics, JVM metrics will not be emitted in this mode.
+
+#### Gateway OTel Configuration
+OpenTelemetry is configured on the Gateway in two places, system properties and cluster-wide Properties.
+
+To enable OpenTelemetry on the Gateway, uncomment the following system properties in values.yaml. A sample that works with our example is avaialable [here](https://github.com/Layer7-Community/Integrations/blob/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-values.yaml)
+
+- system.properties
+```
+config:
+  ...
+  systemProperties: |-
+  # OTel configuration - uncomment to enable OpenTelemetry
+    otel.instrumentation.common.default-enabled=true
+    otel.instrumentation.opentelemetry-api.enabled=true
+    otel.instrumentation.runtime-metrics.enabled=true
+    otel.instrumentation.runtime-telemetry.enabled=true
+    otel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true
+    otel.java.global-autoconfigure.enabled=true
+```
+- cluster-wide properties
+```
+config:
+  ...
+  cwp:
+    properties:
+      ...
+      - name: otel.enabled
+        value: "true"
+      - name: otel.serviceMetricEnabled
+        value: "true"
+      - name: otel.traceEnabled
+        value: "true"
+      - name: otel.metricPrefix
+        value: l7_
+      - name: otel.traceConfig
+        value: |
+          {
+            "services": [
+              {
+                "resolutionPath": ".*test_otel_service.*"
+              }
+            ],
+            "assertions": {
+              "exclude": [
+                "MtomDecode"
+              ]
+            },
+            "contextVariables": {
+              "exclude": [
+                ".*mypassword.*"
+              ]
+            }
+          }
+```
+
+#### Further configuration
+If you are using the integration example you will need to add the following podAnnotations. These are managed by the OpenTelemetry Operator.
+
+```
+podAnnotations:
+  instrumentation.opentelemetry.io/inject-java: "true" 
+  instrumentation.opentelemetry.io/container-names: "gateway"
+  sidecar.opentelemetry.io/inject: "<name-of-your-opentelemetrycollector>"
+```
+
 ### Redis Configuration
 This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
 
@@ -901,8 +994,25 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
+##### Redis Standalone (11.1.00 and later)
+The Gateway supports SSL/TLS and Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
+
+redis.properties
+```
+# Redis type can be sentinel or standalone
+# standalone does not support SSL or Auth
+ redis.type=standalone
+ redis.hostname=redis-standalone
+ redis.standalone.username=redisuser
+ redis.standalone.password=redispassword
+ redis.standalone.encodedPassword=redisencodedpassword
+ redis.port=6379
+ redis.key.prefix.grpname=l7GW
+ redis.commandTimeout=5000
+ ```
+
 ##### Redis Standalone (11.0.00_CR2 and later)
-The Gateway does not support SSL or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
+The Gateway does not support SSL/TLS or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
 ```

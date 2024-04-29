@@ -237,7 +237,7 @@ spec:
             - name: {{ template "gateway.fullname" . }}-redis-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
               subPath: redis.properties
-        {{- if and (.Values.config.redis.tls.enabled)  (.Values.config.redis.sentinel.enabled) }}
+        {{- if .Values.config.redis.tls.enabled }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
               subPath: redis.crt
@@ -460,7 +460,7 @@ spec:
             items:
             - key: redis.properties
               path: redis.properties
-       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.sentinel.enabled) }}
+       {{- if .Values.config.redis.tls.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
