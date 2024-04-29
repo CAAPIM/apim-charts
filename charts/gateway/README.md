@@ -61,6 +61,30 @@ Helm Version    Supported Kubernetes Versions
 * [Upgrade the Chart](#upgrading-the-chart)
 * [Uninstall the Chart](#uninstalling-the-chart)
 
+## Additional Guides
+* [Service Configuration](#port-configuration)
+* [Gateway Application Ports](#gateway-application-ports)
+* [Ingress Configuration](#ingress-configuration)
+* [PM Tagger Configuration](#pm-tagger-configuration)
+* [Redis Configuration](#redis-configuration)
+* [OpenTelemetry Configuration](#opentelemetry-configuration)
+* [OTK Install or Upgrade](#otk-install-or-upgrade)
+* [Database Configuration](#database-configuration)
+* [Cluster-Wide Properties](#cluster-wide-properties)
+* [Java Args](#java-args)
+* [System Properties](#system-properties)
+* [Gateway Bundles](#bundle-configuration)
+* [Bootstrap Script](#bootstrap-script)
+* [Custom Health Checks](#custom-health-checks)
+* [Custom Configuration Files](#custom-configuration-files)
+* [Logs & Audit Configuration](#logs--audit-configuration)
+* [Graceful Termination](#graceful-termination)
+* [Autoscaling](#autoscaling)
+* [Pod Disruption Budgets](#pod-disruption-budgets)
+* [RBAC Parameters](#rbac-parameters)
+* [Service Metrics Demo](#service-metrics-demo)
+* [SubChart Configuration](#subchart-configuration)
+
 # Java 17
 The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
@@ -394,29 +418,6 @@ database:
   enabled: false
   create: false
 ```
-
-## Additional Guides
-* [Service Configuration](#port-configuration)
-* [Gateway Application Ports](#gateway-application-ports)
-* [Ingress Configuration](#ingress-configuration)
-* [PM Tagger Configuration](#pm-tagger-configuration)
-* [Redis Configuration](#redis-configuration)
-* [OTK Install or Upgrade](#otk-install-or-upgrade)
-* [Database Configuration](#database-configuration)
-* [Cluster-Wide Properties](#cluster-wide-properties)
-* [Java Args](#java-args)
-* [System Properties](#system-properties)
-* [Gateway Bundles](#bundle-configuration)
-* [Bootstrap Script](#bootstrap-script)
-* [Custom Health Checks](#custom-health-checks)
-* [Custom Configuration Files](#custom-configuration-files)
-* [Logs & Audit Configuration](#logs--audit-configuration)
-* [Graceful Termination](#graceful-termination)
-* [Autoscaling](#autoscaling)
-* [Pod Disruption Budgets](#pod-disruption-budgets)
-* [RBAC Parameters](#rbac-parameters)
-* [Service Metrics Demo](#service-metrics-demo)
-* [SubChart Configuration](#subchart-configuration)
 
 ## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
