@@ -578,6 +578,7 @@ Limitations:
 * OTK Instance modifiers are not supported.
 * Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
 * Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+* OTK upgrade to 4.6.3 will take considerable amount of time due to liquibase updates.
 
 OTK Deployment examples can be found [here](/examples/otk)
 

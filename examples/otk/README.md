@@ -40,6 +40,13 @@ Or, install OTK on db backed gateway:
     helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
     --set "license.accept=true,management.restman.enabled=true,otk.enabled=true"
 
+OTK upgrade to 4.6.3 :
+
+This will take considerable amount of time due to liquibase updates. It is recommended to add the argument --timeout with appropriate timeout value. If the oauth_token table contains 500,000 rows, atleast 10 -15 mins are required.
+In addition, the below DB repair & optimzation command should be expected manually in the DB server after upgrade.
+    
+    mysqlcheck -u <otk_user> -p --auto-repair --optimize <otk_db_schema_name>
+
 # High Level
 
 ![image](https://github.com/APIM-KiranVaddadi/apim-charts/assets/59958248/0ea19c0d-5aee-4083-aacc-7f8c9c537592)

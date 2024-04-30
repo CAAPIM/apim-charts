@@ -21,7 +21,7 @@ metadata:
     {{- end }}
 data:
   create_otk_db.sql: |-
-      CREATE DATABASE {{ .Values.otk.database.sql.databaseName }};
+      CREATE DATABASE {{ .Values.otk.database.sql.databaseName }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       CREATE USER '{{ .Values.otk.database.username }}'@'%' identified by '{{ .Values.otk.database.password }}';
       GRANT ALL ON {{ .Values.otk.database.sql.databaseName}}.* TO '{{ .Values.otk.database.username  }}'@'%';
       {{- if  .Values.otk.database.readOnlyConnection.enabled }}
