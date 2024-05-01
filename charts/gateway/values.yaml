@@ -218,7 +218,7 @@ config:
       #       ],
       #       "assertions": {
       #         "exclude": [
-      #           "MtomDecode"
+      #           "Decode MTOM Message"
       #         ]
       #       },
       #       "contextVariables": {
@@ -245,13 +245,15 @@ config:
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
-    # OTel configuration - uncomment to enable OpenTelemetry
-    # otel.instrumentation.common.default-enabled=true
-    # otel.instrumentation.opentelemetry-api.enabled=true
-    # otel.instrumentation.runtime-metrics.enabled=true
-    # otel.instrumentation.runtime-telemetry.enabled=true
-    # otel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true
+    # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
+    # otel.sdk.disabled=false
     # otel.java.global-autoconfigure.enabled=true
+    # otel.service.name=ssg-gateway
+    # otel.exporter.otlp.endpoint=http://localhost:4318/
+    # otel.exporter.otlp.protocol=http/protobuf
+    # otel.traces.exporter=otlp
+    # otel.metrics.exporter=otlp
+    # otel.logs.exporter=none
     # Additional properties go here
 
  # If enabled this will override the default listen ports and their configuration in the API Gateway

@@ -97,14 +97,19 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 
 ## 3.0.27 General Updates
 - Default image updated to v11.1.00
+  - Due to conflicting embedded Hazelcast versions between Gateway 10.x and 11.1, and between 11.0 and 11.1, a rolling update cannot be performed when upgrading to version 11.1 GA. Instead, follow the alternative steps:
+    - Scale down your containers to zero.
+      - Update the image tag to the target version (e.g., 11.1.00)
+    - Scale up your containers back to their original state.
+  - Hazelcast versions have not changed between 11.0 CR1/CR2 and 11.1 GA, rolling updates are supported between these Gateway versions.
 - Added preview support for [OpenTelemetry](https://opentelemetry.io/)
   - Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration
   - Preview feature (only available on Gateway v11.1.00)
-  - Created an integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure observability backend to use with the Gateway
+  - An integration example is available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway
     - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
       - You are ***not required*** to use the observability stack that we provide as an example.
       - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
-  - Gateway Chart configuration [options](#open-telemetry)
+  - [OpenTelemetry Configuration](#opentelemetry-configuration)
 - Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
   - see [Redis configuration](#redis-configuration)
 
@@ -866,71 +871,57 @@ There is an integration example avaialable [here](https://github.com/Layer7-Comm
 - You are ***not required*** to use the observability stack that we provide as an example.
 - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
 - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
-- In our example we inject the OpenTelemetry Java Agent to the Container Gateway, this emits additional telemetry like JVM metrics. The Gateway has the OpenTelemetry SDK built-in, the difference between that and the agent is that the SDK only captures Gateway application level traces and metrics, JVM metrics will not be emitted in this mode.
+
+***NOTE: *** In our example we inject the OpenTelemetry Java Agent to the Container Gateway, this emits additional telemetry like JVM metrics. The Gateway has the OpenTelemetry SDK built-in making the OpenTelemetry Java Agent Optional, the key difference between the built-in SDK and the OTel Agent is that the SDK only captures Gateway application level traces and metrics, things like JVM metrics will not be captured in this mode.
 
 #### Gateway OTel Configuration
-OpenTelemetry is configured on the Gateway in two places, system properties and cluster-wide Properties.
+OpenTelemetry is configured on the Gateway in two places, system properties and cluster-wide Properties. The configuration below represents the minimal settings required to enable the built-in SDK and configure the Gateway to send telemetry to an OpenTelemetry Collector.
 
-To enable OpenTelemetry on the Gateway, uncomment the following system properties in values.yaml. A sample that works with our example is avaialable [here](https://github.com/Layer7-Community/Integrations/blob/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-values.yaml)
+These can be configured in values.yaml. See the section below to view examples of how and where to configure this.
 
 - system.properties
 ```
-config:
-  ...
-  systemProperties: |-
-  # OTel configuration - uncomment to enable OpenTelemetry
-    otel.instrumentation.common.default-enabled=true
-    otel.instrumentation.opentelemetry-api.enabled=true
-    otel.instrumentation.runtime-metrics.enabled=true
-    otel.instrumentation.runtime-telemetry.enabled=true
-    otel.instrumentation.opentelemetry-instrumentation-annotations.enabled=true
-    otel.java.global-autoconfigure.enabled=true
+otel.sdk.disabled=false
+otel.java.global-autoconfigure.enabled=true
+otel.service.name=ssg-gateway
+otel.exporter.otlp.endpoint=http://localhost:4318/
+otel.exporter.otlp.protocol=http/protobuf
+otel.traces.exporter=otlp
+otel.metrics.exporter=otlp
+otel.logs.exporter=none
 ```
 - cluster-wide properties
 ```
-config:
-  ...
-  cwp:
-    properties:
-      ...
-      - name: otel.enabled
-        value: "true"
-      - name: otel.serviceMetricEnabled
-        value: "true"
-      - name: otel.traceEnabled
-        value: "true"
-      - name: otel.metricPrefix
-        value: l7_
-      - name: otel.traceConfig
-        value: |
-          {
-            "services": [
-              {
-                "resolutionPath": ".*test_otel_service.*"
-              }
-            ],
-            "assertions": {
-              "exclude": [
-                "MtomDecode"
-              ]
-            },
-            "contextVariables": {
-              "exclude": [
-                ".*mypassword.*"
-              ]
-            }
-          }
+otel.enabled=true
+otel.serviceMetricEnabled=true
+otel.traceEnabled=true (if tracing is required)
+otel.traceConfig=(default {})
+```
+example otel.traceConfig
+```
+{
+  "services": [
+    {
+      "resolutionPath": ".*test_otel_service.*"
+    }
+  ],
+  "assertions": {
+    "exclude": [
+      "Decode MTOM Message"
+    ]
+  },
+  "contextVariables": {
+    "exclude": [
+      ".*mypassword.*"
+    ]
+  }
+}
 ```
 
-#### Further configuration
-If you are using the integration example you will need to add the following podAnnotations. These are managed by the OpenTelemetry Operator.
-
-```
-podAnnotations:
-  instrumentation.opentelemetry.io/inject-java: "true" 
-  instrumentation.opentelemetry.io/container-names: "gateway"
-  sidecar.opentelemetry.io/inject: "<name-of-your-opentelemetrycollector>"
-```
+##### Gateway OTel Examples (with or without the Optional Agent)
+The integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) contains two Gateway examples (values.yaml overrides) that are configured to use the SDK only approach ***or*** include the Optional OTel Java Agent. There are two Grafana Dashboards included that show the differences in the telemetry that emitted from the Gateway.
+- [SDK only, no agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-sdk-only-values.yaml)
+- [Agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-java-agent-values.yaml)
 
 ### Redis Configuration
 This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
