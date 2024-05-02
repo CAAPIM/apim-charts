@@ -1,5 +1,5 @@
 # Layer7 API Gateway
-This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
+This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana, redis.
 
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
@@ -112,6 +112,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
   - [OpenTelemetry Configuration](#opentelemetry-configuration)
 - Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
   - see [Redis configuration](#redis-configuration)
+- Cipher Suites in [Gateway Application Ports](#gateway-application-ports) have been updated to reflect updates in Gateway v11.1.00. ***Please check the list if you are using this configuration (disabled by default)***
 
 ## 3.0.26 General Updates
 - Commented out Nginx specific annotations in the ingress configuration
@@ -740,24 +741,24 @@ config:
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -867,7 +868,7 @@ The Gateway from v11.1.00 can be configured to send telemetry to Observability b
 
 This feature is a ***preview feature*** for v11.1.00 and is ***intentionally disabled*** by default. As with any integration that generates telemetry, there is a performance drop when turning on the OpenTelemetry integration with all of the features enabled.
 
-There is an integration example avaialable [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway.
+There is an integration example available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway.
 - You are ***not required*** to use the observability stack that we provide as an example.
 - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
 - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
