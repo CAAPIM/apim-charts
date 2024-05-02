@@ -970,7 +970,6 @@ The Gateway supports Redis master auth only. The Gateway will not be able to con
 redis.properties
 ```
 # Redis type can be sentinel or standalone
-# standalone does not support SSL or Auth
  redis.type=sentinel
  redis.sentinel.nodes=node1:26379,node2:26379,node3:26379
 ## Credentials are optional
@@ -993,13 +992,18 @@ The Gateway supports SSL/TLS and Authentication when connecting to a standalone 
 redis.properties
 ```
 # Redis type can be sentinel or standalone
-# standalone does not support SSL or Auth
  redis.type=standalone
  redis.hostname=redis-standalone
+## Credentials are optional
  redis.standalone.username=redisuser
  redis.standalone.password=redispassword
  redis.standalone.encodedPassword=redisencodedpassword
  redis.port=6379
+# SSL is optional
+ redis.ssl=true
+ redis.ssl.cert=redis.crt
+ redis.ssl.verifypeer=true
+# Additional Config
  redis.key.prefix.grpname=l7GW
  redis.commandTimeout=5000
  ```
