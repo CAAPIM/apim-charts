@@ -112,7 +112,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
   - [OpenTelemetry Configuration](#opentelemetry-configuration)
 - Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
   - see [Redis configuration](#redis-configuration)
-- Cipher Suites in [Gateway Application Ports](#gateway-application-ports) have been updated to reflect updates in Gateway v11.1.00. ***Please check the list if you are using this configuration (disabled by default)***
+- Cipher Suites in [Gateway Application Ports](#gateway-application-ports) have been updated to reflect updates in Gateway v11.1.00. Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/release-notes.html#concept.dita_ea0082004fb8c78a1723b9377f592085674b7ef7_jdk17) for more details. This configuration is ***disabled by default.***
 
 ## 3.0.26 General Updates
 - Commented out Nginx specific annotations in the ingress configuration
