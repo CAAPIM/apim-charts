@@ -1,5 +1,5 @@
 # Layer7 API Gateway
-This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana.
+This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana, redis.
 
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
@@ -61,10 +61,58 @@ Helm Version    Supported Kubernetes Versions
 * [Upgrade the Chart](#upgrading-the-chart)
 * [Uninstall the Chart](#uninstalling-the-chart)
 
+## Additional Guides
+* [Service Configuration](#port-configuration)
+* [Gateway Application Ports](#gateway-application-ports)
+* [Ingress Configuration](#ingress-configuration)
+* [PM Tagger Configuration](#pm-tagger-configuration)
+* [Redis Configuration](#redis-configuration)
+* [OpenTelemetry Configuration](#opentelemetry-configuration)
+* [OTK Install or Upgrade](#otk-install-or-upgrade)
+* [Database Configuration](#database-configuration)
+* [Cluster-Wide Properties](#cluster-wide-properties)
+* [Java Args](#java-args)
+* [System Properties](#system-properties)
+* [Gateway Bundles](#bundle-configuration)
+* [Bootstrap Script](#bootstrap-script)
+* [Custom Health Checks](#custom-health-checks)
+* [Custom Configuration Files](#custom-configuration-files)
+* [Logs & Audit Configuration](#logs--audit-configuration)
+* [Graceful Termination](#graceful-termination)
+* [Autoscaling](#autoscaling)
+* [Pod Disruption Budgets](#pod-disruption-budgets)
+* [RBAC Parameters](#rbac-parameters)
+* [Service Metrics Demo](#service-metrics-demo)
+* [SubChart Configuration](#subchart-configuration)
+
+# Java 17
+The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
+
+If you use Policy Manager, you will need to update to v11.1.00.
+
 # Java 11
 The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.27 General Updates
+- Default image updated to v11.1.00
+  - Due to conflicting embedded Hazelcast versions between Gateway 10.x and 11.1, and between 11.0 and 11.1, a rolling update cannot be performed when upgrading to version 11.1 GA. Instead, follow the alternative steps:
+    - Scale down your containers to zero.
+      - Update the image tag to the target version (e.g., 11.1.00)
+    - Scale up your containers back to their original state.
+  - Hazelcast versions have not changed between 11.0 CR1/CR2 and 11.1 GA, rolling updates are supported between these Gateway versions.
+- Added preview support for [OpenTelemetry](https://opentelemetry.io/)
+  - Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration
+  - Preview feature (only available on Gateway v11.1.00)
+  - An integration example is available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway
+    - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
+      - You are ***not required*** to use the observability stack that we provide as an example.
+      - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
+  - [OpenTelemetry Configuration](#opentelemetry-configuration)
+- Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
+  - see [Redis configuration](#redis-configuration)
+- Cipher Suites in [Gateway Application Ports](#gateway-application-ports) have been updated to reflect updates in Gateway v11.1.00. Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/release-notes.html#concept.dita_ea0082004fb8c78a1723b9377f592085674b7ef7_jdk17) for more details. This configuration is ***disabled by default.***
 
 ## 3.0.26 General Updates
 - Commented out Nginx specific annotations in the ingress configuration
@@ -376,29 +424,6 @@ database:
   enabled: false
   create: false
 ```
-
-## Additional Guides
-* [Service Configuration](#port-configuration)
-* [Gateway Application Ports](#gateway-application-ports)
-* [Ingress Configuration](#ingress-configuration)
-* [PM Tagger Configuration](#pm-tagger-configuration)
-* [Redis Configuration](#redis-configuration)
-* [OTK Install or Upgrade](#otk-install-or-upgrade)
-* [Database Configuration](#database-configuration)
-* [Cluster-Wide Properties](#cluster-wide-properties)
-* [Java Args](#java-args)
-* [System Properties](#system-properties)
-* [Gateway Bundles](#bundle-configuration)
-* [Bootstrap Script](#bootstrap-script)
-* [Custom Health Checks](#custom-health-checks)
-* [Custom Configuration Files](#custom-configuration-files)
-* [Logs & Audit Configuration](#logs--audit-configuration)
-* [Graceful Termination](#graceful-termination)
-* [Autoscaling](#autoscaling)
-* [Pod Disruption Budgets](#pod-disruption-budgets)
-* [RBAC Parameters](#rbac-parameters)
-* [Service Metrics Demo](#service-metrics-demo)
-* [SubChart Configuration](#subchart-configuration)
 
 ## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
@@ -716,24 +741,24 @@ config:
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -838,6 +863,67 @@ ingress:
 | `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
 | `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
 
+### OpenTelemetry Configuration
+The Gateway from v11.1.00 can be configured to send telemetry to Observability backends [that support OpenTelemetry](https://opentelemetry.io/ecosystem/vendors/). Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration.
+
+This feature is a ***preview feature*** for v11.1.00 and is ***intentionally disabled*** by default. As with any integration that generates telemetry, there is a performance drop when turning on the OpenTelemetry integration with all of the features enabled.
+
+There is an integration example available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway.
+- You are ***not required*** to use the observability stack that we provide as an example.
+- The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
+- OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
+
+***NOTE: *** In our example we inject the OpenTelemetry Java Agent to the Container Gateway, this emits additional telemetry like JVM metrics. The Gateway has the OpenTelemetry SDK built-in making the OpenTelemetry Java Agent Optional, the key difference between the built-in SDK and the OTel Agent is that the SDK only captures Gateway application level traces and metrics, things like JVM metrics will not be captured in this mode.
+
+#### Gateway OTel Configuration
+OpenTelemetry is configured on the Gateway in two places, system properties and cluster-wide Properties. The configuration below represents the minimal settings required to enable the built-in SDK and configure the Gateway to send telemetry to an OpenTelemetry Collector.
+
+These can be configured in values.yaml. See the section below to view examples of how and where to configure this.
+
+- system.properties
+```
+otel.sdk.disabled=false
+otel.java.global-autoconfigure.enabled=true
+otel.service.name=ssg-gateway
+otel.exporter.otlp.endpoint=http://localhost:4318/
+otel.exporter.otlp.protocol=http/protobuf
+otel.traces.exporter=otlp
+otel.metrics.exporter=otlp
+otel.logs.exporter=none
+```
+- cluster-wide properties
+```
+otel.enabled=true
+otel.serviceMetricEnabled=true
+otel.traceEnabled=true (if tracing is required)
+otel.traceConfig=(default {})
+```
+example otel.traceConfig
+```
+{
+  "services": [
+    {
+      "resolutionPath": ".*test_otel_service.*"
+    }
+  ],
+  "assertions": {
+    "exclude": [
+      "Decode MTOM Message"
+    ]
+  },
+  "contextVariables": {
+    "exclude": [
+      ".*mypassword.*"
+    ]
+  }
+}
+```
+
+##### Gateway OTel Examples (with or without the Optional Agent)
+The integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) contains two Gateway examples (values.yaml overrides) that are configured to use the SDK only approach ***or*** include the Optional OTel Java Agent. There are two Grafana Dashboards included that show the differences in the telemetry that emitted from the Gateway.
+- [SDK only, no agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-sdk-only-values.yaml)
+- [Agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-java-agent-values.yaml)
+
 ### Redis Configuration
 This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
 
@@ -884,7 +970,6 @@ The Gateway supports Redis master auth only. The Gateway will not be able to con
 redis.properties
 ```
 # Redis type can be sentinel or standalone
-# standalone does not support SSL or Auth
  redis.type=sentinel
  redis.sentinel.nodes=node1:26379,node2:26379,node3:26379
 ## Credentials are optional
@@ -901,8 +986,30 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
+##### Redis Standalone (11.1.00 and later)
+The Gateway supports SSL/TLS and Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
+
+redis.properties
+```
+# Redis type can be sentinel or standalone
+ redis.type=standalone
+ redis.hostname=redis-standalone
+## Credentials are optional
+ redis.standalone.username=redisuser
+ redis.standalone.password=redispassword
+ redis.standalone.encodedPassword=redisencodedpassword
+ redis.port=6379
+# SSL is optional
+ redis.ssl=true
+ redis.ssl.cert=redis.crt
+ redis.ssl.verifypeer=true
+# Additional Config
+ redis.key.prefix.grpname=l7GW
+ redis.commandTimeout=5000
+ ```
+
 ##### Redis Standalone (11.0.00_CR2 and later)
-The Gateway does not support SSL or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
+The Gateway does not support SSL/TLS or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
 ```
