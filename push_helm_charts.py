@@ -26,7 +26,7 @@ token = os.getenv('GITHUB_TOKEN')
 if not username or not password or not token:
     sys.exit("please set env for ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW, and GITHUB_TOKEN")
 helm_stage = "release" if args.release else "dev"
-helm_repo = f"apim-helm-{helm_stage}-local.usw1.packages.broadcom.com"
+helm_repo = f"apim-docker-{helm_stage}-local.usw1.packages.broadcom.com"
 subprocess.run(['docker', 'login', helm_repo, '-u', username, '-p', password], check=True, text=True)
 
 def download_chart(url):
