@@ -95,6 +95,10 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.28 General Updates
+- Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.
+  - Disabled by default
+
 ## 3.0.27 General Updates
 - Default image updated to v11.1.00
   - Due to conflicting embedded Hazelcast versions between Gateway 10.x and 11.1, and between 11.0 and 11.1, a rolling update cannot be performed when upgrading to version 11.1 GA. Instead, follow the alternative steps:
@@ -497,6 +501,12 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `ingress.tlsHostnames`    | Register additional Hostnames for the TLS Certificate  | `see values.yaml` |
 | `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `tls-secret` |
 | `ingress.additionalHostnamesAndPorts`    | key/value pairs of hostname:port that will be added to the ingress object  | `see values.yaml` |
+| `startupProbe.enabled`    | Enable/Disable               | `false` |
+| `startupProbe.initialDelaySeconds`    | Initial delay               | `60` |
+| `startupProbe.timeoutSeconds`    | Timeout               | `1` |
+| `startupProbe.periodSeconds`    | Frequency               | `10` |
+| `startupProbe.successThreshold`    | Success Threshold               | `1` |
+| `startupProbe.failureThreshold`    | Failure Threshold               | `10` |
 | `livenessProbe.enabled`    | Enable/Disable               | `true` |
 | `livenessProbe.initialDelaySeconds`    | Initial delay               | `60` |
 | `livenessProbe.timeoutSeconds`    | Timeout               | `1` |
