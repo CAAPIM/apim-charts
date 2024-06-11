@@ -237,7 +237,7 @@ spec:
             - name: {{ template "gateway.fullname" . }}-redis-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
               subPath: redis.properties
-        {{- if and (.Values.config.redis.tls.enabled)  (.Values.config.redis.sentinel.enabled) }}
+        {{- if .Values.config.redis.tls.enabled }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
               subPath: redis.crt
@@ -319,15 +319,28 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
-           {{- range .Values.sidecars }}
-           {{- range .volumeMounts }}
+         {{- range .Values.sidecars }}
+         {{- range .volumeMounts }}
+         {{- $vn := .name }}
+         {{ $duplicate := false}}
+         {{- if $.Values.initContainers}}
+           {{- range $_,$ic := $.Values.initContainers }}
+             {{- range $_,$icvm := $ic.volumeMounts }}
+               {{- if eq $vn $icvm.name }}
+                 {{ $duplicate = true}}
+               {{- end }}
+             {{- end }}
+           {{- end }}
+         {{- end }}
+         {{ if not $duplicate }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{ if .subPath }}
               subPath: {{ .subPath }}
               {{ end }}
-           {{- end }}
-           {{- end }}
+         {{- end }}
+         {{- end }}
+         {{- end }}
 {{- end }}
           envFrom:
             - configMapRef:
@@ -337,6 +350,31 @@ spec:
 {{- if .Values.tls.useSignedCertificates }}
             - secretRef:
                 name: {{ template "gateway.tlsSecretName" . }}
+{{- end }}
+
+{{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            {{- if eq .Values.startupProbe.type "httpGet"}}
+            httpGet:
+              path: {{ .Values.startupProbe.path | default "/ssg/ping"}}
+              port: {{ .Values.startupProbe.port | default 8443 }}
+              scheme: {{ .Values.startupProbe.scheme | default "HTTPS" }}
+              httpHeaders:
+              {{- range.Values.startupProbe.httpHeaders }}
+              - name: {{ .name }}
+                value: {{ .value }}
+              {{- end }}
+            {{- else }}
+            exec:
+              command:
+              - /bin/bash
+              - {{ .Values.startupProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.startupProbe.successThreshold }}
 {{- end }}
 {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
@@ -447,7 +485,7 @@ spec:
             items:
             - key: redis.properties
               path: redis.properties
-       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.sentinel.enabled) }}
+       {{- if .Values.config.redis.tls.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
@@ -608,9 +646,27 @@ spec:
 {{- end }}
 {{- if .Values.initContainers }}
      {{- range .Values.initContainers }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $cvIndex = 0 }}
+       {{- if $.Values.customInitVolumes }}
+       {{- range $i,$cv := $.Values.customInitVolumes }}
+       {{- if eq $vn $cv.name }}
+        {{- $found = true }}
+        {{- $cvIndex = $i }}
+       {{- end }}
+       {{- end }}
+       {{- end }}
+       {{- if eq $found true }}
+        {{- with (index $.Values.customInitVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}
@@ -642,9 +698,39 @@ spec:
 {{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $duplicate := false }}
+       {{- $cvIndex = 0 }}
+      {{- if $.Values.initContainers }}
+        {{- range  $_,$ic :=  $.Values.initContainers }}
+          {{- range $_,$icvm :=  $ic.volumeMounts }}
+            {{- if eq $vn $icvm.name }}
+              {{- $duplicate = true }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+       {{- if $.Values.customSideCarVolumes }}
+         {{- range $i,$cv := $.Values.customSideCarVolumes }}
+         {{- if eq $vn $cv.name }}
+           {{- $found = true }}
+           {{- $cvIndex = $i }}
+         {{- end }}
+         {{- end }}
+       {{- end }}
+       {{- if not $duplicate }}
+       {{- if $found }}
+        {{- with (index $.Values.customSideCarVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
+     {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}
