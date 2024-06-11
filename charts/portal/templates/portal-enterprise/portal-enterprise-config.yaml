@@ -23,7 +23,7 @@ data:
   HELP_BASE_URL: {{ include "portal.help.page" . | quote }}
   JAVA_OPTIONS: {{ .Values.portalEnterprise.javaOptions | default "-Xms2g -Xmx2g" | quote }}
   NSS_SDB_USE_CACHE: "no"
-  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
   RBAC_DATABASE_NAME: {{ include "rbac-db-name" . | quote }}
