@@ -3,6 +3,8 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.9 General Updates
+- This new version of the chart supports API Portal 5.3
 ## 2.3.8 General Updates
 - This new version of the chart supports API Portal 5.2.3
 ## 2.3.7 General Updates
@@ -77,7 +79,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -661,18 +663,18 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.2.3` |
-| `image.pssg` | PSSG image | `pssg:5.2.3` |
-| `image.apim` | APIM ingress image | `ingress:5.2.3` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2.3` |
-| `image.data` | portal-data image | `portal-data:5.2.3` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2.3` |
-| `image.analytics` | Analytics image | `analytics-server:5.2.3` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2.3` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2.3` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2.3` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2.3` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.2.3` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3` |
+| `image.pssg` | PSSG image | `pssg:5.3` |
+| `image.apim` | APIM ingress image | `ingress:5.3` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3` |
+| `image.data` | portal-data image | `portal-data:5.3` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -804,14 +806,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2.3`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2.3`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2.3`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2.3`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2.3`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2.3`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2.3`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2.3` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -1046,6 +1048,6 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2023 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2024 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
