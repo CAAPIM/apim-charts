@@ -189,6 +189,9 @@ spec:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
+            - name: { { template "gateway.fullname" . } }-env-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/env.properties
+              subPath: env.properties
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
@@ -345,8 +348,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
-            - secretRef:
-                name: {{ template "gateway.secretName" . }}
 {{- if .Values.tls.useSignedCertificates }}
             - secretRef:
                 name: {{ template "gateway.tlsSecretName" . }}
@@ -463,6 +464,9 @@ spec:
             items:
             - key: license
               path: license.xml
+        - name: { { template "gateway.fullname" . } }-env-properties
+          secret:
+            secretName: env-secret
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap

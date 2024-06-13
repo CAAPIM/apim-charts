@@ -475,6 +475,7 @@ database:
   username: gateway
   password: mypassword
   name: ssg
+  url: "jdbc:mysql://my-ssg-mysql:3306/ssg"
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
