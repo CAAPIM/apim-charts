@@ -439,6 +439,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `global.schedulerName`                      | Override the default scheduler | `nil` |
 | `license.value`          | Gateway license file | `nil`  |
 | `license.accept`          | Accept Gateway license EULA | `false`  |
+| `disklessConfig`          | Boolean value whether to use diskless configuration for Gateway or not. When true, environment variables are used to configure Gateway. When false, node.properties is used. | `true` |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
 | `image.tag`          | Image tag | `11.0.00`  |
