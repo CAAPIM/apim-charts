@@ -22,7 +22,7 @@ data:
   OTK_DATABASE_NAME: {{ include "otk-db-name" . | quote }}
   OTK_PORT: {{ .Values.portal.otk.port | quote }}
   PORTAL_SUBDOMAIN: {{ required "Please fill in domain in values.yaml" .Values.portal.domain | quote }}
-  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   SSG_CLUSTER_HOST: {{ include "tssg-public-host" . | quote }}
   SSG_JVM_HEAP: 4096m
   TENANT_ID: {{ include "default-tenant-id" . | quote }}

@@ -27,7 +27,7 @@ data:
   JAVA_OPTIONS: {{ .Values.tenantProvisioner.javaOptions | default "-Xms512m -Xmx512m" | quote }}
   NSS_SDB_USE_CACHE: "no"
   OTK_PORT: {{ .Values.portal.otk.port | quote }}
-  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   PORTAL_DATABASE_NAME: {{ include "portal-db-name" . | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
 {{ if .Values.tenantProvisioner.additionalEnv }}
