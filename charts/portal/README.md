@@ -856,7 +856,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.0.31-debian-11-r36` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.37-debian-12-r2` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
