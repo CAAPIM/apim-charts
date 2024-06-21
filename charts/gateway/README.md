@@ -1162,7 +1162,7 @@ The full default is this
 DISKLESS_CONFIG is a flag to pass gateway sensitive data to be mounted to the container gateway file system or passed as environment variables.
 By Default, true, environment variables are used to configure Gateway.
 
-When DISKLESS_CONFIG is disabled , Gateway will be configured from node.properties
+When DISKLESS_CONFIG is false , Gateway will be configured from node.properties
 
 #### node.properties
 Note: 
@@ -1171,7 +1171,7 @@ Note:
 node.cluster.pass=newpassword
 admin.user=admin
 admin.pass=newpassword
-node.db.config.main.host=<Replace with jdbc-url>
+node.db.config.main.host=myDBHost.com
 node.db.config.main.port=3306
 node.db.config.main.name=ssg
 node.db.config.main.user=gateway
@@ -1183,6 +1183,7 @@ node.cluster.pass=newpassword
 admin.user=admin
 admin.pass=newpassword
 node.db.type=derby
+node.db.config.main.user=gateway
 ```
 
 - Mounting a pre-configured node.properties to container gateway
