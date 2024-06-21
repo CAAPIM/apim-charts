@@ -22,10 +22,12 @@ data:
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
 {{- if .Values.database.enabled }}
-  {{- if .Values.database.create }}
+  {{- if .Values.disklessConfig }}
+    {{- if .Values.database.create }}
   SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
-  {{- else }}
+    {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
