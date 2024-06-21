@@ -73,6 +73,7 @@ Helm Version    Supported Kubernetes Versions
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
+* [Diskless Cofiguration](#diskless-configuration)
 * [Gateway Bundles](#bundle-configuration)
 * [Bootstrap Script](#bootstrap-script)
 * [Custom Health Checks](#custom-health-checks)
@@ -1157,6 +1158,50 @@ The full default is this
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
     # Additional properties go here
+```
+### DISKLESS Configuraton
+DISKLESS_CONFIG is a flag to pass gateway sensitive data to be mounted to the container gateway file system or passed as environment variables.
+By Default, true, environment variables are used to configure Gateway.
+
+When DISKLESS_CONFIG is disabled , Gateway will be configured from node.properties
+
+#### node.properties
+Note: 
+- Database configuration should be same as mentioned in node.properties
+```
+node.cluster.pass=newpassword
+admin.user=admin
+admin.pass=newpassword
+node.db.config.main.host=<Replace with jdbc-url>
+node.db.config.main.port=3306
+node.db.config.main.name=ssg
+node.db.config.main.user=gateway
+node.db.config.main.pass=newpassword
+```
+- For derby database, it is required to add ***node.db.type=derby*** to node.properties
+```
+node.cluster.pass=newpassword
+admin.user=admin
+admin.pass=newpassword
+node.db.type=derby
+```
+
+- Mounting a pre-configured node.properties to container gateway
+  - Referenced via existingGatewaySecretName
+  - In following example , pre-existing secret is  node-properties-secret
+  
+```
+customConfig:
+  enabled: true
+  mounts:
+  - name: node-properties-override
+    mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+    subPath: node.properties
+    secret:
+      name: node-properties-secret
+      item:
+        key: node.properties
+        path: node.properties
 ```
 
 ### Bundle Configuration
