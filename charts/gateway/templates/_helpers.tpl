@@ -194,6 +194,17 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
+ Define Gateway node.properties Secret Name
+ */}}
+{{- define "nodePropertiesSecretName" -}}
+{{- if .Values.nodePropertiesExistingSecretName -}}
+    {{ .Values.nodePropertiesExistingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "node.properties" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
  Validate OTK installation type (SINGLE, INTERNAL, DMZ)
 */}}
 {{- define "otk-install-type" -}}
