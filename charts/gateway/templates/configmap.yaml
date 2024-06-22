@@ -18,6 +18,7 @@ metadata:
 {{- end }}
 data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
+  DISKLESS_CONFIG: {{ .Values.disklessConfig.enabled | quote }}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
 {{- if .Values.database.enabled }}
