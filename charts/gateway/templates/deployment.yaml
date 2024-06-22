@@ -490,14 +490,6 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
-{{ if .Values.disklessConfig  }}
-        - name: { { template "gateway.fullname" . } }-node-properties
-          secret:
-            secretName: { { template "nodePropertiesSecretName" . } }
-            items:
-              - key: node.properties
-                path: node.properties
-{{ end }}
 {{- if .Values.config.redis }}
        {{- if .Values.config.redis.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-properties
