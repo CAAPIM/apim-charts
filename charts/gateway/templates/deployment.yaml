@@ -237,7 +237,7 @@ spec:
             - name: {{ template "gateway.fullname" . }}-redis-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
               subPath: redis.properties
-        {{- if and (.Values.config.redis.tls.enabled)  (.Values.config.redis.sentinel.enabled) }}
+        {{- if .Values.config.redis.tls.enabled }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
               subPath: redis.crt
@@ -351,6 +351,31 @@ spec:
             - secretRef:
                 name: {{ template "gateway.tlsSecretName" . }}
 {{- end }}
+
+{{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            {{- if eq .Values.startupProbe.type "httpGet"}}
+            httpGet:
+              path: {{ .Values.startupProbe.path | default "/ssg/ping"}}
+              port: {{ .Values.startupProbe.port | default 8443 }}
+              scheme: {{ .Values.startupProbe.scheme | default "HTTPS" }}
+              httpHeaders:
+              {{- range.Values.startupProbe.httpHeaders }}
+              - name: {{ .name }}
+                value: {{ .value }}
+              {{- end }}
+            {{- else }}
+            exec:
+              command:
+              - /bin/bash
+              - {{ .Values.startupProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.startupProbe.successThreshold }}
+{{- end }}
 {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
 {{- if and (.Values.otk.enabled) (.Values.otk.livenessProbe.enabled) }}
@@ -460,7 +485,7 @@ spec:
             items:
             - key: redis.properties
               path: redis.properties
-       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.sentinel.enabled) }}
+       {{- if .Values.config.redis.tls.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
