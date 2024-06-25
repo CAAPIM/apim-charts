@@ -1188,22 +1188,17 @@ node.db.config.main.user=gateway
 ```
 
 - Mounting a pre-configured node.properties to container gateway
-  - Referenced via existingGatewaySecretName
-  - In following example , pre-existing secret is  node-properties-secret
-  
+
 ```
-customConfig:
+disklessConfig:
   enabled: true
-  mounts:
-  - name: node-properties-override
-    mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
-    subPath: node.properties
-    secret:
-      name: node-properties-secret
-      item:
-        key: node.properties
-        path: node.properties
+  value:
+  # existingSecretName:
 ```
+- Use set file to place a node.properties here
+ ```
+helm install my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "disklessConfig.enabled=true" --set-file "disklessConfig.value=license.value=path/to/node.properties" --set "license.accept=true"layer7/gateway  ./values.yaml
+ ```
 
 ### Bundle Configuration
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
