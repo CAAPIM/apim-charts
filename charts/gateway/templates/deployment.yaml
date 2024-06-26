@@ -482,6 +482,14 @@ spec:
             items:
             - key: system-properties
               path: system.properties
+{{- if not .Values.disklessConfig }}
+        - name: {{ template "gateway.fullname" . }}-node-properties
+          secret:
+            secretName: {{ template "nodePropertiesSecretName" . }}
+            items:
+            - key: node.properties
+              path: node.properties
+{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:

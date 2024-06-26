@@ -9,6 +9,7 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
+
 # Use set diskless Configuration mode for Gateway
 # when true , get values from environment variable and on false will get values from node.properties
 disklessConfig:
