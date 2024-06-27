@@ -7,6 +7,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - This new version of the chart supports API Portal 5.3
 - Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
 - Ingress-NGINX Subchart is upgraded to version 4.10.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.0.37 MySQL version.
 - Refer release notes for more info https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/release-notes-api-developer-portal.html
 ## 2.3.8 General Updates
 - This new version of the chart supports API Portal 5.2.3
