@@ -468,28 +468,20 @@ spec:
             items:
             - key: license
               path: license.xml
-  {{ - if not .Values.disklessConfig.enabled }}
+  {{- if not .Values.disklessConfig.enabled }}
       - name: {{ template "gateway.fullname" . }}-node-properties
         secret:
           secretName: {{ template "gateway.node.properties" . }}
           items:
             - key: node.properties
               path: node.properties
-  {{ - end }}
+  {{- end }}
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
             items:
             - key: system-properties
               path: system.properties
-{{- if not .Values.disklessConfig }}
-        - name: {{ template "gateway.fullname" . }}-node-properties
-          secret:
-            secretName: {{ template "nodePropertiesSecretName" . }}
-            items:
-            - key: node.properties
-              path: node.properties
-{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
         - name: {{ template "gateway.fullname" . }}-hazelcast-client
           configMap:
