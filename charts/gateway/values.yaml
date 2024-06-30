@@ -15,7 +15,7 @@ image:
   tag: 11.1.00
   pullPolicy: IfNotPresent
 
-# If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
+# If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true 
 # and use the following Gateway image docker.io/caapim/gateway:10.1.00_20220802
 # image:
 #   registry: docker.io
