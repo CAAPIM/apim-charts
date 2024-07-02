@@ -73,7 +73,7 @@ Helm Version    Supported Kubernetes Versions
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
-* [Diskless Cofiguration](#diskless-configuration)
+* [Diskless Configuration](#diskless-configuration)
 * [Gateway Bundles](#bundle-configuration)
 * [Bootstrap Script](#bootstrap-script)
 * [Custom Health Checks](#custom-health-checks)
@@ -440,7 +440,9 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `global.schedulerName`                      | Override the default scheduler | `nil` |
 | `license.value`          | Gateway license file | `nil`  |
 | `license.accept`          | Accept Gateway license EULA | `false`  |
-| `disklessConfig`          | [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html.)|
+| `disklessConfig.enabled` | Enable diskless configuration | `true` |
+| `disklessConfig.value` | node.properties file. Used when disklessConfig.enabled is false. | `commented out` |
+| `disklessConfig.existingSecretName` | Point to an existing secret containing node.properties | `commented out` |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
 | `image.tag`          | Image tag | `11.0.00`  |
@@ -1159,15 +1161,31 @@ The full default is this
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
     # Additional properties go here
 ```
-### DISKLESS Configuraton
-DISKLESS_CONFIG is a flag to pass gateway sensitive data to be mounted to the container gateway file system or passed as environment variables.
-By Default, true, environment variables are used to configure Gateway.
+### Diskless Configuration
+Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info.
 
-When DISKLESS_CONFIG is false , Gateway will be configured from node.properties
+DISKLESS_CONFIG is a flag that tells the container gateway where to get its configuration from.
 
-#### node.properties
-Note: 
-- Database configuration should be same as mentioned in node.properties
+When DISKLESS_CONFIG is true, environment variables are used to configure Gateway.
+
+When DISKLESS_CONFIG is false, Gateway will be configured from node.properties. This node.properties file is mounted to the container gateway.
+
+#### DISKLESS_CONFIG = true
+DISKLESS_CONFIG is set to true by default in values.yaml via disklessConfig.enabled:
+```
+disklessConfig:
+  enabled: true
+  # value:
+  # existingSecretName:
+```
+
+#### DISKLESS_CONFIG = false
+When setting DISKLESS_CONFIG to false, create node.properties and set disklessConfig.enabled to false
+
+##### Create node.properties
+- Make sure the database configuration matches what is in node.properties
+
+Example: node.properties with MySQL database configuration
 ```
 node.cluster.pass=newpassword
 admin.user=admin
@@ -1179,6 +1197,8 @@ node.db.config.main.user=gateway
 node.db.config.main.pass=newpassword
 ```
 - For derby database, it is required to add ***node.db.type=derby*** to node.properties
+
+Example: node.properties with Derby configuration
 ```
 node.cluster.pass=newpassword
 admin.user=admin
@@ -1187,10 +1207,14 @@ node.db.type=derby
 node.db.config.main.user=gateway
 ```
 
-- Mounting a pre-configured node.properties to container gateway
+##### Update values.yaml
+Set disklessConfig.enabled to false. 
+
+To create new secret for node.properties, set value to node.properties file via --set-file flag
+
+Example: Create new secret for node.properties
 
 values.yaml
-
 ```
 disklessConfig:
   enabled: false
@@ -1198,10 +1222,27 @@ disklessConfig:
   # existingSecretName:
 ```
 
-- Use set file to place a node.properties here
- ```
-helm install my-ssg --set "disklessConfig.enabled=true" --set-file "disklessConfig.value=path/to/node.properties"  --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway  ./values.yaml
- ```
+helm command
+```
+helm install my-ssg --set-file "disklessConfig.value=path/to/node.properties" --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway -f ./values.yaml
+```
+
+If you already configured node.properties as a secret beforehand, you can just pass the secret name in values.yaml
+
+Example: Use existing secret for node.properties
+
+values.yaml
+```
+disklessConfig:
+  enabled: false
+  # value:
+  existingSecretName: ssg-node-properties
+```
+
+helm command
+```
+helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway -f ./values.yaml
+```
 
 ### Bundle Configuration
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
