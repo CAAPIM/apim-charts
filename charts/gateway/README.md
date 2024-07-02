@@ -1197,7 +1197,7 @@ disklessConfig:
 ```
 - Use set file to place a node.properties here
  ```
-helm install my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "disklessConfig.enabled=true" --set-file "disklessConfig.value=license.value=path/to/node.properties" --set "license.accept=true"layer7/gateway  ./values.yaml
+helm install my-ssg --set "disklessConfig.enabled=true" --set-file "disklessConfig.value=path/to/node.properties"  --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true"layer7/gateway  ./values.yaml
  ```
 
 ### Bundle Configuration

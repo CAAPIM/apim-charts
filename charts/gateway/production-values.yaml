@@ -9,7 +9,10 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
-disklessConfig: true
+disklessConfig:
+  enabled: true
+  value:
+  # existingSecretName:
 
 image:
   registry: docker.io
