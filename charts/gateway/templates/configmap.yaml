@@ -21,7 +21,7 @@ data:
   DISKLESS_CONFIG: {{ .Values.disklessConfig.enabled | quote }}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
-{{- if .Values.disklessConfig }}
+{{- if .Values.disklessConfig.enabled }}
   {{- if .Values.database.enabled }}
     {{- if .Values.database.create }}
   SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}

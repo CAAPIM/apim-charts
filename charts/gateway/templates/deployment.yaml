@@ -469,10 +469,10 @@ spec:
             - key: license
               path: license.xml
   {{- if not .Values.disklessConfig.enabled }}
-      - name: {{ template "gateway.fullname" . }}-node-properties
-        secret:
-          secretName: {{ template "gateway.node.properties" . }}
-          items:
+        - name: {{ template "gateway.fullname" . }}-node-properties
+          secret:
+            secretName: {{ template "gateway.node.properties" . }}
+            items:
             - key: node.properties
               path: node.properties
   {{- end }}
