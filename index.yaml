@@ -2,6 +2,21 @@ apiVersion: v1
 entries:
   druid:
   - apiVersion: v2
+    appVersion: 28.0.1
+    created: "2024-07-02T13:04:59.278593965Z"
+    description: Broadcom APIM Portal Analytics Chart
+    digest: e4216a843f72f2ed463a746dfe27975b9be40e4910fae056aead2305d5c8ce80
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: druid
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.14/druid-1.0.14.tgz
+    version: 1.0.14
+  - apiVersion: v2
     appVersion: 0.17.0
     created: "2024-02-28T17:48:20.206414004Z"
     description: Broadcom APIM Portal Analytics Chart
@@ -1747,6 +1762,38 @@ entries:
     version: 0.0.1
   portal:
   - apiVersion: v2
+    appVersion: "5.3"
+    created: "2024-07-02T13:04:59.390259913Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: global.setupDemoDatabase
+      name: mysql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 10.3.0
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.3
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.10.0
+    description: CA API Developer Portal
+    digest: b1874c18d39bc3724cafd723583776a2017b27ee0b7a6b14c69c8e025f70a2ac
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.9/portal-2.3.9.tgz
+    version: 2.3.9
+  - apiVersion: v2
     appVersion: 5.2.3
     created: "2024-02-28T17:48:20.325340563Z"
     dependencies:
@@ -2642,4 +2689,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2024-06-07T11:06:24.183426406Z"
+generated: "2024-07-02T13:04:59.390596907Z"
