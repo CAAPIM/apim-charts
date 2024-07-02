@@ -32,7 +32,7 @@ global:
   containerSecurityContext: {}
   #   containerSecurityContext:
   #     runAsUser: 1001
-  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
@@ -453,18 +453,18 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.2.3
-  pssg: pssg:5.2.3
-  apim: ingress:5.2.3
-  enterprise: portal-enterprise:5.2.3
-  data: portal-data:5.2.3
-  tps: tenant-provisioning-service:5.2.3
-  analytics: analytics-server:5.2.3
-  authenticator: authenticator:5.2.3
-  dbUpgrade: db-upgrade-portal:5.2.3
-  rbacUpgrade: db-upgrade-rbac:5.2.3
-  upgradeVerify: upgrade-verify:5.2.3
-  tlsManager: tls-automator:5.2.3
+  dispatcher: dispatcher:5.3
+  pssg: pssg:5.3
+  apim: ingress:5.3
+  enterprise: portal-enterprise:5.3
+  data: portal-data:5.3
+  tps: tenant-provisioning-service:5.3
+  analytics: analytics-server:5.3
+  authenticator: authenticator:5.3
+  dbUpgrade: db-upgrade-portal:5.3
+  rbacUpgrade: db-upgrade-rbac:5.3
+  upgradeVerify: upgrade-verify:5.3
+  tlsManager: tls-automator:5.3
 
 ##
 ## Subchart Configuration
@@ -691,14 +691,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.2.3
-    broker: druid:5.2.3
-    coordinator: druid:5.2.3
-    middlemanager: druid:5.2.3
-    minio: minio:5.2.3
-    historical: druid:5.2.3
-    kafka: kafka:5.2.3
-    ingestion: ingestion-server:5.2.3
+    zookeeper: zookeeper:5.3
+    broker: druid:5.3
+    coordinator: druid:5.3
+    middlemanager: druid:5.3
+    minio: minio:5.3
+    historical: druid:5.3
+    kafka: kafka:5.3
+    ingestion: ingestion-server:5.3
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -708,7 +708,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.2.3"
+    tag: "5.3"
     pullSecrets:
       - broadcom-apim
   pdb:
@@ -823,7 +823,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.36-debian-11-r4"
+    tag: "8.0.37-debian-12-r2"
   auth:
     username: portal
     existingSecret: database-secret
