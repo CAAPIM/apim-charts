@@ -9,6 +9,14 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
+# Use set diskless Configuration mode for Gateway
+# when true , get values from environment variable and on false will get values from node.properties
+# when disklessConfig.enabled is false , node.properties is passed via disklessConfig.value parameter
+disklessConfig:
+  enabled: true
+  # value:
+  # existingSecretName:
+
 image:
   registry: docker.io
   repository: caapim/gateway

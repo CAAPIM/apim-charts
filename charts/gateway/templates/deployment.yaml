@@ -192,6 +192,11 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
+{{- if not (.Values.disklessConfig.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-node-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
@@ -463,6 +468,14 @@ spec:
             items:
             - key: license
               path: license.xml
+  {{- if not .Values.disklessConfig.enabled }}
+        - name: {{ template "gateway.fullname" . }}-node-properties
+          secret:
+            secretName: {{ template "gateway.node.properties" . }}
+            items:
+            - key: node.properties
+              path: node.properties
+  {{- end }}
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap

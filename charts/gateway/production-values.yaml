@@ -9,6 +9,11 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
+disklessConfig:
+  enabled: true
+  # value:
+  # existingSecretName:
+
 image:
   registry: docker.io
   repository: caapim/gateway
