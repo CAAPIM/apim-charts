@@ -1158,6 +1158,21 @@ The full default is this
     # Additional properties go here
 ```
 
+## Read environment variables in Policy or pre-selected configuration fields (e.g. JDBC Connection URL)
+You can create and read environment variables as Gateway context variable syntax in Policy and in pre-selected configuration fields (e.g. JDBC Connection URL). In the values.yaml file, set the useEnvironmentVars field in env section to true , and set JDBC configuration parameters to use your env variables values:
+
+```
+additionalEnv: 
+  SSGX_gatewayDbJdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+  SSGX_gatewayDbJdbcUser: gateway
+  SSGX_gatewayDbJdbcUrl: jdbc:mysql://localhost:3306/ssg?allowPublicKeyRetrieval=True
+```  
+Example of adding Jdbc password as Secret 
+```
+additionalSecret: 
+  SSGX_gatewayDbJdbcPassword: myPassword
+``` 
+
 ### Bundle Configuration
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
 This allows for purpose built Gateways with a guaranteed set of configuration, apis/services.
