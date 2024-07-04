@@ -11,6 +11,9 @@ metadata:
    chart: {{ template "gateway.chart" . }}
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
+   {{- range $key, $val := .Values.additionalLabels }}
+   {{ $key }}: "{{ $val }}"
+   {{- end }}
  annotations:
 {{- range $key, $val := .Values.ingress.annotations }}
    {{ $key }}: "{{ $val }}"
@@ -32,7 +35,15 @@ spec:
         path: {{ .path }}
         backend:
           service:
+           {{- if .backend }}
+           {{- if eq .backend "management" }}
+            name: {{ $gatewayFullName }}-management
+           {{- else }}
             name: {{ $gatewayFullName }}
+           {{- end }}
+           {{- else }}
+            name: {{ $gatewayFullName }}
+           {{- end }}
             port:
             {{- if .service.port.number }}
               number: {{ .service.port.number }}

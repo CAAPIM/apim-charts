@@ -1,0 +1,18 @@
+{{ if .Values.ingestion.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: ingestion
+  name: ingestion-pdb
+spec:
+  {{- if .Values.ingestion.pdb.minAvailable }}
+  minAvailable: {{ .Values.ingestion.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.ingestion.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.ingestion.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: ingestion-server
+{{ end }}

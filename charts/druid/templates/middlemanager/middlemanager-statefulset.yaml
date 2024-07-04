@@ -41,10 +41,20 @@ spec:
       {{- if .Values.middlemanager.tolerations }}
       tolerations: {{- toYaml .Values.middlemanager.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.middlemanager.podSecurityContext }}
+      securityContext: {{- toYaml .Values.middlemanager.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: middlemanager
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.middlemanager }}"
           imagePullPolicy: "{{ .Values.middlemanager.image.pullPolicy }}"
+          {{- if .Values.middlemanager.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.middlemanager.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: MINIO_ACCESS_KEY
               valueFrom:

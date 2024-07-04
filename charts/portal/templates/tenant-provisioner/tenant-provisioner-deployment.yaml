@@ -43,6 +43,11 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
+      {{- if .Values.tenantProvisioner.podSecurityContext }}
+      securityContext: {{- toYaml .Values.tenantProvisioner.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}      
       initContainers:
         - name: liquidbase-upgrade-portal
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
@@ -54,6 +59,11 @@ spec:
         - name: tenant-provisioner-service
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.tps }}"
           imagePullPolicy: "{{ .Values.tenantProvisioner.image.pullPolicy }}"
+          {{- if .Values.tenantProvisioner.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.tenantProvisioner.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: 9000
               protocol: TCP
@@ -91,8 +101,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
             - name: TPS_SSL_CERT
               valueFrom:

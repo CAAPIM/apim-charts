@@ -41,10 +41,20 @@ spec:
       {{- if .Values.coordinator.tolerations }}
       tolerations: {{- toYaml .Values.coordinator.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.coordinator.podSecurityContext }}
+      securityContext: {{- toYaml .Values.coordinator.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: coordinator
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.coordinator }}"
           imagePullPolicy: "{{ .Values.coordinator.image.pullPolicy }}"
+          {{- if .Values.coordinator.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.coordinator.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: MINIO_ACCESS_KEY
               valueFrom:
@@ -62,8 +72,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
           envFrom:
           - configMapRef:

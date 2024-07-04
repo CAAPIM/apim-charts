@@ -41,12 +41,23 @@ spec:
       {{- if .Values.historical.tolerations }}
       tolerations: {{- toYaml .Values.historical.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.historical.podSecurityContext }}
+      securityContext: {{- toYaml .Values.historical.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- else }}
       securityContext:
         fsGroup: 1010
+      {{- end }}
       containers:
         - name: historical
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.historical }}"
           imagePullPolicy: "{{ .Values.historical.image.pullPolicy }}"
+          {{- if .Values.historical.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.historical.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: MINIO_ACCESS_KEY
               valueFrom:
@@ -64,17 +75,19 @@ spec:
           readinessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 90
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.historical.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.historical.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.historical.readinessProbe.periodSeconds }}
+            successThreshold: {{ .Values.historical.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.historical.readinessProbe.failureThreshold }}
           livenessProbe:
             exec:
               command: [sh, /opt/diagnostic/health_check.sh]
-            initialDelaySeconds: 120
-            timeoutSeconds: 1
-            periodSeconds: 15
-            successThreshold: 1
+            initialDelaySeconds: {{ .Values.historical.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.historical.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.historical.livenessProbe.periodSeconds }}
+            successThreshold: {{ .Values.historical.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.historical.livenessProbe.failureThreshold }}
           ports:
             - containerPort: 8083
           {{- if .Values.historical.resources }}

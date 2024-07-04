@@ -47,6 +47,11 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
+      {{- if .Values.analytics.podSecurityContext }}
+      securityContext: {{- toYaml .Values.analytics.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       initContainers:
         - name: liquidbase-upgrade-portal
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
@@ -58,6 +63,11 @@ spec:
         - name: analytics-server
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.analytics }}"
           imagePullPolicy: "{{ .Values.analytics.image.pullPolicy }}"
+          {{- if .Values.analytics.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.analytics.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: RABBITMQ_PASSWORD
               valueFrom:
@@ -80,8 +90,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
           envFrom:
           - configMapRef:

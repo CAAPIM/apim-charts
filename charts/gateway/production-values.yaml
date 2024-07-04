@@ -12,7 +12,7 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.0.00
+  tag: 11.1.00
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -30,6 +30,20 @@ imagePullSecret:
   # existingSecretName: private-registry-secret
   username:
   password:
+
+# Additional Annotations apply to all deployed objects
+additionalAnnotations: {}
+
+# Additional Labels apply to all deployed objects
+additionalLabels: {}
+
+## Pod Labels for the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+
+# Pod Annotations apply to the Gateway Pod
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
 
 serviceAccount:
   # name:
@@ -54,7 +68,7 @@ pmtagger:
   image:
     registry: docker.io
     repository: layer7api/pm-tagger
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -66,40 +80,48 @@ pmtagger:
     limits:
       memory: 64Mi
       cpu: 250m
+  ## Pod Labels for the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  podLabels: {}
+
+  # Pod Annotations apply to the PM Tagger Pod
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
+
   # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
   # nodeSelector: {}
   # affinity: {}
+
+  # ref:https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods
+  topologySpreadConstraints: []
+
   # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
 
-# Cluster Hostname
-clusterHostname: my.localdomain
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
 
-# Database configuration
-database:
-  # DB Backed or ephemeral
-  enabled: true
-  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
-  # Do not use this demo database in production!!!
-  create: false
-  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
-  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
-  username: gateway
-  password: mypassword
-  name: ssg
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
 
-## If loading a TLS Key/Pair
-# This key will become the default ssl key. Can only have one.
-# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
-## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
-  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
-  # SSG_SSL_KEY_PASS
-tls:
-  useSignedCertificates: false
-  # existingSecretName: ssg-tls
-# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
-  key:
-  pass:
+# Override all lifecycle hooks. This will take precedence over the preStopScript section below.
+lifecycleHooks: {}
+  # postStart: {}
+  # preStop: {}
+
+# This preStop script checks for open connections and delays pod termination for the specified timeout seconds
+# Enabling this mounts the script to /opt/docker/gracefulshutdown.sh and adds a preStop lifecycle hook to the Gateway Deployment
+preStopScript:
+  enabled: false        # Enable/Disable
+  periodSeconds: 3      # Time between checks
+  timeoutSeconds: 60    # Timeout - must be lower than terminationGracePeriodSeconds
+  excludedPorts:
+  - 2124
+  - 8777
+
+## terminationGracePeriodSeconds default duration in seconds kubernetes waits for container to exit before sending kill signal.
+## Defaults to 30 if not set
+# terminationGracePeriodSeconds: 90
 
 # Configure autoscaling
 # this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
@@ -175,9 +197,36 @@ config:
           com.l7tech.server.policy.variable.ServerVariables.level = SEVERE
           com.l7tech.external.assertions.odata.server.producer.jdbc.GenerateSqlQuery.level = SEVERE
           com.l7tech.server.policy.assertion.ServerSetVariableAssertion.level = SEVERE
-          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
+          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion.level = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+      # - name: otel.enabled
+      #   value: "true"
+      # - name: otel.serviceMetricEnabled
+      #   value: "true"
+      # - name: otel.traceEnabled
+      #   value: "true"
+      # - name: otel.metricPrefix
+      #   value: l7_
+      # - name: otel.traceConfig
+      #   value: |
+      #     {
+      #       "services": [
+      #         {
+      #           "resolutionPath": ".*test_otel_service.*"
+      #         }
+      #       ],
+      #       "assertions": {
+      #         "exclude": [
+      #           "Decode MTOM Message"
+      #         ]
+      #       },
+      #       "contextVariables": {
+      #         "exclude": [
+      #           ".*mypassword.*"
+      #         ]
+      #       }
+      #     }
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
@@ -192,6 +241,19 @@ config:
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Redis configuration - uncomment to use Redis
+    # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
+    # com.l7tech.server.extension.sharedCounterProvider=redis
+    # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+    # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
+    # otel.sdk.disabled=false
+    # otel.java.global-autoconfigure.enabled=true
+    # otel.service.name=ssg-gateway
+    # otel.exporter.otlp.endpoint=http://localhost:4318/
+    # otel.exporter.otlp.protocol=http/protobuf
+    # otel.traces.exporter=otlp
+    # otel.metrics.exporter=otlp
+    # otel.logs.exporter=none
     # Additional properties go here
 
  # If enabled this will override the default listen ports and their configuration in the API Gateway
@@ -216,32 +278,32 @@ config:
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          # - TLSv1.0
-          # - TLSv1.1
+        # - TLSv1.0
+        # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -277,32 +339,32 @@ config:
         # privateKey: 00000000000000000000000000000002:ssl
           clientAuthentication: Optional
           versions:
-          # - TLSv1.0
-          # - TLSv1.1
+        # - TLSv1.0
+        # - TLSv1.1
           - TLSv1.2
           - TLSv1.3
           useCipherSuitesOrder: true
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -332,6 +394,58 @@ config:
         # - Built-in services
         tls:
           enabled: false
+  redis:
+    # enable or disable redis integration
+    # please uncomment the 3 redis properties in config.systemProperties
+    # Redis client properties for configuring Redis Standalone or Redis Sentinel connections
+    enabled: false
+    # We recommend using an existing secret for Redis configuration in production environments
+    # for separation of concerns and to better secure Redis client property secrets.
+    # redis configuration must have a key called redis.properties (see the Redis Configuration in the readme for more details)
+    # existingConfigSecret: redis-config-secret
+    # To configure the Redis client directly in this values file uncomment and/or set the following client properties
+    groupName: l7GW
+    commandTimeout: 5000
+    # The Gateway supports Redis master auth only.
+    # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
+    # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
+    auth:
+      enabled: false
+    # username: username
+      password:
+        encoded: false
+        value: mypassword
+    # In standalone mode auth and ssl/tls is only available starting from Gateway v11.1.00
+    # this is for testing only and is not supported in
+    # production environments
+    sentinel:
+      enabled: true
+      masterSet: mymaster
+      # If the subChart is not enabled sentinel nodes need to be set
+      nodes:
+      - <host>:<port>
+      - <host>:<port>
+      - <host>:<port>
+    standalone: {}
+    #  host: redis-standalone
+    #  port: 6379
+    tls:
+      enabled: true
+      existingSecret: ""
+      verifyPeer: true
+      # redisCrt: |+
+      #   -----BEGIN CERTIFICATE-----
+      #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
+      #   ....
+      #   -----END CERTIFICATE-----
+    # Enable subChart to have Helm optionally deploy Redis Sentinel/Standalone with your gateways.
+    subChart:
+      # If the subChart is enabled, configuration from redis in the subCharts section
+      # will need to match the auth and tls settings here. This is true by default so no
+      # changes will be required
+      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
+      enabled: false
+
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
@@ -346,8 +460,42 @@ config:
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
 
+# Cluster Hostname
+clusterHostname: my.localdomain
+
+# Database configuration
+database:
+  # DB Backed or ephemeral
+  enabled: true
+  # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
+  # Do not use this demo database in production!!!
+  create: false
+  # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
+  # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
+  username: gateway
+  password: mypassword
+  name: ssg
+
+## If loading a TLS Key/Pair
+# This key will become the default ssl key. Can only have one.
+# use with helm command: --set-file tls.key=/path/to/ssl.p12 --set tls.pass=keypass
+## Reference an existing secret for the Gateway Private Key, the secret needs to contain the following.
+  # SSG_SSL_KEY - decoded value needs to be base64 encoded. (cat ssl.p12 | base64 --wrap=0)
+  # SSG_SSL_KEY_PASS
+tls:
+  useSignedCertificates: false
+  # existingSecretName: ssg-tls
+# It is not recommendeded to load private keys in values.yaml, use an existingTlsSecret.
+  key:
+  pass:
+
 # Cluster Password
 clusterPassword: mypassword
+
+# Rollout Gateway deployment when the primary Gateway ConfigMap Changes.
+# This does not apply to cluster wide properties, listen ports or the Gateway secret
+restartOnConfigChange:
+  enabled: false
 
 # This enables/disables Policy Manager Access and sets the SSG_ADMIN username and password
 # Credentials will be moved to a secret object in the next push..
@@ -387,6 +535,11 @@ management:
     #   clientIP:
     #     timeoutSeconds: 10800
 
+    # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+    # internalTrafficPolicy: Cluster
+    # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    # externalTrafficPolicy: Cluster
+
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: ClusterIP
@@ -421,85 +574,244 @@ service:
   #   clientIP:
   #     timeoutSeconds: 10800
 
+  # Internal Traffic Policy - https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy
+  # internalTrafficPolicy: Cluster
+  # External Traffic Policy - https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  # externalTrafficPolicy: Cluster
+
 # This enables/disables otk install or upgrade.
 # Prerequisites.
-#  1. OTK DB is installed. 
-#  2. restman is enabled. Can be disabled once the install/upgrage is complete (management.restman.enabled: true) 
+#  1. OTK DB is installed.
+#  2. Restman is enabled for DB backed Gateway. Can be disabled once the install/upgrade is complete (management.restman.enabled: true)
+#  Note: In dual gateway installation, restart the pods after OTK install or upgrade.
 otk:
   enabled: false
   # OTK installation type - SINGLE, DMZ or INTERNAL
   type: SINGLE
 
-  # Force install or upgrade by uninstalling existing otk soluction kit and install.
-  # forceInstallOrUpgrade: false
+  # Force install or upgrade by uninstalling existing otk solution kit and install.
+  forceInstallOrUpgrade: false
 
-  # Not applicable for DMZ and INTERNAL OTK types
-  # enablePortalIngeration: false
-  # skipPostInstallationTasks: false
+  # Not applicable for DMZ and INTERNAL OTK types. Install/Upgrade portal sub solution kits.
+  enablePortalIntegration: false
+  skipPostInstallationTasks: false
+  skipInternalServerTools: false
+
+  # Restman host and port (optional). Valid only for db backed gateways
+  # Default - gateway service
+  # restmanHost:
+  # Default -  installSolutionKits.restmanPort
+  # restmanPort:
 
   # Specify internal gateway host and port for DMZ OTK type
-  # internalGatewayHost: 
+  # internalGatewayHost:
   # internalGatewayPort:
 
-  # Specify DMZ gateway host and port for interal OTK type
-  # dmzGatewayHost: 
+  # Specify DMZ gateway host and port for internal OTK type
+  # dmzGatewayHost:
   # dmzGatewayPort:
 
-  # List of comma seperated sub soluction Kits to install or upgrade.
+  # Network mask and startIP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.
+  # The db maintenance and health check services can accessible based on the IP address.
+  # https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/10-1/policy-assertions/assertion-palette/service-availability-assertions/restrict-access-to-ip-address-range-assertion.html
+  # networkMask: 16
+  # startIP: 240.224.2.1
+
+  cert:
+    # Specify DMZ gateway certificates that needs to be imported to Internal GW (for ephemeral gateway)
+    # dmzGatewayCert:
+    # dmzGatewayIssuer:
+    # dmzGatewaySerial:
+    # dmzGatewaySubject:
+
+    # Specify Internal gateway certificates that needs to be imported for DMZ GW (for ephemeral gateway)
+    # internalGatewayCert:
+    # internalGatewayIssuer:
+    # internalGatewaySerial:
+    # internalGatewaySubject:
+
+  # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
+
+  customizations:
+
+    # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
+    # When creating these secrets/configmaps the format should be
+    # key: bundle1.bundle value: <xml value>
+    # Each bundle that you create as a ConfigMap can not exceed 1MB in size.
+    # Ephemeral Gateway: Copies the bundles into Gateways bundle folder (/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK)
+    # DB backed Gateway: Applies bundles to the Gateway using Restman calls (PUT /restman/1.0/bundle)
+    existingBundle:
+      enabled: false
+      configMaps: []
+      # - name: otkbundle1
+      #   configMap:
+      #     defaultMode: 420
+      #     optional: false
+      #     name: otkbundle1
+      # - name: otkbundle1
+
+      secrets: []
+      # - name: secretotkbundle1
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: "secret-provider-class-name"
+      # - name: secretotkbundle2
+
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.0
+      tag: 4.6.2_202402
       pullPolicy: IfNotPresent
+    imagePullSecret:
+      enabled: false
+
+    # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
+    scheduledTasks:
+      - name: client
+        schedule: "*/31 * * * *"
+      - name: idtoken
+        schedule: "*/29 * * * *"
+      - name: sessions
+        schedule: "*/7 * * * *"
+      - name: token
+        schedule: "*/5 * * * *"
+      - name: trl
+        schedule: "0 */1 * * *"
+      - name: miscellaneous
+        schedule: "*/5 * * * *"
+
+    scheduledTasksSuccessfulJobsHistoryLimit: 1
+    scheduledTasksFailedJobsHistoryLimit: 1
+
     labels: {}
     # nodeSelector: {}
     # tolerations: []
+    ## Pod Labels for the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+    podLabels: {}
+
+    # Pod Annotations apply to the OTK install Pod
+    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 200m
+      limits:
+        memory: 128Mi
+        cpu: 250m
+
   database:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
-    #existingSecretName: otkdb-secret
-    username: root
-    password: 7layer
+    dbUpgrade: true
+    useDemoDb: true
+
+    # OTK database user name and password used to create Gateway Database/cassandra connection.
+    username: otk_user
+    password: mypassword
+
+    # existingSecretName: otkDbSecret
+
+    # Database connection properties
     properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+
+    # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
     # properties: {"localDataCenterName" : "DC1"}
+
+    # Update database connection properties during helm upgrade.
+    updateConnection: true
+
+    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
+    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+    changeLogSync: false
+
     sql:
-      jdbcURL: mysql://localhost:3306/otk_db
-      jdbcDriverClass: com.l7tech.jdbc.mysql.MySQLDriver
+
+      # If provided, used to create OTK schema and tables.
+      # ddlUsername:
+      # ddlPassword:
+
+      # jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcURL:
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name or MySQL demo db name
+      databaseName: otk_db
+
+      # c3p0 connection properties.
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      # For mysql & oracle setup test clients
+      createTestClients: false
+      # Test clients redirect Url prefix. Required if createTestClients is true.
+      testClientsRedirectUrlPrefix:
+
+    cassandra:
+      # connectionPoints:
+      # port:
+      # keyspace:
+      # For Cassandra driverConfig is supported from GW 11.0. Either otk.database.cassandra.driverConfig or otk.database.properties should be provided
+      # driverConfig: {"localDataCenterName" : "DC1"}
+
+    # Optionally configure read only database connection for MySQL/Oracle.
+    readOnlyConnection:
+      enabled: false
+      # connectionName: OAuth_ReadOnly
+      # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name
-      # databaseName:
-    # cassandra:
-    #   connectionPoints: localhost
-    #   port:
-    #   keyspace:
-    #   driverConfig: {"localDataCenterName" : "DC1"}
+      databaseName:
+
+  # Install OTK Health check bundle on gateway. Uses config map.
+  # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
+  # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
+  healthCheckBundle:
+    enabled: false
+    useExisting: false
+    name: otk-health-check-bundle-config
 
   # OTK Specific configuration:
+  # - The liveliness probe is not supported for OTK 4.6 & below versions.
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recommended enable liveness probe after the pods restart.
+  # - Should be enabled after OTK installation.
   # - otk.livenessProbe.type as httpGet
   # - otk.livenessProbe.path /auth/oauth/health
   # - otk.livenessProbe.port 8443
   # - otk.livenessProbe.scheme https
-  # Have a higher initialDelaySeconds for livenessProbe when OTK is included to allow OTK installation job to complete
   livenessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
+      path: /auth/oauth/health
+      port: 8443
+
   # OTK Specific configuration:
+  # - The readinessProbe probe is not supported for OTK 4.6 & below versions.
+  # - Only valid for SINGLE and INTERNAL OTK types. Not be enabled for a DMZ OTK type.
+  # - In a dual gateway OTK setup, it is recommended enable readiness probe after the pods restart.
+  # - Should be enabled after OTK installation.
   # - otk.readinessProbe.type as httpGet
   # - otk.readinessProbe.path /auth/oauth/health
   # - otk.readinessProbe.port 8443
   # - otk.readinessProbe.scheme https
-  # Have a higher initialDelaySeconds for readinessProbe when OTK is included to allow OTK installation job to complete
   readinessProbe:
-    enabled: true
+    enabled: false
     type: httpGet
     httpGet:
-      path:
-      port:
-
+      path: /auth/oauth/health
+      port: 8443
 
 # This project does not currently support Google's GCE controller.
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
@@ -519,26 +831,27 @@ ingress:
   # By default clusterHostname is used, only set this if you want to use a different host
    ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
-  - hosts: 
+  - hosts:
     - dev.ca.com
     secretName: default
   # - hosts:
   #   - dev1.ca.com
   #   secretName: default
-  
+
   rules:
-   - host: dev.ca.com
-     path: "/"
-     service:
-       port:
-         name: https
-        # number:
+  - host: dev.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+      # number:
   #  - host: dev1.ca.com
   #    path: "/"
+  #    backend: management
   #    service:
   #      port:
-  #        name: anotherport
-  #       #number:
+  #        name: management
+  #        #number:
 
 # Additional Environment variables to be added to the Gateway Configmap
 additionalEnv: {}
@@ -574,7 +887,7 @@ existingBundle:
   #       secretProviderClass: "secret-provider-class-name"
  # - name: mysecretbundle2
 
- # This is limited to a single configmap or secret. ConfigMaps and Secrets can hold multiple scripts.
+# This is limited to a single configmap or secret. ConfigMaps and Secrets can hold multiple scripts.
 # See an example here - https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples
 # NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.
 existingHealthCheck:
@@ -591,7 +904,7 @@ existingHealthCheck:
     #   volumeAttributes:
     #     secretProviderClass: "vault-database"
 
-    # Certain folders on the Container Gateway are not writeable by design.
+# Certain folders on the Container Gateway are not writeable by design.
 # This configuration allows you to mount configMap/Secret keys to specific paths on the Gateway without
 # the need for a root user or a custom/derived image.
 customConfig:
@@ -613,6 +926,22 @@ customConfig:
 bundle:
   enabled: false
   path: "bundles/*.bundle"
+
+startupProbe:
+  enabled: false
+  type: command
+  command: /opt/docker/rc.d/diagnostic/health_check.sh
+# type: httpGet
+# path: /ssg/ping
+# port: 8443
+# scheme: HTTPS
+# httpHeaders: []
+  initialDelaySeconds: 20
+  timeoutSeconds: 1
+  periodSeconds: 15
+  successThreshold: 1
+  failureThreshold: 15
+
 
 livenessProbe:
   enabled: true
@@ -660,6 +989,14 @@ topologySpreadConstraints: []
 # ref:https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
 
+# PodDisruptionBudget
+# ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+# Only maxUnavailable or minAvailable can be set - both values cannot be set at the same time.
+pdb:
+  create: false
+  maxUnavailable: ""
+  minAvailable: ""
+
 # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext: {}
 
@@ -676,13 +1013,12 @@ containerSecurityContext: {}
 bootstrap:
   script:
     enabled: false
-  cleanup: false
 
 # Add initContainers to the Gateway
 initContainers: []
 # initContainers:
 # - name: simple-init
-#   image: docker.io/layer7api/simple-init:1.0.0
+#   image: docker.io/layer7api/simple-init:1.0.1
 #   imagePullPolicy: Always
 #   volumeMounts:
 #   - name: config-directory
@@ -699,6 +1035,14 @@ sidecars: []
 ##       - name: portname
 ##         containerPort: 1234
 ##
+
+# customSideCarVolumes applies to sidecars. By default volumes of type emptyDir are automatically created for sidecars and initContainers. This config allows you to override that
+# Filtering is done by name, make sure that the volumeMount and volume names are the same.
+customSideCarVolumes: []
+
+# customInitVolumes applies to initContainers. By default volumes of type emptyDir are automatically created for volumeMounts in initContainers. This config allows you to override that
+# Filtering is done by name, make sure that the volumeMount and volume names are the same.
+customInitVolumes: []
 
 # Configure custom hosts
 customHosts:
@@ -741,6 +1085,70 @@ installSolutionKits:
 ##
 ## Subchart Configuration
 ##
+
+# Settings for Redis - https://github.com/bitnami/charts/tree/master/bitnami/redis
+redis:
+  auth:
+    # The Gateway supports Redis master auth in sentinel mode only, set this value to true to enable auth.
+    enabled: false
+    # Sentinel auth which enables password authentication on sentinels too is not supported by the Gateway and should remain false
+    sentinel: false
+    password: "mypassword"
+  tls:
+    enabled: true
+    authClients: false
+    # this only applies if redis.subChart.enabled is true
+    autoGenerated: true
+  image:
+    registry: docker.io
+    repository: bitnami/redis
+    tag: 7.2.1-debian-11-r0
+    pullPolicy: IfNotPresent
+  # replication or standalone
+  architecture: replication
+  master:
+    count: 1
+    configuration: ""
+    disableCommands:
+      - FLUSHDB
+      - FLUSHALL
+    persistence:
+      enabled: false
+      size: 20Gi
+    service:
+      type: LoadBalancer
+  replica:
+    replicaCount: 3
+    containerPorts:
+      redis: 6379
+    resources:
+      limits: {}
+      requests: {}
+    persistence:
+      enabled: false
+      sizeLimit: ""
+      accessModes:
+        - ReadWriteOnce
+      size: 20Gi
+  # service:
+    # type: LoadBalancer
+    # externalTrafficPolicy: Local
+  sentinel:
+    enabled: true
+  # service:
+    # type: LoadBalancer
+    # externalTrafficPolicy: Local
+    image:
+      registry: docker.io
+      repository: bitnami/redis-sentinel
+      tag: 7.2.1-debian-11-r0
+      digest: ""
+      pullPolicy: IfNotPresent
+    masterSet: mymaster
+    quorum: 2
+    resources:
+      limits: {}
+      requests: {}
 
 # MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
 mysql:
@@ -790,6 +1198,13 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    persistence:
+      annotations:
+        helm.sh/hook: pre-install,post-upgrade
+        helm.sh/hook-weight: "-10"
+  commonAnnotations:
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
@@ -805,7 +1220,7 @@ hazelcast:
   # url: hazelcast.example.com:5701
   image:
     repository: "hazelcast/hazelcast"
-    tag: "5.1.1"
+    tag: "5.3.6"
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName

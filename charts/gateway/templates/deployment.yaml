@@ -7,6 +7,15 @@ metadata:
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -19,6 +28,25 @@ spec:
       labels:
         app: {{ template "gateway.fullname" . }}
         release: {{ .Release.Name }}
+    {{- if  .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- if .Values.restartOnConfigChange }}
+    {{- if .Values.restartOnConfigChange.enabled }}
+        checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if not .Values.podAnnotations }}
+     {{- if .Values.restartOnConfigChange }}
+     {{- if .Values.restartOnConfigChange.enabled }}
+      annotations:
+         checksum/config: {{ include ( print  $.Template.BasePath "/configmap.yaml" ) $ | sha256sum }}
+     {{- end }}
+     {{- end }}
+    {{- end }}
     spec:
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.affinity }}
@@ -39,13 +67,51 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: {{ .Values.global.schedulerName }}
       {{- end }}
-      {{- if .Values.initContainers }}
-      initContainers: {{- toYaml .Values.initContainers | nindent 12 }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-{{- if .Values.imagePullSecret.enabled }}
+
+      initContainers:
+      {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+      - name: {{ .Chart.Name }}-otk-install-container
+        image: {{ template "otk.image" . }}
+        imagePullPolicy: {{ .Values.otk.job.image.pullPolicy }}
+        envFrom:
+        - secretRef:
+            name: {{ template "otk.dbSecretName" . }}
+        - secretRef:
+            name: {{ template "gateway.secretName" . }}
+      {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.readOnly" . }}
+      {{- end }}
+        - configMapRef:
+            name: {{ template "gateway.fullname" . }}-otk-install-configmap
+        volumeMounts:
+          - name: {{ template "gateway.fullname" . }}-otk-install-container
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+          {{- if .Values.otk.customizations.existingBundle.enabled }}
+          {{- range .Values.otk.customizations.existingBundle.configMaps }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+          {{- end }}
+          {{- range .Values.otk.customizations.existingBundle.secrets }}
+          - name: {{ .name }}
+            mountPath: /docker/custom_bundles/{{ .name }}
+            {{ if .csi }}
+            readOnly: {{ .csi.readOnly }}
+            {{ end }}
+          {{- end }}
+          {{- end }}
+      {{- end }}
+      {{- if .Values.initContainers }}
+      {{toYaml .Values.initContainers | nindent 6 }}
+      {{ end }}
+
+      {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
         - name: {{ template "gateway.imagePullSecret" . }}
-{{- end }}
+      {{- end }}
       containers:
         {{- if .Values.sidecars }}
         {{- toYaml .Values.sidecars | nindent 8 }}
@@ -56,8 +122,22 @@ spec:
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
-          {{- if .Values.installSolutionKits.enabled}}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+          {{- else if .Values.installSolutionKits.enabled }}
           lifecycle:
+            {{- if .Values.preStopScript.enabled }}
+            preStop:
+              exec:
+                command:
+                - /bin/bash
+                - /opt/docker/gracefulshutdown.sh
+                - {{ .Values.preStopScript.timeoutSeconds | quote }}
+                - {{ .Values.preStopScript.periodSeconds | quote }}
+                {{- range .Values.preStopScript.excludedPorts}}
+                - {{ . | quote }}
+                {{- end }}
+            {{- end }}
             postStart:
               exec:
                 command:
@@ -77,6 +157,18 @@ spec:
                     curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
                     {{ .postInstallCommand }}
                     {{- end }}
+          {{- else if .Values.preStopScript.enabled }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/bash
+                - /opt/docker/gracefulshutdown.sh
+                - {{ .Values.preStopScript.timeoutSeconds | quote }}
+                - {{ .Values.preStopScript.periodSeconds | quote }}
+                {{- range .Values.preStopScript.excludedPorts}}
+                - {{ . | quote }}
+                {{- end }}
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
@@ -126,6 +218,10 @@ spec:
             - name: {{ template "gateway.fullname" . }}-bundle-configmap
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/configmap
 {{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting)}}
+            - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/1otkhealthcheck
+{{- end }}
 {{- if .Values.management.restman.enabled }}
             - name: {{ template "gateway.fullname" . }}-restman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/restman
@@ -134,6 +230,18 @@ spec:
         {{- if .Values.management.graphman.enabled }}
             - name: {{ template "gateway.fullname" . }}-graphman
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
+        {{- end }}
+{{- end }}
+{{- if .Values.config.redis  }}
+        {{- if .Values.config.redis.enabled }}
+            - name: {{ template "gateway.fullname" . }}-redis-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
+              subPath: redis.properties
+        {{- if .Values.config.redis.tls.enabled }}
+            - name: {{ template "gateway.fullname" . }}-redis-crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
+              subPath: redis.crt
+        {{- end }}
         {{- end }}
 {{- end }}
 {{- if .Values.existingHealthCheck }}
@@ -151,7 +259,6 @@ spec:
            {{- end }}
 {{- end }}
 {{- end }}
-
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
         {{- range .Values.customConfig.mounts }}
@@ -161,8 +268,6 @@ spec:
         {{- end }}
 {{- end }}
 {{- end }}
-
-
 {{- if .Values.existingBundle.enabled }}
            {{- range .Values.existingBundle.configMaps }}
             - name: {{ .name }}
@@ -184,12 +289,18 @@ spec:
               mountPath: /opt/docker/rc.d/base/update-service-account-token.xml
               subPath: update-service-account-token.xml
 {{- end }}
-
 {{- if .Values.bootstrap }}
 {{- if .Values.bootstrap.script.enabled }}
             - name: {{ template "gateway.fullname" . }}-parse-custom-files-script
               mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
               subPath: 003-parse-custom-files.sh
+{{- end }}
+{{- end }}
+{{- if .Values.preStopScript }}
+{{- if .Values.preStopScript.enabled }}
+            - name: {{ template "gateway.fullname" . }}-gracefulshutdown
+              mountPath: /opt/docker/gracefulshutdown.sh
+              subPath: gracefulshutdown.sh
 {{- end }}
 {{- end }}
 {{- if .Values.initContainers }}
@@ -203,16 +314,33 @@ spec:
            {{- end }}
            {{- end }}
 {{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-otk-install-container
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+{{- end }}
 {{- if .Values.sidecars }}
-           {{- range .Values.sidecars }}
-           {{- range .volumeMounts }}
+         {{- range .Values.sidecars }}
+         {{- range .volumeMounts }}
+         {{- $vn := .name }}
+         {{ $duplicate := false}}
+         {{- if $.Values.initContainers}}
+           {{- range $_,$ic := $.Values.initContainers }}
+             {{- range $_,$icvm := $ic.volumeMounts }}
+               {{- if eq $vn $icvm.name }}
+                 {{ $duplicate = true}}
+               {{- end }}
+             {{- end }}
+           {{- end }}
+         {{- end }}
+         {{ if not $duplicate }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{ if .subPath }}
               subPath: {{ .subPath }}
               {{ end }}
-           {{- end }}
-           {{- end }}
+         {{- end }}
+         {{- end }}
+         {{- end }}
 {{- end }}
           envFrom:
             - configMapRef:
@@ -223,13 +351,38 @@ spec:
             - secretRef:
                 name: {{ template "gateway.tlsSecretName" . }}
 {{- end }}
+
+{{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            {{- if eq .Values.startupProbe.type "httpGet"}}
+            httpGet:
+              path: {{ .Values.startupProbe.path | default "/ssg/ping"}}
+              port: {{ .Values.startupProbe.port | default 8443 }}
+              scheme: {{ .Values.startupProbe.scheme | default "HTTPS" }}
+              httpHeaders:
+              {{- range.Values.startupProbe.httpHeaders }}
+              - name: {{ .name }}
+                value: {{ .value }}
+              {{- end }}
+            {{- else }}
+            exec:
+              command:
+              - /bin/bash
+              - {{ .Values.startupProbe.command | default "/opt/docker/rc.d/diagnostic/health_check.sh" }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+            successThreshold: {{ .Values.startupProbe.successThreshold }}
+{{- end }}
 {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
 {{- if and (.Values.otk.enabled) (.Values.otk.livenessProbe.enabled) }}
 {{- if (eq .Values.otk.livenessProbe.type "httpGet" ) }}
             httpGet:
-              path: {{ .Values.otk.livenessProbe.path | default "/auth/oauth/health"}}
-              port: {{ .Values.otk.livenessProbe.port | default 8443 }}
+              path: {{ .Values.otk.livenessProbe.httpGet.path | default "/otk/health"}}
+              port: {{ .Values.otk.livenessProbe.httpGet.port | default 8443 }}
               scheme: {{ .Values.otk.livenessProbe.scheme | default "HTTPS" }}
 {{- else }}
             exec:
@@ -266,8 +419,8 @@ spec:
 {{- if and (.Values.otk.enabled) (.Values.otk.readinessProbe.enabled) }}
 {{- if (eq .Values.otk.readinessProbe.type "httpGet" ) }}
             httpGet:
-              path: {{ .Values.otk.readinessProbe.path | default "/auth/oauth/health"}}
-              port: {{ .Values.otk.readinessProbe.port | default 8443 }}
+              path: {{ .Values.otk.readinessProbe.httpGet.path | default "/otk/health"}}
+              port: {{ .Values.otk.readinessProbe.httpGet.port | default 8443 }}
               scheme: {{ .Values.otk.readinessProbe.scheme | default "HTTPS" }}
 {{- else }}
             exec:
@@ -324,6 +477,24 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
+{{- if .Values.config.redis }}
+       {{- if .Values.config.redis.enabled }}
+        - name: {{ template "gateway.fullname" . }}-redis-properties
+          secret:
+            secretName: {{ template "redisConfigSecretName" . }}
+            items:
+            - key: redis.properties
+              path: redis.properties
+       {{- if .Values.config.redis.tls.enabled }}
+        - name: {{ template "gateway.fullname" . }}-redis-crt
+          secret:
+            secretName: {{ template "redisTlsSecretName" . }}
+            items:
+            - key: tls.crt
+              path: redis.crt
+      {{- end }}
+      {{- end }}
+{{- end }}
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
      {{- range .Values.customConfig.mounts }}
@@ -373,6 +544,13 @@ spec:
             optional: false
             name: {{ template "gateway.fullname" . }}-bundle-configmap
 {{- end }}
+{{- if and  (.Values.otk.enabled) (.Values.otk.healthCheckBundle.enabled) (not .Values.otk.healthCheckBundle.useExisting) }}
+        - name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
+{{- end }}
 {{- if .Values.serviceMetrics.enabled }}
         - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
           configMap:
@@ -412,6 +590,16 @@ spec:
             items:
             - key: 003-parse-custom-files
               path: 003-parse-custom-files.sh
+{{- end }}
+{{- end }}
+{{- if .Values.preStopScript }}
+{{- if .Values.preStopScript.enabled }}
+        - name: {{ template "gateway.fullname" . }}-gracefulshutdown
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key: gracefulshutdown
+              path: gracefulshutdown.sh
 {{- end }}
 {{- end }}
 {{- if .Values.existingBundle.enabled }}
@@ -458,17 +646,91 @@ spec:
 {{- end }}
 {{- if .Values.initContainers }}
      {{- range .Values.initContainers }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $cvIndex = 0 }}
+       {{- if $.Values.customInitVolumes }}
+       {{- range $i,$cv := $.Values.customInitVolumes }}
+       {{- if eq $vn $cv.name }}
+        {{- $found = true }}
+        {{- $cvIndex = $i }}
+       {{- end }}
+       {{- end }}
+       {{- end }}
+       {{- if eq $found true }}
+        {{- with (index $.Values.customInitVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}
+{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-otk-install-container
+          emptyDir: {}
+        {{- if .Values.otk.customizations.existingBundle.enabled }}
+        {{- range .Values.otk.customizations.existingBundle.configMaps }}
+        - name: {{ .name }}
+        {{- if .configMap }}
+          configMap: {{ toYaml .configMap | nindent 12 }}
+        {{- else }}
+          configMap:
+            defaultMode: 292
+            optional: false
+            name: {{ .name }}
+          {{- end }}
+        {{- end }}        
+        {{- range .Values.otk.customizations.existingBundle.secrets }}
+        - name: {{ .name }}
+          {{- if .csi }}
+          csi: {{ toYaml .csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ .name }}
+          {{- end }}
+        {{- end }}
+        {{- end }}  
+{{- end }}
 {{- if .Values.sidecars }}
      {{- range .Values.sidecars }}
+     {{- $cvIndex := 0 }}
      {{- range .volumeMounts }}
-        - name: {{ .name }}
+       {{- $vn := .name }}
+       {{- $found := false }}
+       {{- $duplicate := false }}
+       {{- $cvIndex = 0 }}
+      {{- if $.Values.initContainers }}
+        {{- range  $_,$ic :=  $.Values.initContainers }}
+          {{- range $_,$icvm :=  $ic.volumeMounts }}
+            {{- if eq $vn $icvm.name }}
+              {{- $duplicate = true }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+       {{- if $.Values.customSideCarVolumes }}
+         {{- range $i,$cv := $.Values.customSideCarVolumes }}
+         {{- if eq $vn $cv.name }}
+           {{- $found = true }}
+           {{- $cvIndex = $i }}
+         {{- end }}
+         {{- end }}
+       {{- end }}
+       {{- if not $duplicate }}
+       {{- if $found }}
+        {{- with (index $.Values.customSideCarVolumes $cvIndex) }}
+        - {{- toYaml . | nindent 10}}
+        {{- end }}
+      {{- else }}
+        - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
+     {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}

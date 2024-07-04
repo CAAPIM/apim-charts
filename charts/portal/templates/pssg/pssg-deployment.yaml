@@ -43,6 +43,11 @@ spec:
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
       {{- end }}
+      {{- if .Values.pssg.podSecurityContext }}
+      securityContext: {{- toYaml .Values.pssg.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       initContainers:
         - name: liquidbase-upgrade-portal
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
@@ -54,6 +59,11 @@ spec:
         - name: pssg
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.pssg }}"
           imagePullPolicy: "{{ .Values.pssg.image.pullPolicy }}"
+          {{- if .Values.pssg.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.pssg.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: SSG_ADMIN_USERNAME
               valueFrom:
@@ -71,8 +81,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}
             - name: APIM_SSL_KEY
               valueFrom:

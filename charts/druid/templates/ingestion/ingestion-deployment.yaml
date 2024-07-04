@@ -42,10 +42,20 @@ spec:
       {{- if .Values.ingestion.tolerations }}
       tolerations: {{- toYaml .Values.ingestion.tolerations | nindent 12 }}
       {{- end }}
+      {{- if .Values.ingestion.podSecurityContext }}
+      securityContext: {{- toYaml .Values.ingestion.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
       containers:
         - name: ingestion-server
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.ingestion }}"
           imagePullPolicy: "{{ .Values.ingestion.image.pullPolicy }}"
+          {{- if .Values.ingestion.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.ingestion.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
           env:
             - name: MINIO_ACCESS_KEY
               valueFrom:
@@ -63,8 +73,6 @@ spec:
                   name: {{ .Values.global.databaseSecret }}
             {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ else if eq .Values.global.databaseType "postgres" }}
-                  key: postgres-password
             {{ end }}        
           envFrom:
           - configMapRef:

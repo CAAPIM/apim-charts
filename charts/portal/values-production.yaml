@@ -9,6 +9,9 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
+  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
 # demoDatabaseRootPassword: 7layer
@@ -20,7 +23,16 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  #   podSecurityContext:
+  #     fsGroup: 1001
+  #     runAsNonRoot: true
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
+  #   containerSecurityContext:
+  #     runAsUser: 1001
+  helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
 
@@ -121,9 +133,9 @@ ingress:
     openshift: false
   # existingSecret:
   secretName: dispatcher-tls
-  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
-  ## Using other ingress controllers will work as long as they support SSL Passthrough
-  create: true
+  ## To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
+  ## Using other ingress controllers will work as long as they support SSL Passthrough.
+  create: false
 # Configure additional ingress controller specific annotations
   annotations:
     # kubernetes.io/ingress.class: nginx
@@ -169,11 +181,19 @@ analytics:
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 100m
@@ -193,6 +213,7 @@ analytics:
 #           values:
 #           - analytics
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 apim:
   forceRedeploy: false
@@ -201,11 +222,19 @@ apim:
     pullPolicy: IfNotPresent
   otkDb:
     name: otk_db
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 2
       maxUnavailable: 2
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 1000m
@@ -233,11 +262,19 @@ authenticator:
   javaOptions: -Xms1g -Xmx1g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 250m
@@ -257,17 +294,26 @@ authenticator:
 #           values:
 #           - authenticator
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 dispatcher:
   forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 100m
@@ -309,6 +355,8 @@ dispatcher:
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
+## Add whitelist IP Range for Dispatcher
+#    PROBE_IP_RANGE: <iprange-in-CIDR-notation>
 #    key1: value
 
 # Additional Secret variables to be added to the Dispatcher Secret
@@ -318,14 +366,22 @@ dispatcher:
 portalData:
   forceRedeploy: false
   replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
+  javaOptions: -Xms2048m -Xmx2048m
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 100m
@@ -353,11 +409,19 @@ portalEnterprise:
   javaOptions: -Xms2g -Xmx2g
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 250m
@@ -377,17 +441,26 @@ portalEnterprise:
 #           values:
 #           - portal-enterprise
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 pssg:
   forceRedeploy: false
   replicaCount: 2
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 2
       maxUnavailable: 2
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 100m
@@ -415,11 +488,19 @@ tenantProvisioner:
   javaOptions: -Xms512m -Xmx512m
   image:
     pullPolicy: IfNotPresent
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext: {}
+  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  containerSecurityContext: {}
   resources:
     requests:
       cpu: 100m
@@ -439,20 +520,21 @@ tenantProvisioner:
 #           values:
 #           - tenant-provisioner
 #       topologyKey: "kubernetes.io/hostname"
+  additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.2
-  pssg: pssg:5.2
-  apim: ingress:5.2
-  enterprise: portal-enterprise:5.2
-  data: portal-data:5.2
-  tps: tenant-provisioning-service:5.2
-  analytics: analytics-server:5.2
-  authenticator: authenticator:5.2
-  dbUpgrade: db-upgrade-portal:5.2
-  rbacUpgrade: db-upgrade-rbac:5.2
-  upgradeVerify: upgrade-verify:5.2
-  tlsManager: tls-automator:5.2
+  dispatcher: dispatcher:5.3
+  pssg: pssg:5.3
+  apim: ingress:5.3
+  enterprise: portal-enterprise:5.3
+  data: portal-data:5.3
+  tps: tenant-provisioning-service:5.3
+  analytics: analytics-server:5.3
+  authenticator: authenticator:5.3
+  dbUpgrade: db-upgrade-portal:5.3
+  rbacUpgrade: db-upgrade-rbac:5.3
+  upgradeVerify: upgrade-verify:5.3
+  tlsManager: tls-automator:5.3
 
 ##
 ## Subchart Configuration
@@ -477,8 +559,16 @@ druid:
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 4
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     auth:
       secretName: minio-secret
     # Leave access_key and secret_key empty to auto-generate values.
@@ -532,6 +622,14 @@ druid:
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       limits:
         memory: 256Mi
@@ -555,6 +653,14 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       limits:
         memory: 512Mi
@@ -577,6 +683,14 @@ druid:
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests:
         cpu: 100m
@@ -601,6 +715,14 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests:
         memory: 1Gi
@@ -623,6 +745,14 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests:
         memory: 2Gi
@@ -645,7 +775,15 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     portName: ingestion-svc
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests:
         cpu: 100m
@@ -670,6 +808,14 @@ druid:
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
     resources:
       requests:
         memory: 4Gi
@@ -689,14 +835,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.2
-    broker: druid:5.2
-    coordinator: druid:5.2
-    middlemanager: druid:5.2
-    minio: minio:5.2
-    historical: druid:5.2
-    kafka: kafka:5.2
-    ingestion: ingestion-server:5.2
+    zookeeper: zookeeper:5.3
+    broker: druid:5.3
+    coordinator: druid:5.3
+    middlemanager: druid:5.3
+    minio: minio:5.3
+    historical: druid:5.3
+    kafka: kafka:5.3
+    ingestion: ingestion-server:5.3
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -706,9 +852,13 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.2"
+    tag: "5.3"
     pullSecrets:
       - broadcom-apim
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
   serviceAccount:
     create: true
   # name:
@@ -775,6 +925,18 @@ rabbitmq:
     requests:
       cpu: 1000m
       memory: 2Gi
+  customLivenessProbe:
+    exec:
+      command:
+        - sh
+        - -ec
+        - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/virtual-hosts
+  customReadinessProbe:
+    exec:
+      command:
+        - sh
+        - -ec
+        - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/local-alarms
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:
@@ -786,6 +948,9 @@ ingress-nginx:
   rbac:
     create: true
   controller:
+    config:
+      # 30MB is the max file size we allow for the custom pages and 15MB for GW Bundle.so max is set to 32
+      proxy-body-size: "32m"
     publishService:
       enabled: true
     extraArgs:
@@ -810,12 +975,10 @@ jobs:
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
-# We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
-# in any production environment.
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.26-debian-10-r78"
+    tag: "8.0.37-debian-12-r2"
   auth:
     username: portal
     existingSecret: database-secret
@@ -860,6 +1023,10 @@ mysql:
       port=3306
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
     persistence:
       annotations:
         helm.sh/hook: pre-install

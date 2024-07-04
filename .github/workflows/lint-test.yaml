@@ -4,31 +4,25 @@ on:
   pull_request:
     branches:
       - stable
-
+      - develop/gateway
+      - develop/portal
 jobs:
   lint-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Set up Helm
-        uses: azure/setup-helm@v1
+      - name: Setup Helm
+        uses: azure/setup-helm@v4.0.0
         with:
-          version: v3.4.0
-      - uses: actions/setup-python@v2
+          version: v3.13.3
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.7
+          python-version: '3.10'
       - name: Set up chart-testing
-        uses: helm/chart-testing-action@v2.1.0
-      - name: Run chart-testing (list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch stable)
-          if [[ -n "$changed" ]]; then
-            echo "::set-output name=changed::true"
-          fi
+        uses: helm/chart-testing-action@v2.6.0
       - name: Run chart-testing (lint)
         run: ct lint --config .github/ct-lint.yaml --check-version-increment true --target-branch stable
       - name: Run version-check

@@ -3,7 +3,32 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
-
+## 2.3.9 General Updates
+- This new version of the chart supports API Portal 5.3
+- Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.10.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.0.37 MySQL version.
+- If the RMQ container fails to start, scale-down the RMQ statefulset, delete the RMQ volume and try again.
+- Refer release notes for more info https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/release-notes-api-developer-portal.html
+## 2.3.8 General Updates
+- This new version of the chart supports API Portal 5.2.3
+## 2.3.7 General Updates
+- This new version of the chart supports API Portal 5.2.2.1
+## 2.3.6 General Updates
+- Updated ci values
+  - no impact
+## 2.3.4 General Updates
+- This new version of the chart supports API Portal 5.2.2
+- Ingress-NGINX Subchart is upgraded to version 4.7.2 to support K8s 1.26+ version.
+- Rabbitmq chart is upgraded to 12.0.3. Updated additional documentation w.r.t rabbitmq persistence.[Refer rabbitmq.volumePermissions.enabled](https://github.com/CAAPIM/apim-charts/blob/develop/portal/charts/portal/README.md#global-parameters)
+- Introduced global.useExistingDatabaseSecret to avoid specifying the external MySQL password. [Refer for global.useExistingDatabaseSecret](https://github.com/CAAPIM/apim-charts/blob/develop/portal/charts/portal/README.md#global-parameters).
+## 2.3.3 General Updates
+- This new version of the chart supports API Portal 5.2.1.
+## 2.3.2 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.5.2 to support K8s 1.25+ version.
+- Ingress-NGINX Subchart deployment is disabled by default in values-production.yaml. Use any Ingress-controller that supports SSL/TLS Passthrough.
+## 2.3.1 General Updates
+- This new version of the chart supports API Portal 5.2.0.1, which has authenticator's high cpu usage fixed.
 ## 2.3.0 General Updates
 - This new version of the chart supports API Portal 5.2.
 ## 2.2.10 General Updates
@@ -14,6 +39,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.2.8 General Updates
 - Updating the portal version doc link.
+
+## 2.3.0 General Updates
+- This new version of the chart supports API Portal 5.2.
 
 ## 2.2.7 General Updates
 - This new version of the chart supports API Portal 5.1.2.
@@ -38,7 +66,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - Depending on the platform and the Ingress setup in your environment, configure 'ingress.class.name' and 'ingress-nginx.ingressClassResource' in values.yaml accordingly, by following Ingress-nginx's [community documentation](https://kubernetes.github.io/ingress-nginx/#getting-started).
   - If you are not using the subchart use 'kubernetes.io/ingress.class' annotation to support backward compatibility.
   - [Learn more about configuring multiple ingress controllers in one cluster.](https://kubernetes.github.io/ingress-nginx/user-guide/multiple-ingress)
-- The Demo database that is based on Bitnami MySQL subchart version is updated to 8.8.16.
+- The Demo database that is based on Bitnami MySQL subchart version is updated to 9.4.7.
 - Upgrade jobs are moved to pre-install and pre-upgrade stage. This eliminates manual deletion of jobs in future upgrades after API Portal 5.1.The overall bootup time remains the same as previous version upgrades, even though you may observe that the helm install takes additional time to show completion.
 - API Portal 5.1 no longer requires Solr component that is used to provide auto-suggest search history from the Portal dashboard. All the references to Solr are  removed.
 - You can now configure existing imagePullSecrets or external registries to pull the images. Refer portal.useExistingPullSecret, portal.imagePullSecret in values.yaml
@@ -56,7 +84,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.22/8.0.26 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -163,7 +191,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.portalRepository` | Image Repository | `caapim/` |
 | `global.pullSecret` | Image Pull Secret name | `broadcom-apim` |
 | `global.setupDemoDatabase` | Deploys MySQL as part of this Chart | `false` |
-| `global.databaseSecret` | Database secret name | `database-secret` |
+| `global.databaseSecret` | Database secret name. If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password` along with `mysql-password` | `database-secret` |
+| `global.useExistingDatabaseSecret` | Configures Portal Deployment to use **global.databaseSecret** for fetching the DB password | `false` |
 | `global.databaseUsername` | Database username | `admin` |
 | `global.demoDatabaseRootPassword` | Demo Database root password | `7layer`|
 | `global.demoDatabaseReplicationPassword` | Demo Database replication password | `7layer`|
@@ -180,6 +209,9 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `global.schedulerName` | Global Scheduler name for Portal + Analytics, this doesn't apply to other subcharts | `not set` |
 | `global.saas` | Reserved | `not set` |
 | `global.additionalLabels` | A list of custom key: value labels applied to all components | `not set` |
+| `global.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod) settings are applied to all portal microservices.               | `[]` |
+| `global.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) settings are applied to all portal microservices.           | `{}` |
+
 
 ### Portal Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -229,7 +261,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
-| `ingress.create` | Deploy the Nginx subchart as part of this deployment | `true` |
+| `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -254,6 +286,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.forceRedeploy`            | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `analytics.replicaCount`             | Number of analytics nodes                                    | `1`                                                          |
 | `analytics.image.pullPolicy`         | Analytics image pull policy                                  | `IfNotPresent`                                               |
+| `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
+| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.containerSecurityContext` | Analytics container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -264,6 +301,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.replicaCount`                  | Number of APIM nodes                                         | `1`                                                          |
 | `apim.image.pullPolicy`              | APIM image pull policy                                       | `IfNotPresent`                                               |
 | `apim.otkDb.name`                    | APIM OTK Database name                                       | `otk_db`                                                     |
+| `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
+| `apim.podSecurityContext`            | APIM pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `apim.containerSecurityContext`      | APIM container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -286,6 +328,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.replicaCount`         | Number of authenticator nodes                                | `1`                                                          |
 | `authenticator.javaOptions`          | Java Options to pass in                                      | `-Xms1g -Xmx1g`                                              |
 | `authenticator.image.pullPolicy`     | authenticator image pull policy                              | `IfNotPresent`                                               |
+| `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
+| `authenticator.podSecurityContext`   | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `authenticator.containerSecurityContext`      | authenticator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
 | `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -293,8 +340,13 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.affinity`             | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `authenticator.additionalLabels`     | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | `1`                                                          |
+| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | ``                                                          |
 | `dispatcher.image.pullPolicy`        | Dispatcher image pull policy                                 | `IfNotPresent`                                               |
+| `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
+| `dispatcher.podSecurityContext`      | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `dispatcher.containerSecurityContext`| Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -302,39 +354,57 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
 | `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.additionalEnv.PROBE_IP_RANGE` | IP address range in CIDR notation to whitelist readiness and liveness probes for Dispatcher | `not set`                                                    |
 | `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS` |Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com| `not set`                                                   |
+| `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` |allowed rate limit per minute to the Portal health check endpoint| 	`6`                                                   |
 | `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
 | `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
 | `portalData.image.pullPolicy`        | Portal-data image pull policy                                | `IfNotPresent`                                               |
+| `portalData.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `portalData.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `portalData.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
 | `portalData.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalData.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalData.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalData.podSecurityContext`      | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `portalData.containerSecurityContext`| Portal-data container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `portalEnterprise.replicaCount`      | Number of portal-enterprise nodes                            | `1`                                                          |
 | `portalEnterprise.javaOptions`       | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
 | `portalEnterprise.image.pullPolicy`  | Portal enterprise image pull policy                          | `IfNotPresent`                                               |
+| `portalEnterprise.pdb.create`        | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `portalEnterprise.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `portalEnterprise.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                          |
 | `portalEnterprise.strategy`          | Update strategy                                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.resources`         | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `portalEnterprise.nodeSelector`      | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
+| `portalEnterprise.podSecurityContext`| Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `portalEnterprise.containerSecurityContext`| Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `pssg.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
 | `pssg.replicaCount`                  | Number of PSSG nodes                                         | `1`                                                          |
 | `pssg.image.pullPolicy`              | PSSG image pull policy                                       | `IfNotPresent`                                               |
+| `pssg.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `pssg.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
+| `pssg.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
 | `pssg.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
 | `pssg.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `pssg.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `pssg.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `pssg.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `pssg.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
+| `pssg.podSecurityContext`            | PSSG pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `pssg.containerSecurityContext`| PSSG container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `pssg.additionalEnv.CONFIG_8443_TLS` | Enabled Port 8443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled.` see [Portal TLS Defaults](#portal-tls-defaults)                                                    |
 | `pssg.additionalEnv.CONFIG_9443_TLS` | Enabled Port 9443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled`  see [Portal TLS Defaults](#portal-tls-defaults)                                                  |
 | `pssg.additionalEnv.CONFIG_9446_TLS` | Enabled Port 9446 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled`  see [Portal TLS Defaults](#portal-tls-defaults)                                                  |
@@ -349,18 +419,79 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.replicaCount`     | Number of tenant provisioner nodes                           | `1`                                                          |
 | `tenantProvisioner.javaOptions`      | Java Options to pass in                                      | `-Xms512m -Xmx512m`                                          |
 | `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy                         | `IfNotPresent`                                               |
+| `tenantProvisioner.pdb.create`       | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
+| `tenantProvisioner.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                   |
+| `tenantProvisioner.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                         |
 | `tenantProvisioner.strategy`         | Update strategy                                              | `{} evaluated as a template`                                 |
 | `tenantProvisioner.resources`        | Resource request/limits                                      | `{} evaluated as a template`                                 |
 | `tenantProvisioner.nodeSelector `    | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
+| `tenantProvisioner.podSecurityContext`| Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `tenantProvisioner.containerSecurityContext`| Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
 | `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set`                                 |
 | `jobs.image.PullPolicy`              | Image pull policy applied to jobs                            | `IfNotPresent`                                 |
+| `jobs.podSecurityContext`            | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `jobs.containerSecurityContext`| Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
-### Portal TLS Defaults
+### Database Node Pool Configurations
+
+#### Common configurations across multiple containers
+| Parameter                                                              | Description                                                                                                                                    | Default      | Container                                                                           |
+|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------------------------------------|
+| `<container>.additionalEnv.DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+
+#### Authenticator specific configurations
+| Parameter                                                            | Description                                                                                                                                    | Default       |
+|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `authenticator.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`              | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`          | 
+| `authenticator.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`          | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 ms`    |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGCONNECTIONNOTUSERFOR` | Ping the database to make sure connection is still good if it has not been used in this many milliseconds,                                     | `5000 ms`     |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGENABLED`              | Periodically pings and tests the connections in connection pool if they are alive and responsive                                               | `true`        |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGQUERY`                | SQL query to be executed when connection pool is pinged to test the health of connections.                                                     | `select1`     |
+| `authenticator.additionalEnv.DATABASE_POOL_MAXIMUMIDLECONNECTIONS`   | The maximum number of idle connections                                                                                                         | `10`          |
+
+#### Additional portalData configurations for File Repository Database
+| Parameter                                                                             | Description                                                                                                                                    | Default      |
+|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         |                       
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |           
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
+
+#### Additional tenantProvisioner configurations for Portal Database
+| Parameter                                                                             | Description                                                                                                                                    | Default      |
+|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MINPOOLSIZE`                    | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXPOOLSIZE`                    | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | 
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CHECKOUTTIMEOUT`                | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`     | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`       | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_INITIALPOOLSIZE`                | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTS`                  | The size of global PreparedStatement cache                                                                                                     | `300`        |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXCONNECTIONAGE`               | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIME`                    | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS`   | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
+
+### Portal TLS Defaults 
 Portal TLS defaults if the parameters are not set.
 | Parameter                            | Description                                                  | Default                                                      |
 | ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -439,7 +570,6 @@ this feature.
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_BATCH_SIZE` | The max number of logs to be removed during a single interval |
 | `portalData.additionalEnv.AUDIT_LOG_TRUNCATE_FREQ_MIN` | The frequency of log truncation intervals in minutes  |
 
-
 ### RBAC Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
@@ -451,6 +581,9 @@ this feature.
 | `rabbitmq.serviceAccount.create`| Enable creation of ServiceAccount for Bitnami RabbitMQ |`true`|
 | `rabbitmq.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
 | `rabbitmq.rbac.create`| Create & use RBAC resources |`true`|
+| `rabbitmq.volumePermissions.enabled` | Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`. After enabling set the appropriate runAsUser and fsGroup values |`false`|
+| `rabbitmq.podSecurityContext.fsGroup` | Set RabbitMQ pod's Security Context fsGroup | `1001` |
+| `rabbitmq.containerSecurityContext.runAsUser` | Set RabbitMQ containers' Security Context runAsUser | `1001` |
 | `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`true`|
 | `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
 | `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
@@ -535,18 +668,18 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.2` |
-| `image.pssg` | PSSG image | `pssg:5.2` |
-| `image.apim` | APIM ingress image | `ingress:5.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2` |
-| `image.data` | portal-data image | `portal-data:5.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.2` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3` |
+| `image.pssg` | PSSG image | `pssg:5.3` |
+| `image.apim` | APIM ingress image | `ingress:5.3` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3` |
+| `image.data` | portal-data image | `portal-data:5.3` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -563,6 +696,9 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.persistence.storage.minio` | Minio PVC Size   | `40Gi` |
 | `druid.persistence.storage.kafka` | Kafka PVC Size   | `10Gi` |
 | `druid.persistence.storage.zookeeper` | Zookeeper PVC Size   | `10Gi` |
+| `druid.minio.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.minio.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.minio.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.minio.replicaCount` | Number of minio nodes. Minio replication count cannot be changed after Portal is installed.  | `1` |
 | `druid.minio.image.pullPolicy`| Minio image pull policy   | `IfNotPresent` |
 | `druid.minio.auth.secretName` | The name of the secret that stores Minio Credentials   | `true` |
@@ -583,6 +719,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.minio.podSecurityContext` | Minio pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.minio.containerSecurityContext` | Minio container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.zookeeper.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.zookeeper.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.zookeeper.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.zookeeper.replicaCount` | Number of zookeeper nodes. It should maintain a quorum. Preferred for HA is 3 or odd counts.   | `1` |
 | `druid.zookeeper.image.pullPolicy` | Zookeeper image pull policy   | `IfNotPresent` |
 | `druid.zookeeper.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -590,6 +731,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.zookeeper.podSecurityContext` | Zookeeper pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.zookeeper.containerSecurityContext` | Zookeeper container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.coordinator.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.coordinator.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.coordinator.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.coordinator.replicaCount` | Number of coordinator nodes   | `1` |
 | `druid.coordinator.image.pullPolicy` | Coordinator image pull policy  | `IfNotPresent` |
 | `druid.coordinator.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -597,6 +743,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.coordinator.podSecurityContext` | Coordinator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.coordinator.containerSecurityContext` | Coordinator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.kafka.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.kafka.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.kafka.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.kafka.replicaCount` | Number of kafka nodes   | `1` |
 | `druid.kafka.image.pullPolicy` | Kafka image pull policy   | `IfNotPresent` |
 | `druid.kafka.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -604,6 +755,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.kafka.podSecurityContext` | Kafka pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.kafka.containerSecurityContext` | Kafka container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.broker.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.broker.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.broker.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.broker.replicaCount` | Number of broker nodes   | `1` |
 | `druid.broker.image.pullPolicy` | Broker image pull policy   | `IfNotPresent` |
 | `druid.broker.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -611,6 +767,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.broker.podSecurityContext` | Broker pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.broker.containerSecurityContext` | Broker container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.historical.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.historical.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.historical.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.historical.replicaCount` | Number of historical nodes   | `1` |
 | `druid.historical.image.pullPolicy` | Historical image pull policy   | `IfNotPresent` |
 | `druid.historical.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -618,6 +779,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.historical.podSecurityContext` | Historical pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.historical.containerSecurityContext` | Historical container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.ingestion.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.ingestion.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.ingestion.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.ingestion.replicaCount` | Number of ingestion nodes   | `1` |
 | `druid.ingestion.image.pullPolicy` | Ingestion image pull policy   | `IfNotPresent` |
 | `druid.ingestion.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -625,6 +791,11 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.ingestion.podSecurityContext` | Ingestion pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.ingestion.containerSecurityContext` | Ingestion container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `druid.middlemanager.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
+| `druid.middlemanager.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods   | `not set` |
+| `druid.middlemanager.pdb.minAvailable` | Minimum number of available pods   | `not set` |
 | `druid.middlemanager.replicaCount` | Number of middle manager nodes   | `1` |
 | `druid.middlemanager.image.pullPolicy` | Middle manager image pull policy   | `IfNotPresent` |
 | `druid.middlemanager.resources` | Resource request/limits   | `{} evaluated as a template` |
@@ -632,20 +803,22 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.middlemanager.podSecurityContext` | Middle manager pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
+| `druid.middlemanager.containerSecurityContext` | Middle manager container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
 ## Druid Images
 The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -654,13 +827,17 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2.2` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
+| `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
+| `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
+| `rabbitmq.pdb.minAvailable   | Minimum number of available pods   | `1` |
 | `rabbitmq.serviceAccount.create`                | Enable creation of ServiceAccount for RabbitMQ    | `true` |
 | `rabbitmq.serviceAccount.name.`                | Name of the created serviceAccount | Generated using the `rabbitmq.fullname` template |
 | `rabbitmq.rbac.create`       | Create and use RBAC resources   | `true` |
 | `rabbitmq.persistence.enabled`                | Enable persistence for RabbitMQ   | `true` |
 | `rabbitmq.persistence.size`                | PVC Size   | `8Gi` |
+| `rabbitmq.persistence.mountPath`            | The path at which RMQ volume will be mounted  | `/bitnami/rabbitmq/mnesia` |
 | `rabbitmq.replicaCount`                | Number of replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.  | `1` |
 | `rabbitmq.clustering.forceBoot`                | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true  | `false` |
 | `rabbitmq.affinity`                | RabbitMQ Affinity Settings | `see values.yaml` |
@@ -684,14 +861,23 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.0.26-debian-10-r78` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.37-debian-12-r2` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
 | `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
+| `mysql.primary.pdb.create`      | Create PodDisruptionBudget (PDB) object   | `false` |
+| `mysql.primary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
+| `mysql.primary.pdb.minAvailable` | Minimum number of available pods | `1` |
+| `mysql.secondary.pdb.create`    | Create PodDisruptionBudget (PDB) object   | `false` |
+| `mysql.secondary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
+| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `not set` |
 
 
 ## Ingress-Nginx
+
+***NOTE:- This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample.***
+
 The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
 
 This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
@@ -753,6 +939,23 @@ Resulting hostnames:
 | TSSG sync | `dev-portal-sync.example.com` | `sync.example.com` |
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
+## Installing in OpenShift
+Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
+[Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
+
+Set the following global values in the override-values.yaml and do the helm install.
+```
+global:
+   podSecurityContext:
+     fsGroup: <OC namespace starting value of openshift.io/sa.scc.supplemental-groups annotation>
+     runAsNonRoot: true
+   containerSecurityContext:
+     runAsUser: <OC namespace starting value of openshift.io/sa.scc.uid-range annotation>
+ingress:
+  type:
+    kubernetes: false
+    openshift: true
+```
 ## Persistent Volumes
 With the deployment of API Portal, PersistentVolumeClaims (PVC) are created for components as below:
 
@@ -850,6 +1053,6 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2023 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2024 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.

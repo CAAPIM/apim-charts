@@ -3,3 +3,32 @@ license:
   accept: true
 ingress:
   enabled: true
+autoscaling:
+  enabled: true
+config:
+  listenPorts:
+    enabled: true
+  cwp:
+    enabled: true
+  redis:
+    enabled: true
+    tls:
+      enabled: true
+      existingSecret: ""
+      verifyPeer: true
+      redisCrt: |+
+        -----BEGIN CERTIFICATE-----
+        MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
+        ....
+        -----END CERTIFICATE-----
+bootstrap:
+  script:
+    enabled: true
+otk:
+  enabled: true
+preStopScript:
+  enabled: true
+imagePullSecret:
+  enabled: true
+  username: foo
+  password: bar
