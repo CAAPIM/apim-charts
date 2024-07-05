@@ -100,6 +100,7 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
     - otk.job.image.tag: 4.6.3
 - Liquibase version has been upgraded to 4.12.0 to enable offline Liquibase schema support for OTK Helm charts.
 - UTFMB4 Character Set Support for MySQL.
+- Fixed backward compatibility issue for pre 4.6.2 OTK versions
 
 ## 3.0.28 General Updates
 - Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.

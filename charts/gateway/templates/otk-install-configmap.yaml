@@ -24,7 +24,7 @@ data:
   {{- else }}
   OTK_INSTALL_MODE: "initContainer"
   {{- end }}
-  BOOTSTRAP_DIR: {{default "." .Values.otk.bootstrapDir | quote }}
+  BOOTSTRAP_DIR: {{default "/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK" .Values.otk.bootstrapDir | quote }}
   OTK_SK_UPGRADE: "true"
   OTK_DATABASE_UPGRADE: "false"
   OTK_SKIP_INTERNAL_SERVER_TOOLS: {{default false .Values.otk.skipInternalServerTools | quote }}
