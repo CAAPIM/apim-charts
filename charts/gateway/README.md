@@ -659,6 +659,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.resources`               | OTK Job resources | {}
 | `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
 | `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
+| `otk.job.bootstrapDir`| The location of OTK artifacts in the image | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
