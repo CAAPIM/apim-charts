@@ -191,13 +191,15 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
-{{- if and (not .Values.disklessConfig.enabled) (not .Values.disklessConfig.existingSecret.csi) }}
+{{- if not .Values.disklessConfig.enabled }}
+           {{- if not .Values.disklessConfig.existingSecret.csi}}
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
-{{- else }}
+            {{- else }}
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/docker/node-properties
+            {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
