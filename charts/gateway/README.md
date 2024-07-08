@@ -67,6 +67,7 @@ Helm Version    Supported Kubernetes Versions
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Redis Configuration](#redis-configuration)
+* [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Database Configuration](#database-configuration)
@@ -95,6 +96,28 @@ If you use Policy Manager, you will need to update to v11.1.00.
 The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
+
+## 3.0.30 General Updates
+Release notes will also be moved to a new file before merge...
+**Note** Gateway restart required if using preview Redis features.
+- Support added for running the Gateway without [Diskless Config](#diskless-configuration)
+  - Uses node.properties which can be mounted via [Secret or Secret Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/)
+  - Must be conciously enabled (limited to Gateway v11.1.01)
+- Redis configuration update
+  - Additional system properties for the key/value store assertion added (commented by default)
+    - please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html#_c8b71b7b-dd84-4ee6-9771-d0bc262c36e9_sys_prop_configs) for more details
+  - Using new shared state provider config **(limited to Redis and Gateway v11.1.01)**
+    - this new configuration is **not backwards or forwards compatible**
+      - Please view [redis configuration](#redis-configuration) for more details on how to configure your values file.
+    - config.redis is used to configure this
+    - additional redis providers can be set directly in your values file via sharedStateProviders.additionalProviders
+      - if using an existing secret that contains multiple providers with TLS, please use [Custom Config](#custom-configuration-files) to load the additional certs.
+ - Configurable Java Min/Max Heap size
+   - Java Min and Max Heap Size is now [configurable](#java-args)
+
+## 3.0.29
+Pending OTK update..
+
 
 ## 3.0.28 General Updates
 - Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.
@@ -441,8 +464,9 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `license.value`          | Gateway license file | `nil`  |
 | `license.accept`          | Accept Gateway license EULA | `false`  |
 | `disklessConfig.enabled` | Enable diskless configuration | `true` |
-| `disklessConfig.value` | node.properties file. Used when disklessConfig.enabled is false. | `commented out` |
-| `disklessConfig.existingSecretName` | Point to an existing secret containing node.properties | `commented out` |
+| `disklessConfig.existingSecret` | existing node.properties secret mount configuration | `{}` |
+| `disklessConfig.existingSecret.name` | existing secret containing node.properties | `gateway-secret` |
+| `disklessConfig.existingSecret.csi` | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) | `commented out` |
 | `image.registry`    | Image Registry               | `docker.io` |
 | `image.repository`          | Image Repository  | `caapim/gateway`  |
 | `image.tag`          | Image tag | `11.0.00`  |
@@ -477,6 +501,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
 | `tls.pass`          | p12 container password - this cannot be empty | `nil`  |
 | `config.heapSize`          | Java Heap Size | `2g`  |
+| `config.minHeapSize`          | Java Min Heap Size | `1g`  |
+| `config.maxHeapSize`          | Java Max Heap Size | `3g`  |
 | `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
 | `config.log.override`          | Override the standard log configuration | `true`  |
 | `config.log.properties`          | Custom logging properties | `see values.yaml`  |
@@ -939,7 +965,9 @@ The integration example [here](https://github.com/Layer7-Community/Integrations/
 - [Agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-java-agent-values.yaml)
 
 ### Redis Configuration
-This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated
+This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated.
+
+**Important Note** The latest version of this chart uses a new format for Redis configuration that will simplify configuring additional shared state providers in the future. Please view [shared state provider config](#shared-state-provider-config) for more details. This is only compatible with Gateway v11.1.01.
 
 Comment out the following
 ```
@@ -951,22 +979,24 @@ Uncomment the following
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
 # com.l7tech.server.extension.sharedCounterProvider=redis
 # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+# com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
+# com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
 ```
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `config.redis.enabled`          | Enable redis configuration | `false`  |
-| `config.redis.existingConfigSecret`          | Use an existing config secret - must contain a key called redis.properties | `redis-config-secret`  |
 | `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
 | `config.redis.groupName`          | Redis Group name | `l7GW`  |
 | `config.redis.commandTimeout`          | Redis Command Timeout | `5000`  |
+| `config.redis.connectTimeout`          | Redis Connect Timeout | `10000`  |
 | `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
 | `config.redis.auth.username`          | Redis username | ``  |
 | `config.redis.auth.password.encoded`          | Password is encoded | `false`  |
 | `config.redis.auth.password.value`          | Redis password | `mypassword`  |
 | `config.redis.sentinel.enabled`                | Enable sentinel configuration   | `true` |
 | `config.redis.sentinel.masterSet`          | Redis Master set | `mymaster`  |
-| `config.redis.sentinel.nodes`          | Array of sentinel nodes and ports | `[]`  |
+| `config.redis.sentinel.nodes`          | Array of sentinel nodes host and port | `[]`  |
 | `config.redis.standalone.host`                | Redis host if sentinel is not enabled   | `redis-standalone` |
 | `config.redis.standalone.port`                | Redis port if sentinel is not enabled   | `6379` |
 | `config.redis.tls.enabled`    | Enable SSL/TLS              | `false` |
@@ -974,13 +1004,58 @@ Uncomment the following
 | `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
 | `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
 
+
 #### Creating your own Redis Configuration
 Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-redis-datastore.html) for more context on the available configuration options
 
 #### Note
 The Gateway supports Redis master auth only. The Gateway will not be able to connect to Redis if your Sentinel nodes have passwords. Please refer to the notes in values.yaml for details on config.redis.auth and redis.auth (subChart)
 
-##### Redis Sentinel
+##### Redis Sentinel (11.1.01)
+sharedstate_client.yaml
+```
+redis:
+  default:
+    type: sentinel
+    keyPrefixGroupName: test
+    username: redisuser
+    #password: "redispassword"
+    encodedPassword: "redisencodedpassword"
+    commandTimeout: 5000
+    connectTimeout: 10000
+    sentinel:
+      master: mymaster
+      nodes:
+      - host: node1
+        port: 26379
+      - host: node2
+        port: 26379
+      - host: node3
+        port: 26379
+```
+
+##### Redis Standalone (11.1.01)
+sharedstate_client.yaml
+```
+redis:
+  default:
+    type: standalone
+    keyPrefixGroupName: test
+    username: redisuser
+    #password: "redispassword"
+    encodedPassword: "redisencodedpassword"
+    commandTimeout: 5000
+    connectTimeout: 10000
+    standalone:
+      host: redis-standalone
+      port: 6379
+    ssl:
+      enabled: true
+      cert: host.cert
+      verifyPeer: false
+```
+
+##### Redis Sentinel (11.0.00_CR2 and 11.1.00)
 redis.properties
 ```
 # Redis type can be sentinel or standalone
@@ -1000,7 +1075,8 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
-##### Redis Standalone (11.1.00 and later)
+##### Redis Standalone (11.1.00)
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
 The Gateway supports SSL/TLS and Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
@@ -1022,7 +1098,8 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
-##### Redis Standalone (11.0.00_CR2 and later)
+##### Redis Standalone (11.0.00_CR2)
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
 The Gateway does not support SSL/TLS or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
@@ -1036,7 +1113,20 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
-##### Create a secret from this configuration
+##### Create a secret from this configuration (11.1.01)
+```
+kubectl create secret generic shared-state-provider-secret --from-file=sharedstate_client.yaml=/path/to/sharedstate_client.yaml
+```
+my-values.yaml
+```
+config:
+  sharedStateClient:
+    enabled: true
+    existingConfigSecret: shared-state-provider-secret
+```
+
+##### Create a secret from this configuration (11.0.00_CR2 and 11.1.00)
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
 ```
 kubectl create secret generic redis-config-secret --from-file=redis.properties=/path/to/redis.properties
 ```
@@ -1047,8 +1137,17 @@ redis:
     existingConfigSecret: redis-config-secret
 ```
 
+### Shared State Provider Config
+Shared State Providers from Gateway v11.1.01 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis.
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `config.sharedStateProvider.enabled`          | Enable redis configuration | `false`  |
+| `config.sharedStateProvider.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
+| `config.sharedStateProvider.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
 
 ### Database Configuration
+TODO: Update this for no disklessConfig + failover instructions
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
 ```
 database:
@@ -1107,17 +1206,21 @@ config:
 
 
 ### Java Args
-Additional Java Arguments as may be recommended by support can be configured in values.yaml
+Additional Java Arguments as may be recommended by support can be configured in values.yaml. Gateway v11.1.01 supports two new fields that allows a min and max heap size to be set. If these are not set config.heapSize will take precedence.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `config.heapSize`          | Java Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 50%, going above 75% is not recommended | `2G`  |
+| `config.minHeapSize`          | Java Min Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 25% | `1G`  |
+| `config.maxHeapSize`          | Java Max Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 75%, going above this is not recommended | `3G`  |
 | `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
 
 The default Java Args are as follows
 ```
 config:
   heapSize: "2g"
+  minHeapSize: "1g"
+  maxHeapSize: "3g"
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
@@ -1162,86 +1265,85 @@ The full default is this
     # Additional properties go here
 ```
 ### Diskless Configuration
-Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info.
+Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.01 onwards. Please make sure disklessConfig.enabled is false (default) if you are using a previous version of the Container Gateway.
 
-DISKLESS_CONFIG is a flag that tells the container gateway where to get its configuration from.
+**DISKLESS_CONFIG** is a new environment variable that was introduced in Gateway v11.1.01, that allows switching between configuration sources.
 
-When DISKLESS_CONFIG is true, environment variables are used to configure Gateway.
-
-When DISKLESS_CONFIG is false, Gateway will be configured from node.properties. This node.properties file is mounted to the container gateway.
-
-#### DISKLESS_CONFIG = true
-DISKLESS_CONFIG is set to true by default in values.yaml via disklessConfig.enabled:
+This is exposed in the Gateway Helm Chart via the disklessConfig configuration in values.yaml.
+- **disklessConfig.enabled: true**
+  - Default, No changes.
 ```
 disklessConfig:
   enabled: true
-  # value:
-  # existingSecretName:
+  # existingSecret:
+  #   name: gateway-secret
+  #   csi: {}
+```
+- **disklessConfig.enabled: false**
+  - The Gateway will be read its configuration from node.properties which is mounted to the container gateway.
+    - This facilitates the use of the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) to mount configuration.
+    - Creates a secret with node.properties by default
+      - We **strongly recommend** you create your own node.properties file and make use of disklessConfig.existingSecret configuration.
+```
+disklessConfig:
+  enabled: false
+  # existingSecret:
+  #   name: gateway-secret
+  #   csi: {}
 ```
 
-#### DISKLESS_CONFIG = false
-When setting DISKLESS_CONFIG to false, create node.properties and set disklessConfig.enabled to false
+#### Creating a node.properties file
 
-##### Create node.properties
+##### External MySQL
 - Make sure the database configuration matches what is in node.properties
 
 Example: node.properties with MySQL database configuration
 ```
-node.cluster.pass=newpassword
+node.cluster.pass=mypassword
 admin.user=admin
-admin.pass=newpassword
+admin.pass=mypassword
 node.db.config.main.host=myDBHost.com
 node.db.config.main.port=3306
 node.db.config.main.name=ssg
 node.db.config.main.user=gateway
-node.db.config.main.pass=newpassword
+node.db.config.main.pass=mypassword
+l7.mysql.url.parameters.extra=&useSSL=true&requireSSL=true 
 ```
-- For derby database, it is required to add ***node.db.type=derby*** to node.properties
+
+See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more details on l7.mysql.url.parameters.extra
+
+##### Gateway running in Ephemeral Mode (no external MySQL)
+- To run the Gateway in Ephemeral mode, ***node.db.type=derby*** needs to be added to node.properties
 
 Example: node.properties with Derby configuration
 ```
-node.cluster.pass=newpassword
+node.cluster.pass=mypassword
 admin.user=admin
-admin.pass=newpassword
+admin.pass=mypassword
 node.db.type=derby
 node.db.config.main.user=gateway
 ```
 
 ##### Update values.yaml
-Set disklessConfig.enabled to false. 
+Update your values file to use the new node.properties file.
 
-To create new secret for node.properties, set value to node.properties file via --set-file flag
+This command is the simplest way to create a secret with node.properties. Note that this can also be created with tools like [kustomize](https://kustomize.io/) which will be better for CI/CD pipelines. You can also take advantage of the secret [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) to mount this secret from an external KMS provider.
 
-Example: Create new secret for node.properties
-
+Note that the key name is node.properties. This is required.
+```
+kubectl create secret generic gateway-secret --from-file=node.properties=path/to/node.properties
+```
 values.yaml
 ```
 disklessConfig:
   enabled: false
-  value:
-  # existingSecretName:
-```
-
-helm command
-```
-helm install my-ssg --set-file "disklessConfig.value=path/to/node.properties" --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway -f ./values.yaml
-```
-
-If you already configured node.properties as a secret beforehand, you can just pass the secret name in values.yaml
-
-Example: Use existing secret for node.properties
-
-values.yaml
-```
-disklessConfig:
-  enabled: false
-  # value:
-  existingSecretName: ssg-node-properties
-```
-
-helm command
-```
-helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway -f ./values.yaml
+  existingSecret:
+    name: gateway-secret
+  # csi:
+  #   driver: secrets-store.csi.k8s.io
+  #   readOnly: true
+  #   volumeAttributes:
+  #     secretProviderClass: "secret-provider-class-name"
 ```
 
 ### Bundle Configuration

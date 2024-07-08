@@ -96,6 +96,19 @@ Redis sentinel nodes
 {{- end  -}}
 {{- end -}}
 
+
+
+{{/*
+Shared state client secret name
+*/}}
+{{- define "sharedStateClientSecretName" }}
+{{- if not .Values.config.sharedStateClient.existingConfigSecret }}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "shared-state-client-configuration" -}}
+{{- else }}
+{{- .Values.config.sharedStateClient.existingConfigSecret }}
+{{- end }}
+{{- end }}
+
 {{/*
 Redis config secret name
 */}}
@@ -200,7 +213,7 @@ Define OTK Image Pull Secret Name
 {{- if .Values.disklessConfig.existingSecretName -}}
     {{ .Values.disklessConfig.existingSecretName }}
 {{- else -}}
-    {{- printf "%s-%s" (include "gateway.fullname" .) "node.properties" -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "node-properties" -}}
 {{- end -}}
 {{- end -}}
 

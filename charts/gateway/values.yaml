@@ -9,13 +9,18 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
-# Use set diskless Configuration mode for Gateway
-# when true , get values from environment variable and on false will get values from node.properties
-# when disklessConfig.enabled is false , node.properties is passed via disklessConfig.value parameter
+# Diskless Configuration modes for the Gateway
 disklessConfig:
+  # true - environment variables are used for gateway configuration
+  # false - node.properties is used for gateway configuration
   enabled: true
-  # value:
-  # existingSecretName:
+  # existingSecret:
+  #   name: gateway-secret
+  #   csi:
+  #      driver: secrets-store.csi.k8s.io
+  #      readOnly: true
+  #      volumeAttributes:
+  #        secretProviderClass: "secret-provider-class-name"
 
 image:
   registry: docker.io
@@ -177,6 +182,10 @@ config:
   # Heap Size should be a percentage of the memory configured in resource limits
   # by default it is 50% - you should not go above 75%
   heapSize: "2g"
+  # Gateway v11.1.01 provides min and max heap size options
+  # If you are using an earlier version of the Gateway, these will be ignored.
+  minHeapSize: "1g"
+  maxHeapSize: "3g"
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
@@ -253,6 +262,8 @@ config:
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+    # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
+    # com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
     # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
     # otel.sdk.disabled=false
     # otel.java.global-autoconfigure.enabled=true
@@ -404,8 +415,10 @@ config:
           enabled: false
   redis:
     # enable or disable redis integration
-    # please uncomment the 3 redis properties in config.systemProperties
+    # please uncomment the 5 redis properties in config.systemProperties
+    # view more configurable system properties here - https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html#_c8b71b7b-dd84-4ee6-9771-d0bc262c36e9_sys_prop_configs
     # Redis client properties for configuring Redis Standalone or Redis Sentinel connections
+    # This configuration is parsed into redis.default in sharedstate_client.yaml
     enabled: false
     # We recommend using an existing secret for Redis configuration in production environments
     # for separation of concerns and to better secure Redis client property secrets.
@@ -414,6 +427,7 @@ config:
     # To configure the Redis client directly in this values file uncomment and/or set the following client properties
     groupName: l7GW
     commandTimeout: 5000
+    connectTimeout: 10000
     # The Gateway supports Redis master auth only.
     # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
     # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
@@ -431,9 +445,12 @@ config:
       masterSet: mymaster
       # If the subChart is not enabled sentinel nodes need to be set
       nodes:
-      - <host>:<port>
-      - <host>:<port>
-      - <host>:<port>
+      - host: <host>
+        port: <port>
+      - host: <host>
+        port: <port>
+      - host: <host>
+        port: <port>
     standalone: {}
     #  host: redis-standalone
     #  port: 6379
@@ -454,6 +471,39 @@ config:
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
 
+  # In Gateway v11.1.01 shared state providers like redis (redis only currently) can be configured in a yaml file.
+  sharedStateClient:
+    enabled: true
+  # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
+  # existingConfigSecret: shared-state-client-secret
+    additionalProviders: []
+    # - name: myRegionalRedisInstance1
+    #   redis:
+    #     tls:
+    #       existingSecret: myRegionalRedisCertSecret1
+    #       key: redis.crt
+    #       # path must match ssl.cert in your provider config
+    #       path: myRegionalRedisCert.crt
+    #   config: {}
+    # config:
+    #   regional:
+    #     type: sentinel
+    #     keyPrefixGroupName: test
+    #     username: abc
+    #     password: "def"
+    #     commandTimeout: 5000
+    #     connectTimeout: 10000
+    #     ssl:
+    #       enabled: true
+    #       cert: myRegionalRedisCert.crt
+    #       verifyPeer: false
+    #     sentinel:
+    #       master: mymaster
+    #       nodes:
+    #       - host: 127.0.0.1
+    #         port: 26379
+    #       - host: 192.168.0.1
+    #         port: 26379
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
@@ -480,6 +530,9 @@ database:
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
   # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
+  # if disklessConfig.enabled is set to false, jdbcUrl should be set to the jdbcHost
+  # jdbcURL: <host>
+  # jdbcPort: 3306
   username: gateway
   password: mypassword
   name: ssg

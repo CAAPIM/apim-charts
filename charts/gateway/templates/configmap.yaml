@@ -21,6 +21,10 @@ data:
   DISKLESS_CONFIG: {{ .Values.disklessConfig.enabled | quote }}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
+  {{- if and (.Values.config.minHeapSize) (.Values.config.maxHeapSize) }}
+  SSG_JVM_MIN_HEAP: {{ .Values.config.minHeapSize }}
+  SSG_JVM_MAX_HEAP: {{ .Values.config.maxHeapSize }}
+  {{- end }}
 {{- if .Values.disklessConfig.enabled }}
   {{- if .Values.database.enabled }}
     {{- if .Values.database.create }}
@@ -87,6 +91,11 @@ data:
 {{- if .Values.config.systemProperties }}
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
+{{- end }}
+{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi) }}
+  004-configure-node-properties: |-
+    #!/bin/bash
+    cp /opt/docker/node-properties/{{ .Values.disklessConfig.existingSecret.name }} /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-

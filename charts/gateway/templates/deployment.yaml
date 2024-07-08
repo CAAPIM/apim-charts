@@ -48,7 +48,7 @@ spec:
      {{- end }}
     {{- end }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
       {{- if .Values.affinity }}
       affinity: {{- toYaml .Values.affinity | nindent 12 }}
       {{- end }}
@@ -70,7 +70,6 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-
       initContainers:
       {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
       - name: {{ .Chart.Name }}-otk-install-container
@@ -98,15 +97,15 @@ spec:
           {{- range .Values.otk.customizations.existingBundle.secrets }}
           - name: {{ .name }}
             mountPath: /docker/custom_bundles/{{ .name }}
-            {{ if .csi }}
+            {{- if .csi }}
             readOnly: {{ .csi.readOnly }}
-            {{ end }}
+            {{- end }}
           {{- end }}
           {{- end }}
       {{- end }}
       {{- if .Values.initContainers }}
       {{toYaml .Values.initContainers | nindent 6 }}
-      {{ end }}
+      {{- end }}
 
       {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
@@ -178,13 +177,13 @@ spec:
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
-            {{ if .Values.management.service.enabled}}
+            {{- if .Values.management.service.enabled}}
             {{- range .Values.management.service.ports }}
             - name: {{ .name }} 
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
-            {{ end }}
+            {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
@@ -192,10 +191,13 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
-{{- if not (.Values.disklessConfig.enabled) }}
+{{- if and (not .Values.disklessConfig.enabled) (not .Values.disklessConfig.existingSecret.csi) }}
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
+{{- else }}
+            - name: {{ template "gateway.fullname" . }}-node-properties
+              mountPath: /opt/docker/node-properties
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
@@ -238,15 +240,23 @@ spec:
         {{- end }}
 {{- end }}
 {{- if .Values.config.redis  }}
-        {{- if .Values.config.redis.enabled }}
-            - name: {{ template "gateway.fullname" . }}-redis-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
-              subPath: redis.properties
+        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-shared-state-client
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/sharedstate_client.yaml
+              subPath: sharedstate_client.yaml
         {{- if .Values.config.redis.tls.enabled }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
               subPath: redis.crt
         {{- end }}
+        {{- range .Values.config.sharedStateClient.additionalProviders }}
+          {{- if .redis.tls }}
+            - name: {{ .name }}-shared-state-provider-crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/{{ .redis.tls.path }}
+              subPath: {{ .redis.tls.path }}
+          {{- end }}
+        {{- end }}
+
         {{- end }}
 {{- end }}
 {{- if .Values.existingHealthCheck }}
@@ -258,9 +268,9 @@ spec:
            {{- if .Values.existingHealthCheck.secret }}
             - name: {{ .Values.existingHealthCheck.secret.name }}
               mountPath: /opt/docker/rc.d/diagnostic/health_check
-              {{ if .Values.existingHealthCheck.secret.csi }}
+              {{- if .Values.existingHealthCheck.secret.csi }}
               readOnly: {{ .Values.existingHealthCheck.secret.csi.readOnly }}
-              {{ end }}
+              {{- end }}
            {{- end }}
 {{- end }}
 {{- end }}
@@ -281,9 +291,9 @@ spec:
            {{- range .Values.existingBundle.secrets }}
             - name: {{ .name }}
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
-              {{ if .csi }}
+              {{- if .csi }}
               readOnly: {{ .csi.readOnly }}
-              {{ end }}
+              {{- end }}
            {{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
@@ -301,6 +311,11 @@ spec:
               subPath: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
+{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi)}}
+            - name: {{ template "gateway.fullname" . }}-configure-node-properties
+              mountPath: /opt/docker/rc.d/004-configure-node-properties.sh
+              subPath: 004-configure-node-properties.sh
+{{- end }}
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
             - name: {{ template "gateway.fullname" . }}-gracefulshutdown
@@ -313,13 +328,13 @@ spec:
            {{- range .volumeMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              {{ if .subPath }}
+              {{- if .subPath }}
               subPath: {{ .subPath }}
-              {{ end }}
+              {{- end }}
            {{- end }}
            {{- end }}
 {{- end }}
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+{{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
             - name: {{ template "gateway.fullname" . }}-otk-install-container
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
@@ -337,12 +352,12 @@ spec:
              {{- end }}
            {{- end }}
          {{- end }}
-         {{ if not $duplicate }}
+         {{- if not $duplicate }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              {{ if .subPath }}
+              {{- if .subPath }}
               subPath: {{ .subPath }}
-              {{ end }}
+              {{- end }}
          {{- end }}
          {{- end }}
          {{- end }}
@@ -470,11 +485,16 @@ spec:
               path: license.xml
   {{- if not .Values.disklessConfig.enabled }}
         - name: {{ template "gateway.fullname" . }}-node-properties
+          {{- if .Values.disklessConfig.existingSecret.csi }}
+          csi: {{ toYaml .Values.disklessConfig.existingSecret.csi | nindent 12 }}
+          {{- else }}
           secret:
             secretName: {{ template "gateway.node.properties" . }}
             items:
             - key: node.properties
               path: node.properties
+          {{- end }}
+          #### add csi config if using an existingSecret
   {{- end }}
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:
@@ -491,13 +511,13 @@ spec:
               path: hazelcast-client.xml
 {{- end }}
 {{- if .Values.config.redis }}
-       {{- if .Values.config.redis.enabled }}
-        - name: {{ template "gateway.fullname" . }}-redis-properties
+       {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-shared-state-client
           secret:
-            secretName: {{ template "redisConfigSecretName" . }}
+            secretName: {{ template "sharedStateClientSecretName" . }}
             items:
-            - key: redis.properties
-              path: redis.properties
+            - key: sharedstate_client.yaml
+              path: sharedstate_client.yaml
        {{- if .Values.config.redis.tls.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
@@ -505,6 +525,16 @@ spec:
             items:
             - key: tls.crt
               path: redis.crt
+      {{- end }}
+      {{- range .Values.config.sharedStateClient.additionalProviders }}
+      {{- if .redis.tls }}
+        - name: {{ .name }}-shared-state-provider-crt
+          secret:
+            secretName: {{ .redis.tls.existingSecret }}
+            items:
+            - key: {{ .redis.tls.key }}
+              path: {{ .redis.tls.path }}
+      {{- end }}
       {{- end }}
       {{- end }}
 {{- end }}
@@ -605,6 +635,15 @@ spec:
               path: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
+{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi)}}
+        - name: {{ template "gateway.fullname" . }}-configure-node-properties
+          configMap:
+            name: {{ template "gateway.fullname" . }}-configmap
+            items:
+            - key:  004-configure-node-properties
+              path: 004-configure-node-properties.sh
+{{- end }}
+
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
         - name: {{ template "gateway.fullname" . }}-gracefulshutdown
@@ -683,7 +722,7 @@ spec:
      {{- end }}
      {{- end }}
 {{- end }}
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+{{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
         - name: {{ template "gateway.fullname" . }}-otk-install-container
           emptyDir: {}
         {{- if .Values.otk.customizations.existingBundle.enabled }}
