@@ -101,7 +101,6 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 - Liquibase version has been upgraded to 4.12.0 to enable offline Liquibase schema support for OTK Helm charts.
 - UTFMB4 Character Set Support for MySQL.
 - Fixed backward compatibility issue related to bootstrap director location for pre 4.6.2 OTK versions
-  - The default value for versions OTK 4.6.2 & higher is /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
   - For versions older than OTK 4.6.2, in values.yaml manually add a new parameter otk.bootstrapDir with value "." indicating current directory
 
 ## 3.0.28 General Updates
@@ -662,7 +661,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.resources`               | OTK Job resources | {}
 | `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
 | `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
-| `otk.job.bootstrapDir`| The location of OTK artifacts in the image | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
+| `otk.bootstrapDir`| The location of OTK artifacts in the image | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
