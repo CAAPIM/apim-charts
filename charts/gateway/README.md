@@ -100,7 +100,9 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
     - otk.job.image.tag: 4.6.3
 - Liquibase version has been upgraded to 4.12.0 to enable offline Liquibase schema support for OTK Helm charts.
 - UTFMB4 Character Set Support for MySQL.
-- Fixed backward compatibility issue for pre 4.6.2 OTK versions
+- Fixed backward compatibility issue related to bootstrap director location for pre 4.6.2 OTK versions
+  - The default value for versions OTK 4.6.2 & higher is /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
+  - For versions older than OTK 4.6.2, in values.yaml manually add a new parameter otk.bootstrapDir with value "." indicating current directory
 
 ## 3.0.28 General Updates
 - Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.
