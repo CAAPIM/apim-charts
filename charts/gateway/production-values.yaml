@@ -428,6 +428,7 @@ config:
     groupName: l7GW
     commandTimeout: 5000
     connectTimeout: 10000
+    testOnStart: false
     # The Gateway supports Redis master auth only.
     # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
     # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
@@ -470,12 +471,6 @@ config:
       # changes will be required
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
-
-  # In Gateway v11.1.01 shared state providers like redis (redis only currently) can be configured in a yaml file.
-  sharedStateClient:
-    enabled: true
-  # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
-  # existingConfigSecret: shared-state-client-secret
     additionalProviders: []
     # - name: myRegionalRedisInstance1
     #   redis:
@@ -493,6 +488,7 @@ config:
     #     password: "def"
     #     commandTimeout: 5000
     #     connectTimeout: 10000
+    #     testOnStart: false
     #     ssl:
     #       enabled: true
     #       cert: myRegionalRedisCert.crt
@@ -504,6 +500,14 @@ config:
     #         port: 26379
     #       - host: 192.168.0.1
     #         port: 26379
+
+  # In Gateway v11.1.01 shared state providers like redis (redis only currently) can be configured in a yaml file.
+  sharedStateClient:
+    enabled: true
+  # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
+  # existingConfigSecret: shared-state-client-secret
+  # reserved for future use
+    additionalProviders: []
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.

@@ -987,9 +987,11 @@ Uncomment the following
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `config.redis.enabled`          | Enable redis configuration | `false`  |
 | `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
+| `config.redis.additionalProviders`          | Configure additional Redis connections | `[]`  |
 | `config.redis.groupName`          | Redis Group name | `l7GW`  |
 | `config.redis.commandTimeout`          | Redis Command Timeout | `5000`  |
 | `config.redis.connectTimeout`          | Redis Connect Timeout | `10000`  |
+| `config.redis.testOnStart`          | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start | `false`  |
 | `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
 | `config.redis.auth.username`          | Redis username | ``  |
 | `config.redis.auth.password.encoded`          | Password is encoded | `false`  |
@@ -1023,6 +1025,7 @@ redis:
     encodedPassword: "redisencodedpassword"
     commandTimeout: 5000
     connectTimeout: 10000
+    testOnStart: false
     sentinel:
       master: mymaster
       nodes:
@@ -1046,6 +1049,7 @@ redis:
     encodedPassword: "redisencodedpassword"
     commandTimeout: 5000
     connectTimeout: 10000
+    testOnStart: false
     standalone:
       host: redis-standalone
       port: 6379

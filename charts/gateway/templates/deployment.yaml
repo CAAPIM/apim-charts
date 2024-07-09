@@ -251,9 +251,9 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
               subPath: redis.crt
         {{- end }}
-        {{- range .Values.config.sharedStateClient.additionalProviders }}
+        {{- range .Values.config.redis.additionalProviders }}
           {{- if .redis.tls }}
-            - name: {{ .name }}-shared-state-provider-crt
+            - name: {{ .name }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/{{ .redis.tls.path }}
               subPath: {{ .redis.tls.path }}
           {{- end }}
@@ -528,9 +528,9 @@ spec:
             - key: tls.crt
               path: redis.crt
       {{- end }}
-      {{- range .Values.config.sharedStateClient.additionalProviders }}
+      {{- range .Values.config.redis.additionalProviders }}
       {{- if .redis.tls }}
-        - name: {{ .name }}-shared-state-provider-crt
+        - name: {{ .name }}-redis-crt
           secret:
             secretName: {{ .redis.tls.existingSecret }}
             items:
