@@ -663,11 +663,10 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.2_202402
+      tag: 4.6.3
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
-
     # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
     scheduledTasks:
       - name: client

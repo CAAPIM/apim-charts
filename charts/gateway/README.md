@@ -95,6 +95,14 @@ The Layer7 API Gateway is now running with Java 11 with the release of the v10.1
 
 Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
 
+## 3.0.29 OTK 4.6.3 Released
+- The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.3**.
+    - otk.job.image.tag: 4.6.3
+- Liquibase version has been upgraded to 4.12.0 to enable offline Liquibase schema support for OTK Helm charts.
+- UTFMB4 Character Set Support for MySQL.
+- Fixed backward compatibility issue related to bootstrap director location for pre 4.6.2 OTK versions
+  - For versions older than OTK 4.6.2, in values.yaml manually add a new parameter otk.bootstrapDir with value "." indicating current directory
+
 ## 3.0.28 General Updates
 - Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.
   - Disabled by default
@@ -613,6 +621,7 @@ Limitations:
 * OTK Instance modifiers are not supported.
 * Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
 * Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+* OTK upgrade to 4.6.3 will not upgrade the DB with utf8mb4 character set. This has to be done seperately following the steps provided in upgrade section in [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database/mysql-database.html)
 
 OTK Deployment examples can be found [here](/examples/otk)
 
@@ -652,6 +661,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.job.resources`               | OTK Job resources | {}
 | `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
 | `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
+| `otk.bootstrapDir`| The location of OTK artifacts in the image | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
