@@ -182,7 +182,7 @@ config:
   # Heap Size should be a percentage of the memory configured in resource limits
   # by default it is 50% - you should not go above 75%
   heapSize: "2g"
-  # Gateway v11.1.01 provides min and max heap size options
+  # Gateway v11.1.1 provides min and max heap size options
   # If you are using an earlier version of the Gateway, these will be ignored.
   minHeapSize: "1g"
   maxHeapSize: "3g"
@@ -501,7 +501,7 @@ config:
     #       - host: 192.168.0.1
     #         port: 26379
 
-  # In Gateway v11.1.01 shared state providers like redis (redis only currently) can be configured in a yaml file.
+  # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
     enabled: true
   # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
@@ -539,6 +539,10 @@ database:
   # jdbcPort: 3306
   username: gateway
   password: mypassword
+  # Liquibase log level can be set to one of the following.
+  # This configuration is only valid from Gateway v11.1.1 onwards.
+  # severe/warning/info/fine(debug)/off
+  liquibaseLogLevel: "off"
   name: ssg
 
 ## If loading a TLS Key/Pair

@@ -62,14 +62,15 @@ Helm Version    Supported Kubernetes Versions
 * [Uninstall the Chart](#uninstalling-the-chart)
 
 ## Additional Guides
+* [Configuration](#configuration)
 * [Service Configuration](#port-configuration)
 * [Gateway Application Ports](#gateway-application-ports)
+* [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Redis Configuration](#redis-configuration)
 * [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
-* [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
@@ -92,338 +93,9 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
-# Java 11
-The Layer7 API Gateway is now running with Java 11 with the release of the v10.1.00. The Gateway chart's version has been incremented to 2.0.2.
-
-Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JAVA_HOME dir has gone through some changes as well.
-
-## 3.0.30 General Updates
-Release notes will also be moved to a new file before merge...
-**Note** Gateway restart required if using preview Redis features.
-- Support added for running the Gateway without [Diskless Config](#diskless-configuration)
-  - Uses node.properties which can be mounted via [Secret or Secret Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/)
-  - Must be conciously enabled (limited to Gateway v11.1.01)
-- Redis configuration update
-  - Additional system properties for the key/value store assertion added (commented by default)
-    - please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html#_c8b71b7b-dd84-4ee6-9771-d0bc262c36e9_sys_prop_configs) for more details
-  - Using new shared state provider config **(limited to Redis and Gateway v11.1.01)**
-    - this new configuration is **not backwards or forwards compatible**
-      - Please view [redis configuration](#redis-configuration) for more details on how to configure your values file.
-    - config.redis is used to configure this
-    - additional redis providers can be set directly in your values file via sharedStateProviders.additionalProviders
-      - if using an existing secret that contains multiple providers with TLS, please use [Custom Config](#custom-configuration-files) to load the additional certs.
- - Configurable Java Min/Max Heap size
-   - Java Min and Max Heap Size is now [configurable](#java-args)
-
-## 3.0.29 OTK 4.6.3 Released
-- The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.3**.
-    - otk.job.image.tag: 4.6.3
-- Liquibase version has been upgraded to 4.12.0 to enable offline Liquibase schema support for OTK Helm charts.
-- UTFMB4 Character Set Support for MySQL.
-- Fixed backward compatibility issue related to bootstrap director location for pre 4.6.2 OTK versions
-  - For versions older than OTK 4.6.2, in values.yaml manually add a new parameter otk.bootstrapDir with value "." indicating current directory
-
-## 3.0.28 General Updates
-- Added a [Startup probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) for the Gateway Container.
-  - Disabled by default
-
-## 3.0.27 General Updates
-- Default image updated to v11.1.00
-  - Due to conflicting embedded Hazelcast versions between Gateway 10.x and 11.1, and between 11.0 and 11.1, a rolling update cannot be performed when upgrading to version 11.1 GA. Instead, follow the alternative steps:
-    - Scale down your containers to zero.
-      - Update the image tag to the target version (e.g., 11.1.00)
-    - Scale up your containers back to their original state.
-  - Hazelcast versions have not changed between 11.0 CR1/CR2 and 11.1 GA, rolling updates are supported between these Gateway versions.
-- Added preview support for [OpenTelemetry](https://opentelemetry.io/)
-  - Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration
-  - Preview feature (only available on Gateway v11.1.00)
-  - An integration example is available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway
-    - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
-      - You are ***not required*** to use the observability stack that we provide as an example.
-      - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
-  - [OpenTelemetry Configuration](#opentelemetry-configuration)
-- Redis standalone now supports TLS and Password auth (only available on Gateway v11.1.00)
-  - see [Redis configuration](#redis-configuration)
-- Cipher Suites in [Gateway Application Ports](#gateway-application-ports) have been updated to reflect updates in Gateway v11.1.00. Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/release-notes.html#concept.dita_ea0082004fb8c78a1723b9377f592085674b7ef7_jdk17) for more details. This configuration is ***disabled by default.***
-
-## 3.0.26 General Updates
-- Commented out Nginx specific annotations in the ingress configuration
-  - If you are using an Nginx ingress controller you will need to add or uncomment the following annotation manually
-    - nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    - [production-values.yaml](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/production-values.yaml#L792) sets this if you would like to use that as a starting point.
-- Upgraded Hazelcast SubChart and set default image to latest versions.
-- Added Gateway [Pod Disruption Budget](#pod-disruption-budgets)
-
-## 3.0.25 OTK Schedule job success and failure limts
-- Added configurable success and failure job history limit for OTK database maintenance schedule jobs.
-
-## 3.0.24 General Updates
-- Custom Volumes for initContainers and Sidecars
-  - This allows configmaps/secrets to be mounted to initContainers and sideCars
-    - customSideCarVolumes
-    - customInitVolumes
-
-## 3.0.23 OTK 4.6.2_202402 Released 
-- Updated OTK image version value
-
-## 3.0.22 General Updates
-- Updated Chart ci values
-  - no impact
-
-## 3.0.21 General Updates
-- Updated [Redis Configuration](#redis-configuration)
-  - More context added for creating your own redis properties file
-  - More context added for Redis auth
-    - note: the Gateway only supports Redis master auth
-  - Removed comments from values.yaml
-- Added Graphman Bundle support to the bootstrap script
-  - files that end in .json will be copied into the bootstrap folder
-
-
-## 3.0.20 General Updates
-- Updated image
-  - Updated to Gateway 11.0.00_CR2
-    - this will cause a restart if you are not overriding the default image
-
-## 3.0.19 General Updates
-- Updated image
-  - Updated to Gateway 11.0.00_CR1
-    - this will cause a restart if you are not overriding the default image
-- Redis Integration
-  - [Redis Configuration](#redis-configuration) options for the Gateway (future use)
-  - Added Redis SubChart
-- Ingress
-  - Backend service is now more configurable allowing the management service to be exposed via ingress controller
-    - ***this should only be done in environments where the ingress controller does not have a Public Address***
-    - ingress.rules[n]backend can be set to "management"
-- Restart on config change
-  - A new flag has been added to facilitate auto redeploy of Gateways when there is a config change
-  - Applies to the default config map only
-    - does not include config.cwp, config.listenPorts or the Gateway Secret
-- MySQL subChart updated
-- Grafana subChart updated
-
-
-## 3.0.18 General Updates
-- OTK documentation updates.
-
-## 3.0.17 OTK 4.6.2 Released
-  - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.2**.
-    - otk.job.image.tag: 4.6.2
-  - OTK DB install/upgrade using Liquibase scripts for MySql and Oracle.
-    - otk.database.dbupgrade
-  - OTK DB install/upgrade on the gateways MySQL container (MySQL subchart) - ***This is not supported or recommended for production use.***
-    - otk.database.useDemodb
-  - Install/upgrade OTK of type SINGLE on Ephemeral gateways using initContainer is now supported.
-    - database.enabled: false
-    - otk.type: SINGLE
-  - Added OTK Connection properties to support c3p0 settings.
-    - otk.database.connectionProperties
-  - Added support OTK read-only connections for MySQL and Oracle.
-    - otk.database.readOnlyConnection.*
-  - Added support for OTK policies customization through config maps and secrets.
-    - otk.customizations.existingBundle.enabled
-  - OTK DMZ/Internal gateway certs can now be configured using values file.
-    - otk.cert
-> [!Important]  
-> - To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install.
-> - When upgrading OTK 4.6.2 on a db backed gateway, the gateway will restart as there is a change related to OTK health check bundle in gateway deployment. This can lead to failure of OTK upgrade. To circumvent this, please perform a helm upgrade `otk.healthCheckBundle.enabled` set to `false` and then upgrade to the 3.0.17.
-> ```
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" layer7/gateway --version 3.0.16 -f ./values-production.yaml
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway --version 3.0.17 -f ./values-production.yaml
-> ```
-
-
-## 3.0.16 General Updates
-- Added resources to otk install job
-  - otk.job.resources
-
-## 3.0.15 General Updates
-- Updated [bootstrap script](#bootstrap-script)
-  - 'find' replaced with 'du'
-
-## 3.0.14 General Updates
-- Added pod labels and annotations to the otk-install job.
-  - otk.job.podLabels
-  - otk.job.podAnnotations
-
-## 3.0.13 General Updates
-- The OTK Install job now uses podSecurity and containerSecurity contexts if set.
-- Updated how pod labels and annotations are templated in deployment.yaml
-
-## 3.0.12 General Updates
-Traffic Policies for Gateway Services are now configurable. The Kubernetes default for these options is `Cluster` if left unset.
-- [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)
-- [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
-
-
-## 3.0.11 General Updates
-Updates to Gateway Container Lifecycle.
-- [A new preStop script has been added for graceful termination](#graceful-termination)
-  - terminationGracePeriodSeconds must be greater than preStopScript.timeoutSeconds
-- Container Lifecycle can be overridden for custom exec/http calls
-
-## 3.0.10 General Updates
-Custom labels and annotations have been extended to all objects the Gateway Chart deploys. Pod Labels and annotations have been added to the Gateway and PM-Tagger deployments.
-
-- Additional Labels/Annotations apply to everything in this Chart's templates
-```
-# Additional Annotations apply to all deployed objects
-additionalAnnotations: {}
-
-# Additional Labels apply to all deployed objects
-additionalLabels: {}
-```
-
-- Pod Labels/Annotations at the base level apply to the Gateway Pod
-```
-## Pod Labels for the Gateway Pod
-## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-podLabels: {}
-
-# Pod Annotations apply to the Gateway Pod
-## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
-```
-
-- PM-Tagger pod labels/annotations are separate
-```
-pmtagger:
-  ...
-  ## Pod Labels for the PM Tagger Pod
-  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-  podLabels: {}
-
-  # Pod Annotations apply to the PM Tagger Pod
-  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: {}
-```
-
-## 3.0.9 Updates to PM-Tagger
-PM tagger has following additional configuration options
-- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
-- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
-- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
-- [All PM-Tagger Configuration](#pm-tagger-configuration)
-
-## 3.0.8 Updates to Hazelcast
-The default image tag in values.yaml is updated to **5.2.1** and xsd version in configmap.yaml to **5.2**. The updates are due to vulnerability from CVE-2022-36437.
-The updates are applied to both the gateway and gateway-otk chart.
-
-## 3.0.7 General Updates
-The bootstrap script has been updated to reflect changes to the Container Gateway's filesystem. The updates are currently limited to 10.1.00_CR3. Please see the [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) for more info .
-
-The PM Tagger image default version tag been updated to 1.0.1.
-
-## 3.0.6 General Updates
-The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.1**. Support for liveness and readiness probes using OTK health check service.
-
-## 3.0.5 General Updates
-The default image tag in values.yaml and production-values.yaml, and the appVersion in Chart.yaml have been updated to **11.0.00**.
-
-Before upgrading existing deployments, please see the [Container Gateway 11.0 Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw.html) for important information regarding the procedure.
-
-## 3.0.4 General Updates
-OTK installation and upgrade is now supported as part of Gateway charts.  Please refer to [OTK Install or Upgrade](#otk-install-or-upgrade) for more details.
-[Gateway-OTK](../gateway-otk) is now deprecated.
-
-## 3.0.2 General Updates
-***The default image tag in values.yaml and production-values.yaml now points at specific GA or CR versions of the API Gateway. The appVersion in Chart.yaml has also been updated to reflect that. As of this release, that is 10.1.00_CR2***
-
-To reduce reliance on requiring a custom/derived gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder.
-
-The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
-- [InitContainer Examples](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples) - this repository also contains examples for custom health checks and configuration files.
-
-The following configuration options have been added
-- [Custom Health Checks](#custom-health-checks)
-- [Custom Configuration Files](#custom-configuration-files)
-- [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)
-- [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)
-- [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)
-- [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
-- Http headers can also now be added to the liveness and readiness probes
-- Ingress and HPA API Version validation has been updated to check for available APIs vs. KubeVersion
-- SubCharts now show image repository and tags
-
-### Upgrading to Chart v3.0.0
-Please see the 3.0.0 updates, this release brings significant updates and ***breaking changes*** if you are using an external Hazelcast 3.x server. Services and Ingress configuration have also changed. Read the 3.0.0 Updates below and check out the [additional guides](#additional-guides) for more info.
-
-## 3.0.0 Updates to Hazelcast
-***Hazelcast 4.x/5.x servers are now supported*** this represents a breaking change if you have configured an external Hazelcast 3.x server.
-- If you are using Gateway v10.1 and below you will either need to set *hazelcast.legacy.enabled=true* and use the following gateway image *docker.io/caapim/gateway:10.1.00_20220802* or update your external Hazelcast server.
-- The included Hazelcast subChart has been updated to reflect this change
-
-### 3.0.0 Updates to Ingress Configuration
-Ingress configuration has been updated to include multiple hosts, please see [Ingress Configuration](#ingress-configuration) for more detail. You will need to update your values.yaml to reflect the changes.
-
-## 3.0.0 General Updates
-- You can now configure [Gateway Ports.](#port-configuration)
-  This does not cover Kubernetes Service level configuration which will ***need to be updated*** to reflect your changes.
-
-- New Management Service
-  - Provides separation of concerns for external/management traffic. This was previously a manual step.
-- [Autoscaling](#autoscaling)
-- [Ingress Configuration](#ingress-configuration)
-- [PM Tagger](#pm-tagger-configuration)
-  - PM (Policy Manager) tagger is a lightweight go application that works with the new management service.
-  - RBAC Role Required if using PM Tagger.
-- Default values.yaml restructure
-  - configuration items more closely aligned
-- Added production-values.yaml
-  - Includes a baseline for production configuration
-  - Resources are set to minimum recommended values
-  - Application ports are hardened
-   - 8080 (disabled)
-   - 8443 (management features disabled - service is ClusterIP)
-   - 9443 (configured with management service)
-  - Autoscaling is enabled
-  - Ingress is enabled
-   - Rules are configured for 8443
-  - Database is not created - you will need to supply a JDBC Url
-
-## Changes that will affect you if upgrading from 2.0.1 and below
-- MySQL Stable Chart is deprecated - the demo database subChart has been changed to Bitnami MySQL - if your database is NOT externalised you will lose any policy/configuration you have there.
-- tls.customKey ==> tls.useSignedCertificates tls.key tls.pass tls.existingSecretName
-
-## 2.0.6 General Updates
-- Fixing bitnami repository dependency issue.
-
-## 2.0.5 General Updates
-- Internal only.
-
-## 2.0.4 Updates to Secret Management
-- Added support for the Kubernetes CSI Driver for gateway bundles. This does not currently extend to environment variables or the Gateway license.
-- The CSI functionality is optional
-
-## 2.0.4 General Updates
-- Added support for sidecars and initContainers
-  - volumeMounts are automatically configured with emptyDir
-- Updated default values update to reflect empty objects/arrays for optional fields.
-- Load the Gateway Deployment's ServiceAccountToken as a stored password for querying the Kubernetes API.
-  - management.kubernetes.loadServiceAccountToken
-
-## 2.0.2 Updates to Secret Management
-- You can now specify existing secrets for Gateway Configuration, DefaultSSLKey (tls) and bundles
-
-## 2.0.2 General Updates
-- Ingress Definition updated to reflect the new API Version, additional configuration added.
-- HostAliases applies to /etc/hosts for dns names that aren't available on a dns server.
-- System.properties is now mounted to the Gateway Container, default values have been applied.
-- You can now reference existing bundles stored in configMaps/Secrets
-- NodeSelector and Affinity settings for the Gateway Deployment
-- Resources values updated to reflect minimum recommended configuration
-
-## Upgrading to 2.0.2
-***If you are using the demo database in a previous version of this Chart this upgrade will remove it. If you wish to keep your data you will need to perform a backup.***
-```
-$ helm repo update
-$ helm show values layer7/gateway > gateway-values.yaml
-
-Inspect and update the new gateway-values.yaml
-
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
-```
+## Release notes
+- Current Chart Version 3.0.30
+  - Please review release notes [here](./release-notes.md)
 
 ## Installing the Chart
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
@@ -499,6 +171,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
 | `database.username`          | Database Username | `gateway`  |
 | `database.password`          | Database Password | `mypassword`  |
+| `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
 | `database.name`          | Database name | `ssg`  |
 | `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false`  |
 | `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out`  |
@@ -564,6 +237,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `bootstrap.script.enabled`    | Enable the bootstrap script              | `false` |
 
 
+[Back to Additional Guides](#additional-guides)
+
 ## Port Configuration
 There are two types of port configuration available in the Gateway Helm Chart that are configured in the following ways
 
@@ -614,6 +289,9 @@ management:
         external: 9443
         protocol: TCP
 ```
+
+[Back to Additional Guides](#additional-guides)
+
 ### OTK install or upgrade
 OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
 
@@ -737,6 +415,8 @@ OTK Deployment examples can be found [here](/examples/otk)
 #### Note:
 * In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
 
+[Back to Additional Guides](#additional-guides)
+
 ### Gateway Application Ports
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
 
@@ -825,6 +505,8 @@ config:
         # - TLS_RSA_WITH_AES_128_CBC_SHA
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Ingress Configuration
 The Gateway Helm Chart allows you to configure an Ingress Resource that your central Ingress Controller can manage. You can find more information on [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) here.
 
@@ -887,6 +569,8 @@ ingress:
 #        #number:
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### PM Tagger Configuration
 [PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
 
@@ -908,6 +592,8 @@ ingress:
 | `pmtagger.tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
 | `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
 | `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+
+[Back to Additional Guides](#additional-guides)
 
 ### OpenTelemetry Configuration
 The Gateway from v11.1.00 can be configured to send telemetry to Observability backends [that support OpenTelemetry](https://opentelemetry.io/ecosystem/vendors/). Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration.
@@ -965,15 +651,19 @@ example otel.traceConfig
 }
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ##### Gateway OTel Examples (with or without the Optional Agent)
 The integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) contains two Gateway examples (values.yaml overrides) that are configured to use the SDK only approach ***or*** include the Optional OTel Java Agent. There are two Grafana Dashboards included that show the differences in the telemetry that emitted from the Gateway.
 - [SDK only, no agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-sdk-only-values.yaml)
 - [Agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-java-agent-values.yaml)
 
+[Back to Additional Guides](#additional-guides)
+
 ### Redis Configuration
 This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated.
 
-**Important Note** The latest version of this chart uses a new format for Redis configuration that will simplify configuring additional shared state providers in the future. Please view [shared state provider config](#shared-state-provider-config) for more details. This is only compatible with Gateway v11.1.01.
+**Important Note** The latest version of this chart uses a new format for Redis configuration that will simplify configuring additional shared state providers in the future. Please view [shared state provider config](#shared-state-provider-config) for more details. This is only compatible with Gateway v11.1.1.
 
 Comment out the following
 ```
@@ -1019,7 +709,7 @@ Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-sof
 #### Note
 The Gateway supports Redis master auth only. The Gateway will not be able to connect to Redis if your Sentinel nodes have passwords. Please refer to the notes in values.yaml for details on config.redis.auth and redis.auth (subChart)
 
-##### Redis Sentinel (11.1.01)
+##### Redis Sentinel (11.1.1)
 sharedstate_client.yaml
 ```
 redis:
@@ -1043,7 +733,7 @@ redis:
         port: 26379
 ```
 
-##### Redis Standalone (11.1.01)
+##### Redis Standalone (11.1.1)
 sharedstate_client.yaml
 ```
 redis:
@@ -1086,7 +776,7 @@ redis.properties
  ```
 
 ##### Redis Standalone (11.1.00)
-**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
 The Gateway supports SSL/TLS and Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
@@ -1109,7 +799,7 @@ redis.properties
  ```
 
 ##### Redis Standalone (11.0.00_CR2)
-**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
 The Gateway does not support SSL/TLS or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
@@ -1123,7 +813,7 @@ redis.properties
  redis.commandTimeout=5000
  ```
 
-##### Create a secret from this configuration (11.1.01)
+##### Create a secret from this configuration (11.1.1)
 ```
 kubectl create secret generic shared-state-provider-secret --from-file=sharedstate_client.yaml=/path/to/sharedstate_client.yaml
 ```
@@ -1136,7 +826,7 @@ config:
 ```
 
 ##### Create a secret from this configuration (11.0.00_CR2 and 11.1.00)
-**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.01 and later for Redis** if you are not upgrading to Gateway v11.1.01 please specify the --version flag when installing or upgrading your release.
+**Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
 ```
 kubectl create secret generic redis-config-secret --from-file=redis.properties=/path/to/redis.properties
 ```
@@ -1147,8 +837,10 @@ redis:
     existingConfigSecret: redis-config-secret
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Shared State Provider Config
-Shared State Providers from Gateway v11.1.01 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis.
+Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -1166,6 +858,7 @@ database:
   jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?failOverReadOnly=false
   username: myuser
   password: mypassword
+  liquibaseLogLevel: "off"
   name: ssg
 ```
 In the above example, two MySQL database servers are specified with myprimaryserver acting as the primary server and mysecondaryserver acting as the secondary server. The failOverReadOnly property is also set to false meaning that the secondary server db is also writable.
@@ -1185,6 +878,8 @@ jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=tru
 ```
 
 In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
+
+[Back to Additional Guides](#additional-guides)
 
 ### Cluster Wide Properties
 You can specify cluster-wide properties in values.yaml, you can also use the [bundle](#bundle-configuration) to load your own Gateway Bundles.
@@ -1214,9 +909,10 @@ config:
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
 ```
 
+[Back to Additional Guides](#additional-guides)
 
 ### Java Args
-Additional Java Arguments as may be recommended by support can be configured in values.yaml. Gateway v11.1.01 supports two new fields that allows a min and max heap size to be set. If these are not set config.heapSize will take precedence.
+Additional Java Arguments as may be recommended by support can be configured in values.yaml. Gateway v11.1.1 supports two new fields that allows a min and max heap size to be set. If these are not set config.heapSize will take precedence.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
@@ -1241,6 +937,8 @@ config:
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
 ```
+
+[Back to Additional Guides](#additional-guides)
 
 ### System Properties
 Additional System Properties as may be recommended by support can be configured in values.yaml
@@ -1274,10 +972,13 @@ The full default is this
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
     # Additional properties go here
 ```
-### Diskless Configuration
-Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.01 onwards. Please make sure disklessConfig.enabled is false (default) if you are using a previous version of the Container Gateway.
 
-**DISKLESS_CONFIG** is a new environment variable that was introduced in Gateway v11.1.01, that allows switching between configuration sources.
+[Back to Additional Guides](#additional-guides)
+
+### Diskless Configuration
+Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.1 onwards. Please make sure disklessConfig.enabled is false (default) if you are using a previous version of the Container Gateway.
+
+**DISKLESS_CONFIG** is a new environment variable that was introduced in Gateway v11.1.1, that allows switching between configuration sources.
 
 This is exposed in the Gateway Helm Chart via the disklessConfig configuration in values.yaml.
 - **disklessConfig.enabled: true**
@@ -1356,6 +1057,8 @@ disklessConfig:
   #     secretProviderClass: "secret-provider-class-name"
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Bundle Configuration
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
 This allows for purpose built Gateways with a guaranteed set of configuration, apis/services.
@@ -1385,6 +1088,8 @@ existingBundle:
   #     volumeAttributes:
   #       secretProviderClass: "secret-provider-class-name"
 ```
+
+[Back to Additional Guides](#additional-guides)
 
 ### Bootstrap Script
 To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder. The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
@@ -1417,6 +1122,8 @@ The following folder stucture must be maintained
 
 More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
+[Back to Additional Guides](#additional-guides)
+
 ### Custom Health Checks
 You can now specify a configMap or Secret that contains healthcheck scripts. These are mounted to ```/opt/docker/rc.d/diagnostic/health_check``` where they are run by ```/opt/docker/rc.d/diagnostic/health_check.sh```.
 
@@ -1441,6 +1148,8 @@ existingHealthCheck:
     #     secretProviderClass: "vault-database"
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Custom Configuration Files
 Certain folders on the Container Gateway are not writeable by design. This configuration allows you to mount existing configMap/Secret keys to specific paths on the Gateway without the need for a root user or a custom/derived image.
 
@@ -1458,6 +1167,8 @@ customConfig:
   #       key: sampletrafficloggerca.properties
   #       path: sampletrafficloggerca.properties
 ```
+
+[Back to Additional Guides](#additional-guides)
 
 ### Graceful Termination
 During upgrades and other events where Gateway pods are replaced you may have APIs/Services that have long running connections open.
@@ -1484,6 +1195,8 @@ The graceful termination (preStop script) is disabled by default.
 | `preStopScript.timeoutSeconds`          | Timeout - must be lower than terminationGracePeriodSeconds  | `60`  |
 | `preStopScript.excludedPorts`          | Array of ports that should be excluded from the preStop script check | `[8777, 2124]`  |
 | `terminationGracePeriodSeconds`          | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml`  |
+
+[Back to Additional Guides](#additional-guides)
 
 ### Autoscaling
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
@@ -1528,6 +1241,8 @@ autoscaling:
           periodSeconds: 15
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Pod Disruption Budgets
 [Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) allow you to limit the number of concurrent disruptions that your application experiences, allowing for higher availability while permitting the cluster administrator to manage the clusters nodes.
 | Parameter                        | Description                               | Default                                                      |
@@ -1543,6 +1258,8 @@ pdb:
   maxUnavailable: 1
   minAvailable: ""
 ```
+
+[Back to Additional Guides](#additional-guides)
 
 ### RBAC Parameters
 PM Tagger requires access to pods in the current namespace, it uses the Gateway Configured service account.
@@ -1562,6 +1279,8 @@ rules:
   verbs: ["list", "patch"]
 ```
 
+[Back to Additional Guides](#additional-guides)
+
 ### Logs & Audit Configuration
 The API Gateway containers are configured to output logs and audits as JSON events, and to never write audits to the in-memory Derby database:
 
@@ -1577,6 +1296,8 @@ The API Gateway containers are configured to output logs and audits as JSON even
 - Allow wildcards when verifying hostnames (true/false)
     - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
 
+[Back to Additional Guides](#additional-guides)
+
 ### Service Metrics Demo
 To deploy the service metrics example you will need to enable serviceMetrics, influxdb and grafana.
 
@@ -1591,6 +1312,7 @@ To deploy the service metrics example you will need to enable serviceMetrics, in
 | `influxdb.enabled`                | Enable/Disable deployment of InfluxDb   | `false` |
 | `grafana.enabled`                | Enable/Disable deployment of Grafana   | `false` |
 
+[Back to Additional Guides](#additional-guides)
 
 ## Subchart Configuration
 ***these do not represent production configurations***
@@ -1612,7 +1334,6 @@ The following table lists the configured parameters of the MySQL Bitnami chart -
 | `mysql.primary.persistence.size`                | Persistent Volume Size   | `8Gi` |
 | `mysql.primary.persistence.storageClass`                | Storage class to use   | `nil` |
 | `mysql.primary.configuration`                | MySQL Configuration   | `see values.yaml` |
-
 
 ## Hazelcast
 The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
@@ -1656,3 +1377,5 @@ The following table lists the configured parameters of the Grafana Subchart - se
 *  InfluxDb   (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
 *  Grafana    (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
 *  Redis      (default: disabled) ==>https://github.com/bitnami/charts/tree/master/bitnami/redis
+
+[Back to Additional Guides](#additional-guides)

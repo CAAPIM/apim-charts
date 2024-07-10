@@ -27,6 +27,7 @@ data:
   {{- end }}
 {{- if .Values.disklessConfig.enabled }}
   {{- if .Values.database.enabled }}
+  LIQUIBASE_LOG_LEVEL: {{ default "off" .Values.database.liquibaseLogLevel | quote }}
     {{- if .Values.database.create }}
   SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
     {{- else }}
