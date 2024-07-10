@@ -3,7 +3,7 @@
 [![Release Charts](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml)
 [![Validate Schemas](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml)
 
-## APIM Helm Charts
+## APIM Helm Charts 
 This repository contains a series of Helm Charts for the Layer7 API Management (APIM) Portfolio.
 
 ## Usage
