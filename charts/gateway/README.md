@@ -1024,7 +1024,7 @@ node.db.config.main.pass=mypassword
 l7.mysql.connection.url=jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?failOverReadOnly=false&useSSL=true&requireSSL=true 
 ```
 
-See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more info. JDBC URLs like the value provided in database.jdbcUrl can be used as the value of l7.mysql.connection.url in node.properties. 
+See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more info on setting l7.mysql.connection.url. JDBC URLs like the value provided in database.jdbcUrl can be used as the value of l7.mysql.connection.url in node.properties. 
 
 ##### Gateway running in Ephemeral Mode (no external MySQL)
 - To run the Gateway in Ephemeral mode, ***node.db.type=derby*** needs to be added to node.properties
