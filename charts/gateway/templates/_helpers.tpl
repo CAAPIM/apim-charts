@@ -85,20 +85,6 @@ Create java args to apply.
 {{- end -}}
 
 {{/*
-Redis sentinel nodes
-*/}}
-{{- define "gateway.redisSentinelNodes" -}}
-{{- if .Values.config.redis.sentinel.enabled }}
- {{- if empty .Values.config.redis.sentinel.nodes }}
-        {{- fail "config.redis.sentinel.nodes is required." }}
- {{- end }}
-  {{- join "," .Values.config.redis.sentinel.nodes }}
-{{- end  -}}
-{{- end -}}
-
-
-
-{{/*
 Shared state client secret name
 */}}
 {{- define "sharedStateClientSecretName" }}

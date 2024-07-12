@@ -480,26 +480,26 @@ config:
     #       # path must match ssl.cert in your provider config
     #       path: myRegionalRedisCert.crt
     #   config: {}
-    # config:
-    #   regional:
-    #     type: sentinel
-    #     keyPrefixGroupName: test
-    #     username: abc
-    #     password: "def"
-    #     commandTimeout: 5000
-    #     connectTimeout: 10000
-    #     testOnStart: false
-    #     ssl:
-    #       enabled: true
-    #       cert: myRegionalRedisCert.crt
-    #       verifyPeer: false
-    #     sentinel:
-    #       master: mymaster
-    #       nodes:
-    #       - host: 127.0.0.1
-    #         port: 26379
-    #       - host: 192.168.0.1
-    #         port: 26379
+    #   config:
+    #     regional:
+    #       type: sentinel
+    #       keyPrefixGroupName: test
+    #       username: abc
+    #       password: "def"
+    #       commandTimeout: 5000
+    #       connectTimeout: 10000
+    #       testOnStart: false
+    #       ssl:
+    #         enabled: true
+    #         cert: myRegionalRedisCert.crt
+    #         verifyPeer: false
+    #       sentinel:
+    #         master: mymaster
+    #         nodes:
+    #         - host: 127.0.0.1
+    #           port: 26379
+    #         - host: 192.168.0.1
+    #           port: 26379
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
