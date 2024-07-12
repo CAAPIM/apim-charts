@@ -976,7 +976,7 @@ The full default is this
 [Back to Additional Guides](#additional-guides)
 
 ### Diskless Configuration
-Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.1 onwards. Please make sure disklessConfig.enabled is false (default) if you are using a previous version of the Container Gateway.
+Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.1 onwards. Please make sure disklessConfig.enabled is true (default) if you are using a previous version of the Container Gateway.
 
 **DISKLESS_CONFIG** is a new environment variable that was introduced in Gateway v11.1.1, that allows switching between configuration sources.
 
@@ -1013,15 +1013,12 @@ Example: node.properties with MySQL database configuration
 node.cluster.pass=mypassword
 admin.user=admin
 admin.pass=mypassword
-node.db.config.main.host=myDBHost.com
-node.db.config.main.port=3306
-node.db.config.main.name=ssg
 node.db.config.main.user=gateway
 node.db.config.main.pass=mypassword
-l7.mysql.url.parameters.extra=&useSSL=true&requireSSL=true 
+l7.mysql.connection.url=jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?failOverReadOnly=false&useSSL=true&requireSSL=true 
 ```
 
-See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more details on l7.mysql.url.parameters.extra
+See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more info. JDBC URLs like the value provided in database.jdbcUrl can be used as value of l7.mysql.connection.url in node.properties. 
 
 ##### Gateway running in Ephemeral Mode (no external MySQL)
 - To run the Gateway in Ephemeral mode, ***node.db.type=derby*** needs to be added to node.properties
