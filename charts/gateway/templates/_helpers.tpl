@@ -210,8 +210,8 @@ Define OTK Image Pull Secret Name
  Define Gateway node.properties Secret Name
  */}}
 {{- define "gateway.node.properties" -}}
-{{- if .Values.disklessConfig.existingSecretName -}}
-    {{ .Values.disklessConfig.existingSecretName }}
+{{- if .Values.disklessConfig.existingSecret.name -}}
+    {{ .Values.disklessConfig.existingSecret.name }}
 {{- else -}}
     {{- printf "%s-%s" (include "gateway.fullname" .) "node-properties" -}}
 {{- end -}}
