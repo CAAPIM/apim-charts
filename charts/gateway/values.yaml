@@ -534,9 +534,6 @@ database:
   create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
   # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
-  # if disklessConfig.enabled is set to false, jdbcUrl should be set to the jdbcHost
-  # jdbcURL: <host>
-  # jdbcPort: 3306
   username: gateway
   password: mypassword
   # Liquibase log level can be set to one of the following.
