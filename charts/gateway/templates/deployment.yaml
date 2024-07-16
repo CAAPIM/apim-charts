@@ -192,14 +192,9 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
 {{- if not .Values.disklessConfig.enabled }}
-           {{- if not .Values.disklessConfig.existingSecret.csi}}
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
-            {{- else }}
-            - name: {{ template "gateway.fullname" . }}-node-properties
-              mountPath: /opt/docker/node-properties
-            {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
@@ -312,11 +307,6 @@ spec:
               mountPath: /opt/docker/rc.d/003-parse-custom-files.sh
               subPath: 003-parse-custom-files.sh
 {{- end }}
-{{- end }}
-{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi)}}
-            - name: {{ template "gateway.fullname" . }}-configure-node-properties
-              mountPath: /opt/docker/rc.d/004-configure-node-properties.sh
-              subPath: 004-configure-node-properties.sh
 {{- end }}
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
@@ -637,15 +627,6 @@ spec:
               path: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
-{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi)}}
-        - name: {{ template "gateway.fullname" . }}-configure-node-properties
-          configMap:
-            name: {{ template "gateway.fullname" . }}-configmap
-            items:
-            - key:  004-configure-node-properties
-              path: 004-configure-node-properties.sh
-{{- end }}
-
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
         - name: {{ template "gateway.fullname" . }}-gracefulshutdown

@@ -4,6 +4,10 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
+## Release notes
+- Current Chart Version 3.0.30
+  - Please review release notes [here](./release-notes.md)
+
 ## Prerequisites
 - Kubernetes
   - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw/requirements-and-compatibility.html#concept.dita_req_comp_refresh_gw10cr2_platforms) for the latest version support
@@ -88,14 +92,7 @@ Helm Version    Supported Kubernetes Versions
 * [Service Metrics Demo](#service-metrics-demo)
 * [SubChart Configuration](#subchart-configuration)
 
-# Java 17
-The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
-If you use Policy Manager, you will need to update to v11.1.00.
-
-## Release notes
-- Current Chart Version 3.0.30
-  - Please review release notes [here](./release-notes.md)
 
 ## Installing the Chart
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction

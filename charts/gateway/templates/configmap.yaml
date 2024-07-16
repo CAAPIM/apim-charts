@@ -93,11 +93,6 @@ data:
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
-{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.existingSecret.csi) }}
-  004-configure-node-properties: |-
-    #!/bin/bash
-    cp /opt/docker/node-properties/{{ .Values.disklessConfig.existingSecret.name }} /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
-{{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-
     #!/bin/bash

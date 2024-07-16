@@ -2,6 +2,11 @@
 
 Back to [Readme](./README.md#release-notes)
 
+# Java 17
+The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
+
+If you use Policy Manager, you will need to update to v11.1.00.
+
 ## 3.0.30 General Updates
 Release notes will also be moved to a new file before merge...
 **Note** Gateway restart required if using preview Redis features.
