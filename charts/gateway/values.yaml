@@ -409,7 +409,32 @@ config:
       # changes will be required
       # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
       enabled: false
+  gemfire:
+    enabled: false
+    connectionProperties: |
+      gemfire.locator.host=
+      gemfire.locator.port=
 
+    auth:
+      enabled: false
+      username: 
+      password:
+    ssl:
+      enabled: false
+      truststore:
+      keystore: 
+      truststorePassword:
+      keystorePassword:
+      additionalProperties: |-
+        ssl-require-authentication=false
+        #ssl-component-alias=
+        ssl-ciphers=any
+        ssl-protocols=any
+        ssl-endpoint-identification-enabled=false
+        ssl-enabled-components=all
+        ssl-keystore-type=JKS
+        ssl-truststore-type=JKS
+        security-client-auth-init=com.l7tech.external.assertions.gemfiresharedstateprovider.server.ClientAuthInit
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.

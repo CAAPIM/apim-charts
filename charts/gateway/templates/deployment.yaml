@@ -244,6 +244,26 @@ spec:
         {{- end }}
         {{- end }}
 {{- end }}
+{{- if .Values.config.gemfire  }}
+      {{- if .Values.config.gemfire.enabled }}
+            - name: {{ template "gateway.fullname" . }}-gemfire
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/GemfireSharedStateProviderAssertion/gemfire_connection.properties
+              subPath: gemfire_connection.properties
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.ssl.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-gemfire-security-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/GemfireSharedStateProviderAssertion/gemfire_security.properties
+              subPath: gemfire_security.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.ssl.enabled }}
+            - name: {{ template "gateway.fullname" . }}-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/GemfireSharedStateProviderAssertion/gemfire-truststore
+              subPath: gemfire-truststore
+            - name: {{ template "gateway.fullname" . }}-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/GemfireSharedStateProviderAssertion/gemfire-keystore
+              subPath: gemfire-keystore
+        {{- end }}
+      {{- end }}
+{{- end }}
 {{- if .Values.existingHealthCheck }}
 {{- if .Values.existingHealthCheck.enabled }}
            {{- if .Values.existingHealthCheck.configMap }}
@@ -470,6 +490,40 @@ spec:
       {{- end }}
       {{- end }}
 {{- end }}
+{{- if .Values.config.gemfire }}
+    {{- if .Values.config.gemfire.enabled }}
+        - name: {{ template "gateway.fullname" . }}-gemfire
+          configMap:
+            name: {{ template "gateway.fullname" . }}-gemfire-configmap
+            items:
+            - key: connection-properties
+              path: gemfire_connection.properties
+       {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.ssl.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-gemfire-security-properties
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-gemfire-security-properties
+            items:
+            - key: gemfire_security
+              path: gemfire_security.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.ssl.enabled }}
+        - name: {{ template "gateway.fullname" . }}-gemfire-keystore
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-gemfire-certs
+            items:
+            - key: keystore
+              path: gemfire-keystore
+        - name: {{ template "gateway.fullname" . }}-gemfire-truststore
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-gemfire-certs
+            items:
+            - key: truststore
+              path: gemfire-truststore
+        {{- end }}
+    {{- end }}
+{{- end }}
+
+
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
      {{- range .Values.customConfig.mounts }}
