@@ -50,7 +50,7 @@ spec:
     termination: passthrough
   to:
     kind: Service
-    name: pssg
+    name: apim
     weight: 100
   wildcardPolicy: None
 ---
