@@ -24,7 +24,7 @@ data:
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   NSS_SDB_USE_CACHE: "no"
   ONPREM: "true"
-  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
   PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}

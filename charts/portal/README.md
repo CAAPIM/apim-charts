@@ -3,6 +3,13 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
+## 2.3.9 General Updates
+- This new version of the chart supports API Portal 5.3
+- Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.10.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.0.37 MySQL version.
+- If the RMQ container fails to start, scale-down the RMQ statefulset, delete the RMQ volume and try again.
+- Refer release notes for more info https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/release-notes-api-developer-portal.html
 ## 2.3.8 General Updates
 - This new version of the chart supports API Portal 5.2.3
 ## 2.3.7 General Updates
@@ -77,7 +84,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-2/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -433,18 +440,18 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Database Node Pool Configurations
 
 #### Common configurations across multiple containers
-| Parameter                                                              | Description                                                                                                                                    | Default       | Container                                                                           |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------------------------------------------------------------------------|
-| `<container>.additionalEnv.DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`           | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `300 seconds` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`           | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`   | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`   | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`   | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| Parameter                                                              | Description                                                                                                                                    | Default      | Container                                                                           |
+|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------------------------------------|
+| `<container>.additionalEnv.DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, `pssg` |
 
 #### Authenticator specific configurations
 | Parameter                                                            | Description                                                                                                                                    | Default       |
@@ -457,32 +464,32 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.additionalEnv.DATABASE_POOL_MAXIMUMIDLECONNECTIONS`   | The maximum number of idle connections                                                                                                         | `10`          |
 
 #### Additional portalData configurations for File Repository Database
-| Parameter                                                                             | Description                                                                                                                                    | Default       |
-|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`           |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`          |                       
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)`  |           
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`          |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `300 seconds` |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`           |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`         |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`   |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`   |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`   |
+| Parameter                                                                             | Description                                                                                                                                    | Default      |
+|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         |                       
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |           
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
 
 #### Additional tenantProvisioner configurations for Portal Database
-| Parameter                                                                             | Description                                                                                                                                    | Default       |
-|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MINPOOLSIZE`                    | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`           |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXPOOLSIZE`                    | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`          | 
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CHECKOUTTIMEOUT`                | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)`  |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`     | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`          |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`       | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `300 seconds` |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_INITIALPOOLSIZE`                | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`           |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTS`                  | The size of global PreparedStatement cache                                                                                                     | `300`         |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXCONNECTIONAGE`               | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`   |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIME`                    | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`   |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS`   | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`   |
+| Parameter                                                                             | Description                                                                                                                                    | Default      |
+|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MINPOOLSIZE`                    | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXPOOLSIZE`                    | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | 
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CHECKOUTTIMEOUT`                | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`     | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`       | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_INITIALPOOLSIZE`                | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTS`                  | The size of global PreparedStatement cache                                                                                                     | `300`        |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXCONNECTIONAGE`               | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIME`                    | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS`   | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
 
 ### Portal TLS Defaults 
 Portal TLS defaults if the parameters are not set.
@@ -661,18 +668,18 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.2.3` |
-| `image.pssg` | PSSG image | `pssg:5.2.3` |
-| `image.apim` | APIM ingress image | `ingress:5.2.3` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.2.3` |
-| `image.data` | portal-data image | `portal-data:5.2.3` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.2.3` |
-| `image.analytics` | Analytics image | `analytics-server:5.2.3` |
-| `image.authenticator` | Authenticator image | `authenticator:5.2.3` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.2.3` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.2.3` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.2.3` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.2.3` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3` |
+| `image.pssg` | PSSG image | `pssg:5.3` |
+| `image.apim` | APIM ingress image | `ingress:5.3` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3` |
+| `image.data` | portal-data image | `portal-data:5.3` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -804,14 +811,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.2.3`        |
-| `druid.image.broker`        | Broker image        | `druid:5.2.3`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.2.3`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.2.3`            |
-| `druid.image.minio`         | Minio image         | `minio:5.2.3`            |
-| `druid.image.historical`    | Historical image    | `druid:5.2.3`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.2.3`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.2.3` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -854,7 +861,7 @@ The following table lists the configured parameters of the MySQL Subchart - http
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.0.31-debian-11-r36` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.0.37-debian-12-r2` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
@@ -1046,6 +1053,6 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2023 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2024 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.

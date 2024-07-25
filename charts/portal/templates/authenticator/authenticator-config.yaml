@@ -22,7 +22,7 @@ data:
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   JAVA_OPTIONS: {{ .Values.authenticator.javaOptions | default "-Xms1g -Xmx1g" | quote }}
   NSS_SDB_USE_CACHE: "no"
-  PORTAL_VERSION: {{ .Chart.AppVersion }}
+  PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
 {{ if .Values.authenticator.additionalEnv }}
 {{- range $key, $val := .Values.authenticator.additionalEnv }}

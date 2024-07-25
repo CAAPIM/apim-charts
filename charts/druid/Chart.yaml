@@ -8,4 +8,4 @@ maintainers:
 sources:
   - https://github.com/CAAPIM/apim-charts
 version: 1.0.14
-appVersion: 0.17.0
+appVersion: 28.0.1

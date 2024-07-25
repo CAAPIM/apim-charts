@@ -12,7 +12,7 @@ license:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.0.00_CR2
+  tag: 11.1.00
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -197,9 +197,36 @@ config:
           com.l7tech.server.policy.variable.ServerVariables.level = SEVERE
           com.l7tech.external.assertions.odata.server.producer.jdbc.GenerateSqlQuery.level = SEVERE
           com.l7tech.server.policy.assertion.ServerSetVariableAssertion.level = SEVERE
-          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion = SEVERE
+          com.l7tech.external.assertions.comparison.server.ServerComparisonAssertion.level = SEVERE
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
+      # - name: otel.enabled
+      #   value: "true"
+      # - name: otel.serviceMetricEnabled
+      #   value: "true"
+      # - name: otel.traceEnabled
+      #   value: "true"
+      # - name: otel.metricPrefix
+      #   value: l7_
+      # - name: otel.traceConfig
+      #   value: |
+      #     {
+      #       "services": [
+      #         {
+      #           "resolutionPath": ".*test_otel_service.*"
+      #         }
+      #       ],
+      #       "assertions": {
+      #         "exclude": [
+      #           "Decode MTOM Message"
+      #         ]
+      #       },
+      #       "contextVariables": {
+      #         "exclude": [
+      #           ".*mypassword.*"
+      #         ]
+      #       }
+      #     }
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
@@ -218,6 +245,15 @@ config:
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+    # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
+    # otel.sdk.disabled=false
+    # otel.java.global-autoconfigure.enabled=true
+    # otel.service.name=ssg-gateway
+    # otel.exporter.otlp.endpoint=http://localhost:4318/
+    # otel.exporter.otlp.protocol=http/protobuf
+    # otel.traces.exporter=otlp
+    # otel.metrics.exporter=otlp
+    # otel.logs.exporter=none
     # Additional properties go here
 
  # If enabled this will override the default listen ports and their configuration in the API Gateway
@@ -250,24 +286,24 @@ config:
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -311,24 +347,24 @@ config:
           cipherSuites:
           - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-          - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
           - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-          - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
           - TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
-          - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
           - TLS_AES_256_GCM_SHA384
           - TLS_AES_128_GCM_SHA256
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        # - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
         # - TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384
         # - TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384
@@ -379,7 +415,7 @@ config:
       password:
         encoded: false
         value: mypassword
-    # In standalone mode auth and ssl/tls is not available
+    # In standalone mode auth and ssl/tls is only available starting from Gateway v11.1.00
     # this is for testing only and is not supported in
     # production environments
     sentinel:
@@ -627,11 +663,10 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.2_202402
+      tag: 4.6.3
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
-
     # Valid only for ephemeral gateway. Creates cronJobs for each OTK DB maintenance schedule tasks.
     scheduledTasks:
       - name: client
@@ -890,6 +925,22 @@ customConfig:
 bundle:
   enabled: false
   path: "bundles/*.bundle"
+
+startupProbe:
+  enabled: false
+  type: command
+  command: /opt/docker/rc.d/diagnostic/health_check.sh
+# type: httpGet
+# path: /ssg/ping
+# port: 8443
+# scheme: HTTPS
+# httpHeaders: []
+  initialDelaySeconds: 20
+  timeoutSeconds: 1
+  periodSeconds: 15
+  successThreshold: 1
+  failureThreshold: 15
+
 
 livenessProbe:
   enabled: true
