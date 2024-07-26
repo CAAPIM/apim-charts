@@ -46,7 +46,7 @@ portal:
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
-  # This bootstraps a license to apim and pssg
+  # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
   # i.e portal-license becomes portal-license-1
   # Note: a license is not required for version 5.0 and above, these fields are ignored.
@@ -391,36 +391,6 @@ portalEnterprise:
 # affinity: {}
   additionalEnv:
 
-pssg:
-  forceRedeploy: false
-  replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  pdb:
-    create: false
-    maxUnavailable: ""
-    minAvailable: ""
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext: {}
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext: {}
-  resources:
-    requests: {}
-    # cpu: 100m
-    # memory: 4096Mi
-    limits: {}
-    # cpu: 2000m
-    # memory: 6144Mi
-# nodeSelector: {}
-# tolerations: []
-# affinity: {}
-  additionalEnv:
-
 tenantProvisioner:
   forceRedeploy: false
   replicaCount: 1
@@ -454,7 +424,6 @@ tenantProvisioner:
 
 image:
   dispatcher: dispatcher:5.3
-  pssg: pssg:5.3
   apim: ingress:5.3
   enterprise: portal-enterprise:5.3
   data: portal-data:5.3
