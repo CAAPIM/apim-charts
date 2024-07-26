@@ -792,7 +792,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.36-debian-11-r4"
+    tag: "8.0.37-debian-12-r2"
   auth:
     username: portal
     existingSecret: database-secret
