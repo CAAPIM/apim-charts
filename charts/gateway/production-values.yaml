@@ -14,7 +14,7 @@ disklessConfig:
   # true - environment variables are used for gateway configuration
   # false - node.properties is used for gateway configuration
   enabled: true
-  # existingSecret:
+  existingSecret: {}
   #   name: gateway-secret
   #   csi:
   #      driver: secrets-store.csi.k8s.io
@@ -184,8 +184,8 @@ config:
   heapSize: "2g"
   # Gateway v11.1.1 provides min and max heap size options
   # If you are using an earlier version of the Gateway, these will be ignored.
-  minHeapSize: "1g"
-  maxHeapSize: "3g"
+  # minHeapSize: "1g"
+  # maxHeapSize: "3g"
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
