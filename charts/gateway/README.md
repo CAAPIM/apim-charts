@@ -664,7 +664,7 @@ This enables integration with [Redis](https://redis.io/). The following sections
 
 Comment out the following
 ```
-# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=local
 # com.l7tech.server.extension.sharedCounterProvider=ssgdb
 ```
 Uncomment the following
@@ -962,12 +962,12 @@ The full default is this
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
-    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=local
     com.l7tech.server.extension.sharedCounterProvider=ssgdb
     com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
     # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
-    com.safelogic.cryptocomply.rsa.allow_multi_use=true
+    com.l7tech.org.bouncycastle.rsa.allow_multi_use=true
     # Specifies the type of Trust Store (JKS/PKCS12) provided by AdoptOpenJDK that is used by Gateway.
     # Must be set correctly when Gateway is running in FIPS mode. If not specified it will default to PKCS12.
     javax.net.ssl.trustStoreType=jks
@@ -1178,7 +1178,7 @@ This functionality delays Kubernetes sending a SIGTERM to the container gateway 
 The preStop script will monitor connections to <b>inbound (not outbound)</b> Gateway Application TCP ports (i.e. inbound listener ports opened by the Gateway Application and not some other process) except those that are explicitly excluded.
 
 The following ports are excluded from monitoring by default.
-- 8777 (Hazelcast) - Embedded Hazelcast.
+- 8777 (Hazelcast) - Hazelcast.
 - 2124 (Internode-Communication) - not utilised by the Container Gateway.
 
 If there are no open connections, the preStop script will exit immediately ignoring preStopScript.timeoutSeconds to avoid unnecessary resource utilisation (pod stuck in terminating state) during upgrades.
