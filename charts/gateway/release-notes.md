@@ -39,11 +39,6 @@ Release notes will also be moved to a new file before merge...
         - com.safelogic.cryptocomply.rsa.allow_multi_use=true
       - New
         - com.l7tech.org.bouncycastle.rsa.allow_multi_use=true
-   - com.l7tech.server.extension.sharedKeyValueStoreProvider
-      - Previous
-        - embeddedHazelcast
-      - New
-        - local
 
 ## 3.0.29 OTK 4.6.3 Released
 - The default image tag in values.yaml and production-values.yaml for OTK updated to **4.6.3**.

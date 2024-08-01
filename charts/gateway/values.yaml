@@ -247,7 +247,7 @@ config:
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
-    com.l7tech.server.extension.sharedKeyValueStoreProvider=local
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
     com.l7tech.server.extension.sharedCounterProvider=ssgdb
     com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
@@ -262,6 +262,7 @@ config:
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+    # Shared state provider preview settings
     # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
     # com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
     # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration

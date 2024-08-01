@@ -72,6 +72,7 @@ Helm Version    Supported Kubernetes Versions
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
+* [Shared State Preview Features](#shared-state-preview-features)
 * [Redis Configuration](#redis-configuration)
 * [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
@@ -657,14 +658,32 @@ The integration example [here](https://github.com/Layer7-Community/Integrations/
 
 [Back to Additional Guides](#additional-guides)
 
+### Shared State Preview Features
+There are two preview features that you may choose to enable with Gateway v11.1.1 onwards.
+- [Apply Distributed Rate Limit Assertion (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/apply-distributed-rate-limit-assertion.html)
+- [Key Value Storage Assertions (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html)
+
+To use the [Apply Distributed Rate Limit Assertion (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/apply-distributed-rate-limit-assertion.html), uncomment the following and set it to redis or externalhazelcast
+```
+# com.l7tech.server.extension.sharedRateLimiterProvider=redis
+```
+
+To use the [Key Value Storage Assertions (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html), uncomment the following and set sharedKeyValueStoreProvider to redis or externalhazelcast
+```
+# com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
+# com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
+```
+
+[Back to Additional Guides](#additional-guides)
+
 ### Redis Configuration
-This enables integration with [Redis](https://redis.io/). The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated.
+This enables integration with [Redis](https://redis.io/) which is a preview feature on the Layer7 Gateway. The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated.
 
 **Important Note** The latest version of this chart uses a new format for Redis configuration that will simplify configuring additional shared state providers in the future. Please view [shared state provider config](#shared-state-provider-config) for more details. This is only compatible with Gateway v11.1.1.
 
 Comment out the following
 ```
-# com.l7tech.server.extension.sharedKeyValueStoreProvider=local
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
 # com.l7tech.server.extension.sharedCounterProvider=ssgdb
 ```
 Uncomment the following
@@ -672,8 +691,6 @@ Uncomment the following
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
 # com.l7tech.server.extension.sharedCounterProvider=redis
 # com.l7tech.server.extension.sharedRateLimiterProvider=redis
-# com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
-# com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
 ```
 
 | Parameter                        | Description                               | Default                                                      |
@@ -962,7 +979,7 @@ The full default is this
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
-    com.l7tech.server.extension.sharedKeyValueStoreProvider=local
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
     com.l7tech.server.extension.sharedCounterProvider=ssgdb
     com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
