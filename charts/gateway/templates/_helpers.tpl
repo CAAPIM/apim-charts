@@ -85,16 +85,15 @@ Create java args to apply.
 {{- end -}}
 
 {{/*
-Redis sentinel nodes
+Shared state client secret name
 */}}
-{{- define "gateway.redisSentinelNodes" -}}
-{{- if .Values.config.redis.sentinel.enabled }}
- {{- if empty .Values.config.redis.sentinel.nodes }}
-        {{- fail "config.redis.sentinel.nodes is required." }}
- {{- end }}
-  {{- join "," .Values.config.redis.sentinel.nodes }}
-{{- end  -}}
-{{- end -}}
+{{- define "sharedStateClientSecretName" }}
+{{- if not .Values.config.sharedStateClient.existingConfigSecret }}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "shared-state-client-configuration" -}}
+{{- else }}
+{{- .Values.config.sharedStateClient.existingConfigSecret }}
+{{- end }}
+{{- end }}
 
 {{/*
 Redis config secret name
@@ -190,6 +189,17 @@ Define OTK Image Pull Secret Name
     {{ .Values.license.existingSecretName }}
 {{- else -}}
     {{- printf "%s-%s" (include "gateway.fullname" .) "license" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define Gateway node.properties Secret Name
+ */}}
+{{- define "gateway.node.properties" -}}
+{{- if .Values.disklessConfig.existingSecret.name -}}
+    {{ .Values.disklessConfig.existingSecret.name }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "node-properties" -}}
 {{- end -}}
 {{- end -}}
 

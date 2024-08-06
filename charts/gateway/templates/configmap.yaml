@@ -18,13 +18,21 @@ metadata:
 {{- end }}
 data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
+  DISKLESS_CONFIG: {{ .Values.disklessConfig.enabled | quote }}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
+  LIQUIBASE_LOG_LEVEL: {{ default "off" .Values.database.liquibaseLogLevel | quote }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
-{{- if .Values.database.enabled }}
-  {{- if .Values.database.create }}
+  {{- if and (.Values.config.minHeapSize) (.Values.config.maxHeapSize) }}
+  SSG_JVM_MIN_HEAP: {{ .Values.config.minHeapSize }}
+  SSG_JVM_MAX_HEAP: {{ .Values.config.maxHeapSize }}
+  {{- end }}
+{{- if .Values.disklessConfig.enabled }}
+  {{- if .Values.database.enabled }}
+    {{- if .Values.database.create }}
   SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
-  {{- else }}
+    {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
