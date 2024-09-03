@@ -25,7 +25,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.1
+  tag: 11.0.0
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
