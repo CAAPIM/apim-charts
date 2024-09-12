@@ -297,7 +297,14 @@ OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types 
 - On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
 - On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
-***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
+***NOTE:***
+1. When installing a new Gateway with OTK enabled, add timeout with the helm command to ensure OTK install job waits for Gateway to be ready
+```
+Example:
+  helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+   --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 300s
+```
+2. In dual gateway installation, restart the pods after OTK install or upgrade is required.
 
 Prerequisites:
 * Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
