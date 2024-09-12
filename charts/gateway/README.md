@@ -300,9 +300,9 @@ OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types 
 ***NOTE:***
 1. When installing a new Gateway with OTK enabled, add timeout with the helm command to ensure OTK install job waits for Gateway to be ready
 ```
-Example:
+Example: The timeout of 500s is only indicative. For upgrades this has to be increased upto 750s
   helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
-   --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 300s
+   --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 500s
 ```
 2. In dual gateway installation, restart the pods after OTK install or upgrade is required.
 
