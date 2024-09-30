@@ -501,7 +501,33 @@ config:
     #           port: 26379
     #         - host: 192.168.0.1
     #           port: 26379
-
+  
+  gemfire:
+    enabled: false
+    connectionProperties: |
+      gemfire.locator.host=
+      gemfire.locator.port=
+    auth:
+      enabled: false
+      username: 
+      password:
+    ssl:
+      enabled: false
+      truststore:
+      keystore: 
+      truststorePassword:
+      keystorePassword:
+      additionalProperties: |-
+        ssl-require-authentication=false
+        #ssl-component-alias=
+        ssl-ciphers=any
+        ssl-protocols=any
+        ssl-endpoint-identification-enabled=false
+        ssl-enabled-components=all
+        ssl-keystore-type=JKS
+        ssl-truststore-type=JKS
+        security-client-auth-init=com.l7tech.external.assertions.gemfiresharedstateprovider.server.ClientAuthInit
+        
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
     enabled: true

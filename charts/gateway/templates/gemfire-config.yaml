@@ -1,0 +1,23 @@
+{{ if .Values.config.gemfire.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-gemfire-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+data:
+  connection-properties: |-
+{{ .Values.config.gemfire.connectionProperties | indent 4 }}
+{{ end }}
