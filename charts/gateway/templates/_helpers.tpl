@@ -285,3 +285,15 @@ Define OTK Image Pull Secret Name
     {{- printf "%s" .Values.otk.restmanHost -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define Embedded gemfire remote locators
+ */}}
+{{- define "embedded.gemfire.remoteLocators" -}}
+{{- if empty .Values.config.gemfire.embedded.multiSite.remoteLocators -}}
+    {{- fail "Please define config.gemfire.embedded.multiSite.remoteLocators in values.yaml" }}
+{{- else -}}
+    {{- join "," .Values.config.gemfire.embedded.multiSite.remoteLocators }}
+{{- end -}}
+{{- end -}}
+

@@ -93,6 +93,23 @@ data:
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
+{{- if .Values.config.gemfire.embedded.enabled }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.bind.address=GEMFIRE_POD_IP
+    # com.l7tech.external.assertions.embeddedgemfireprovider.locator.port=8444
+    # com.l7tech.external.assertions.embeddedgemfireprovider.jmx.manager.port=8448
+    # com.l7tech.external.assertions.embeddedgemfireprovider.membership.start.port=8445
+    # com.l7tech.external.assertions.embeddedgemfireprovider.membership.end.port=8447
+{{- if .Values.config.gemfire.embedded.multiSite.enabled }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.multi.site=true
+    com.l7tech.external.assertions.embeddedgemfireprovider.distributed.system.id={{ .Values.config.gemfire.embedded.multiSite.systemId }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.remote.system.id={{ .Values.config.gemfire.embedded.multiSite.remoteSiteid }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.disk.store.name={{ .Values.config.gemfire.embedded.multiSite.diskStoreName }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.remote.locators={{ template "embedded.gemfire.remoteLocators" . }}
+    # com.l7tech.external.assertions.embeddedgemfireprovider.receiver.start.port=8440
+    # com.l7tech.external.assertions.embeddedgemfireprovider.receiver.end.port=8442
+{{- end }}
+{{- end }}
+
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-
     #!/bin/bash

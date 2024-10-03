@@ -247,9 +247,9 @@ config:
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
-    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
-    com.l7tech.server.extension.sharedCounterProvider=ssgdb
-    com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
+    # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+    # com.l7tech.server.extension.sharedCounterProvider=ssgdb
+    # com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
     # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
     com.l7tech.org.bouncycastle.rsa.allow_multi_use=true
@@ -258,6 +258,18 @@ config:
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Embedded Gemfire
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire
+    com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
+    com.l7tech.server.extension.sharedClusterInfoProvider=embeddedgemfire
+    com.l7tech.server.extension.sharedRateLimiterProvider=embeddedgemfire
+    com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire
+    # External Gemfire
+    # com.l7tech.server.extension.sharedKeyValueStoreProvider=externalgemfire
+    # com.l7tech.server.extension.sharedCounterProvider=externalgemfire
+    # com.l7tech.server.extension.sharedClusterInfoProvider=externalgemfire
+    # com.l7tech.server.extension.sharedRateLimiterProvider=externalgemfire
+    # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=externalgemfire
     # Redis configuration - uncomment to use Redis
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
@@ -503,31 +515,71 @@ config:
     #           port: 26379
   
   gemfire:
-    enabled: false
-    connectionProperties: |
-      gemfire.locator.host=
-      gemfire.locator.port=
-    auth:
+    embedded:
       enabled: false
-      username: 
-      password:
-    ssl:
+      ports:
+        locator: 7001
+        jmxManager: 7002
+        management:
+          start: 7003
+          end: 7006
+      ssl:
+        enabled: false
+        truststore:
+        keystore: 
+        truststorePassword:
+        keystorePassword:
+        additionalProperties: |-
+          ssl-require-authentication=false
+          #ssl-component-alias=
+          ssl-ciphers=any
+          ssl-protocols=any
+          ssl-endpoint-identification-enabled=false
+          ssl-enabled-components=all
+          ssl-keystore-type=JKS
+          ssl-truststore-type=JKS
+      properties: |-
+        log-level=error
+      multiSite:
+        enabled: false
+        systemId: 1
+        diskStoreName: gemfire
+        # TODO support multi sites
+        remoteSiteid: 2
+        remoteLocators:
+          - locator1[port]
+          - locator2[port]
+        ports:
+          sender:
+          receiver:
+            start:
+            end:
+    external:
       enabled: false
-      truststore:
-      keystore: 
-      truststorePassword:
-      keystorePassword:
-      additionalProperties: |-
-        ssl-require-authentication=false
-        #ssl-component-alias=
-        ssl-ciphers=any
-        ssl-protocols=any
-        ssl-endpoint-identification-enabled=false
-        ssl-enabled-components=all
-        ssl-keystore-type=JKS
-        ssl-truststore-type=JKS
-        security-client-auth-init=com.l7tech.external.assertions.gemfiresharedstateprovider.server.ClientAuthInit
-        
+      connectionProperties: |
+        gemfire.locator.host=
+        gemfire.locator.port=
+      auth:
+        enabled: false
+        username: 
+        password:
+      ssl:
+        enabled: false
+        truststore:
+        keystore: 
+        truststorePassword:
+        keystorePassword:
+        additionalProperties: |-
+          ssl-require-authentication=false
+          #ssl-component-alias=
+          ssl-ciphers=any
+          ssl-protocols=any
+          ssl-endpoint-identification-enabled=false
+          ssl-enabled-components=all
+          ssl-keystore-type=JKS
+          ssl-truststore-type=JKS
+          security-client-auth-init=com.l7tech.external.assertions.gemfire.common.server.ClientAuthInit
+
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
     enabled: true

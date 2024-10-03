@@ -1,8 +1,8 @@
-{{ if .Values.config.gemfire.enabled }}
+{{ if .Values.config.gemfire.external.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "gateway.fullname" . }}-gemfire-configmap
+  name: {{ template "gateway.fullname" . }}-ext-gemfire-configmap
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -19,5 +19,5 @@ metadata:
 {{- end }}
 data:
   connection-properties: |-
-{{ .Values.config.gemfire.connectionProperties | indent 4 }}
+{{ .Values.config.gemfire.external.connectionProperties | indent 4 }}
 {{ end }}
