@@ -253,7 +253,7 @@ tolerations: []
 
 # MySQL stable chart - this is not scalable nor will be in this format.
 mysql:
-  imageTag: "8"
+  imageTag: "8.0"
   mysqlUser: gateway
   mysqlPassword: mypassword
   mysqlDatabase: ssg
