@@ -3,8 +3,10 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
-## 2.4.1 General Updates
+## 2.4.2 General Updates
+- This new version of the chart supports API Portal 5.3.1
 - Removed PSSG container
+- Upgrade to 2.4.2 is only supported from 2.3.8 chart version as per the Portal version.
 ## 2.3.9 General Updates
 - This new version of the chart supports API Portal 5.3
 - Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
@@ -86,7 +88,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -634,17 +636,17 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3` |
-| `image.apim` | APIM ingress image | `ingress:5.3` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3` |
-| `image.data` | portal-data image | `portal-data:5.3` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3` |
-| `image.analytics` | Analytics image | `analytics-server:5.3` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.1` |
+| `image.apim` | APIM ingress image | `ingress:5.3.1` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.1` |
+| `image.data` | portal-data image | `portal-data:5.3.1` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.1` |
+| `image.analytics` | Analytics image | `analytics-server:5.3.1` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3.1` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.1` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.1` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.1` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3.1` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -776,14 +778,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3`        |
-| `druid.image.broker`        | Broker image        | `druid:5.3`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.3`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.3`            |
-| `druid.image.minio`         | Minio image         | `minio:5.3`            |
-| `druid.image.historical`    | Historical image    | `druid:5.3`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.3`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.1`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3.1`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3.1`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.1`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3.1`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3.1`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3.1`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.1` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
