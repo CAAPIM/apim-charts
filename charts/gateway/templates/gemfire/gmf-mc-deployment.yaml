@@ -1,0 +1,53 @@
+{{ if .Values.config.gemfire.embedded.startManagementConsole }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "gateway.fullname" . }}-gmf-mc
+  labels:
+    app: {{ template "gateway.name" . }}-gmf-mc
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-gmf-mc
+  replicas: 1
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}-gmf-mc
+        release: {{ .Release.Name }}
+    {{- if  .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-gmf-mc
+          image: {{.Values.config.gemfire.image.registry}}/{{.Values.config.gemfire.image.mc.repository}}:{{.Values.config.gemfire.image.mc.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+{{- end }}

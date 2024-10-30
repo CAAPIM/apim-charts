@@ -184,6 +184,20 @@ spec:
               protocol: {{ .protocol }}
             {{- end }}
             {{- end }}
+            {{- if .Values.config.gemfire.embedded.enabled}}
+            - name: gmf-http
+              containerPort: 7010
+              protocol: TCP
+            - name: gmf-locator
+              containerPort: 7011
+              protocol: TCP
+            - name: gmf-jmx
+              containerPort: 7012 
+              protocol: TCP
+            - name: gmf-server
+              containerPort: 7013
+              protocol: TCP
+            {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
@@ -272,6 +286,26 @@ spec:
               subPath: gemfire-truststore
             - name: {{ template "gateway.fullname" . }}-ext-gemfire-keystore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire-keystore
+              subPath: gemfire-keystore
+        {{- end }}
+      {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded  }}
+      {{- if .Values.config.gemfire.embedded.enabled }}
+            - name: {{ template "gateway.fullname" . }}-emb-gemfire
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
+              subPath: gemfire.properties
+        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+            - name: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire_security.properties
+              subPath: gemfire_security.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+            - name: {{ template "gateway.fullname" . }}-emb-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-truststore
+              subPath: gemfire-truststore
+            - name: {{ template "gateway.fullname" . }}-emb-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-keystore
               subPath: gemfire-keystore
         {{- end }}
       {{- end }}
@@ -581,6 +615,38 @@ spec:
         - name: {{ template "gateway.fullname" . }}-ext-gemfire-truststore
           secret:
             secretName: {{ template "gateway.fullname" . }}-ext-gemfire-certs
+            items:
+            - key: truststore
+              path: gemfire-truststore
+        {{- end }}
+    {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded }}
+    {{- if .Values.config.gemfire.embedded.enabled }}
+        - name: {{ template "gateway.fullname" . }}-emb-gemfire
+          configMap:
+            name: {{ template "gateway.fullname" . }}-emb-gemfire-configmap
+            items:
+            - key: gemfire-properties
+              path: gemfire.properties
+       {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        - name: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+            items:
+            - key: gemfire_security
+              path: gemfire_security.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        - name: {{ template "gateway.fullname" . }}-emb-gemfire-keystore
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-certs
+            items:
+            - key: keystore
+              path: gemfire-keystore
+        - name: {{ template "gateway.fullname" . }}-emb-gemfire-truststore
+          secret:
+            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-certs
             items:
             - key: truststore
               path: gemfire-truststore

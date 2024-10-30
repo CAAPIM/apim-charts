@@ -515,14 +515,22 @@ config:
     #           port: 26379
   
   gemfire:
+    image:
+      registry: docker.io
+      mc:
+        repository: gemfire/gemfire-management-console
+        tag: latest
+      locator:
+        repository: gemfire/gemfire-all
+        tag: 10.1-jdk17
+        replicas: 2
     embedded:
       enabled: false
-      ports:
-        locator: 7001
-        jmxManager: 7002
-        management:
-          start: 7003
-          end: 7006
+      startLocator: false
+      externalLocators:
+        - locator1[port]
+        - locator2[port]
+      startManagementConsole: true
       ssl:
         enabled: false
         truststore:

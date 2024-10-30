@@ -1,0 +1,44 @@
+{{ if not .Values.config.gemfire.embedded.startLocator }}
+{{- $replicas := .Values.config.gemfire.image.locator.replicas  | int -}}
+{{- range $i,$e := until $replicas }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" $ }}-gmf-loc-{{ $i }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  name: {{ template "gateway.fullname" $ }}-gmf-loc-{{ $i }}
+  annotations:
+    description: "Gemfire locator pod service"
+    "helm.sh/hook": pre-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+{{- range $key, $val := $.Values.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ template "gateway.fullname" $ }}-gmf-loc-{{ $i }}
+    release: {{ $.Release.Name }}
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 10334
+      targetPort: locator
+      name: locator
+      ports:
+    - protocol: TCP
+      port: 4321
+      targetPort: 4321
+      name: locator-metrics
+      ports:
+    - protocol: TCP
+      port: 7070
+      targetPort: 7070
+      name: locator-management-api
+{{- end }}
+{{- end }}

@@ -37,6 +37,24 @@ spec:
       targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
+  {{- if .Values.config.gemfire.embedded.enabled}}
+    - name: gmf-http
+      targetPort: gmf-http
+      port: 7010
+      protocol: TCP
+    - name: gmf-locator
+      targetPort: gmf-locator
+      port: 7011
+      protocol: TCP
+    - name: gmf-jmx
+      targetPort: gmf-jmx
+      port: 7012 
+      protocol: TCP
+    - name: gmf-server
+      targetPort: gmf-server
+      port: 7013
+      protocol: TCP
+  {{- end }}
   {{- if .Values.service.sessionAffinity }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
   {{- end }}

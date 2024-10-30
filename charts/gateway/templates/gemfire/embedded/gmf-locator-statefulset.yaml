@@ -1,0 +1,77 @@
+{{ if not .Values.config.gemfire.embedded.startLocator }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "gateway.fullname" . }}-gmf-loc
+  labels:
+    app: {{ template "gateway.name" . }}-gmf-loc
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+    "helm.sh/hook": pre-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: Parallel
+  revisionHistoryLimit: 10
+  replicas: {{ .Values.config.gemfire.image.locator.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-gmf-loc
+  serviceName: {{ template "gateway.fullname" . }}-gmf-loc
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}-gmf-loc
+        release: {{ .Release.Name }}
+    {{- if  .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-gmf-loc
+          image: {{.Values.config.gemfire.image.registry}}/{{.Values.config.gemfire.image.locator.repository}}:{{.Values.config.gemfire.image.locator.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: 
+            - gfsh
+            - start 
+            - locator 
+            - --name=$(POD_NAME) 
+            - --hostname-for-clients=localhost
+            - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
+            - --locators={{ template "embedded.gemfire.locators" $ }}
+          env:
+            - name: ACCEPT_TERMS
+              value: "y"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            limits:
+              cpu: "8"
+              memory: 16384Mi
+            requests:
+              cpu: "1"
+              memory: 1024Mi
+         
+{{- end }}

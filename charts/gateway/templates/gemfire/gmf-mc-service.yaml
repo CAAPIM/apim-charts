@@ -1,0 +1,28 @@
+{{ if .Values.config.gemfire.embedded.startManagementConsole }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" . }}-gmf-mc
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  name: {{ template "gateway.fullname" . }}-gmf-mc
+  annotations:
+    description: "Gemfire management console service"
+{{- range $key, $val := .Values.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  selector:
+    app: {{ template "gateway.fullname" . }}-gmf-mc
+    release: {{ .Release.Name }}
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: http
+{{- end }}
