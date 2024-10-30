@@ -3,10 +3,10 @@ The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Managemen
 
 ## Introduction
 This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using the Helm Package Manager.
-## 2.4.0 General Updates
+## 2.3.10 General Updates
 - This new version of the chart supports API Portal 5.3.1
 - Removed PSSG container
-- Upgrade to 2.4.0 is only supported from 2.3.9 chart version as per the Portal version.
+- Upgrade to 2.3.10 is only supported from 2.3.8 chart version as per the Portal version.
 ## 2.3.9 General Updates
 - This new version of the chart supports API Portal 5.3
 - Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
