@@ -37,7 +37,7 @@ data:
   {{- end }}
   {{- if eq .Values.otk.type "INTERNAL" }}
   OTK_DMZ_CERT_ENCODED: {{ default "" .Values.otk.cert.dmzGatewayCert | quote }}
-  OTK_DMZ_CERT_ISS: {{ default "" .Values.otk.cert.internalGatewayIssuer | quote }}
+  OTK_DMZ_CERT_ISS: {{ default "" .Values.otk.cert.dmzGatewayIssuer | quote }}
   OTK_DMZ_CERT_SERIAL: {{ default "12345" .Values.otk.cert.dmzGatewaySerial | quote }}
   OTK_DMZ_CERT_SUB: {{ default "" .Values.otk.cert.dmzGatewaySubject | quote }}
   {{- end }}
