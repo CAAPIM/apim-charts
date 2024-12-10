@@ -23,7 +23,7 @@ dependencies:
     repository: "https://charts.bitnami.com/bitnami"
     condition: grafana.enabled
   - name: mysql
-    version: 9.14.2
+    version: 12.1.0
     repository: "https://charts.bitnami.com/bitnami"
     condition: database.create
   - name: redis
