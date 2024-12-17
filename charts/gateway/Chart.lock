@@ -10,7 +10,7 @@ dependencies:
   version: 9.5.2
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
-  version: 9.14.2
+  version: 12.1.0
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 18.2.1
