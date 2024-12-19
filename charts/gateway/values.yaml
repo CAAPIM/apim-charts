@@ -1220,7 +1220,7 @@ mysql:
   image:
     registry: docker.io
     repository: bitnami/mysql
-    tag: 8.0.22-debian-10-r75
+    tag: 8.4.3-debian-12-r5
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName
