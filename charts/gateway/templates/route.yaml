@@ -1,0 +1,53 @@
+{{ if and (.Values.ingress.enabled) (.Values.ingress.openshift.route.enabled) }}
+{{- $gatewayFullName := include "gateway.fullname" . }}
+{{- range $i,$rule := .Values.ingress.rules }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $.Release.Name }}-{{ $.Chart.Name }}-route-{{ $i }}
+  labels:
+    release: {{ $.Release.Name }}-{{ $.Chart.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.ingress.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+{{- if $.Values.ingress.annotations }}
+  annotations:
+{{- range $key, $val := $.Values.ingress.annotations }}
+   {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  host: {{ .host }}
+  port:
+{{- if .service.port.name  }}
+    targetPort: {{ .service.port.name }}
+{{- else }}
+    targetPort: {{ default 8443 .service.port.number }}
+{{- end }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+{{- if .backend }}
+{{- if eq .backend "management" }}
+    name: {{ $gatewayFullName }}-management
+{{- else }}
+    name: {{ $gatewayFullName }}
+{{- end }}
+{{- else }}
+    name: {{ $gatewayFullName }}
+{{- end }}
+{{- if $.Values.ingress.openshift.route.weight }}
+    weight: {{ default 100 $.Values.ingress.openshift.route.weight }}
+{{- end }}
+{{- if $.Values.ingress.openshift.route.wildcardPolicy }}
+  wildcardPolicy: {{ default "None" $.Values.ingress.openshift.route.wildcardPolicy }}
+{{- end }}
+---
+{{- end }}
+{{ end }}

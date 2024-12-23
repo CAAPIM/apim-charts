@@ -91,6 +91,7 @@ config:
 ```
 
 ## 3.0.30 General Updates
+Release notes will also be moved to a new file before merge...
 **Note** Gateway restart required if using preview Redis features.
 - Support added for running the Gateway without [Diskless Config](./README.md#diskless-configuration)
   - Uses node.properties which can be mounted via [Secret or Secret Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/)
