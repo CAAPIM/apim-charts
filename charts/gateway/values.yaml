@@ -1252,7 +1252,7 @@ mysql:
   image:
     registry: docker.io
     repository: bitnami/mysql
-    tag: 8.0.22-debian-10-r75
+    tag: 8.4.3-debian-12-r5
     pullPolicy: IfNotPresent
     # pullSecrets:
     # - myRegistryKeySecretName
@@ -1273,7 +1273,6 @@ mysql:
       default-character-set=UTF8
       plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      default_authentication_plugin=mysql_native_password
       log-bin-trust-function-creators=1
       skip-name-resolve
       explicit_defaults_for_timestamp
@@ -1285,7 +1284,7 @@ mysql:
       tmpdir=/opt/bitnami/mysql/tmp
       collation-server=utf8_general_ci
       character-set-server=UTF8
-      innodb_log_buffer_size=32M
+      innodb_log_buffer_size=64M
       innodb_log_file_size=80M
       max_allowed_packet=20M
       sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"

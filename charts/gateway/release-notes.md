@@ -7,6 +7,12 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.32 General Updates
+- Support for Mysql version 8.4.x
+  - Gateway 11.1.x supports 8.4.x
+  - By Default, Mysql version is updated to 8.4.3
+  - Mysql internal chart is updated to 12.1.0
+  
 ## 3.0.31 General Updates
 - Support for Openshift Routes (disabled by default)
   - Uses passthrough termination (tls only)
