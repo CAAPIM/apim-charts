@@ -861,6 +861,21 @@ otk:
       # Oracle database name
       databaseName:
 
+    # Optionally configure Client read database connection for MySQL/Oracle.
+    clientReadConnection:
+      enabled: false
+      # connectionName: Oauth_Client_Read
+      # existingSecretName: otkClientReadSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name
+      databaseName:
+
   # Install OTK Health check bundle on gateway. Uses config map.
   # Alternatively the bundle can be loaded using config map external to helm (useExisting: true)
   # The bundle content can be found at https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/bundles/otk-healthcheck.bundle
