@@ -105,6 +105,22 @@ Optionally, OTK also supports read only database connection for MySQL and Oracle
 | `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
 | `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
 
+Optionally, OTK also supports database connection for Client Reads only for MySQL and Oracle. This will also be helpful when cross region active active DBs are used.
+For more information please refer to [OTK Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only  database connection   | `false` |
+| `otk.database.clientReadConnection.connectionName` | OTK Client Read only  database connection name  | `OAuth_ReadOnly` |
+| `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only  database Secret |
+| `otk.database.clientReadConnection.username`  | OTK Client Read only  database user name|
+| `otk.database.clientReadConnection.password`  | OTK Client Read only  database password |
+| `otk.database.clientReadConnection.properties` | OTK Client Read only  database additional properties  | `{}` |
+| `otk.database.clientReadConnection.jdbcURL`   | OTK Client Read only  database sql jdbc URL (oracle/mysql) |
+| `otk.database.clientReadConnection.jdbcDriverClass` | OTK Client Read only  database sql driver class name (oracle/mysql)  |
+| `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only  database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name |
+
 ```
 otk:
   ....

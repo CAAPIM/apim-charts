@@ -397,6 +397,16 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.readOnlyConnection.jdbcDriverClass` | OTK read only database sql driver class name (oracle/mysql)  |
 | `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
 | `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
+| `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only database connection | `false` |
+| `otk.database.clientReadConnection.connectionName` | OTK Client Read only database connection name  | `OAuth_ReadOnly` |
+| `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only database Secret   |
+| `otk.database.clientReadConnection.username`  | OTK Client Read only database user name   |
+| `otk.database.clientReadConnection.password`  | OTK Client Read only database password       |
+| `otk.database.clientReadConnection.properties` | OTK Client Read only database additional properties  | `{}` |
+| `otk.database.clientReadConnection.jdbcURL`   | OTK Client Read only database sql jdbc URL (oracle/mysql)  |
+| `otk.database.clientReadConnection.jdbcDriverClass` | OTK Client Read only database sql driver class name (oracle/mysql)     |
+| `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only database mysql connection properties (oracle/mysql)   | `{}`
+| `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name   |
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
