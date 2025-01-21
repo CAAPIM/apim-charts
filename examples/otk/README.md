@@ -111,7 +111,7 @@ For more information please refer to [OTK Release Notes](https://techdocs.broadc
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only  database connection   | `false` |
-| `otk.database.clientReadConnection.connectionName` | OTK Client Read only  database connection name  | `OAuth_ReadOnly` |
+| `otk.database.clientReadConnection.connectionName` | OTK Client Read only  database connection name  | `OAuth_Client_Read` |
 | `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only  database Secret |
 | `otk.database.clientReadConnection.username`  | OTK Client Read only  database user name|
 | `otk.database.clientReadConnection.password`  | OTK Client Read only  database password |
