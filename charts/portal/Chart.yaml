@@ -15,6 +15,10 @@ dependencies:
   version: ^1.0.0
   condition: portal.analytics.enabled
   repository: "file://../druid"
+- name: apim-intelligence
+  version: ^0.0.1
+  condition: portal.intelligence.enabled
+  repository: "file://../intelligence"
 - name: mysql
   version: 10.3.0
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"

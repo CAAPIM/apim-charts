@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelligence-server
+  labels:
+    app: intelligence-server
+    chart: {{ template "intelligence.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.intelligenceServer.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: {{ .Values.intelligenceServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: intelligence-server
+  template:
+    metadata:
+      labels:
+        app: intelligence-server
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
+      {{- if .Values.intelligenceServer.affinity }}
+      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligenceServer.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: intelligence-server
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.intelligenceServer.image.pullPolicy }}"
+          {{- if .Values.intelligenceServer.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.intelligenceServer.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.affinity }}
+          affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.nodeSelector }}
+          nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.tolerations }}
+          tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+          {{- end }}
+          {{- if .Values.global.schedulerName }}
+          schedulerName: "{{ .Values.global.schedulerName }}"
+          {{- end }}
+          env:
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+            {{ end }}        
+          envFrom:
+          - configMapRef:
+              name: intelligence-server-config
+          - secretRef:
+              name: intelligence-server-secret
+          # readinessProbe:
+          #   httpGet:
+          #     path: "/actuator/health/readiness"
+          #     port: 8282
+          #   initialDelaySeconds: 90
+          #   timeoutSeconds: 1
+          #   periodSeconds: 15
+          #   successThreshold: 1
+          # livenessProbe:
+          #   httpGet:
+          #     path: "/actuator/health/liveness"
+          #     port: 8282
+          #   initialDelaySeconds: 120
+          #   timeoutSeconds: 1
+          #   periodSeconds: 15
+          #   successThreshold: 1
+          {{- if .Values.intelligenceServer.resources }}
+          resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8282
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

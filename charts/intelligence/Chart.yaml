@@ -1,0 +1,23 @@
+apiVersion: v2
+appVersion: "0.0.1"
+description: APIM Intelligence
+name: apim-intelligence
+version: 0.0.1
+type: application
+home: https://github.com/CAAPIM/apim-chart
+maintainers:
+  - name: Layer7
+sources:
+  - https://github.com/CAAPIM/apim-charts
+engine: gotpl
+dependencies:
+- name: kafka
+  version: 31.2.0
+  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+- name: mongodb
+  version: 16.4.1
+  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+- name: mysql
+  version: 10.3.0
+  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
+  condition: global.setupDemoDatabase

@@ -43,6 +43,8 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  intelligence:
+    enabled: true
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -439,6 +441,13 @@ image:
 ## Subchart Configuration
 ##
 
+intellignce:
+  standalone: false
+  serviceAccount:
+    create: true
+  image:
+    intelligenceServer: intelligence-server:develop
+
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
@@ -660,14 +669,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.3.1
-    broker: druid:5.3.1
-    coordinator: druid:5.3.1
-    middlemanager: druid:5.3.1
-    minio: minio:5.3.1
-    historical: druid:5.3.1
-    kafka: kafka:5.3.1
-    ingestion: ingestion-server:5.3.1
+    zookeeper: zookeeper:latest
+    broker: druid:latest
+    coordinator: druid:latest
+    middlemanager: druid:latest
+    minio: minio:latest
+    historical: druid:latest
+    kafka: kafka:latest
+    ingestion: ingestion-server:latest
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -675,9 +684,9 @@ rabbitmq:
   host: rabbitmq
   fullnameOverride: rabbitmq
   image:
-    registry: caapim
+    registry: apim-docker-dev-local.usw1.packages.broadcom.com/apim-portal
     repository: message-broker
-    tag: "5.3.1"
+    tag: "latest"
     pullSecrets:
       - broadcom-apim
   pdb:

@@ -1,0 +1,12 @@
+dependencies:
+- name: kafka
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  version: 31.2.0
+- name: mongodb
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  version: 16.4.1
+- name: mysql
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  version: 10.3.0
+digest: sha256:6ca37e64a48a3e6e9cc6e4596d8a9687fb787a0f31997d9288611e935f2fb752
+generated: "2025-01-17T12:50:09.691806+05:30"

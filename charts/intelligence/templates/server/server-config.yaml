@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intelligence-server-config
+  labels:
+    app: intelligence-server
+    chart: {{ template "intelligence.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{ if .Values.global.setupDemoDatabase}}
+  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+{{ else }}
+  DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
+  INTELLIGENCE_DATABASE_NAME: {{ include "intelligence-db-name" . | quote }}
+  MONGO_DB_HOST:  {{ include "mongodb-host" . | quote}}
+  MONGO_DB_PORT: {{ .Values.mongodb.containerPorts.mongodb | quote}}
+  MONGO_DB_NAME: {{ required "Please fill in mongodb.auth.database  in values.yaml" .Values.mongodb.auth.database | quote }}
+  KAFKA_BROKERS:  {{ include "kafka-brokers" . | quote}}
