@@ -14,6 +14,7 @@ data:
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   USE_PROXY_PROTOCOL: "false"
   PORTAL_UI_HEADER: {{ .Values.portal.intelligence.enabled | quote}}
+  INTELLIGENCE_ENABLED: {{ .Values.portal.intelligence.enabled | quote}}
 {{ if .Values.dispatcher.additionalEnv }}
 {{- range $key, $val := .Values.dispatcher.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
