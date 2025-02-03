@@ -5,7 +5,7 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.30
+- Current Chart Version 3.0.31
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
@@ -199,13 +199,16 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
+
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
-| `ingress.annotations`    | Additional ingress annotations               | `{}` |
-| `ingress.hostname`    | Sets Ingress Hostname  | `nil` |
-| `ingress.port`    | The Gateway Port number/name to route to  | `8443` |
-| `ingress.tlsHostnames`    | Register additional Hostnames for the TLS Certificate  | `see values.yaml` |
-| `ingress.secretName`    | The name of an existing Cert secret, setting this does not auto-create the secret               | `tls-secret` |
-| `ingress.additionalHostnamesAndPorts`    | key/value pairs of hostname:port that will be added to the ingress object  | `see values.yaml` |
+| `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
+| `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
+| `ingress.openshift.route.weight`    | Openshift Route Weight (0-255)               | `commented` |
+| `ingress.annotations`    | ingress annotations               | `{}` |
+| `ingress.labels`    | additional ingress labels               | `{}` |
+| `ingress.ingressClassName`    | Ingress Class Name               | `nginx` |
+| `ingress.tls`    | Ingress TLS Configuration               | `see values.yaml` |
+| `ingress.rules`    | Ingress Rules Configuration              | `see values.yaml` |
 | `startupProbe.enabled`    | Enable/Disable               | `false` |
 | `startupProbe.initialDelaySeconds`    | Initial delay               | `60` |
 | `startupProbe.timeoutSeconds`    | Timeout               | `1` |
@@ -508,25 +511,71 @@ config:
 ### Ingress Configuration
 The Gateway Helm Chart allows you to configure an Ingress Resource that your central Ingress Controller can manage. You can find more information on [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) here.
 
-This represents the ingress configuration for Gateway Chart < 3.0.0 you need to configure an Ingress Resource for the API Gateway
+If your ingress controller is private and you would like to create an ingress record/route for the management service you can use the following configuration
+```
+ ...
+  rules:
+  - host: dev.ca.com <<== standard traffic
+    path: "/"
+    service:
+      port:
+        name: https
+  - host: dev-pm.ca.com <<== management traffic
+    path: "/"
+    backend: management <<== will target the management service
+    service:
+      port:
+        name: management
+```
 
+New Ingress Configuration Gateway Chart >= 3.0.31 (openshift route support)
 ```
 ingress:
-  enabled: true
-  annotations:
-  # Ingress class
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # Set to true to create ingress object
+  enabled: false
+  # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
+  openshift:
+    route:
+      enabled: false
+      wildcardPolicy: None
+    # weight: 100
+      
+  # Ingress Class Name
+  ingressClassName: nginx
+  # Ingress labels (also apply to routes)
+  labels: {}
+  # Ingress annotations (also apply to routes)
+  annotations: {}
+  # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-  secretName: tls-secret
-  hostname: dev.ca.com
-  tlsHostnames: []
-  # - dev.ca.com
-  # - dev1.ca.com
-  ## The port that you want to route to via ingress. This needs to be available via service.ports.
-  port: 8443
-  ## Define additional hostnames and ports as key-value pairs.
-  additionalHostnamesAndPorts: {}
+  # When the ingress is enabled, a host pointing to this will be created
+  tls:
+  - hosts:
+    - dev.ca.com
+    secretName: default
+  # - hosts:
+  #   - dev1.ca.com
+  #   secretName: default
+  rules:
+  - host: dev.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+      # number:
+  # - host: dev1.ca.com
+  #   path: "/"
+  #   service:
+  #     port:
+  #       name: https
+      # number:
+  # - host: dev-pm.ca.com
+  #   path: "/"
+  #   backend: management
+  #   service:
+  #     port:
+  #       name: management
+        # number:
 ```
 
 New Ingress Configuration Gateway Chart >= 3.0.0
@@ -565,6 +614,26 @@ ingress:
 #       port:
 #         name: anotherport
 #        #number:
+```
+
+This represents the ingress configuration for Gateway Chart < 3.0.0 you need to configure an Ingress Resource for the API Gateway
+```
+ingress:
+  enabled: true
+  annotations:
+  # Ingress class
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+  secretName: tls-secret
+  hostname: dev.ca.com
+  tlsHostnames: []
+  # - dev.ca.com
+  # - dev1.ca.com
+  ## The port that you want to route to via ingress. This needs to be available via service.ports.
+  port: 8443
+  ## Define additional hostnames and ports as key-value pairs.
+  additionalHostnamesAndPorts: {}
 ```
 
 [Back to Additional Guides](#additional-guides)
@@ -610,11 +679,27 @@ OpenTelemetry is configured on the Gateway in two places, system properties and 
 
 These can be configured in values.yaml. See the section below to view examples of how and where to configure this.
 
+- config.otel
+```
+config:
+  ...
+  otel:
+    # If sdkOnly is enabled we will inject the above environment variables
+    # Note that this is container level configuration only. You will still need to set the relevant cluster-wide and system properties below
+    sdkOnly:
+      enabled: true
+    # Used to inject additional resource attributes for tracking with the sdkOnly approach
+    # these can then be used as an additional filter in your observability backend
+    additionalResourceAttributes:
+    - test=someEnvValue
+   # - test1=someEnvValue1
+```
+
+
 - system.properties
 ```
 otel.sdk.disabled=false
 otel.java.global-autoconfigure.enabled=true
-otel.service.name=ssg-gateway
 otel.exporter.otlp.endpoint=http://localhost:4318/
 otel.exporter.otlp.protocol=http/protobuf
 otel.traces.exporter=otlp

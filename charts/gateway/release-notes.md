@@ -7,8 +7,84 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.31 General Updates
+- Support for Openshift Routes (disabled by default)
+  - Uses passthrough termination (tls only)
+    - path is ignored in this mode
+  - Converts existing ingress
+    - will create a route for each ingress rule
+  - Management service can be routed
+
+To enable - see [ingress configuration](./README.md#ingress-configuration) for more details
+```
+ingress:
+  enabled: true
+  openshift:
+    route:
+      enabled: true
+      wildcardPolicy: None
+    # weight: 100
+  ...
+  rules:
+  - host: dev.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+  - host: dev1.ca.com
+    path: "/"
+    service:
+      port:
+        name: https
+  - host: dev-pm.ca.com
+    path: "/"
+    backend: management
+    service:
+      port:
+        name: management
+```
+
+- New way to add system properties
+  - You can now use key/value pairs to extend [system properties](./README.md#system-properties)
+  - No impact to existing configuration
+```
+config:
+  ...
+  additionalSystemProperties:
+  - name: test
+    value: test123
+```
+- New Deployment Configuration Options for the OTel SDK Only approach (Disabled by default)
+  - Does ***NOT*** configure system or cluster-wide properties, this step is still required
+  - Requires a Gateway restart when enabled
+  - injects the following environment variables which are then used to set OTEL_RESOURCE_ATTRIBUTES
+    - NODE_NAME      ==> spec.nodeName
+    - POD_NAME       ==> metadata.name
+    - NAMESPACE      ==> metadata.namespace 
+    - CONTAINER_NAME ==> gateway
+    - OTEL_SERVICE_NAME - `<release-name>-<chart-name>`
+    - OTEL_RESOURCE_ATTRIBUTES ==> custom values can be set with config.otel.additionalResourceAttributes
+      - defaults (if config.otel.sdkOnly.enabled is true)
+        - service.name         ==> OTEL_SERVICE_NAME
+        - service.version      ==> .Values.image.tag
+        - k8s.container.name   ==> gateway
+        - k8s.deployment.name  ==> OTEL_SERVICE_NAME
+        - k8s.namespace.name   ==> NAMESPACE
+        - k8s.node.name        ==> NODE_NAME
+        - k8s.pod.name         ==> POD_NAME
+```
+config:
+...
+  otel:
+    sdkOnly:
+      enabled: true
+    # Used to inject additional resource attributes for tracking with the sdkOnly approach
+    additionalResourceAttributes:
+    - test=someEnvValue
+    - test1=someEnvValue1
+```
+
 ## 3.0.30 General Updates
-Release notes will also be moved to a new file before merge...
 **Note** Gateway restart required if using preview Redis features.
 - Support added for running the Gateway without [Diskless Config](./README.md#diskless-configuration)
   - Uses node.properties which can be mounted via [Secret or Secret Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/)

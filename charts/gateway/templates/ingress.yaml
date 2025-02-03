@@ -1,4 +1,4 @@
-{{ if .Values.ingress.enabled }}
+{{ if and (.Values.ingress.enabled) (not .Values.ingress.openshift.route.enabled) }}
 {{- if $.Capabilities.APIVersions.Has "networking.k8s.io/v1" -}}
 apiVersion: networking.k8s.io/v1
 {{- else -}}
@@ -12,6 +12,9 @@ metadata:
    release: {{ .Release.Name }}
    heritage: {{ .Release.Service }}
    {{- range $key, $val := .Values.additionalLabels }}
+   {{ $key }}: "{{ $val }}"
+   {{- end }}
+   {{- range $key, $val := .Values.ingress.labels }}
    {{ $key }}: "{{ $val }}"
    {{- end }}
  annotations:
