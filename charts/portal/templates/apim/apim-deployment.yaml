@@ -55,6 +55,15 @@ spec:
         - name: liquidbase-upgrade-rbac
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
           args: ["job", 'rbac-upgrade']
+        {{- if and (.Values.apim.preflightCheck.enabled) (.Release.IsInstall) }}
+        - name: apim-core-preflight-check
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.upgradeVerify }}"
+          command: ["/bin/sh","-c"]
+          args:
+          - sleep 120;
+            if [[ "$(curl -w '%{http_code}' -s -o /dev/null rabbitmq:15672)" != "200" ]]; then echo "broker not ready" && exit 1;fi;
+            if [[ "$(curl -w '%{http_code}' -s -o /dev/null http://authenticator:9081/v1/echo;)" != "200" ]]; then echo "authenticator not ready" && exit 1;fi;
+        {{- end }}
       containers:
         - name: apim
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.apim }}"

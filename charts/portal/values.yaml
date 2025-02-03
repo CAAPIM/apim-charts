@@ -210,6 +210,8 @@ analytics:
 
 apim:
   forceRedeploy: false
+  preflightCheck:
+    enabled: true
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent

@@ -203,6 +203,21 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 {{- end -}}
 
+
+{{/*
+ Define OTEL_RESOURCE_ATTRIBUTES Environment variable
+ */}}
+{{- define "gateway.otel.resource.attributes" -}}
+{{ $resourceAttributes := printf "%s,service.version=%s" "k8s.container.name=$(CONTAINER_NAME),k8s.deployment.name=$(OTEL_SERVICE_NAME),service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(NAMESPACE),k8s.node.name=$(NODE_NAME),k8s.pod.name=$(POD_NAME)" .Values.image.tag }}
+{{- if and (.Values.config.otel.sdkOnly.enabled) (.Values.config.otel.additionalResourceAttributes) -}}
+ {{- $additionalResourceAttributes := join "," .Values.config.otel.additionalResourceAttributes }}
+ {{- printf "%s,%s" $resourceAttributes $additionalResourceAttributes -}}
+{{- else -}}
+    {{- printf "%s" $resourceAttributes -}}
+{{- end -}}
+{{- end -}}
+
+
 {{/*
  Validate OTK installation type (SINGLE, INTERNAL, DMZ)
 */}}
