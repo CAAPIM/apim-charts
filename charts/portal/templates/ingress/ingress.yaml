@@ -106,11 +106,11 @@ spec:
           service:
             name: apim
             port:
-              name: tssg-sync
+              name: tssg-enroll
 {{- else }}
       - backend:
           serviceName: apim
-          servicePort: tssg-sync
+          servicePort: tssg-enroll
 {{- end }}
   - host: {{ include "pssg-sso-host" . | quote }}
     http:
