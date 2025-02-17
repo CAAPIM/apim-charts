@@ -799,7 +799,7 @@ otk:
     connectionName: OAuth
     # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
-    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Discouraged for production deployments
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
     useDemoDb: true
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.

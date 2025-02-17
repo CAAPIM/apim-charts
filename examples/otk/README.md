@@ -67,7 +67,7 @@ Properties related to OTK database install/Upgrade.
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
-| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `false` |
+| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of test clients | `true` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
 | `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
@@ -121,6 +121,9 @@ For more information please refer to [OTK Release Notes](https://techdocs.broadc
 | `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only  database mysql connection properties (oracle/mysql)  | `{}`
 | `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name |
 
+
+The Gateways MySQL demo container can be used to install OTK DB by setting `otk.database.useDemoDb` to `true` which is the default setting in values.yaml and this needs to be disabled for production(production-values.yaml).
+
 ```
 otk:
   ....
@@ -140,11 +143,12 @@ otk:
 ....
 .....
 ```
-### Cassandra database  (`otk.database.type:mysql/oracle`) 
+### Cassandra database  (`otk.database.type:cassandra`) 
 > :information_source: **Important** <br>
 > Install or Upgrade of OTK database on Cassandra is not supported.
 
 Configure cassandra connection properties
+
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
@@ -155,11 +159,11 @@ Configure cassandra connection properties
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
-| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
-| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
-| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.
+| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}` |
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true` |
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false` |
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config` |
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6 |
 
 ```
 otk:
