@@ -377,7 +377,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
 | `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
 | `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
-| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
+| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `false` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
 | `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|

@@ -797,8 +797,10 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
-    useDemoDb: true
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Discouraged for production deployments
+    useDemoDb: false
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
     username: otk_user
