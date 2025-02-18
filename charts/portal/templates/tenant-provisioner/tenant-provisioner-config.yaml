@@ -15,7 +15,7 @@ data:
   APIM_PORTAL_SUBDOMAIN: {{ required "Please fill in domain in values.yaml" .Values.portal.domain }}
   BUSINESS_REPORTS_ENABLED: "false"
 {{ if .Values.global.setupDemoDatabase}}
-  DATABASE_HOST: {{ .Release.Name }}-headless
+  DATABASE_HOST: {{ .Release.Name }}-mysql-headless
 {{ else }}
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
 {{ end }}
