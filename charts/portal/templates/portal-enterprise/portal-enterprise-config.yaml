@@ -9,9 +9,9 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
 {{ if .Values.global.setupDemoDatabase}}
-  ENTERPRISE_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
-  RBAC_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
-  SEARCH_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  ENTERPRISE_DATABASE_HOST: {{ .Release.Name }}-headless
+  RBAC_DATABASE_HOST: {{ .Release.Name }}-headless
+  SEARCH_DATABASE_HOST: {{ .Release.Name }}-headless
 {{ else }}
   ENTERPRISE_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
   RBAC_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}

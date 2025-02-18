@@ -35,7 +35,7 @@ spec:
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
-             value: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+             value: {{ .Release.Name }}-headless
         {{ else }}
              value: {{ .Values.global.databaseHost | quote }}
         {{ end }}

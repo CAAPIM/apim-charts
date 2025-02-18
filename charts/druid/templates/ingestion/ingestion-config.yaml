@@ -20,7 +20,7 @@ data:
   PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
   REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
 {{ if .Values.global.setupDemoDatabase}}
-  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  DATABASE_HOST: {{ .Release.Name }}-headless
 {{ else }}
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
 {{ end }}
