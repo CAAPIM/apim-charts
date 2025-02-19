@@ -11,6 +11,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## 2.3.12 General Updates
 
 - This new version of the chart supports API Portal 5.2.3
+- Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.4.4 MySQL version.
 
 ## 2.3.11 General Updates
 
@@ -259,7 +262,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | `global.portalRepository`                | Image Repository                                                                                                                                                                                                               | `caapim/`                                                                                                |
 | `global.pullSecret`                      | Image Pull Secret name                                                                                                                                                                                                         | `broadcom-apim`                                                                                          |
-| `global.setupDemoDatabase`               | Deploys MySQL as part of this Chart                                                                                                                                                                                            | `false`                                                                                                  |
+| `global.setupDemoDatabase`               | Deploys MySQL as part of this Chart                                                                                                                                                                                           | `false`                                                                                                  |
 | `global.databaseSecret`                  | Database secret name. If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password` along with `mysql-password` | `database-secret`                                                                                        |
 | `global.useExistingDatabaseSecret`       | Configures Portal Deployment to use **global.databaseSecret** for fetching the DB password                                                                                                                                     | `false`                                                                                                  |
 | `global.databaseUsername`                | Database username                                                                                                                                                                                                              | `admin`                                                                                                  |
@@ -920,6 +923,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 ## MySQL
 
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+
+**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release_name of helm install <release-name> command.**
 
 | Parameter                            | Description                                                    | Default              |
 | ------------------------------------ | -------------------------------------------------------------- | -------------------- |
