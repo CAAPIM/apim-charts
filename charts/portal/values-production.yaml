@@ -940,7 +940,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.0.37-debian-12-r2"
+    tag: "8.4.4-debian-12-r0"
   auth:
     username: portal
     existingSecret: database-secret
@@ -962,7 +962,7 @@ mysql:
       default-character-set=utf8mb4
       plugin_dir=/opt/bitnami/mysql/plugin
       [mysqld]
-      default_authentication_plugin=mysql_native_password
+      mysql_native_password=ON
       skip-name-resolve
       explicit_defaults_for_timestamp
       basedir=/opt/bitnami/mysql
