@@ -924,7 +924,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 
-**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of helm install <release-name> command._**
+**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
 
 | Parameter                            | Description                                                    | Default              |
 | ------------------------------------ | -------------------------------------------------------------- | -------------------- |
