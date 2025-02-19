@@ -13,6 +13,12 @@ metadata:
     {{- range $key, $val := .Values.authenticator.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}    
 spec:
   {{- if .Values.authenticator.strategy }}
   strategy: {{- toYaml .Values.authenticator.strategy | nindent 12 }}

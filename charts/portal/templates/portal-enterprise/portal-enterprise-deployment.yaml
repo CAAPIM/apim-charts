@@ -13,6 +13,12 @@ metadata:
     {{- range $key, $val := .Values.portalEnterprise.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
 spec:
   {{- if .Values.portalEnterprise.strategy }}
   strategy: {{- toYaml .Values.portalEnterprise.strategy | nindent 12 }}

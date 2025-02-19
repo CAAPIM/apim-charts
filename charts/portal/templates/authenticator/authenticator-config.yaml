@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}  
 data:
   CASSO_DEBUG_ENABLED: {{ required "Please fill in ssoDebug in values.yaml" .Values.portal.ssoDebug | quote}}
   CASSO_ENABLED: "true"

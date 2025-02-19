@@ -13,6 +13,12 @@ metadata:
     {{- range $key, $val := .Values.dispatcher.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}    
 spec:
   {{- if .Values.dispatcher.strategy }}
   strategy: {{- toYaml .Values.dispatcher.strategy | nindent 12 }}

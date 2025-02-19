@@ -4,6 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   labels:
     app: dispatcher
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}  
   name: dispatcher-pdb
 spec:
   {{- if .Values.dispatcher.pdb.minAvailable }}

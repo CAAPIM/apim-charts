@@ -7,6 +7,12 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}  
 data:
   NSS_SDB_USE_CACHE: "no"
   PORTAL_SUBDOMAIN: {{ required "Please fill in domain in values.yaml" .Values.portal.domain | quote }}

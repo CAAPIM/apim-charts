@@ -5,6 +5,12 @@ metadata:
   labels:
     app: apim
   name: apim-pdb
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}  
 spec:
   {{- if .Values.apim.pdb.minAvailable }}
   minAvailable: {{ .Values.apim.pdb.minAvailable }}

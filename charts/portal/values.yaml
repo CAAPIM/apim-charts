@@ -37,6 +37,8 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
+# Additional Annotations apply to all deployed objects
+  additionalAnnotations: {}
 
 portal:
   domain: example.com

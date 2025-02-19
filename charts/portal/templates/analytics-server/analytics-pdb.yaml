@@ -4,6 +4,12 @@ kind: PodDisruptionBudget
 metadata:
   labels:
     app: analytics-server
+  {{- if  .Values.global.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.global.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}  
   name: analytics-pdb
 spec:
   {{- if .Values.analytics.pdb.minAvailable }}
