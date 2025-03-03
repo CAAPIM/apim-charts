@@ -37,8 +37,6 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
-# Additional Annotations apply to all deployed objects
-  additionalAnnotations: {}
 
 portal:
   domain: example.com
@@ -194,6 +192,8 @@ analytics:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -228,6 +228,8 @@ apim:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -259,6 +261,8 @@ authenticator:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -289,6 +293,8 @@ dispatcher:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -348,6 +354,8 @@ portalData:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -379,6 +387,8 @@ portalEnterprise:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -410,6 +420,8 @@ tenantProvisioner:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -466,6 +478,8 @@ druid:
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -519,6 +533,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -540,6 +556,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -561,6 +579,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -584,6 +604,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -605,6 +627,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -627,6 +651,8 @@ druid:
     image:
       pullPolicy: IfNotPresent
     portName: ingestion-svc
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -650,6 +676,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}      
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container

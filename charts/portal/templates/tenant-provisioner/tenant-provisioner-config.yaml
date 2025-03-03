@@ -7,12 +7,6 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}  
 data:
   PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   APIM_GATEWAY_HOSTNAME: {{ include "tssg-public-host" . | quote }}

@@ -4,12 +4,6 @@ kind: PodDisruptionBudget
 metadata:
   labels:
     app: authenticator
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}  
   name: authenticator-pdb
 spec:
   {{- if .Values.authenticator.pdb.minAvailable }}

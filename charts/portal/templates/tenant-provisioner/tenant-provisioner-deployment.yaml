@@ -13,12 +13,6 @@ metadata:
     {{- range $key, $val := .Values.tenantProvisioner.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}        
 spec:
   replicas: {{ .Values.tenantProvisioner.replicaCount }}
   selector:
@@ -31,9 +25,17 @@ spec:
     metadata:
       labels:
         app: tenant-provisioner
+      {{- if  .Values.tenantProvisioner.podAnnotations }}
+      annotations: {{- toYaml .Values.tenantProvisioner.podAnnotations | nindent 8 }}
+      {{- if .Values.tenantProvisioner.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.tenantProvisioner.podAnnotations }}
       {{ if .Values.tenantProvisioner.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

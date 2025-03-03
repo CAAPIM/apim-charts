@@ -13,12 +13,6 @@ metadata:
     {{- range $key, $val := .Values.portalData.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}    
 spec:
   {{- if .Values.portalData.strategy }}
   strategy: {{- toYaml .Values.portalData.strategy | nindent 12 }}
@@ -31,9 +25,17 @@ spec:
     metadata:
       labels:
         app: portal-data
+      {{- if  .Values.portalData.podAnnotations }}
+      annotations: {{- toYaml .Values.portalData.podAnnotations | nindent 8 }}
+      {{- if .Values.portalData.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.portalData.podAnnotations }}
       {{ if .Values.portalData.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

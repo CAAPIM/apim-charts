@@ -35,8 +35,6 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
-# Additional Annotations apply to all deployed objects
-  additionalAnnotations: {}
 
 portal:
   domain: example.com

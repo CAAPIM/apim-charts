@@ -26,9 +26,17 @@ spec:
     metadata:
       labels:
         app: broker
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.broker.podAnnotations }}
+      annotations: {{- toYaml .Values.broker.podAnnotations | nindent 8 }}
+      {{ if .Values.broker.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.broker.podAnnotations }}
+      {{- if .Values.broker.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

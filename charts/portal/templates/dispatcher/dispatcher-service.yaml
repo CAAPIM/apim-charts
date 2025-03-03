@@ -4,9 +4,6 @@ metadata:
   name: dispatcher
   annotations:
     service.alpha.kubernetes.io/app-protocols: '{"portal-https":"HTTPS"}'
-    {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-    {{- end }}
   labels:
     app: dispatcher
     chart: {{ template "portal.chart" . }}

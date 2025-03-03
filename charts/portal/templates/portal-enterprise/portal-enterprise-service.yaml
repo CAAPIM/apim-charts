@@ -7,12 +7,6 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}  
 spec:
   ports:
     - port: 8080

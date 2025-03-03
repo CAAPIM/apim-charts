@@ -4,12 +4,6 @@ kind: PodDisruptionBudget
 metadata:
   labels:
     app: portal-enterprise
-  {{- if  .Values.global.additionalAnnotations }}
-  annotations:
-  {{- range $key, $val := .Values.global.additionalAnnotations }}
-    {{ $key }}: "{{ $val }}"
-  {{- end }}
-  {{- end }}  
   name: portal-enterprise-pdb
 spec:
   {{- if .Values.portalEnterprise.pdb.minAvailable }}
