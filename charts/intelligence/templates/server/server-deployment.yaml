@@ -27,6 +27,7 @@ spec:
     metadata:
       labels:
         app: intelligence-server
+        release: {{ .Release.Name }}
       {{ if .Values.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}

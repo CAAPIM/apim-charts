@@ -88,12 +88,15 @@ mongodb:
 
 intelligenceServer:
   replicaCount: 1
-  port: 8282
   image:
     pullPolicy: IfNotPresent
   resources:
     requests: {}
     limits: {}
+  service:
+    port: 8282
+    type: ClusterIP
+
 
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use

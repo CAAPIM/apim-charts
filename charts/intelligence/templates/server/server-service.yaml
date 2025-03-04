@@ -8,11 +8,23 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  clusterIP: None
+  type: {{ .Values.intelligenceServer.service.type }}
   ports:
-    - name: "8282"
-      port: {{ .Values.intelligenceServer.port }}
+    - name: http
+      port: {{ .Values.intelligenceServer.service.port }}
       targetPort: 8282
   selector:
     app: intelligence-server
-  sessionAffinity: ClientIP
+    release: {{ .Release.Name }}
+  {{- if .Values.intelligenceServer.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.intelligenceServer.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.intelligenceServer.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.intelligenceServer.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  {{- if .Values.intelligenceServer.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.intelligenceServer.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.intelligenceServer.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.intelligenceServer.service.internalTrafficPolicy }}
+  {{- end }}
