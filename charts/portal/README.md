@@ -6,6 +6,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.13 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.12.1 to fix [vulnerability] (https://github.com/kubernetes/kubernetes/issues/131007).
+- Upgrade to 2.3.13 is only supported from 2.3.9 chart version as per the Portal version.
 ## 2.3.12 General Updates
 - This new version of the chart supports API Portal 5.2.3
 - Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
