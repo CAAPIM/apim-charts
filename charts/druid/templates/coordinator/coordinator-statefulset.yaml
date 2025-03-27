@@ -28,7 +28,7 @@ spec:
         app: coordinator
       {{- if  .Values.coordinator.podAnnotations }}
       annotations: {{- toYaml .Values.coordinator.podAnnotations | nindent 8 }}
-      {{ if .Values.coordinator.forceRedeploy }}
+      {{- if .Values.coordinator.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

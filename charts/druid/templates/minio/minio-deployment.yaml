@@ -30,7 +30,7 @@ spec:
         app: minio
       {{- if  .Values.minio.podAnnotations }}
       annotations: {{- toYaml .Values.minio.podAnnotations | nindent 8 }}
-      {{ if .Values.minio.forceRedeploy }}
+      {{- if .Values.minio.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

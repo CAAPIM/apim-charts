@@ -36,7 +36,7 @@ spec:
       {{- end }}
       {{- end }}
       {{- if not .Values.analytics.podAnnotations }}
-      {{ if .Values.analytics.forceRedeploy }}
+      {{- if .Values.analytics.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

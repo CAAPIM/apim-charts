@@ -32,7 +32,7 @@ spec:
       {{- end }}
       {{- end }}
       {{- if not .Values.authenticator.podAnnotations }}
-      {{ if .Values.authenticator.forceRedeploy }}
+      {{- if .Values.authenticator.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

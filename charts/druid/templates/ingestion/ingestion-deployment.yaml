@@ -29,7 +29,7 @@ spec:
         app: ingestion-server
       {{- if  .Values.ingestion.podAnnotations }}
       annotations: {{- toYaml .Values.ingestion.podAnnotations | nindent 8 }}
-      {{ if .Values.ingestion.forceRedeploy }}
+      {{- if .Values.ingestion.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

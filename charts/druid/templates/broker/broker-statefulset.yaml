@@ -28,7 +28,7 @@ spec:
         app: broker
       {{- if  .Values.broker.podAnnotations }}
       annotations: {{- toYaml .Values.broker.podAnnotations | nindent 8 }}
-      {{ if .Values.broker.forceRedeploy }}
+      {{- if .Values.broker.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

@@ -28,7 +28,7 @@ spec:
         app: zookeeper
       {{- if  .Values.zookeeper.podAnnotations }}
       annotations: {{- toYaml .Values.zookeeper.podAnnotations | nindent 8 }}
-      {{ if .Values.zookeeper.forceRedeploy }}
+      {{- if .Values.zookeeper.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

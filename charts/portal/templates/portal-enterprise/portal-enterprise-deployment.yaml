@@ -32,7 +32,7 @@ spec:
       {{- end }}
       {{- end }}
       {{- if not .Values.portalEnterprise.podAnnotations }}
-      {{ if .Values.portalEnterprise.forceRedeploy }}
+      {{- if .Values.portalEnterprise.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}

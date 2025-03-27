@@ -28,7 +28,7 @@ spec:
         app: historical
       {{- if  .Values.historical.podAnnotations }}
       annotations: {{- toYaml .Values.historical.podAnnotations | nindent 8 }}
-      {{ if .Values.historical.forceRedeploy }}
+      {{- if .Values.historical.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}

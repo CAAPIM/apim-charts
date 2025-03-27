@@ -677,7 +677,7 @@ druid:
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}      
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container

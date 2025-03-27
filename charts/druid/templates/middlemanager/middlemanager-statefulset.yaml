@@ -28,7 +28,7 @@ spec:
         app: middlemanager
       {{- if  .Values.middlemanager.podAnnotations }}
       annotations: {{- toYaml .Values.middlemanager.podAnnotations | nindent 8 }}
-      {{ if .Values.middlemanager.forceRedeploy }}
+      {{- if .Values.middlemanager.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}
