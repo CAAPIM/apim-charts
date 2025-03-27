@@ -26,9 +26,17 @@ spec:
     metadata:
       labels:
         app: coordinator
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.coordinator.podAnnotations }}
+      annotations: {{- toYaml .Values.coordinator.podAnnotations | nindent 8 }}
+      {{ if .Values.coordinator.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.coordinator.podAnnotations }}
+      {{- if .Values.coordinator.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

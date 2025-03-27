@@ -26,9 +26,17 @@ spec:
     metadata:
       labels:
         app: kafka
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.kafka.podAnnotations }}
+      annotations: {{- toYaml .Values.kafka.podAnnotations | nindent 8 }}
+      {{ if .Values.kafka.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.kafka.podAnnotations }}
+      {{- if .Values.kafka.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
