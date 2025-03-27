@@ -25,7 +25,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.1
+  tag: 11.1.2
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -526,6 +526,7 @@ config:
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
+    # Note: For this configuration to take effect config.redis.enabled above must be also be true
     enabled: true
   # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
   # existingConfigSecret: shared-state-client-secret

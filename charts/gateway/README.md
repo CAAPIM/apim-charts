@@ -939,13 +939,13 @@ redis:
 [Back to Additional Guides](#additional-guides)
 
 ### Shared State Provider Config
-Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis.
+Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis. In order for this configuration to take effect config.redis.enabled must also be set to true.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.sharedStateProvider.enabled`          | Enable redis configuration | `false`  |
-| `config.sharedStateProvider.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
-| `config.sharedStateProvider.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
+| `config.sharedStateClient.enabled`          | Enable redis configuration | `true`  |
+| `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
+| `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:

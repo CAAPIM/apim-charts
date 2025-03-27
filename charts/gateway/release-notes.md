@@ -8,10 +8,12 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 If you use Policy Manager, you will need to update to v11.1.00.
 
 ## 3.0.32 General Updates
-- Support for Mysql version 8.4.x
+- Default image updated to v11.1.2
+  - [New Redis Password Encryption](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1-2test/install-configure-upgrade/connect-to-an-external-redis-datastore.html#concept.dita_d3303fde-e786-4fd4-b0b6-e3a28fd60a82_encrypt_pw)
+- Support for MySQL version 8.4.x
   - Gateway 11.1.x supports 8.4.x
-  - By Default, Mysql version is updated to 8.4.3
-  - Mysql internal chart is updated to 12.1.0
+  - By Default, the MySQL version is updated to 8.4.3
+  - The MySQL subChart (testing/development only) has been updated to 12.1.0
   
 ## 3.0.31 General Updates
 - Support for Openshift Routes (disabled by default)
