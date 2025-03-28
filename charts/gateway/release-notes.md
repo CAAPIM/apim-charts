@@ -9,6 +9,11 @@ If you use Policy Manager, you will need to update to v11.1.00.
 
 ## 3.0.32 General Updates
 - Default image updated to v11.1.2
+  - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
+    - Please review your configuration and remove this line prior to upgrading
+    ```
+    handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
+    ```
   - [New Redis Password Encryption](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-an-external-redis-datastore.html#concept.dita_d3303fde-e786-4fd4-b0b6-e3a28fd60a82_encrypt_pw)
 - Support for MySQL version 8.4.x
   - Gateway 11.1.x supports 8.4.x
