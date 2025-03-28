@@ -10,7 +10,7 @@ If you use Policy Manager, you will need to update to v11.1.00.
 ## 3.0.32 General Updates
 - Default image updated to v11.1.2
   - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
-    - Please review your configuration and remove this line prior to upgrading
+    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
     ```
     handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
     ```

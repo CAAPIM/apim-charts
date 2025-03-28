@@ -8,7 +8,7 @@ The included MySQL subChart is enabled by default to make trying this chart out 
 - Current Chart Version 3.0.32
   - Please review release notes [here](./release-notes.md)
   - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
-    - Please review your configuration and remove this line prior to upgrading
+    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
     ```
     handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
     ```
