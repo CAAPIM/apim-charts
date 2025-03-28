@@ -200,7 +200,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
 
-| `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
+| `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
 | `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
 | `ingress.openshift.route.weight`    | Openshift Route Weight (0-255)               | `commented` |
@@ -531,12 +531,12 @@ If your ingress controller is private and you would like to create an ingress re
 New Ingress Configuration Gateway Chart >= 3.0.31 (openshift route support)
 ```
 ingress:
-  # Set to true to create ingress object
-  enabled: false
+  # Set to true to create ingress or route object
+  enabled: true
   # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
   openshift:
     route:
-      enabled: false
+      enabled: true
       wildcardPolicy: None
     # weight: 100
       

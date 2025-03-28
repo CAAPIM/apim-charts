@@ -906,7 +906,7 @@ otk:
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
 ingress:
-  # Set to true to create ingress object
+  # Set to true to create ingress or route object
   enabled: true
   # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
   openshift:
