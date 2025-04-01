@@ -5,7 +5,7 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.32
+- Current Chart Version 3.0.33
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
