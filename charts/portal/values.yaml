@@ -448,7 +448,7 @@ intellignce:
   serviceAccount:
     create: true
   image:
-    intelligenceServer: intelligence-server:develop
+    intelligenceServer: intelligence-server:latest
 
 # Settings for Druid - this is a local sub chart
 druid:
