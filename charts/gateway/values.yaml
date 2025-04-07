@@ -186,6 +186,24 @@ config:
   # If you are using an earlier version of the Gateway, these will be ignored.
   # minHeapSize: "1g"
   # maxHeapSize: "3g"
+  # The OTel SDK uses the following environment variables to gather information about the container
+  # NODE_NAME - Kubernetes Node
+  # POD_NAME - Podname, also hostname
+  # NAMESPACE
+  # CONTAINER_NAME - this is always gateway
+  # OTEL_SERVICE_NAME - <release-name>-<chart-name>
+  # OTEL_RESOURCE_ATTRIBUTES
+  # When using auto-instrumentation (injecting the OTel Java Agent via the OpenTelemetryOperator) these values are automatically set
+  # When using the sdk only approach (no OTel Java Agent) we set these using built-in metadata fields
+  otel:
+    # If sdkOnly is enabled we will inject the above environment variables
+    # Note that this is container level configuration only. You will still need to set the relevant cluster-wide and system properties below
+    sdkOnly:
+      enabled: false
+    # Used to inject additional resource attributes for tracking with the sdkOnly approach
+    additionalResourceAttributes: []
+    # - test=someEnvValue
+    # - test1=someEnvValue1
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
@@ -268,13 +286,17 @@ config:
     # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
     # otel.sdk.disabled=false
     # otel.java.global-autoconfigure.enabled=true
-    # otel.service.name=ssg-gateway
     # otel.exporter.otlp.endpoint=http://localhost:4318/
     # otel.exporter.otlp.protocol=http/protobuf
     # otel.traces.exporter=otlp
     # otel.metrics.exporter=otlp
     # otel.logs.exporter=none
     # Additional properties go here
+  # Additional System properties are appended at the end of system.properties
+  # Defined as key/value pairs
+  additionalSystemProperties: []
+  # - name: test
+  #   value: test123
 
  # If enabled this will override the default listen ports and their configuration in the API Gateway
   listenPorts:
@@ -885,17 +907,22 @@ otk:
 ingress:
   # Set to true to create ingress object
   enabled: false
+  # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
+  openshift:
+    route:
+      enabled: false
+      wildcardPolicy: None
+    # weight: 100
+
   # Ingress Class Name
   ingressClassName: nginx
-  # Ingress annotations
+  # Ingress labels (also apply to routes)
+  labels: {}
+  # Ingress annotations (also apply to routes)
   annotations: {}
-  # Ingress class
-   # kubernetes.io/ingress.class: nginx
   # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
-  # By default clusterHostname is used, only set this if you want to use a different host
-   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
   - hosts:
     - dev.ca.com
@@ -903,7 +930,6 @@ ingress:
   # - hosts:
   #   - dev1.ca.com
   #   secretName: default
-
   rules:
   - host: dev.ca.com
     path: "/"
@@ -911,13 +937,19 @@ ingress:
       port:
         name: https
       # number:
-  #  - host: dev1.ca.com
-  #    path: "/"
-  #    backend: management
-  #    service:
-  #      port:
-  #        name: management
-  #        #number:
+  # - host: dev1.ca.com
+  #   path: "/"
+  #   service:
+  #     port:
+  #       name: https
+      # number:
+  # - host: dev-pm.ca.com
+  #   path: "/"
+  #   backend: management
+  #   service:
+  #     port:
+  #       name: management
+        # number:
 
 # Additional Environment variables to be added to the Gateway Configmap
 additionalEnv: {}
