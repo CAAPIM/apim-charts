@@ -242,6 +242,8 @@ config:
       #   value: "true"
       # - name: otel.metricPrefix
       #   value: l7_
+      # - name: otel.attributePrefix
+      #   value: l7_
       # - name: otel.traceConfig
       #   value: |
       #     {

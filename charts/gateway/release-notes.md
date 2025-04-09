@@ -7,6 +7,11 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.33 General Updates
+This is a minor patch to remove the use of AWK in the following optional scripts
+- Bootstrap script
+- Graceful shutdown script
+
 ## 3.0.32 General Updates
 - Default image updated to v11.1.2
   - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
