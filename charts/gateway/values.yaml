@@ -817,10 +817,6 @@ otk:
     # Update database connection properties during helm upgrade.
     updateConnection: true
 
-    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    changeLogSync: false
-
     sql:
 
       # If provided, used to create OTK schema and tables.

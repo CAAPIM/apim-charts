@@ -59,8 +59,8 @@ The sub solution kits that are used in the installation or upgrade process are d
 ### MySQL or Oracle database (`otk.database.type:mysql/oracle`) 
 OTK MySQL or Oracle can be auto upgraded using the kubernetes job by setting `otk.database.dbUpgrade` to `true`. 
 > :information_source: **Important** <br>
-> If using existing non liquibase OTK DB, then perform manual OTK DB upgrade and set `otk.database.changeLogSync` to true. </br>This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-
+> Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB, then perform manual OTK DB upgrade and set `otk.database.changeLogSync` to true. </br>This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+> For OTK version 4.6.4 this is not necessary. The installation & upgrade process takes care of detecting this.
 Properties related to OTK database install/Upgrade.
 
 | Parameter                        | Description                               | Default                                                      |
@@ -70,7 +70,7 @@ Properties related to OTK database install/Upgrade.
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of test clients | `true` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
-| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 
 To configure external mysql/oracle database as OTK db, configure properties in below table.
 

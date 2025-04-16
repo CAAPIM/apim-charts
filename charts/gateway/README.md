@@ -380,7 +380,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
-| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 | `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
