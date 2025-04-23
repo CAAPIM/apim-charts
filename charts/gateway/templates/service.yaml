@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: Service
 metadata:
@@ -37,7 +38,7 @@ spec:
       targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
-  {{- if .Values.config.gemfire.embedded.enabled}}
+  {{- if .Values.config.gemfire.embedded.caches.enabled}}
     - name: gmf-http
       targetPort: gmf-http
       port: 7010

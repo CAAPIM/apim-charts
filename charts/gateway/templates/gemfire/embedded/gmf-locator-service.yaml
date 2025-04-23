@@ -1,4 +1,5 @@
-{{ if not .Values.config.gemfire.embedded.startLocator }}
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if .Values.config.gemfire.embedded.externalLocators.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

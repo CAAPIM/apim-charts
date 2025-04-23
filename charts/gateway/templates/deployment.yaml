@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -184,7 +185,7 @@ spec:
               protocol: {{ .protocol }}
             {{- end }}
             {{- end }}
-            {{- if .Values.config.gemfire.embedded.enabled}}
+            {{- if .Values.config.gemfire.embedded.caches.enabled}}
             - name: gmf-http
               containerPort: 7010
               protocol: TCP
@@ -291,7 +292,7 @@ spec:
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded  }}
-      {{- if .Values.config.gemfire.embedded.enabled }}
+      {{- if .Values.config.gemfire.embedded.caches.enabled }}
             - name: {{ template "gateway.fullname" . }}-emb-gemfire
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
@@ -622,7 +623,7 @@ spec:
     {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded }}
-    {{- if .Values.config.gemfire.embedded.enabled }}
+    {{- if .Values.config.gemfire.embedded.caches.enabled }}
         - name: {{ template "gateway.fullname" . }}-emb-gemfire
           configMap:
             name: {{ template "gateway.fullname" . }}-emb-gemfire-configmap

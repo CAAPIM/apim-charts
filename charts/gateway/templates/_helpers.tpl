@@ -287,28 +287,16 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
- Define Embedded gemfire remote locators
- */}}
-{{- define "embedded.gemfire.remoteLocators" -}}
-{{- if empty .Values.config.gemfire.embedded.multiSite.remoteLocators -}}
-    {{- fail "Please define config.gemfire.embedded.multiSite.remoteLocators in values.yaml" }}
-{{- else -}}
-    {{- join "," .Values.config.gemfire.embedded.multiSite.remoteLocators }}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
  Define embedded gemfire locators
  */}}
 {{- define "embedded.gemfire.locators" -}}
-{{- if not .Values.config.gemfire.embedded.startLocator -}}
+{{- if .Values.config.gemfire.embedded.externalLocators.enabled -}}
 {{ $locators := list }}
-{{- range $replicas, $e := until (.Values.config.gemfire.image.locator.replicas|int) -}}
+{{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
 {{- $locators = append $locators (printf "%s-%s-%s-%d[%d]" $.Release.Name $.Chart.Name "gmf-loc" . 10334) }}
 {{- end -}}
 {{- join "," $locators }}
 {{- else -}}
-{{- join "," .Values.config.gemfire.embedded.externalLocators }}
+{{- join "," .Values.config.gemfire.embedded.useExistingLocators }}
 {{- end -}}
 {{- end -}}

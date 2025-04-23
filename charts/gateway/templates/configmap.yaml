@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -102,15 +103,6 @@ data:
     # com.l7tech.external.assertions.embeddedgemfireprovider.membership.start.port=7014
     # com.l7tech.external.assertions.embeddedgemfireprovider.membership.end.port=7016
 
-{{- if .Values.config.gemfire.embedded.multiSite.enabled }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.multi.site=true
-    com.l7tech.external.assertions.embeddedgemfireprovider.distributed.system.id={{ .Values.config.gemfire.embedded.multiSite.systemId }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.remote.system.id={{ .Values.config.gemfire.embedded.multiSite.remoteSiteid }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.disk.store.name={{ .Values.config.gemfire.embedded.multiSite.diskStoreName }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.remote.locators={{ template "embedded.gemfire.remoteLocators" . }}
-    # com.l7tech.external.assertions.embeddedgemfireprovider.receiver.start.port=7017
-    # com.l7tech.external.assertions.embeddedgemfireprovider.receiver.end.port=7019
-{{- end }}
 {{- end }}
 
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}

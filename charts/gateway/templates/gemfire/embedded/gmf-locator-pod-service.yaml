@@ -1,5 +1,6 @@
-{{ if not .Values.config.gemfire.embedded.startLocator }}
-{{- $replicas := .Values.config.gemfire.image.locator.replicas  | int -}}
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if .Values.config.gemfire.embedded.externalLocators.enabled }}
+{{- $replicas := .Values.config.gemfire.embedded.externalLocators.replicas | int -}}
 {{- range $i,$e := until $replicas }}
 ---
 apiVersion: v1

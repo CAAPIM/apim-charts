@@ -515,22 +515,47 @@ config:
     #           port: 26379
   
   gemfire:
-    image:
-      registry: docker.io
-      mc:
-        repository: gemfire/gemfire-management-console
-        tag: latest
-      locator:
-        repository: gemfire/gemfire-all
-        tag: 10.1-jdk17
-        replicas: 2
     embedded:
-      enabled: false
-      startLocator: false
+      caches:
+        enabled: true
+        additionalProperties: |-
+          log-level=warning
       externalLocators:
+        enabled: false
+        replicas: 2
+        image:
+          registry: docker.io
+          repository: gemfire/gemfire-all
+          tag: 10.1-jdk17
+          pullPolicy: IfNotPresent
+      useExistingLocators:
         - locator1[port]
         - locator2[port]
-      startManagementConsole: true
+      ssl:
+        enabled: false
+        truststore:
+        keystore:
+        truststorePassword:
+        keystorePassword:
+        additionalProperties: |-
+          ssl-require-authentication=false
+          #ssl-component-alias=
+          ssl-ciphers=any
+          ssl-protocols=any
+          ssl-endpoint-identification-enabled=false
+          ssl-enabled-components=all
+          ssl-keystore-type=JKS
+          ssl-truststore-type=JKS
+    managementConsole:
+      enabled: false
+      service:
+        port: 8080
+        annotations: {}
+      image:
+        registry: docker.io
+        repository: gemfire/gemfire-management-console
+        tag: latest
+        pullPolicy: IfNotPresent
       ssl:
         enabled: false
         truststore:
@@ -548,20 +573,6 @@ config:
           ssl-truststore-type=JKS
       properties: |-
         log-level=error
-      multiSite:
-        enabled: false
-        systemId: 1
-        diskStoreName: gemfire
-        # TODO support multi sites
-        remoteSiteid: 2
-        remoteLocators:
-          - locator1[port]
-          - locator2[port]
-        ports:
-          sender:
-          receiver:
-            start:
-            end:
     external:
       enabled: false
       connectionProperties: |

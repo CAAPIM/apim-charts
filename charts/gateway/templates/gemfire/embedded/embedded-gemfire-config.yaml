@@ -1,4 +1,5 @@
-{{ if .Values.config.gemfire.embedded.enabled }}
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if .Values.config.gemfire.embedded.caches.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,5 +20,5 @@ metadata:
 {{- end }}
 data:
   gemfire-properties: |-
-{{ .Values.config.gemfire.embedded.properties | indent 4 }}
+{{ .Values.config.gemfire.embedded.caches.additionalProperties | indent 4 }}
 {{ end }}

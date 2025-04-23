@@ -1,4 +1,5 @@
-{{ if .Values.config.gemfire.embedded.startManagementConsole }}
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if .Values.config.gemfire.managementConsole.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,11 +44,11 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-gmf-mc
-          image: {{.Values.config.gemfire.image.registry}}/{{.Values.config.gemfire.image.mc.repository}}:{{.Values.config.gemfire.image.mc.tag}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.config.gemfire.managementConsole.image.registry }}/{{ .Values.config.gemfire.managementConsole.image.repository }}:{{ .Values.config.gemfire.managementConsole.image.tag }}
+          imagePullPolicy: {{ .Values.config.gemfire.managementConsole.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.config.gemfire.managementConsole.service.port }}
               protocol: TCP
 
 {{- end }}

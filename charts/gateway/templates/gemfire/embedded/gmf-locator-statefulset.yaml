@@ -1,4 +1,5 @@
-{{ if not .Values.config.gemfire.embedded.startLocator }}
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if .Values.config.gemfire.embedded.externalLocators.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -20,12 +21,21 @@ metadata:
 {{- end }}
 {{- end }}
 spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Retain
     whenScaled: Retain
   podManagementPolicy: Parallel
   revisionHistoryLimit: 10
-  replicas: {{ .Values.config.gemfire.image.locator.replicas }}
+  replicas: {{ .Values.config.gemfire.embedded.externalLocators.replicas }}
   selector:
     matchLabels:
       app: {{ template "gateway.fullname" . }}-gmf-loc
@@ -49,8 +59,8 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-gmf-loc
-          image: {{.Values.config.gemfire.image.registry}}/{{.Values.config.gemfire.image.locator.repository}}:{{.Values.config.gemfire.image.locator.tag}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ .Values.config.gemfire.embedded.externalLocators.image.registry }}/{{ .Values.config.gemfire.embedded.externalLocators.image.repository }}:{{ .Values.config.gemfire.embedded.externalLocators.image.tag }}
+          imagePullPolicy: {{ .Values.config.gemfire.embedded.externalLocators.image.pullPolicy }}
           args: 
             - gfsh
             - start 
@@ -73,5 +83,8 @@ spec:
             requests:
               cpu: "1"
               memory: 1024Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
          
 {{- end }}
