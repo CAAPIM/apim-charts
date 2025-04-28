@@ -1,24 +1,23 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if .Values.config.gemfire.managementConsole.enabled }}
+{{- if .Values.config.gemfire.managementConsole.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    chart: {{ template "gateway.chart" . }}-gmf-mc
+    chart: {{ template "gateway.chart" . }}-gemfire-mgmtconsole
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     {{- range $key, $val := .Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  name: {{ template "gateway.fullname" . }}-gmf-mc
+  name: {{ $.Release.Name }}-gemfire-mgmtconsole
   annotations:
-    description: "Gemfire management console service"
+    description: "GemFire Management Console Service"
 {{- range $key, $val := .Values.config.gemfire.managementConsole.service.annotations }}
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
   selector:
-    app: {{ template "gateway.fullname" . }}-gmf-mc
+    app: {{ $.Release.Name }}-gemfire-mgmtconsole
     release: {{ .Release.Name }}
   type: LoadBalancer
   ports:

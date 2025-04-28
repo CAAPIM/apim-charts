@@ -1,9 +1,8 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if .Values.config.gemfire.embedded.caches.enabled }}
+{{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "gateway.fullname" . }}-emb-gemfire-configmap
+  name: {{ $.Release.Name }}-emb-gemfire-configmap
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

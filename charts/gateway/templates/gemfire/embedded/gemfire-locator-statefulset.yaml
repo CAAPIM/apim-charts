@@ -1,11 +1,10 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if .Values.config.gemfire.embedded.externalLocators.enabled }}
+{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ template "gateway.fullname" . }}-gmf-loc
+  name: {{ $.Release.Name }}-gemfire-locator
   labels:
-    app: {{ template "gateway.name" . }}-gmf-loc
+    app: {{ template "gateway.name" . }}-gemfire-locator
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -38,12 +37,12 @@ spec:
   replicas: {{ .Values.config.gemfire.embedded.externalLocators.replicas }}
   selector:
     matchLabels:
-      app: {{ template "gateway.fullname" . }}-gmf-loc
-  serviceName: {{ template "gateway.fullname" . }}-gmf-loc
+      app: {{ $.Release.Name }}-gemfire-locator
+  serviceName: {{ $.Release.Name }}-gemfire-locator
   template:
     metadata:
       labels:
-        app: {{ template "gateway.fullname" . }}-gmf-loc
+        app: {{ $.Release.Name }}-gemfire-locator
         release: {{ .Release.Name }}
     {{- if  .Values.podLabels }}
         {{- toYaml .Values.podLabels | nindent 8 }}
@@ -52,13 +51,8 @@ spec:
       annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
     {{- end }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
-      {{- if .Values.imagePullSecret.enabled }}
-      imagePullSecrets:
-        - name: {{ template "gateway.imagePullSecret" . }}
-      {{- end }}
       containers:
-        - name: {{ .Chart.Name }}-gmf-loc
+        - name: {{ .Chart.Name }}-gemfire-locator
           image: {{ .Values.config.gemfire.embedded.externalLocators.image.registry }}/{{ .Values.config.gemfire.embedded.externalLocators.image.repository }}:{{ .Values.config.gemfire.embedded.externalLocators.image.tag }}
           imagePullPolicy: {{ .Values.config.gemfire.embedded.externalLocators.image.pullPolicy }}
           args: 
@@ -71,7 +65,7 @@ spec:
             - --locators={{ template "embedded.gemfire.locators" $ }}
           env:
             - name: ACCEPT_TERMS
-              value: "y"
+              value: {{ include "gemfire.acceptedTerms" . }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:

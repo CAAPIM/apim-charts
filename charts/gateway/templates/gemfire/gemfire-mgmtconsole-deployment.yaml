@@ -1,11 +1,10 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if .Values.config.gemfire.managementConsole.enabled }}
+{{- if .Values.config.gemfire.managementConsole.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "gateway.fullname" . }}-gmf-mc
+  name: {{ $.Release.Name }}-gemfire-mgmtconsole
   labels:
-    app: {{ template "gateway.name" . }}-gmf-mc
+    app: {{ template "gateway.name" . }}-gemfire-mgmtconsole
     chart: {{ template "gateway.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -21,34 +20,23 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ template "gateway.fullname" . }}-gmf-mc
+      app: {{ $.Release.Name }}-gemfire-mgmtconsole
+      release: {{ .Release.Name }}
   replicas: 1
   strategy:
 {{ toYaml .Values.updateStrategy | indent 4 }}
   template:
     metadata:
       labels:
-        app: {{ template "gateway.fullname" . }}-gmf-mc
+        app: {{ $.Release.Name }}-gemfire-mgmtconsole
         release: {{ .Release.Name }}
-    {{- if  .Values.podLabels }}
-        {{- toYaml .Values.podLabels | nindent 8 }}
-    {{- end }}
-    {{- if  .Values.podAnnotations }}
-      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
-    {{- end }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
-      {{- if .Values.imagePullSecret.enabled }}
-      imagePullSecrets:
-        - name: {{ template "gateway.imagePullSecret" . }}
-      {{- end }}
       containers:
-        - name: {{ .Chart.Name }}-gmf-mc
+        - name: {{ .Chart.Name }}-gemfire-mgmtconsole
           image: {{ .Values.config.gemfire.managementConsole.image.registry }}/{{ .Values.config.gemfire.managementConsole.image.repository }}:{{ .Values.config.gemfire.managementConsole.image.tag }}
           imagePullPolicy: {{ .Values.config.gemfire.managementConsole.image.pullPolicy }}
           ports:
             - name: http
               containerPort: {{ .Values.config.gemfire.managementConsole.service.port }}
               protocol: TCP
-
 {{- end }}

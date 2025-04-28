@@ -1,5 +1,4 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if .Values.config.gemfire.embedded.externalLocators.enabled }}
+{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 {{- $replicas := .Values.config.gemfire.embedded.externalLocators.replicas | int -}}
 {{- range $i,$e := until $replicas }}
 ---
@@ -7,15 +6,15 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    chart: {{ template "gateway.chart" $ }}-gmf-loc-{{ $i }}
+    chart: {{ template "gateway.chart" $ }}-gemfire-locator-{{ $i }}
     release: {{ $.Release.Name }}
     heritage: {{ $.Release.Service }}
     {{- range $key, $val := $.Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-  name: {{ template "gateway.fullname" $ }}-gmf-loc-{{ $i }}
+  name: {{ $.Release.Name }}-gemfire-locator-{{ $i }}
   annotations:
-    description: "Gemfire locator pod service"
+    description: "GemFire Locator Pod Service"
     "helm.sh/hook": pre-install,post-upgrade
     "helm.sh/hook-weight": "-5"
 {{- range $key, $val := $.Values.service.annotations }}
@@ -23,7 +22,7 @@ metadata:
 {{- end }}
 spec:
   selector:
-    statefulset.kubernetes.io/pod-name: {{ template "gateway.fullname" $ }}-gmf-loc-{{ $i }}
+    statefulset.kubernetes.io/pod-name: {{ $.Release.Name }}-gemfire-locator-{{ $i }}
     release: {{ $.Release.Name }}
   clusterIP: None
   ports:
@@ -31,12 +30,10 @@ spec:
       port: 10334
       targetPort: locator
       name: locator
-      ports:
     - protocol: TCP
       port: 4321
       targetPort: 4321
       name: locator-metrics
-      ports:
     - protocol: TCP
       port: 7070
       targetPort: 7070

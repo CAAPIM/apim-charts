@@ -1,4 +1,3 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -99,8 +98,8 @@ data:
     {{ .name }}={{ .value }}
 {{- end }}
 {{- end }}
-{{- if .Values.config.gemfire.embedded }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.locators={{ template "embedded.gemfire.locators" . }}
+{{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.locators={{- template "embedded.gemfire.locators" . }}
     com.l7tech.external.assertions.embeddedgemfireprovider.start.locator=false
     # com.l7tech.external.assertions.embeddedgemfireprovider.locator.port=7011
     # com.l7tech.external.assertions.embeddedgemfireprovider.jmx.manager.port=7012

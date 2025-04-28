@@ -266,9 +266,9 @@ config:
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
-    # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
-    # com.l7tech.server.extension.sharedCounterProvider=ssgdb
-    # com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
+    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire
+    com.l7tech.server.extension.sharedCounterProvider=ssgdb
+    com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
     # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
     com.l7tech.org.bouncycastle.rsa.allow_multi_use=true
@@ -277,18 +277,11 @@ config:
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
-    # Embedded Gemfire
-    com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire
-    com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
-    com.l7tech.server.extension.sharedClusterInfoProvider=embeddedgemfire
-    com.l7tech.server.extension.sharedRateLimiterProvider=embeddedgemfire
-    com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire
-    # External Gemfire
+    # Embedded GemFire configuration - uncomment to use preview Embedded GemFire
+    # com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
+    # External GemFire configuration - uncomment to use preview External GemFire
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=externalgemfire
     # com.l7tech.server.extension.sharedCounterProvider=externalgemfire
-    # com.l7tech.server.extension.sharedClusterInfoProvider=externalgemfire
-    # com.l7tech.server.extension.sharedRateLimiterProvider=externalgemfire
-    # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=externalgemfire
     # Redis configuration - uncomment to use Redis
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
@@ -536,30 +529,37 @@ config:
     #           port: 26379
     #         - host: 192.168.0.1
     #           port: 26379
-  
+
+  # Configuration for GemFire, a distributed data management platform.
   gemfire:
+    # Must be set to true to enable GemFire functionality, indicating that the GemFire terms of use have been accepted.
+    acceptTerms: false
+    # Configuration for embedded GemFire, where GemFire caches run within the Gateway process.
     embedded:
       caches:
-        enabled: true
+        # Additional properties for embedded GemFire caches.
         additionalProperties: |-
           log-level=warning
       externalLocators:
-        enabled: false
+        # The number of GemFire locator replicas to deploy when using embedded GemFire.
         replicas: 2
         image:
           registry: docker.io
-          repository: gemfire/gemfire-all
-          tag: 10.1-jdk17
+          repository: gemfire/gemfire
+          tag: 10.1.3-jdk17
           pullPolicy: IfNotPresent
-      useExistingLocators:
-        - locator1[port]
-        - locator2[port]
+      # A list of existing GemFire locators to use instead of deploying new ones. Each locator should be specified in the format "locator-host[port]".
+      useExistingLocators: []
+      # - locator1[port]
+      # - locator2[port]
+      # SSL configuration for embedded GemFire.
       ssl:
         enabled: false
         truststore:
         keystore:
         truststorePassword:
         keystorePassword:
+        # Additional SSL properties for embedded GemFire.
         additionalProperties: |-
           ssl-require-authentication=false
           #ssl-component-alias=
@@ -570,6 +570,7 @@ config:
           ssl-keystore-type=JKS
           ssl-truststore-type=JKS
     managementConsole:
+      # Enable the GemFire Management Console, which provides a management dashboard.
       enabled: false
       service:
         port: 8080
@@ -579,38 +580,25 @@ config:
         repository: gemfire/gemfire-management-console
         tag: latest
         pullPolicy: IfNotPresent
-      ssl:
-        enabled: false
-        truststore:
-        keystore: 
-        truststorePassword:
-        keystorePassword:
-        additionalProperties: |-
-          ssl-require-authentication=false
-          #ssl-component-alias=
-          ssl-ciphers=any
-          ssl-protocols=any
-          ssl-endpoint-identification-enabled=false
-          ssl-enabled-components=all
-          ssl-keystore-type=JKS
-          ssl-truststore-type=JKS
-      properties: |-
-        log-level=error
+    # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
     external:
       enabled: false
       connectionProperties: |
         gemfire.locator.host=
         gemfire.locator.port=
+      # Authentication configuration for the GemFire client.
       auth:
         enabled: false
-        username: 
+        username:
         password:
+      # SSL configuraiton for the GemFire client.
       ssl:
         enabled: false
         truststore:
-        keystore: 
+        keystore:
         truststorePassword:
         keystorePassword:
+        # Additional SSL properties for the GemFire client.
         additionalProperties: |-
           ssl-require-authentication=false
           #ssl-component-alias=
@@ -621,6 +609,7 @@ config:
           ssl-keystore-type=JKS
           ssl-truststore-type=JKS
           security-client-auth-init=com.l7tech.external.assertions.gemfire.common.server.ClientAuthInit
+
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:

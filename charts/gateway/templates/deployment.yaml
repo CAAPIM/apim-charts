@@ -1,4 +1,3 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -185,17 +184,17 @@ spec:
               protocol: {{ .protocol }}
             {{- end }}
             {{- end }}
-            {{- if .Values.config.gemfire.embedded.caches.enabled}}
-            - name: gmf-http
+            {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+            - name: gemfire-http
               containerPort: 7010
               protocol: TCP
-            - name: gmf-locator
+            - name: gemfire-locator
               containerPort: 7011
               protocol: TCP
-            - name: gmf-jmx
+            - name: gemfire-jmx
               containerPort: 7012
               protocol: TCP
-            - name: gmf-server
+            - name: gemfire-server
               containerPort: 7013
               protocol: TCP
             {{- end }}
@@ -273,39 +272,39 @@ spec:
 {{- end }}
 {{- if .Values.config.gemfire.external  }}
       {{- if .Values.config.gemfire.external.enabled }}
-            - name: {{ template "gateway.fullname" . }}-ext-gemfire
+            - name: {{ $.Release.Name }}-ext-gemfire
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire_connection.properties
               subPath: gemfire_connection.properties
         {{- if or (.Values.config.gemfire.external.auth.enabled) (.Values.config.gemfire.external.ssl.enabled) }}
-            - name: {{ template "gateway.fullname" . }}-ext-gemfire-security-properties
+            - name: {{ $.Release.Name }}-ext-gemfire-security-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire_security.properties
               subPath: gemfire_security.properties
         {{- end }}
         {{- if .Values.config.gemfire.external.ssl.enabled }}
-            - name: {{ template "gateway.fullname" . }}-ext-gemfire-truststore
+            - name: {{ $.Release.Name }}-ext-gemfire-truststore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire-truststore
               subPath: gemfire-truststore
-            - name: {{ template "gateway.fullname" . }}-ext-gemfire-keystore
+            - name: {{ $.Release.Name }}-ext-gemfire-keystore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire-keystore
               subPath: gemfire-keystore
         {{- end }}
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded  }}
-      {{- if .Values.config.gemfire.embedded.caches.enabled }}
-            - name: {{ template "gateway.fullname" . }}-emb-gemfire
+      {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+            - name: {{ $.Release.Name }}-emb-gemfire
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
-            - name: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+            - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire_security.properties
               subPath: gemfire_security.properties
         {{- end }}
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
-            - name: {{ template "gateway.fullname" . }}-emb-gemfire-truststore
+            - name: {{ $.Release.Name }}-emb-gemfire-truststore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-truststore
               subPath: gemfire-truststore
-            - name: {{ template "gateway.fullname" . }}-emb-gemfire-keystore
+            - name: {{ $.Release.Name }}-emb-gemfire-keystore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-keystore
               subPath: gemfire-keystore
         {{- end }}
@@ -613,30 +612,30 @@ spec:
 {{- end }}
 {{- if .Values.config.gemfire.external }}
     {{- if .Values.config.gemfire.external.enabled }}
-        - name: {{ template "gateway.fullname" . }}-ext-gemfire
+        - name: {{ $.Release.Name }}-ext-gemfire
           configMap:
-            name: {{ template "gateway.fullname" . }}-ext-gemfire-configmap
+            name: {{ $.Release.Name }}-ext-gemfire-configmap
             items:
             - key: connection-properties
               path: gemfire_connection.properties
        {{- if or (.Values.config.gemfire.external.auth.enabled) (.Values.config.gemfire.external.ssl.enabled) }}
-        - name: {{ template "gateway.fullname" . }}-ext-gemfire-security-properties
+        - name: {{ $.Release.Name }}-ext-gemfire-security-properties
           secret:
-            secretName: {{ template "gateway.fullname" . }}-ext-gemfire-security-properties
+            secretName: {{ $.Release.Name }}-ext-gemfire-security-properties
             items:
             - key: gemfire_security
               path: gemfire_security.properties
         {{- end }}
         {{- if .Values.config.gemfire.external.ssl.enabled }}
-        - name: {{ template "gateway.fullname" . }}-ext-gemfire-keystore
+        - name: {{ $.Release.Name }}-ext-gemfire-keystore
           secret:
-            secretName: {{ template "gateway.fullname" . }}-ext-gemfire-certs
+            secretName: {{ $.Release.Name }}-ext-gemfire-certs
             items:
             - key: keystore
               path: gemfire-keystore
-        - name: {{ template "gateway.fullname" . }}-ext-gemfire-truststore
+        - name: {{ $.Release.Name }}-ext-gemfire-truststore
           secret:
-            secretName: {{ template "gateway.fullname" . }}-ext-gemfire-certs
+            secretName: {{ $.Release.Name }}-ext-gemfire-certs
             items:
             - key: truststore
               path: gemfire-truststore
@@ -644,31 +643,31 @@ spec:
     {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded }}
-    {{- if .Values.config.gemfire.embedded.caches.enabled }}
-        - name: {{ template "gateway.fullname" . }}-emb-gemfire
+    {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+        - name: {{ $.Release.Name }}-emb-gemfire
           configMap:
-            name: {{ template "gateway.fullname" . }}-emb-gemfire-configmap
+            name: {{ $.Release.Name }}-emb-gemfire-configmap
             items:
             - key: gemfire-properties
               path: gemfire.properties
        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
-        - name: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+        - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
-            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-security-properties
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
             - key: gemfire_security
               path: gemfire_security.properties
         {{- end }}
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
-        - name: {{ template "gateway.fullname" . }}-emb-gemfire-keystore
+        - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-certs
+            secretName: {{ $.Release.Name }}-emb-gemfire-certs
             items:
             - key: keystore
               path: gemfire-keystore
-        - name: {{ template "gateway.fullname" . }}-emb-gemfire-truststore
+        - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-            secretName: {{ template "gateway.fullname" . }}-emb-gemfire-certs
+            secretName: {{ $.Release.Name }}-emb-gemfire-certs
             items:
             - key: truststore
               path: gemfire-truststore

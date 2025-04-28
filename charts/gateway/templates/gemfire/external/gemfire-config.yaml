@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "gateway.fullname" . }}-ext-gemfire-configmap
+  name: {{ $.Release.Name }}-ext-gemfire-configmap
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

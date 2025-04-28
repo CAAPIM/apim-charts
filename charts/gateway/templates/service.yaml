@@ -1,4 +1,3 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: Service
 metadata:
@@ -38,21 +37,21 @@ spec:
       targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
-  {{- if .Values.config.gemfire.embedded.caches.enabled}}
-    - name: gmf-http
-      targetPort: gmf-http
+  {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+    - name: gemfire-http
+      targetPort: gemfire-http
       port: 7010
       protocol: TCP
-    - name: gmf-locator
-      targetPort: gmf-locator
+    - name: gemfire-locator
+      targetPort: gemfire-locator
       port: 7011
       protocol: TCP
-    - name: gmf-jmx
-      targetPort: gmf-jmx
+    - name: gemfire-jmx
+      targetPort: gemfire-jmx
       port: 7012 
       protocol: TCP
-    - name: gmf-server
-      targetPort: gmf-server
+    - name: gemfire-server
+      targetPort: gemfire-server
       port: 7013
       protocol: TCP
   {{- end }}

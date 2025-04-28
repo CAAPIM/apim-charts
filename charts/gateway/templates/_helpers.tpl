@@ -302,16 +302,53 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
- Define embedded gemfire locators
+  Check if GemFire terms are accepted
+ */}}
+{{- define "gemfire.acceptedTerms" -}}
+{{- if .Values.config.gemfire.acceptTerms -}}
+    "y"
+{{- else -}}
+    {{- fail "\nTo use GemFire, the GemFire Terms of Use must be accepted by setting config.gemfire.acceptTerms to true (boolean) in your values yaml." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators enabled
+ */}}
+{{- define "embedded.gemfire.enabled" -}}
+{{- $lines := list -}}
+{{- if .Values.config.systemProperties -}}
+    {{- range (split "\n" .Values.config.systemProperties) -}}
+    {{- $lines = append $lines (trim .) -}}
+    {{- end -}}
+{{- end -}}
+{{- range .Values.config.additionalSystemProperties -}}
+    {{- if and .name .value }}
+        {{- $line := printf "%s=%s" .name .value -}}
+        {{- $lines = append $lines $line -}}
+    {{- end -}}
+{{- end -}}
+{{- $isProviderEmbeddedGemFire := false -}}
+{{- range $lines -}}
+    {{- $line := trim . -}}
+    {{- if and (not (hasPrefix "#" $line)) (regexMatch ".*shared.*Provider.*" $line) (hasSuffix "embeddedgemfire" $line) -}}
+        {{- $isProviderEmbeddedGemFire = true -}}
+    {{- end -}}
+{{- end -}}
+{{- $isProviderEmbeddedGemFire -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators list
  */}}
 {{- define "embedded.gemfire.locators" -}}
-{{- if .Values.config.gemfire.embedded.externalLocators.enabled -}}
-{{ $locators := list }}
-{{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
-{{- $locators = append $locators (printf "%s-%s-%s-%d[%d]" $.Release.Name $.Chart.Name "gmf-loc" . 10334) }}
+{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+    {{ $locators := list }}
+    {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
+    {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
 {{- end -}}
-{{- join "," $locators }}
+{{- join "," $locators -}}
 {{- else -}}
-{{- join "," .Values.config.gemfire.embedded.useExistingLocators }}
+{{- join "," .Values.config.gemfire.embedded.useExistingLocators -}}
 {{- end -}}
 {{- end -}}
