@@ -94,6 +94,11 @@ data:
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
+{{- if .Values.config.additionalSystemProperties }}
+{{- range .Values.config.additionalSystemProperties }}
+    {{ .name }}={{ .value }}
+{{- end }}
+{{- end }}
 {{- if .Values.config.gemfire.embedded }}
     com.l7tech.external.assertions.embeddedgemfireprovider.locators={{ template "embedded.gemfire.locators" . }}
     com.l7tech.external.assertions.embeddedgemfireprovider.start.locator=false

@@ -104,13 +104,13 @@ spec:
         path: "/"
         backend:
           service:
-            name: pssg
+            name: apim
             port:
-              name: tssg-sync
+              name: tssg-enroll
 {{- else }}
       - backend:
-          serviceName: pssg
-          servicePort: tssg-sync
+          serviceName: apim
+          servicePort: tssg-enroll
 {{- end }}
   - host: {{ include "pssg-sso-host" . | quote }}
     http:
