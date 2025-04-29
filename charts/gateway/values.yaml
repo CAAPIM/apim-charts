@@ -213,6 +213,8 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    # - -Djava.net.preferIPv4Stack=false
+    # - -Djava.net.preferIPv6Addresses=true
   log:
     override: true
     properties: |-

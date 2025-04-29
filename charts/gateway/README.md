@@ -84,6 +84,7 @@ Helm Version    Supported Kubernetes Versions
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Java Args](#java-args)
+* [Enable DualStack](#enable-dualstack)
 * [System Properties](#system-properties)
 * [Diskless Configuration](#diskless-configuration)
 * [Gateway Bundles](#bundle-configuration)
@@ -135,75 +136,79 @@ database:
 ## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `nameOverride`                | Name override   | `nil` |
-| `fullnameOverride`                      | Full name override                       | `nil`                                                     |
-| `global.schedulerName`                      | Override the default scheduler | `nil` |
-| `license.value`          | Gateway license file | `nil`  |
-| `license.accept`          | Accept Gateway license EULA | `false`  |
-| `disklessConfig.enabled` | Enable diskless configuration | `true` |
-| `disklessConfig.existingSecret` | existing node.properties secret mount configuration | `{}` |
-| `disklessConfig.existingSecret.name` | existing secret containing node.properties | `gateway-secret` |
-| `disklessConfig.existingSecret.csi` | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) | `commented out` |
-| `image.registry`    | Image Registry               | `docker.io` |
-| `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `11.0.00`  |
-| `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
-| `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
-| `imagePullSecret.username`          | Registry Username | `nil`  |
-| `imagePullSecret.password`          | Registry Password | `nil`  |
-| `additionalAnnotations`          | Additional Annotations apply to all deployed objects | `{}`  |
-| `additionalLabels`          | Additional Labels apply to all deployed objects | `{}`  |
-| `podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
-| `podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
-| `replicas`                   | Number of Gateway replicas        | `1`                                                          |
-| `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
-| `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
-| `updateStrategy.rollingUpdate.maxUnavailable`             | Rolling Update Max Unavailable                       | `0`                                              |
-| `clusterHostname`          | Gateway Cluster Hostname  | `my.localdomain`  |
-| `existingGatewaySecretName`          | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out`  |
-| `clusterPassword`          | Cluster Password, used if db backed  | `mypassword`  |
-| `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
-| `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
-| `management.username`          | Policy Manager Username | `admin`  |
-| `management.password`          | Policy Manager Password | `mypassword`  |
-| `management.kubernetes.loadServiceAccountToken`    | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`  |
-| `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
-| `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
-| `database.username`          | Database Username | `gateway`  |
-| `database.password`          | Database Password | `mypassword`  |
-| `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
-| `database.name`          | Database name | `ssg`  |
-| `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false`  |
-| `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out`  |
-| `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
-| `tls.pass`          | p12 container password - this cannot be empty | `nil`  |
-| `config.heapSize`          | Java Heap Size | `2g`  |
-| `config.minHeapSize`          | Java Min Heap Size | `1g`  |
-| `config.maxHeapSize`          | Java Max Heap Size | `3g`  |
-| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
-| `config.log.override`          | Override the standard log configuration | `true`  |
-| `config.log.properties`          | Custom logging properties | `see values.yaml`  |
-| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false`  |
-| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml`  |
-| `config.sytemProperties`          | Configure the Gateway's system.properties file | `see values.yaml`  |
-| `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
-| `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
-| `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false`  |
-| `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`  |
-| `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false`  |
-| `existingBundle.configMaps`          | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml`  |
-| `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`  |
-| `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
-| `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
-| `service.type`    | Service Type               | `LoadBalancer` |
-| `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
-| `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
-| `service.annotations`    | Additional annotations to add to the service               | {} |
-| `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
-| `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
+| Parameter                                       | Description                               | Default                                                                                                                                       |
+|-------------------------------------------------| -----------------------------------       |-----------------------------------------------------------------------------------------------------------------------------------------------|
+| `nameOverride`                                  | Name override   | `nil`                                                                                                                                         |
+| `fullnameOverride`                              | Full name override                       | `nil`                                                                                                                                         |
+| `global.schedulerName`                          | Override the default scheduler | `nil`                                                                                                                                         |
+| `license.value`                                 | Gateway license file | `nil`                                                                                                                                         |
+| `license.accept`                                | Accept Gateway license EULA | `false`                                                                                                                                       |
+| `disklessConfig.enabled`                        | Enable diskless configuration | `true`                                                                                                                                        |
+| `disklessConfig.existingSecret`                 | existing node.properties secret mount configuration | `{}`                                                                                                                                          |
+| `disklessConfig.existingSecret.name`            | existing secret containing node.properties | `gateway-secret`                                                                                                                              |
+| `disklessConfig.existingSecret.csi`             | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) | `commented out`                                                                                                                               |
+| `image.registry`                                | Image Registry               | `docker.io`                                                                                                                                   |
+| `image.repository`                              | Image Repository  | `caapim/gateway`                                                                                                                              |
+| `image.tag`                                     | Image tag | `11.0.00`                                                                                                                                     |
+| `image.pullPolicy`                              | Image Pull Policy | `IfNotPresent`                                                                                                                                |
+| `imagePullSecret.enabled`                       | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`                                                                                                                                       |
+| `imagePullSecret.existingSecretName`            | Point to an existing Image Pull Secret | `commented out`                                                                                                                               |
+| `imagePullSecret.username`                      | Registry Username | `nil`                                                                                                                                         |
+| `imagePullSecret.password`                      | Registry Password | `nil`                                                                                                                                         |
+| `additionalAnnotations`                         | Additional Annotations apply to all deployed objects | `{}`                                                                                                                                          |
+| `additionalLabels`                              | Additional Labels apply to all deployed objects | `{}`                                                                                                                                          |
+| `podLabels`                                     | Pod Labels for the Gateway Pod | `{}`                                                                                                                                          |
+| `podAnnotations`                                | Pod Annotations apply to the Gateway Pod | `{}`                                                                                                                                          |
+| `replicas`                                      | Number of Gateway replicas        | `1`                                                                                                                                           |
+| `updateStrategy.type`                           | Deployment Strategy                       | `RollingUpdate`                                                                                                                               |
+| `updateStrategy.rollingUpdate.maxSurge`         | Rolling Update Max Surge                       | `1`                                                                                                                                           |
+| `updateStrategy.rollingUpdate.maxUnavailable`   | Rolling Update Max Unavailable                       | `0`                                                                                                                                           |
+| `clusterHostname`                               | Gateway Cluster Hostname  | `my.localdomain`                                                                                                                              |
+| `existingGatewaySecretName`                     | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out`                                                                                                                               |
+| `clusterPassword`                               | Cluster Password, used if db backed  | `mypassword`                                                                                                                                  |
+| `management.enabled`                            | Enable/Disable Policy Manager access | `true`                                                                                                                                        |
+| `management.restman.enabled`                    | Enable/Disable the Rest Management API (Restman) | `false`                                                                                                                                       |
+| `management.username`                           | Policy Manager Username | `admin`                                                                                                                                       |
+| `management.password`                           | Policy Manager Password | `mypassword`                                                                                                                                  |
+| `management.kubernetes.loadServiceAccountToken` | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`                                                                                                                                       |
+| `database.enabled`                              | Run in DB Backed or Ephemeral Mode | `true`                                                                                                                                        |
+| `database.create`                               | Deploy the MySQL stable deployment as part of this release | `true`                                                                                                                                        |
+| `database.username`                             | Database Username | `gateway`                                                                                                                                     |
+| `database.password`                             | Database Password | `mypassword`                                                                                                                                  |
+| `database.liquibaseLogLevel`                    | Liquibase log level | `off`                                                                                                                                         |
+| `database.name`                                 | Database name | `ssg`                                                                                                                                         |
+| `tls.useSignedCertificates`                     | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false`                                                                                                                                       |
+| `tls.existingSecretName`                        | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out`                                                                                                                               |
+| `tls.key`                                       | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`                                                                                                                                         |
+| `tls.pass`                                      | p12 container password - this cannot be empty | `nil`                                                                                                                                         |
+| `config.heapSize`                               | Java Heap Size | `2g`                                                                                                                                          |
+| `config.minHeapSize`                            | Java Min Heap Size | `1g`                                                                                                                                          |
+| `config.maxHeapSize`                            | Java Max Heap Size | `3g`                                                                                                                                          |
+| `config.javaArgs`                               | Additional Java Args to pass to the SSG process | `see values.yaml`                                                                                                                             |
+| `config.log.override`                           | Override the standard log configuration | `true`                                                                                                                                        |
+| `config.log.properties`                         | Custom logging properties | `see values.yaml`                                                                                                                             |
+| `config.cwp.enabled`                            | Enable/Disable settable cluster-wide properties | `false`                                                                                                                                       |
+| `config.cwp.properties`                         | Set name/value pairs of cluster-wide properties | `see values.yaml`                                                                                                                             |
+| `config.sytemProperties`                        | Configure the Gateway's system.properties file | `see values.yaml`                                                                                                                             |
+| `additionalEnv`                                 | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`                                                                                                                             |
+| `additionalSecret`                              | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`                                                                                                                             |
+| `bundle.enabled`                                | Creates a configmap with bundles from the ./bundles folder | `false`                                                                                                                                       |
+| `bundle.path`                                   | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`                                                                                                                          |
+| `existingBundle.enabled`                        | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false`                                                                                                                                       |
+| `existingBundle.configMaps`                     | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml`                                                                                                                             |
+| `existingBundle.secrets`                        | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`                                                                                                                             |
+| `customHosts.enabled`                           | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`                                                                                                                             |
+| `customHosts.hostAliases`                       | Array of hostAliases to add to the Container Gateway  | `see values.yaml`                                                                                                                             |
+| `service.type`                                  | Service Type               | `LoadBalancer`                                                                                                                                |
+| `service.loadbalancer`                          | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
+| `service.ports`                                 | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443                                                                                                   |
+| `service.annotations`                           | Additional annotations to add to the service               | {}                                                                                                                                            |
+| `service.internalTrafficPolicy`                 | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster`                                                                                                                                     |
+| `service.externalTrafficPolicy`                 | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster`                                                                                                                                     |
+| `service.ipFamilyPolicy`                        | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out`                                                                                                                               |
+| `service.ipFamilies`                            | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`                                                                                                                                         |
+| `management.service.ipFamilyPolicy`             | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out`                                                                                                                               |
+| `management.service.ipFamilies`                 | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`                                                                                                                                         |
 
 | `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
@@ -1047,6 +1052,48 @@ config:
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
 ```
+
+[Back to Additional Guides](#additional-guides)
+
+### Enable DualStack
+To enable dual stack, it need to add/uncomment given Java Arguments which can be configured in values.yaml. Gateway v11.2.0 supports Dual stack.
+-Djava.net.preferIPv4Stack=false 
+-Djava.net.preferIPv6Addresses=true
+
+| Java Argument                         | Description                                                                                                                                                                                                      | Default   |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `-Djava.net.preferIPv4Stack=false`    | If IPv6 is available on the operating system the underlying native socket will be, by default, an IPv6 socket which lets applications connect to, and accept connections from, both IPv4 and IPv6 hosts.         | `true`    |
+| `-Djava.net.preferIPv6Addresses=true` | When dealing with a host which has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer using IPv4 addresses over IPv6 ones.                        | `false`   |
+
+
+```
+config:
+  heapSize: "2g"
+  minHeapSize: "1g"
+  maxHeapSize: "3g"
+  javaArgs:
+    - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
+    - -Dcom.l7tech.server.audit.message.saveToInternal=false
+    - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+    - -Dcom.l7tech.server.audit.system.saveToInternal=false
+    - -Dcom.l7tech.server.audit.log.format=json
+    - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+    - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+    - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    - -Djava.net.preferIPv4Stack=false
+    - -Djava.net.preferIPv6Addresses=true
+```
+
+Gateway and Management Service can optionally configure it as dual stack.
+
+| Parameter                           | Description                                                                                                          | Default         |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------|
+| `service.ipFamilyPolicy`            | Gateway Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack             | `commented out` |
+| `service.ipFamilies`                | Gateway Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]        | `nil`           |
+| `management.service.ipFamilyPolicy` | PolicyManager Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack       | `commented out` |
+| `management.service.ipFamilies`     | PolicyMananger Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"] | `nil`           |
+
+
 
 [Back to Additional Guides](#additional-guides)
 
