@@ -1,3 +1,4 @@
+# Copyright © 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 apiVersion: apps/v1
 kind: StatefulSet
@@ -62,6 +63,9 @@ spec:
             - --name=$(POD_NAME) 
             - --hostname-for-clients=localhost
             - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
+            - --classpath=/gemfire/lib/layer7-gemfire-security-11.2.0.dev.jar
+            - --security-properties-file=/gemfire/config/gfsecurity.properties
+            - --connect=false
             - --locators={{ template "embedded.gemfire.locators" $ }}
           env:
             - name: ACCEPT_TERMS
@@ -80,5 +84,23 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-         
+            - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+              mountPath: /gemfire/config/gfsecurity.properties
+              subPath: gfsecurity.properties
+            - name: {{ $.Release.Name }}-emb-gemfire-security-manager
+              mountPath: /gemfire/lib/layer7-gemfire-security-11.2.0.dev.jar
+              subPath: layer7-gemfire-security-11.2.0.dev.jar
+      volumes:
+        - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
+            items:
+              - key: gfsecurity
+                path: gfsecurity.properties
+        - name: {{ $.Release.Name }}-emb-gemfire-security-manager
+          configMap:
+            name: {{ $.Release.Name }}-emb-gemfire-security-manager-configmap
+            items:
+              - key: layer7-gemfire-security-jar
+                path: layer7-gemfire-security-11.2.0.dev.jar
 {{- end }}

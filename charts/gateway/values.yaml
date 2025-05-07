@@ -550,6 +550,12 @@ config:
           pullPolicy: IfNotPresent
       # A list of existing GemFire locators to use instead of deploying new ones. Each locator should be specified in the format "locator-host[port]".
       useExistingLocators: []
+      # Authentication configuration for the GemFire peer.
+      auth:
+        enabled: false
+        securitymanager:
+        username:
+        password:
       # - locator1[port]
       # - locator2[port]
       # SSL configuration for embedded GemFire.
