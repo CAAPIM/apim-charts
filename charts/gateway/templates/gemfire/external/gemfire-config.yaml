@@ -19,5 +19,6 @@ metadata:
 {{- end }}
 data:
   connection-properties: |-
+{{ "gemfire.locators=" | indent 4 }}{{ template "external.gemfire.locators" . }}
 {{ .Values.config.gemfire.external.connectionProperties | indent 4 }}
 {{ end }}

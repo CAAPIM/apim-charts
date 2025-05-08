@@ -583,15 +583,17 @@ config:
     # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
     external:
       enabled: false
+      locators: []
+      # - locator1[port]
+      # - locator2[port]
       connectionProperties: |
-        gemfire.locator.host=
-        gemfire.locator.port=
+      # - connection properties for the GemFire client.
       # Authentication configuration for the GemFire client.
       auth:
         enabled: false
         username:
         password:
-      # SSL configuraiton for the GemFire client.
+      # SSL configuration for the GemFire client.
       ssl:
         enabled: false
         truststore:

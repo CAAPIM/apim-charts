@@ -352,3 +352,12 @@ Define OTK Image Pull Secret Name
 {{- join "," .Values.config.gemfire.embedded.useExistingLocators -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define external gemfire locators list
+ */}}
+{{- define "external.gemfire.locators" -}}
+{{- if .Values.config.gemfire.external.enabled -}}
+{{- join "," .Values.config.gemfire.external.locators -}}
+{{- end -}}
+{{- end -}}
