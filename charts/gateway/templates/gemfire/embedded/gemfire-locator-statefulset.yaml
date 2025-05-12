@@ -1,4 +1,3 @@
-# Copyright © 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 apiVersion: apps/v1
 kind: StatefulSet
