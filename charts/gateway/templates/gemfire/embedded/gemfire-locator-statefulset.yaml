@@ -62,8 +62,10 @@ spec:
             - --name=$(POD_NAME) 
             - --hostname-for-clients=localhost
             - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
-            - --classpath=/gemfire/lib/layer7-gemfire-security-11.2.0.dev.jar
+          {{- if .Values.config.gemfire.embedded.auth.enabled }}
+            - --classpath=/gemfire/lib/layer7-gemfire-security.jar
             - --security-properties-file=/gemfire/config/gfsecurity.properties
+          {{- end }}
             - --connect=false
             - --locators={{ template "embedded.gemfire.locators" $ }}
           env:
@@ -83,23 +85,28 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            {{- if .Values.config.gemfire.embedded.auth.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /gemfire/config/gfsecurity.properties
               subPath: gfsecurity.properties
             - name: {{ $.Release.Name }}-emb-gemfire-security-manager
-              mountPath: /gemfire/lib/layer7-gemfire-security-11.2.0.dev.jar
-              subPath: layer7-gemfire-security-11.2.0.dev.jar
+              mountPath: /gemfire/lib/layer7-gemfire-security.jar
+              subPath: layer7-gemfire-security.jar
+            {{- end }}
       volumes:
+    {{- if .Values.config.gemfire.embedded.auth.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
               - key: gfsecurity
                 path: gfsecurity.properties
+
         - name: {{ $.Release.Name }}-emb-gemfire-security-manager
           configMap:
             name: {{ $.Release.Name }}-emb-gemfire-security-manager-configmap
             items:
               - key: layer7-gemfire-security-jar
-                path: layer7-gemfire-security-11.2.0.dev.jar
+                path: layer7-gemfire-security.jar
+    {{- end }}
 {{- end }}
