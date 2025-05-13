@@ -554,7 +554,7 @@ config:
       useExistingLocators: []
       # Authentication configuration for the GemFire peer.
       auth:
-        enabled: false
+        enabled: true
         securitymanager:
         username:
         password:
