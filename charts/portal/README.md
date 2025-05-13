@@ -6,6 +6,18 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.14 General Updates
+- Adding pod annotations to all the deployments and stateful sets in portal.
+- Upgrade to 2.3.14 is only supported from 2.3.9 chart version as per the Portal version.
+
+## 2.3.13 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.12.1 to fix [Vulnerability](https://github.com/kubernetes/kubernetes/issues/131007).
+- Upgrade to 2.3.13 is only supported from 2.3.9 chart version as per the Portal version.
+## 2.3.12 General Updates
+- This new version of the chart supports API Portal 5.2.3
+- Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.4.4 MySQL version.
 ## 2.3.11 General Updates
 - Added a preflight check (initContainer) for the core apim/ingress deployment
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
@@ -107,7 +119,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39/8.4.4 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -312,7 +324,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
-| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.podAnnotations`           | Analytics pod annotations settings.                          | `{} evaluated as a template`                                 |
+| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`
 | `analytics.containerSecurityContext` | Analytics container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
@@ -328,6 +341,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
+| `apim.podAnnotations`                | APIM pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `apim.podSecurityContext`            | APIM pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `apim.containerSecurityContext`      | APIM container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -355,6 +369,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
+| `authenticator.podAnnotations`       | authenticator pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `authenticator.podSecurityContext`   | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `authenticator.containerSecurityContext`      | authenticator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -369,6 +384,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
+| `dispatcher.podAnnotations`          | Dispatcher pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `dispatcher.podSecurityContext`      | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `dispatcher.containerSecurityContext`| Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -397,6 +413,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalData.podAnnotations`          | Portal-data pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `portalData.podSecurityContext`      | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `portalData.containerSecurityContext`| Portal-data container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
@@ -412,6 +429,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
+| `portalEnterprise.podAnnotations`    | Portal enterprise pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `portalEnterprise.podSecurityContext`| Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `portalEnterprise.containerSecurityContext`| Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
@@ -428,6 +446,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
+| `tenantProvisioner.podAnnotations`   | Tenant provisioner pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `tenantProvisioner.podSecurityContext`| Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `tenantProvisioner.containerSecurityContext`| Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -440,57 +459,67 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Database Node Pool Configurations
 
 #### Common configurations across multiple containers
-| Parameter                                                              | Description                                                                                                                                    | Default      | Container                                                                           |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------------------------------------|
-| `<container>.additionalEnv.DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| Parameter                                                              | Description                                                                                                                                  | Default      | Container                                                                           |
+|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|--------------|-------------------------------------------------------------------------------------|
+| `<container>.additionalEnv.DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                         | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                         | `30`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
 | `<container>.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, |
-| `<container>.additionalEnv.DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
-| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                 | `50`         | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                            | `60 seconds` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                | `5`          | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                   | `300`        | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress`, |
+| `<container>.additionalEnv.DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                          | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                    | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled               | `0 seconds`  | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_SOCKETTIMEOUT`                | The number of milliseconds on network socket operations specified as socketTimeout property in the JDBC URL. Value 0 means no timeout.      | `120000 (ms)`| `portalData`, `portalEnterprise`, `tenantProvisioner`,`ingress` |
+| `<container>.additionalEnv.DATABASE_POOL_CONNECTTIMEOUT`               | The number of milliseconds timeout for socket connect specified as connectTimeout property in the JDBC URL.  Value 0 means no timeout.      | `10000 (ms)` | `portalData`, `portalEnterprise`, `tenantProvisioner`, `analytics`,`ingress` |
 
 #### Authenticator specific configurations
-| Parameter                                                            | Description                                                                                                                                    | Default       |
-|----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
-| `authenticator.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`              | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`          | 
-| `authenticator.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`          | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 ms`    |
-| `authenticator.additionalEnv.DATABASE_POOL_PINGCONNECTIONNOTUSERFOR` | Ping the database to make sure connection is still good if it has not been used in this many milliseconds,                                     | `5000 ms`     |
-| `authenticator.additionalEnv.DATABASE_POOL_PINGENABLED`              | Periodically pings and tests the connections in connection pool if they are alive and responsive                                               | `true`        |
-| `authenticator.additionalEnv.DATABASE_POOL_PINGQUERY`                | SQL query to be executed when connection pool is pinged to test the health of connections.                                                     | `select1`     |
-| `authenticator.additionalEnv.DATABASE_POOL_MAXIMUMIDLECONNECTIONS`   | The maximum number of idle connections                                                                                                         | `10`          |
+| Parameter                                                           | Description                                                                                                                                   | Default       |
+|---------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `authenticator.additionalEnv.DATABASE_POOL_MAXPOOLSIZE`             | Maximum number of Connections a pool will maintain at any given time                                                                          | `30`          | 
+| `authenticator.additionalEnv.DATABASE_POOL_CHECKOUTTIMEOUT`         | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 ms`    |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGCONNECTIONNOTUSERFOR` | Ping the database to make sure connection is still good if it has not been used in this many milliseconds,                                    | `5000 ms`     |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGENABLED`             | Periodically pings and tests the connections in connection pool if they are alive and responsive                                              | `true`        |
+| `authenticator.additionalEnv.DATABASE_POOL_PINGQUERY`               | SQL query to be executed when connection pool is pinged to test the health of connections.                                                    | `select1`     |
+| `authenticator.additionalEnv.DATABASE_POOL_MAXIMUMIDLECONNECTIONS`  | The maximum number of idle connections                                                                                                        | `10`          |
+| `authenticator.additionalEnv.DATABASE_POOL_SOCKETTIMEOUT`           | The number of milliseconds on network socket operations specified as socketTimeout property in the JDBC URL. Value 0 means no timeout.        | `120000 (ms)` |
+| `authenticator.additionalEnv.DATABASE_POOL_CONNECTTIMEOUT`          | The number of milliseconds timeout for socket connect specified as connectTimeout property in the JDBC URL.  Value 0 means no timeout.        | `10000 (ms)`  |
+
 
 #### Additional portalData configurations for File Repository Database
-| Parameter                                                                             | Description                                                                                                                                    | Default      |
-|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         |                       
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |           
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
-| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
+| Parameter                                                                             | Description                                                                                                                                    | Default          |
+|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`              |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`             |                       
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)`     |           
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`             |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds`     |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`              |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`            |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`      |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`      |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`      |
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_SOCKETTIMEOUT`                | The number of milliseconds on network socket operations specified as socketTimeout property in the JDBC URL. Value 0 means no timeout.         | `120000 (ms)`    | 
+| `portalData.additionalEnv.FILE_REPOSITORY_DATABASE_POOL_CONNECTTIMEOUT`               | The number of milliseconds timeout for socket connect specified as connectTimeout property in the JDBC URL.  Value 0 means no timeout.         | `10000 (ms)`     |
+
+
 
 #### Additional tenantProvisioner configurations for Portal Database
-| Parameter                                                                             | Description                                                                                                                                    | Default      |
-|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MINPOOLSIZE`                    | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXPOOLSIZE`                    | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | 
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CHECKOUTTIMEOUT`                | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`     | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`       | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_INITIALPOOLSIZE`                | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTS`                  | The size of global PreparedStatement cache                                                                                                     | `300`        |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXCONNECTIONAGE`               | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIME`                    | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
-| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS`   | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
-
+| Parameter                                                                           | Description                                                                                                                                    | Default      |
+|-------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MINPOOLSIZE`                  | Minimum number of Connections a pool will maintain at any given time                                                                           | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXPOOLSIZE`                  | Maximum number of Connections a pool will maintain at any given time                                                                           | `30`         | 
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CHECKOUTTIMEOUT`              | The number of milliseconds a client calling getConnection() will wait for a Connection to be checked-in or acquired when the pool is exhausted | `30000 (ms)` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTSPERCONNECTION`   | The number of PreparedStatements to be cached for a single pooled Connection                                                                   | `50`         |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_IDLECONNECTIONTESTPERIOD`     | Test all idle, pooled but unchecked-out connections, every this number of seconds                                                              | `60 seconds` |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_INITIALPOOLSIZE`              | Number of Connections a pool will try to acquire upon startup                                                                                  | `5`          |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXSTATEMENTS`                | The size of global PreparedStatement cache                                                                                                     | `300`        |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXCONNECTIONAGE`             | A Connection older than maxConnectionAge will be destroyed and purged from the pool                                                            | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIME`                  | Seconds a Connection can remain pooled but unused before being discarded.                                                                      | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_MAXIDLETIMEEXCESSCONNECTIONS` | Number of seconds that Connections in excess of minPoolSize should be permitted to remain idle in the pool before being culled                 | `0 seconds`  |
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_SOCKETTIMEOUT`                | The number of milliseconds on network socket operations specified as socketTimeout property in the JDBC URL. Value 0 means no timeout.         | `120000 (ms)`|
+| `tenantProvisioner.additionalEvn.PORTAL_DATABASE_POOL_CONNECTTIMEOUT`               | The number of milliseconds timeout for socket connect specified as connectTimeout property in the JDBC URL.  Value 0 means no timeout.         | `10000 (ms)` |
 ### Portal TLS Defaults 
 Portal TLS defaults if the parameters are not set.
 | Parameter                            | Description                                                  | Default                                                      |
@@ -656,17 +685,17 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.1` |
-| `image.apim` | APIM ingress image | `ingress:5.3.1` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.1` |
-| `image.data` | portal-data image | `portal-data:5.3.1` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.1` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.1` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.1` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.1` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.1` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.1` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.1` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.2` |
+| `image.apim` | APIM ingress image | `ingress:5.3.2` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.2` |
+| `image.data` | portal-data image | `portal-data:5.3.2` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.2` |
+| `image.analytics` | Analytics image | `analytics-server:5.3.2` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3.2` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.2` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.2` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.2` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3.2` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -706,6 +735,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.minio.podAnnotations`   | Minio pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.minio.podSecurityContext` | Minio pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.minio.containerSecurityContext` | Minio container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.zookeeper.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -718,6 +748,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.zookeeper.podAnnotations`   | Zookeeper pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.zookeeper.podSecurityContext` | Zookeeper pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.zookeeper.containerSecurityContext` | Zookeeper container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.coordinator.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -730,6 +761,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.coordinator.podAnnotations`   | Coordinator pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.coordinator.podSecurityContext` | Coordinator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.coordinator.containerSecurityContext` | Coordinator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.kafka.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -742,6 +774,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.kafka.podAnnotations`   | Kafka pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.kafka.podSecurityContext` | Kafka pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.kafka.containerSecurityContext` | Kafka container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.broker.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -754,6 +787,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.broker.podAnnotations`   | Broker pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.broker.podSecurityContext` | Broker pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.broker.containerSecurityContext` | Broker container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.historical.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -766,6 +800,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.historical.podAnnotations`   | Historical pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.historical.podSecurityContext` | Historical pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.historical.containerSecurityContext` | Historical container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.ingestion.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -778,6 +813,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.ingestion.podAnnotations`   | Ingestion pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.ingestion.podSecurityContext` | Ingestion pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.ingestion.containerSecurityContext` | Ingestion container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.middlemanager.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -790,6 +826,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.middlemanager.podAnnotations`   | Middle manager's pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.middlemanager.podSecurityContext` | Middle manager pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.middlemanager.containerSecurityContext` | Middle manager container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
@@ -798,14 +835,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.1`        |
-| `druid.image.broker`        | Broker image        | `druid:5.3.1`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.3.1`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.1`            |
-| `druid.image.minio`         | Minio image         | `minio:5.3.1`            |
-| `druid.image.historical`    | Historical image    | `druid:5.3.1`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.3.1`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.1` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.2`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3.2`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3.2`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.2`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3.2`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3.2`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3.2`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.2` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -814,7 +851,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.2.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.2` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
 | `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
@@ -846,9 +883,11 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 
+**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
+
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.0.37-debian-12-r2` |
+| `mysql.image.tag`                | MySQL Image to use   | `8.4.4-debian-12-r0` |
 | `mysql.auth.username`           | MySQL Username   | `admin` |
 | `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
 | `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
@@ -1038,6 +1077,6 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2024 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2025 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.

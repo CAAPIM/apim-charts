@@ -5,8 +5,13 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.31
+- Current Chart Version 3.0.33
   - Please review release notes [here](./release-notes.md)
+  - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
+    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
+    ```
+    handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
+    ```
 
 ## Prerequisites
 - Kubernetes
@@ -200,7 +205,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
 
-| `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
+| `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
 | `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
 | `ingress.openshift.route.weight`    | Openshift Route Weight (0-255)               | `commented` |
@@ -548,12 +553,12 @@ If your ingress controller is private and you would like to create an ingress re
 New Ingress Configuration Gateway Chart >= 3.0.31 (openshift route support)
 ```
 ingress:
-  # Set to true to create ingress object
-  enabled: false
+  # Set to true to create ingress or route object
+  enabled: true
   # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
   openshift:
     route:
-      enabled: false
+      enabled: true
       wildcardPolicy: None
     # weight: 100
       
@@ -956,13 +961,13 @@ redis:
 [Back to Additional Guides](#additional-guides)
 
 ### Shared State Provider Config
-Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis.
+Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis. In order for this configuration to take effect config.redis.enabled must also be set to true.
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.sharedStateProvider.enabled`          | Enable redis configuration | `false`  |
-| `config.sharedStateProvider.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
-| `config.sharedStateProvider.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
+| `config.sharedStateClient.enabled`          | Enable redis configuration | `true`  |
+| `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
+| `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
