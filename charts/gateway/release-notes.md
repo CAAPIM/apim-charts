@@ -7,6 +7,15 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.34 OTK 4.6.4 Released
+- The default image tag in values.yaml and production-values.yaml for OTK updated to 4.6.4.
+  - otk.job.image.tag: 4.6.4
+- Adding support to Oauth_Client_Read database connection
+- The field otk.database.sql.databaseName is mandatory
+- Removing changelogsync parameter from values.yaml
+  - This is handled in the otk-db-upgrade job automatically
+- Updated comments & documentation for better clarity
+
 ## 3.0.33 General Updates
 This is a minor patch to remove the use of AWK in the following optional scripts
 - Bootstrap script

@@ -5,13 +5,8 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.33
+- Current Chart Version 3.0.34
   - Please review release notes [here](./release-notes.md)
-  - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
-    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
-    ```
-    handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
-    ```
 
 ## Prerequisites
 - Kubernetes
