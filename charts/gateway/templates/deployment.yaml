@@ -650,13 +650,13 @@ spec:
             items:
             - key: gemfire-properties
               path: gemfire.properties
-       {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+       {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
-            - key: gemfire_security
-              path: gemfire_security.properties
+            - key: gfsecurity
+              path: gfsecurity.properties
         {{- end }}
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
