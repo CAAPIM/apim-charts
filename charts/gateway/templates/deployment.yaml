@@ -295,10 +295,10 @@ spec:
             - name: {{ $.Release.Name }}-emb-gemfire
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
-        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire_security.properties
-              subPath: gemfire_security.properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
+              subPath: gfsecurity.properties
         {{- end }}
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-truststore
