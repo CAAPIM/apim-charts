@@ -145,7 +145,9 @@ otk:
 ```
 ### Cassandra database  (`otk.database.type:cassandra`) 
 > :information_source: **Important** <br>
-> Install or Upgrade of OTK database on Cassandra is not supported.
+> - Install or Upgrade of OTK database on Cassandra is not supported.
+> - The Cassandra install scripts have to executed manually for new install scenario
+> - The Cassandra upgrade & data migration scripts(if any) have to be executed manually for upgrade scenario
 
 Configure cassandra connection properties
 
