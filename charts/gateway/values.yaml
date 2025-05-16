@@ -564,13 +564,14 @@ config:
       ssl:
         enabled: false
         truststore:
+          existingSecret:
+          password:
         keystore:
-        truststorePassword:
-        keystorePassword:
+          existingSecret:
+          password:
         # Additional SSL properties for embedded GemFire.
         additionalProperties: |-
-          ssl-require-authentication=false
-          #ssl-component-alias=
+          ssl-require-authentication=true
           ssl-ciphers=any
           ssl-protocols=any
           ssl-endpoint-identification-enabled=false
@@ -605,20 +606,20 @@ config:
       ssl:
         enabled: false
         truststore:
+          existingSecret:
+          password:
         keystore:
-        truststorePassword:
-        keystorePassword:
+          existingSecret:
+          password:
         # Additional SSL properties for the GemFire client.
         additionalProperties: |-
-          ssl-require-authentication=false
-          #ssl-component-alias=
+          ssl-require-authentication=true
           ssl-ciphers=any
           ssl-protocols=any
           ssl-endpoint-identification-enabled=false
           ssl-enabled-components=all
           ssl-keystore-type=JKS
           ssl-truststore-type=JKS
-          security-client-auth-init=com.l7tech.external.assertions.gemfire.common.server.ClientAuthInit
 
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.

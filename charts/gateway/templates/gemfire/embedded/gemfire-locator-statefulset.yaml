@@ -64,6 +64,8 @@ spec:
             - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
           {{- if .Values.config.gemfire.embedded.auth.enabled }}
             - --classpath=/gemfire/lib/layer7-gemfire-security.jar
+          {{- end }}
+          {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
             - --security-properties-file=/gemfire/config/gfsecurity.properties
           {{- end }}
             - --connect=false
@@ -85,28 +87,53 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-            {{- if .Values.config.gemfire.embedded.auth.enabled }}
+        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /gemfire/config/gfsecurity.properties
               subPath: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.embedded.auth.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-manager
               mountPath: /gemfire/lib/layer7-gemfire-security.jar
               subPath: layer7-gemfire-security.jar
-            {{- end }}
+        {{- end }}
+        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+            - name: {{ $.Release.Name }}-emb-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-truststore
+              subPath: gemfire-truststore
+            - name: {{ $.Release.Name }}-emb-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-keystore
+              subPath: gemfire-keystore
+        {{- end }}
       volumes:
-    {{- if .Values.config.gemfire.embedded.auth.enabled }}
+    {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
               - key: gfsecurity
                 path: gfsecurity.properties
-
+    {{- end }}
+    {{- if .Values.config.gemfire.embedded.auth.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-manager
           configMap:
             name: {{ $.Release.Name }}-emb-gemfire-security-manager-configmap
             items:
               - key: layer7-gemfire-security-jar
                 path: layer7-gemfire-security.jar
+    {{- end }}
+    {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        - name: {{ $.Release.Name }}-emb-gemfire-keystore
+          secret:
+            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
+            items:
+              - key: keystore
+                path: gemfire-keystore
+        - name: {{ $.Release.Name }}-emb-gemfire-truststore
+          secret:
+            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
+            items:
+              - key: truststore
+                path: gemfire-truststore
     {{- end }}
 {{- end }}
