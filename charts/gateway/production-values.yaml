@@ -754,7 +754,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.3
+      tag: 4.6.4
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
@@ -799,8 +799,10 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
-    useDemoDb: true
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
+    useDemoDb: false
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
     username: otk_user
@@ -816,10 +818,6 @@ otk:
 
     # Update database connection properties during helm upgrade.
     updateConnection: true
-
-    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    changeLogSync: false
 
     sql:
 
@@ -853,6 +851,21 @@ otk:
       enabled: false
       # connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name
+      databaseName:
+
+    # Optionally configure Client read database connection for MySQL/Oracle.
+    clientReadConnection:
+      enabled: false
+      # connectionName: Oauth_Client_Read
+      # existingSecretName: otkClientReadSecret
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
