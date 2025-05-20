@@ -963,19 +963,20 @@ Uncomment the following
  ```
 # com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
 ```
-| Parameter                                      | Description                                                                                        | Default                                                      |
-|------------------------------------------------|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `config.gemfire.acceptTerms`                   | Accepting the terms of use for VMware Tanzu GemFire.                                               | `false`                                                      |
-| `config.gemfire.useExistingLocators`           | Existing locators to be used by gateway.                                                           | `[]`                                                         |
-| `config.gemfire.auth.enabled`                  | Enable security athentication.                                                                     | `true`                                                       |
-| `config.gemfire.auth.securitymanager`          | Enable security athentication.                                                                     | `com.l7tech.external.assertions.gemfire.BasicSecurityManager` |
-| `config.gemfire.auth.username`                 | Athentication username.                                                                            | `default`                                                    |
-| `config.gemfire.auth.password`                 | Athentication password.                                                                            | clusterPassword in values.yaml                               |
-| `config.gemfire.ssl.enabled`                   | Enable SSL/TLS for mutual athentication.                                                           | `false`                                                      |
-| `config.gemfire.ssl.truststore.existingSecret` | Name of an existing secret with an truststore (JKS format) - must contain a key called truststore. | ``                                                      |
-| `config.gemfire.ssl.truststore.password`       | Truststore Pasword.                                                                                | ``                                                      |
-| `config.gemfire.ssl.keystore.existingSecret`   | Name of an existing secret with an keystore (JKS format) - must contain a key called keystore.     | ``                                                      |
-| `config.gemfire.ssl.keystore.password`         | Keystore pasword.                                                                                  | ``                                                      |
+| Parameter                                      | Description                                                                                                                     | Default                        |
+|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| `config.gemfire.acceptTerms`                   | Accepting the terms of use for VMware Tanzu GemFire.                                                                            | `false`                        |
+| `config.gemfire.externalLocators.replicas`     | Number of GemFire locator replicas to deploy.                                                                                   | `2`                            |
+| `config.gemfire.useExistingLocators`           | A list of existing locators to be used by gateway.                                                                              | `[]`                           |
+| `config.gemfire.auth.enabled`                  | Enable security athentication.                                                                                                  | `true`                         |
+| `config.gemfire.auth.securitymanager`          | Security manager used for authentication. Default to com.l7tech.external.assertions.gemfire.BasicSecurityManager if left blank. | ``                             |                           
+| `config.gemfire.auth.username`                 | Authentication username.                                                                                                        | `default`                      |
+| `config.gemfire.auth.password`                 | Authentication password.                                                                                                        | clusterPassword in values.yaml |
+| `config.gemfire.ssl.enabled`                   | Enable SSL/TLS for mutual athentication.                                                                                        | `false`                        |
+| `config.gemfire.ssl.truststore.existingSecret` | Name of an existing secret with an truststore (JKS format) - must contain a key called truststore.                              | ``                             |
+| `config.gemfire.ssl.truststore.password`       | Truststore Pasword.                                                                                                             | ``                             |
+| `config.gemfire.ssl.keystore.existingSecret`   | Name of an existing secret with an keystore (JKS format) - must contain a key called keystore.                                  | ``                             |
+| `config.gemfire.ssl.keystore.password`         | Keystore pasword.                                                                                                               | ``                             |
 
 
 ### Database Configuration
