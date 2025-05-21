@@ -277,8 +277,8 @@ spec:
               subPath: gemfire_connection.properties
         {{- if or (.Values.config.gemfire.external.auth.enabled) (.Values.config.gemfire.external.ssl.enabled) }}
             - name: {{ $.Release.Name }}-ext-gemfire-security-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire_security.properties
-              subPath: gemfire_security.properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gfsecurity.properties
+              subPath: gfsecurity.properties
         {{- end }}
         {{- if .Values.config.gemfire.external.ssl.enabled }}
             - name: {{ $.Release.Name }}-ext-gemfire-truststore
@@ -623,19 +623,19 @@ spec:
           secret:
             secretName: {{ $.Release.Name }}-ext-gemfire-security-properties
             items:
-            - key: gemfire_security
-              path: gemfire_security.properties
+            - key: gfsecurity
+              path: gfsecurity.properties
         {{- end }}
         {{- if .Values.config.gemfire.external.ssl.enabled }}
         - name: {{ $.Release.Name }}-ext-gemfire-keystore
           secret:
-            secretName: {{ $.Release.Name }}-ext-gemfire-certs
+            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
             items:
             - key: keystore
               path: gemfire-keystore
         - name: {{ $.Release.Name }}-ext-gemfire-truststore
           secret:
-            secretName: {{ $.Release.Name }}-ext-gemfire-certs
+            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
             items:
             - key: truststore
               path: gemfire-truststore
@@ -661,13 +661,13 @@ spec:
         {{- if .Values.config.gemfire.embedded.ssl.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-            secretName: {{ $.Release.Name }}-emb-gemfire-certs
+            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
             items:
             - key: keystore
               path: gemfire-keystore
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-            secretName: {{ $.Release.Name }}-emb-gemfire-certs
+            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
             items:
             - key: truststore
               path: gemfire-truststore

@@ -952,6 +952,33 @@ Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration
 | `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
 | `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
 
+### Gemfire Config
+Gemfire as shared data provider is supported with Gatway v11.1.2 onwards.
+
+Comment out the following
+```
+# com.l7tech.server.extension.sharedCounterProvider=ssgdb
+```
+Uncomment the following
+ ```
+# com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
+```
+| Parameter                                      | Description                                                                                                                     | Default                        |
+|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+| `config.gemfire.acceptTerms`                   | Accepting the terms of use for VMware Tanzu GemFire.                                                                            | `false`                        |
+| `config.gemfire.externalLocators.replicas`     | Number of GemFire locator replicas to deploy.                                                                                   | `2`                            |
+| `config.gemfire.useExistingLocators`           | A list of existing locators to be used by gateway.                                                                              | `[]`                           |
+| `config.gemfire.auth.enabled`                  | Enable security athentication.                                                                                                  | `true`                         |
+| `config.gemfire.auth.securitymanager`          | Security manager used for authentication. Default to com.l7tech.external.assertions.gemfire.BasicSecurityManager if left blank. | ``                             |                           
+| `config.gemfire.auth.username`                 | Authentication username.                                                                                                        | `default`                      |
+| `config.gemfire.auth.password`                 | Authentication password.                                                                                                        | clusterPassword in values.yaml |
+| `config.gemfire.ssl.enabled`                   | Enable SSL/TLS for mutual athentication.                                                                                        | `false`                        |
+| `config.gemfire.ssl.truststore.existingSecret` | Name of an existing secret with an truststore (JKS format) - must contain a key called truststore.                              | ``                             |
+| `config.gemfire.ssl.truststore.password`       | Truststore Pasword.                                                                                                             | ``                             |
+| `config.gemfire.ssl.keystore.existingSecret`   | Name of an existing secret with an keystore (JKS format) - must contain a key called keystore.                                  | ``                             |
+| `config.gemfire.ssl.keystore.password`         | Keystore pasword.                                                                                                               | ``                             |
+
+
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
 ```

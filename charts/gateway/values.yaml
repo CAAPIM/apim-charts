@@ -279,8 +279,6 @@ config:
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
     # Embedded GemFire configuration - uncomment to use preview Embedded GemFire
     # com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
-    # Embedded GemFire configuration - uncomment to disable auth for embeddedgemfire
-    # com.l7tech.external.assertions.embeddedgemfireprovider.requireAuth=false
     # External GemFire configuration - uncomment to use preview External GemFire
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=externalgemfire
     # com.l7tech.server.extension.sharedCounterProvider=externalgemfire
@@ -564,13 +562,14 @@ config:
       ssl:
         enabled: false
         truststore:
+          existingSecret:
+          password:
         keystore:
-        truststorePassword:
-        keystorePassword:
+          existingSecret:
+          password:
         # Additional SSL properties for embedded GemFire.
         additionalProperties: |-
-          ssl-require-authentication=false
-          #ssl-component-alias=
+          ssl-require-authentication=true
           ssl-ciphers=any
           ssl-protocols=any
           ssl-endpoint-identification-enabled=false
@@ -605,20 +604,20 @@ config:
       ssl:
         enabled: false
         truststore:
+          existingSecret:
+          password:
         keystore:
-        truststorePassword:
-        keystorePassword:
+          existingSecret:
+          password:
         # Additional SSL properties for the GemFire client.
         additionalProperties: |-
-          ssl-require-authentication=false
-          #ssl-component-alias=
+          ssl-require-authentication=true
           ssl-ciphers=any
           ssl-protocols=any
           ssl-endpoint-identification-enabled=false
           ssl-enabled-components=all
           ssl-keystore-type=JKS
           ssl-truststore-type=JKS
-          security-client-auth-init=com.l7tech.external.assertions.gemfire.common.server.ClientAuthInit
 
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
