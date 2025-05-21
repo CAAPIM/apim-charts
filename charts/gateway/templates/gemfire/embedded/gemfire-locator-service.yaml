@@ -12,8 +12,6 @@ metadata:
   name: {{ $.Release.Name }}-gemfire-locator
   annotations:
     description: "GemFire Locator Headless Service"
-    "helm.sh/hook": pre-install,post-upgrade
-    "helm.sh/hook-weight": "-5"
 {{- range $key, $val := .Values.service.annotations }}
     {{ $key }}: "{{ $val }}"
 {{- end }}
