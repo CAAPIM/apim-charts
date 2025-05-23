@@ -37,24 +37,6 @@ spec:
       targetPort: {{ .name }}
       name: {{ .name | quote }}
   {{- end }}
-  {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
-    - name: gemfire-http
-      targetPort: gemfire-http
-      port: 7010
-      protocol: TCP
-    - name: gemfire-locator
-      targetPort: gemfire-locator
-      port: 7011
-      protocol: TCP
-    - name: gemfire-jmx
-      targetPort: gemfire-jmx
-      port: 7012 
-      protocol: TCP
-    - name: gemfire-server
-      targetPort: gemfire-server
-      port: 7013
-      protocol: TCP
-  {{- end }}
   {{- if .Values.service.sessionAffinity }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
   {{- end }}

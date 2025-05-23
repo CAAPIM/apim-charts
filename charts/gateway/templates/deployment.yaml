@@ -184,20 +184,6 @@ spec:
               protocol: {{ .protocol }}
             {{- end }}
             {{- end }}
-            {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
-            - name: gemfire-http
-              containerPort: 7010
-              protocol: TCP
-            - name: gemfire-locator
-              containerPort: 7011
-              protocol: TCP
-            - name: gemfire-jmx
-              containerPort: 7012
-              protocol: TCP
-            - name: gemfire-server
-              containerPort: 7013
-              protocol: TCP
-            {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
