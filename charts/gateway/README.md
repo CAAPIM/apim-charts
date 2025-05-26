@@ -40,7 +40,7 @@ output
 version.BuildInfo{Version:"v3.13.3", GitCommit:"c8b948945e52abba22ff885446a1486cb5fd3474", GitTreeState:"clean", GoVersion:"go1.21.5"}
 
 Helm Version    Supported Kubernetes Versions
-3.13.x         	1.28.x - 1.25.x
+3.13.x          1.28.x - 1.25.x
 ```
 
 ## Optional
@@ -78,6 +78,7 @@ Helm Version    Supported Kubernetes Versions
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
+* [Enable DualStack](#enable-dualstack)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
 * [Diskless Configuration](#diskless-configuration)
@@ -165,6 +166,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `mypassword`  |
 | `management.kubernetes.loadServiceAccountToken`    | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`  |
+| `management.service.ipFamilyPolicy`   | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `commented out`  |
+| `management.service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `nil`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
 | `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
 | `database.username`          | Database Username | `gateway`  |
@@ -194,6 +197,9 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
 | `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
 | `service.type`    | Service Type               | `LoadBalancer` |
+| `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
+| `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
+
 | `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
@@ -1032,6 +1038,47 @@ config:
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
 ```
+
+[Back to Additional Guides](#additional-guides)
+
+### Enable DualStack
+To enable dual stack, it need to add/uncomment given Java Arguments which can be configured in values.yaml. Gateway v11.2.0 supports Dual stack.
+-Djava.net.preferIPv4Stack=false 
+-Djava.net.preferIPv6Addresses=true
+
+| Java Argument                         | Description                                                                                                                                                                                                      | Default   |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `-Djava.net.preferIPv4Stack=false`    | If IPv6 is available on the operating system the underlying native socket will be, by default, an IPv6 socket which lets applications connect to, and accept connections from, both IPv4 and IPv6 hosts.         | `true`    |
+| `-Djava.net.preferIPv6Addresses=true` | When dealing with a host which has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer using IPv4 addresses over IPv6 ones.                        | `false`   |
+
+
+```
+config:
+  heapSize: "2g"
+  minHeapSize: "1g"
+  maxHeapSize: "3g"
+  javaArgs:
+    - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
+    - -Dcom.l7tech.server.audit.message.saveToInternal=false
+    - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+    - -Dcom.l7tech.server.audit.system.saveToInternal=false
+    - -Dcom.l7tech.server.audit.log.format=json
+    - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+    - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+    - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    - -Djava.net.preferIPv4Stack=false
+    - -Djava.net.preferIPv6Addresses=true
+```
+
+Gateway and Management Service can optionally configure it as dual stack.
+
+| Parameter                           | Description                                                                                                          | Default         |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------|
+| `service.ipFamilyPolicy`            | Gateway Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack             | `commented out` |
+| `service.ipFamilies`                | Gateway Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]        | `nil`           |
+| `management.service.ipFamilyPolicy` | PolicyManager Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack       | `commented out` |
+| `management.service.ipFamilies`     | PolicyMananger Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"] | `nil`           |
+
 
 [Back to Additional Guides](#additional-guides)
 
