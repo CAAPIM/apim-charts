@@ -1040,16 +1040,15 @@ config:
 [Back to Additional Guides](#additional-guides)
 
 ### Enable DualStack
-To enable dual stack, it need to add/uncomment given Java Arguments which can be configured in values.yaml. Gateway v11.1.3 and Onwards supports Dual stack.
-
-Uncomment Given javaArgs 
+To enable dual stack, you need to add or uncomment the given Java arguments, which can be configured in the values.yaml file. Gateway v11.1.3 supports dual stack.
+ 
 -Djava.net.preferIPv4Stack=false 
 -Djava.net.preferIPv6Addresses=true
 
 | Java Argument                         | Description                                                                                                                                                                                                      | Default   |
 |---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
-| `-Djava.net.preferIPv4Stack=false`    | If IPv6 is available on the operating system the underlying native socket will be, by default, an IPv6 socket which lets applications connect to, and accept connections from, both IPv4 and IPv6 hosts.         | `true`    |
-| `-Djava.net.preferIPv6Addresses=true` | When dealing with a host which has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer using IPv4 addresses over IPv6 ones.                        | `false`   |
+| `-Djava.net.preferIPv4Stack=false`    |  If IPv6 is available on the operating system, the underlying native socket will, by default, be an IPv6 socket. This allows applications to connect to, and accept connections from, both IPv4 and IPv6 hosts.  | `true`    |
+| `-Djava.net.preferIPv6Addresses=true` |  When connecting to a host that has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer IPv4 addresses over IPv6.                        | `false`   |
 
 
 ```
