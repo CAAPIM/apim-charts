@@ -199,7 +199,6 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.type`    | Service Type               | `LoadBalancer` |
 | `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
 | `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
-
 | `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
@@ -1042,7 +1041,9 @@ config:
 [Back to Additional Guides](#additional-guides)
 
 ### Enable DualStack
-To enable dual stack, it need to add/uncomment given Java Arguments which can be configured in values.yaml. Gateway v11.2.0 supports Dual stack.
+To enable dual stack, it need to add/uncomment given Java Arguments which can be configured in values.yaml. Gateway v11.1.3 and Onwards supports Dual stack.
+
+Uncomment Given javaArgs 
 -Djava.net.preferIPv4Stack=false 
 -Djava.net.preferIPv6Addresses=true
 
