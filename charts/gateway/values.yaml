@@ -213,6 +213,8 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    # - -Djava.net.preferIPv4Stack=false
+    # - -Djava.net.preferIPv6Addresses=true
   log:
     override: true
     properties: |-
@@ -604,6 +606,12 @@ management:
     loadServiceAccountToken: false
   service:
     enabled: true
+    # Gateway Management Service ipFamilyPolicy
+    # SingleStack, PreferDualStack or RequireDualStack
+    # ipFamilyPolicy: PreferDualStack
+    # Gateway Management Service ipFamilies
+    # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ipFamilies: []
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
@@ -632,6 +640,12 @@ management:
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: LoadBalancer
+  # Gateway Service ipFamilyPolicy
+  # SingleStack, PreferDualStack or RequireDualStack
+  # ipFamilyPolicy: PreferDualStack
+  # Gateway Service ipFamilies
+  # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+  ipFamilies: []
   ## Load Balancer sources
   ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
   # loadBalancerSourceRanges:
