@@ -204,7 +204,6 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
-
 | `ingress.enabled`    | Enable/Disable an ingress record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
 | `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
