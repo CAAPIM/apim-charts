@@ -21,6 +21,10 @@ metadata:
 spec:
   backoffLimit: 0
   template:
+    metadata:
+      {{- if  .Values.apim.podAnnotations }}
+      annotations: {{- toYaml .Values.apim.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       restartPolicy: Never
