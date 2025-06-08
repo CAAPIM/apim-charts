@@ -8,6 +8,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.3.12 General Updates
 - This new version of the chart supports API Portal 5.2.3
+- Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.4.4 MySQL version.
 ## 2.3.11 General Updates
 - Added a preflight check (initContainer) for the core apim/ingress deployment
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
@@ -857,6 +860,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+
+**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
