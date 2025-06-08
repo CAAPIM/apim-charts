@@ -683,19 +683,19 @@ Portal Analytics
 
 
 ### Portal Images
-| Parameter                                 | Description                                                                                                          | Default                                                      |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.2` |
-| `image.apim` | APIM ingress image | `ingress:5.3.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.2` |
-| `image.data` | portal-data image | `portal-data:5.3.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.2` |
+| Parameter             | Description                         | Default                             |
+| --------------------- | ----------------------------------- | ----------------------------------- |
+| `image.dispatcher`    | dispatcher image                    | `dispatcher:5.3.3`                  |
+| `image.apim`          | APIM ingress image                  | `ingress:5.3.3`                     |
+| `image.enterprise`    | portal-enterprise image             | `portal-enterprise:5.3.3`           |
+| `image.data`          | portal-data image                   | `portal-data:5.3.3`                 |
+| `image.tps`           | tenant provisioner image            | `tenant-provisioning-service:5.3.3` |
+| `image.analytics`     | Analytics image                     | `analytics-server:5.3.3`            |
+| `image.authenticator` | Authenticator image                 | `authenticator:5.3.3`               |
+| `image.dbUpgrade`     | db upgrade image                    | `db-upgrade-portal:5.3.3`           |
+| `image.rbacUpgrade`   | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3`             |
+| `image.upgradeVerify` | Upgrade verification image          | `upgrade-verify:5.3.3`              |
+| `image.tlsManager`    | TLS manager image                   | `tls-automator:5.3.3`               |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -834,6 +834,7 @@ The following table lists the configured parameters of the Druid Subchart:
 The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
+<<<<<<< HEAD
 |-----------------------------|---------------------|--------------------------|
 | `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.2`        |
 | `druid.image.broker`        | Broker image        | `druid:5.3.2`            |
@@ -843,10 +844,22 @@ The following table lists the configured parameters of the Druid Subchart
 | `druid.image.historical`    | Historical image    | `druid:5.3.2`            |
 | `druid.image.kafka`         | Kafka image         | `kafka:5.3.2`            |
 | `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.2` |
+=======
+| --------------------------- | ------------------- | ------------------------ |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.3` |
+>>>>>>> e958efc (Image tag update to 5.3.3)
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 
+<<<<<<< HEAD
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
@@ -879,6 +892,40 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.loadDefinition.existingSecret`                | Existing load definitions secret   | `see values.yaml` |
 | `rabbitmq.extraConfiguration`                | Extra configuration   | `see values.yaml` |
 | `rabbitmq.statefulsetLabels` | RabbitMQ statefulset labels. Evaluated as a template | `{}` |
+=======
+| Parameter                                | Description                                                                                     | Default                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `rabbitmq.enabled`                       | Enable this subchart                                                                            | `true`                                           |
+| `rabbitmq.host`                          | Host - must match fullnameOverride                                                              | `rabbitmq`                                       |
+| `rabbitmq.image.tag`                     | RabbitMQ image version                                                                          | `5.3.3`                                          |
+| `rabbitmq.fullnameOverride`              | Overrides the name of the subchart                                                              | `rabbitmq`                                       |
+| `rabbitmq.pdb.create`                    | Create PodDisruptionBudget (PDB) Object                                                         | `false`                                          |
+| `rabbitmq.pdb.maxUnavailable             | Maximum number of simultaneous unavailable pods                                                 | `not set`                                        |
+| `rabbitmq.pdb.minAvailable               | Minimum number of available pods                                                                | `1`                                              |
+| `rabbitmq.serviceAccount.create`         | Enable creation of ServiceAccount for RabbitMQ                                                  | `true`                                           |
+| `rabbitmq.serviceAccount.name.`          | Name of the created serviceAccount                                                              | Generated using the `rabbitmq.fullname` template |
+| `rabbitmq.rbac.create`                   | Create and use RBAC resources                                                                   | `true`                                           |
+| `rabbitmq.persistence.enabled`           | Enable persistence for RabbitMQ                                                                 | `true`                                           |
+| `rabbitmq.persistence.size`              | PVC Size                                                                                        | `8Gi`                                            |
+| `rabbitmq.persistence.mountPath`         | The path at which RMQ volume will be mounted                                                    | `/bitnami/rabbitmq/mnesia`                       |
+| `rabbitmq.replicaCount`                  | Number of replicas. It should maintain a quorum. Preferred for HA is 3 or odd counts.           | `1`                                              |
+| `rabbitmq.clustering.forceBoot`          | If RabbitMQ is shut down unintentionally and is stuck in a waiting state set force boot to true | `false`                                          |
+| `rabbitmq.affinity`                      | RabbitMQ Affinity Settings                                                                      | `see values.yaml`                                |
+| `rabbitmq.service.port`                  | RabbitMQ Port                                                                                   | `5672`                                           |
+| `rabbitmq.service.extraPorts`            | MySQL Configuration equivalent to my.cnf                                                        | `see values.yaml`                                |
+| `rabbitmq.extraContainerPorts`           | MySQL Configuration equivalent to my.cnf                                                        | `see values.yaml`                                |
+| `rabbitmq.auth.username`                 | RabbitMQ username                                                                               | `see values.yaml`                                |
+| `rabbitmq.auth.secretName`               | RabbitMQ secret name                                                                            | `see values.yaml`                                |
+| `rabbitmq.auth.existingPasswordSecret`   | RabbitMQ existing password secret                                                               | `see values.yaml`                                |
+| `rabbitmq.auth.existingErlangSecret`     | RabbitMQ existing erlang secret                                                                 | `see values.yaml`                                |
+| `rabbitmq.auth.password`                 | RabbitMQ password                                                                               | `auto-generated on install - see values.yaml`    |
+| `rabbitmq.auth.erlangCookie`             | RabbitMQ erlangCookie                                                                           | `auto-generated on install - see values.yaml`    |
+| `rabbitmq.extraPlugins`                  | Extra enabled plugins                                                                           | `see values.yaml`                                |
+| `rabbitmq.loadDefinition.enabled`        | Enable load definitions                                                                         | `see values.yaml`                                |
+| `rabbitmq.loadDefinition.existingSecret` | Existing load definitions secret                                                                | `see values.yaml`                                |
+| `rabbitmq.extraConfiguration`            | Extra configuration                                                                             | `see values.yaml`                                |
+| `rabbitmq.statefulsetLabels`             | RabbitMQ statefulset labels. Evaluated as a template                                            | `{}`                                             |
+>>>>>>> e958efc (Image tag update to 5.3.3)
 
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
