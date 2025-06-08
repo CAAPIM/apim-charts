@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,9 +26,17 @@ spec:
     metadata:
       labels:
         app: portal-enterprise
-      {{ if .Values.portalEnterprise.forceRedeploy }}
+      {{- if  .Values.portalEnterprise.podAnnotations }}
+      annotations: {{- toYaml .Values.portalEnterprise.podAnnotations | nindent 8 }}
+      {{- if .Values.portalEnterprise.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.portalEnterprise.podAnnotations }}
+      {{- if .Values.portalEnterprise.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

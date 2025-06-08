@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,9 +28,17 @@ spec:
     metadata:
       labels:
         app: ingestion-server
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.ingestion.podAnnotations }}
+      annotations: {{- toYaml .Values.ingestion.podAnnotations | nindent 8 }}
+      {{- if .Values.ingestion.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.ingestion.podAnnotations }}
+      {{- if .Values.ingestion.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

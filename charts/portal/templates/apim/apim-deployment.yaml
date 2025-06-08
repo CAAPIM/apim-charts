@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,10 +26,18 @@ spec:
     metadata:
       labels:
         app: apim
+      {{- if  .Values.apim.podAnnotations }}
+      annotations: {{- toYaml .Values.apim.podAnnotations | nindent 8 }}
+      {{- if .Values.apim.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.apim.podAnnotations }}
       {{ if .Values.apim.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}
+      {{- end }}   
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.apim.affinity }}

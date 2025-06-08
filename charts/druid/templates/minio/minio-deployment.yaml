@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.minio.cloudStorage }}
 apiVersion: apps/v1
 kind: Deployment
@@ -28,9 +29,17 @@ spec:
     metadata:
       labels:
         app: minio
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.minio.podAnnotations }}
+      annotations: {{- toYaml .Values.minio.podAnnotations | nindent 8 }}
+      {{- if .Values.minio.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.minio.podAnnotations }}
+      {{- if .Values.minio.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

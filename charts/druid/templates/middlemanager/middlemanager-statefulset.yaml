@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -26,9 +27,17 @@ spec:
     metadata:
       labels:
         app: middlemanager
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.middlemanager.podAnnotations }}
+      annotations: {{- toYaml .Values.middlemanager.podAnnotations | nindent 8 }}
+      {{- if .Values.middlemanager.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.middlemanager.podAnnotations }}
+      {{- if .Values.middlemanager.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

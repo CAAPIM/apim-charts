@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{ if and (.Values.otk.database.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
 apiVersion: batch/v1
 kind: Job
@@ -55,10 +56,6 @@ spec:
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
-           {{- if and (not .Values.otk.database.useDemoDb) (.Values.otk.database.changeLogSync)}}
-           - name: OTK_LIQUIBASE_OPERATION
-             value: "changelogSync"
-           {{ end }}
            - name: OTK_DATABASE_TYPE
              value: {{ required "Please fill in otk.database.type in values.yaml" .Values.otk.database.type | quote }}
            - name: OTK_DATABASE_WAIT_TIMEOUT
@@ -73,10 +70,8 @@ spec:
            {{- else }}
              value: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
            {{- end }}
-           {{- if eq .Values.otk.database.type "oracle" }}
            - name: OTK_DATABASE_NAME
              value: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
-           {{- end }}
            - name: OTK_CREATE_TEST_CLIENTS
              value: {{ default "false" .Values.otk.database.sql.createTestClients | quote }}
            {{- if .Values.otk.database.sql.createTestClients }}
