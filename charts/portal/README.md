@@ -6,8 +6,18 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.14 General Updates
+- Adding pod annotations to all the deployments and stateful sets in portal.
+- Upgrade to 2.3.14 is only supported from 2.3.9 chart version as per the Portal version.
+
+## 2.3.13 General Updates
+- Ingress-NGINX Subchart is upgraded to version 4.12.1 to fix [Vulnerability](https://github.com/kubernetes/kubernetes/issues/131007).
+- Upgrade to 2.3.13 is only supported from 2.3.9 chart version as per the Portal version.
 ## 2.3.12 General Updates
 - This new version of the chart supports API Portal 5.2.3
+- Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
+- Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
+- DB container(for testing) upgraded to support 8.4.4 MySQL version.
 ## 2.3.11 General Updates
 - Added a preflight check (initContainer) for the core apim/ingress deployment
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
@@ -314,7 +324,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
-| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`                                 |
+| `analytics.podAnnotations`           | Analytics pod annotations settings.                          | `{} evaluated as a template`                                 |
+| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`
 | `analytics.containerSecurityContext` | Analytics container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
 | `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
 | `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
@@ -330,6 +341,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
+| `apim.podAnnotations`                | APIM pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `apim.podSecurityContext`            | APIM pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `apim.containerSecurityContext`      | APIM container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -357,6 +369,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
+| `authenticator.podAnnotations`       | authenticator pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `authenticator.podSecurityContext`   | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `authenticator.containerSecurityContext`      | authenticator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -371,6 +384,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
 | `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
 | `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
+| `dispatcher.podAnnotations`          | Dispatcher pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `dispatcher.podSecurityContext`      | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `dispatcher.containerSecurityContext`| Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
@@ -399,6 +413,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
+| `portalData.podAnnotations`          | Portal-data pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `portalData.podSecurityContext`      | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `portalData.containerSecurityContext`| Portal-data container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
@@ -414,6 +429,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
+| `portalEnterprise.podAnnotations`    | Portal enterprise pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `portalEnterprise.podSecurityContext`| Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `portalEnterprise.containerSecurityContext`| Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
@@ -430,6 +446,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
 | `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
 | `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
+| `tenantProvisioner.podAnnotations`   | Tenant provisioner pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `tenantProvisioner.podSecurityContext`| Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `tenantProvisioner.containerSecurityContext`| Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
@@ -521,13 +538,13 @@ Portal TLS defaults if the parameters are not set.
 Portal Cipher Suites defaults if the parameters are not set.
 | Parameter                            | Description                                                  | Default                                                      |
 | ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `apim.additionalEnv.CONFIG_8443_CIPHER_SUITE` | APIM ingress Port 8443 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `apim.additionalEnv.CONFIG_9443_CIPHER_SUITE` | APIM ingress Port 9443 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `apim.additionalEnv.CONFIG_9446_CIPHER_SUITE` | APIM ingress Port 9446 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `apim.additionalEnv.CONFIG_9448_CIPHER_SUITE` | APIM ingress Port 9448 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `apim.additionalEnv.CONFIG_9449_CIPHER_SUITE` | APIM ingress Port 9449 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `apim.additionalEnv.CONFIG_1885_CIPHER_SUITE` | APIM ingress Port 1885 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
-| `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Dispatcher HTTPS Cipher Suites defaults if not specified      | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,ECDHE_ECDSA_AES256_GCM_SHA384,ECDHE_RSA_AES256_GCM_SHA384,ECDHE_ECDSA_AES128_GCM_SHA256,ECDHE_RSA_AES128_GCM_SHA256,kEDH+AESGCM,!aNULL,!eNULL,!EXPORT,!DES,!RC4,!3DES,!MD5,!PSK`                                                    |
+| `apim.additionalEnv.CONFIG_8443_CIPHER_SUITE` | APIM ingress Port 8443 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
+| `apim.additionalEnv.CONFIG_9443_CIPHER_SUITE` | APIM ingress Port 9443 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256`                                                    |
+| `apim.additionalEnv.CONFIG_9446_CIPHER_SUITE` | APIM ingress Port 9446 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_RC4_128_SHA,TLS_ECDH_RSA_WITH_RC4_128_SHA`                                                    |
+| `apim.additionalEnv.CONFIG_9448_CIPHER_SUITE` | APIM ingress Port 9448 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_RC4_128_SHA,TLS_ECDH_RSA_WITH_RC4_128_SHA`                                                    |
+| `apim.additionalEnv.CONFIG_9449_CIPHER_SUITE` | APIM ingress Port 9449 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_RC4_128_SHA,TLS_ECDH_RSA_WITH_RC4_128_SHA`                                                    |
+| `apim.additionalEnv.CONFIG_1885_CIPHER_SUITE` | APIM ingress Port 1885 Cipher Suites defaults if not specified       | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,TLS_ECDHE_RSA_WITH_RC4_128_SHA,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_RC4_128_SHA,TLS_ECDH_RSA_WITH_RC4_128_SHA`                                                    |
+| `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Dispatcher HTTPS Cipher Suites defaults if not specified      | `TLS_AES_256_GCM_SHA384,TLS_AES_128_GCM_SHA256,ECDHE_RSA_AES128_GCM_SHA256,ECDHE_ECDSA_AES128_GCM_SHA256,ECDHE_RSA_AES256_GCM_SHA384,ECDHE_ECDSA_AES256_GCM_SHA384,DHE_RSA_AES128_GCM_SHA256,DHE_DSS_AES128_GCM_SHA256,kEDH+AESGCM,ECDH_RSA_AES128_SHA256,ECDHE_ECDSA_AES128_SHA256,ECDHE_ECDSA_AES128_SHA,ECDHE_ECDSA_AES256_SHA384,ECDHE_ECDSA_AES256_SHA,DES_RSA_AES128_SHA256,DHE_RSA_AES128_SHA,DHE_DSS_AES128_SHA256,DHE_RSA_AES256_SHA256,DHE_DSS_AES256_SHA,DHE_RSA_AES256_SHA,!aNULL,!eNULL,!EXPORT,!DES,!RC4,!3DES,!MD5,!PSK`                                                    |
 ### Portal Supported TLS Versions
 | Name                            | Description                                                  | Supported TLS Versions                                                      |
 | ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -718,6 +735,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.minio.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.minio.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.minio.podAnnotations`   | Minio pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.minio.podSecurityContext` | Minio pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.minio.containerSecurityContext` | Minio container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.zookeeper.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -730,6 +748,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.zookeeper.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.zookeeper.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.zookeeper.podAnnotations`   | Zookeeper pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.zookeeper.podSecurityContext` | Zookeeper pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.zookeeper.containerSecurityContext` | Zookeeper container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.coordinator.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -742,6 +761,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.coodinator.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.coordinator.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.coordinator.podAnnotations`   | Coordinator pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.coordinator.podSecurityContext` | Coordinator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.coordinator.containerSecurityContext` | Coordinator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.kafka.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -754,6 +774,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.kafka.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.kafka.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.kafka.podAnnotations`   | Kafka pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.kafka.podSecurityContext` | Kafka pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.kafka.containerSecurityContext` | Kafka container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.broker.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -766,6 +787,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.broker.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.broker.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.broker.podAnnotations`   | Broker pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.broker.podSecurityContext` | Broker pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.broker.containerSecurityContext` | Broker container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.historical.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -778,6 +800,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.historical.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.historical.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.historical.podAnnotations`   | Historical pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.historical.podSecurityContext` | Historical pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.historical.containerSecurityContext` | Historical container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.ingestion.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -790,6 +813,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.ingestion.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.ingestion.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.ingestion.podAnnotations`   | Ingestion pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.ingestion.podSecurityContext` | Ingestion pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.ingestion.containerSecurityContext` | Ingestion container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 | `druid.middlemanager.pdb.create` | Create PodDisruptionBudget (PDB) object   | `false` |
@@ -802,6 +826,7 @@ The following table lists the configured parameters of the Druid Subchart:
 | `druid.middlemanager.tolerations` | Pod tolerations for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.affinity` | Affinity for pod assignment   | `{} evaluated as a template` |
 | `druid.middlemanager.additionalLabels` | A list of custom key: value labels | `not set` |
+| `druid.middlemanager.podAnnotations`   | Middle manager's pod annotations settings.                               | `{} evaluated as a template`                                 |
 | `druid.middlemanager.podSecurityContext` | Middle manager pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
 | `druid.middlemanager.containerSecurityContext` | Middle manager container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
 
@@ -857,6 +882,8 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 
 ## MySQL
 The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+
+**_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
