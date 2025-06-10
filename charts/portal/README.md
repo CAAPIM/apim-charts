@@ -6,6 +6,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.15 General Updates
+- This new version of the chart supports API Portal 5.3.3
+- Upgrade to 2.3.15 is only supported from 2.3.20 chart version as per the Portal version.
+
 ## 2.3.14 General Updates
 - Adding pod annotations to all the deployments and stateful sets in portal.
 - Upgrade to 2.3.14 is only supported from 2.3.9 chart version as per the Portal version.
@@ -14,7 +18,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Ingress-NGINX Subchart is upgraded to version 4.12.1 to fix [Vulnerability](https://github.com/kubernetes/kubernetes/issues/131007).
 - Upgrade to 2.3.13 is only supported from 2.3.9 chart version as per the Portal version.
 ## 2.3.12 General Updates
-- This new version of the chart supports API Portal 5.2.3
+- This new version of the chart supports API Portal 5.3.2
 - Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
 - Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
 - DB container(for testing) upgraded to support 8.4.4 MySQL version.
@@ -685,17 +689,17 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.2` |
-| `image.apim` | APIM ingress image | `ingress:5.3.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.2` |
-| `image.data` | portal-data image | `portal-data:5.3.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.2` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.3` |
+| `image.apim` | APIM ingress image | `ingress:5.3.3` |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.3` |
+| `image.data` | portal-data image | `portal-data:5.3.3` |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3.3` |
+| `image.authenticator` | Authenticator image | `authenticator:5.3.3` |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.3` |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3` |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.3` |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3.3` |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -835,14 +839,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.3.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.3.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.3.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.3.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.3.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.2` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -851,7 +855,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.3` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
 | `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
