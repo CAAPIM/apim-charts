@@ -812,6 +812,7 @@ ingress-nginx:
 
 # Settings for portal jobs
 jobs:
+  podAnnotations: {}
   labels: {}
   # nodeSelector: {}
   # tolerations: []
