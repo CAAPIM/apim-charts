@@ -25,9 +25,17 @@ spec:
     metadata:
       labels:
         app: dispatcher
-      {{ if .Values.dispatcher.forceRedeploy }}
+      {{- if  .Values.dispatcher.podAnnotations }}
+      annotations: {{- toYaml .Values.dispatcher.podAnnotations | nindent 8 }}
+      {{- if .Values.dispatcher.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.dispatcher.podAnnotations }}
+      {{- if .Values.dispatcher.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

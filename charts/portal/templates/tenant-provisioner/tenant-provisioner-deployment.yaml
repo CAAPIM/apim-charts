@@ -25,9 +25,17 @@ spec:
     metadata:
       labels:
         app: tenant-provisioner
-      {{ if .Values.tenantProvisioner.forceRedeploy }}
+      {{- if  .Values.tenantProvisioner.podAnnotations }}
+      annotations: {{- toYaml .Values.tenantProvisioner.podAnnotations | nindent 8 }}
+      {{- if .Values.tenantProvisioner.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.tenantProvisioner.podAnnotations }}
+      {{- if .Values.tenantProvisioner.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
