@@ -519,7 +519,6 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
-  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
