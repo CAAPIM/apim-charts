@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -20,6 +21,10 @@ metadata:
 spec:
   backoffLimit: 2
   template:
+    metadata:
+      {{- if  .Values.jobs.podAnnotations }}
+      annotations: {{- toYaml .Values.jobs.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.global.podSecurityContext }}
