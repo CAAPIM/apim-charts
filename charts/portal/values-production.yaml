@@ -519,7 +519,6 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
-  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
@@ -532,6 +531,7 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    forceRedeploy: false
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 4
@@ -596,6 +596,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   zookeeper:
+    forceRedeploy: false
     # Preferred replicas for HA is 3 or odd counts. It should maintain a quorum.
     replicaCount: 3
     image:
@@ -630,6 +631,7 @@ druid:
 
 
   coordinator:
+    forceRedeploy: false
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
@@ -662,6 +664,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   kafka:
+    forceRedeploy: false
     replicaCount: 3
     image:
       pullPolicy: IfNotPresent
@@ -696,6 +699,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   broker:
+    forceRedeploy: false
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
@@ -728,6 +732,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   historical:
+    forceRedeploy: false
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
@@ -760,6 +765,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   ingestion:
+    forceRedeploy: false
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
@@ -795,6 +801,7 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   middlemanager:
+    forceRedeploy: false
     replicaCount: 2
     image:
       pullPolicy: IfNotPresent
@@ -957,6 +964,8 @@ ingress-nginx:
 
 # Settings for portal jobs
 jobs:
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   labels: {}
 # nodeSelector: {}
 # tolerations: []
