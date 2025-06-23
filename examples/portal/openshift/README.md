@@ -28,7 +28,7 @@ The example creates an exception for uid/gid ranges 1001-1010 which means that y
 ```$ oc apply -f portal-rolebinding.yaml```
 5. Instead of executing the above step by step, go to examples/portal/openshift and execute.
 
-```$ oc apply -f oc apply -f ./scc.yaml```
+```$ oc apply -f ./scc.yaml```
 6. Next is to use the service-account created in the Step 3 to refer in the Portal values.yaml. Sample oc-portal-values.yaml is in place.
 
 ```$ helm install  <release-name>  "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal -n layer7portal```
