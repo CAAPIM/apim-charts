@@ -22,7 +22,7 @@ global:
 portal:
   analytics:
     enabled: true
-  domain: apps.ose-allinone.apim.broadcom.net
+  domain: trial-openshift.com #replace it with correct openshift domain name.
 
 rabbitmq:
   serviceAccount:
