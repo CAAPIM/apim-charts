@@ -6,19 +6,19 @@ metadata:
 allowPrivilegedContainer: false
 runAsUser:
   type: MustRunAsRange
-  uidRangeMin: 1000
+  uidRangeMin: 1001
   uidRangeMax: 1010
 seLinuxContext:
   type: MustRunAs
 fsGroup:
   type: MustRunAs
   ranges:
-  - min: 1000
+  - min: 1001
     max: 1010
 supplementalGroups:
   type: MustRunAs
   ranges:
-  - min: 1000
+  - min: 1001
     max: 1010
 allowHostNetwork: false
 allowHostPID: false
