@@ -80,8 +80,8 @@ pmtagger:
   replicas: 1
   image:
     registry: docker.io
-    repository: layer7api/pm-tagger
-    tag: 1.0.1
+    repository: caapim/pm-tagger
+    tag: 1.0.2
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
