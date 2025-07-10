@@ -7,6 +7,12 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.35 General Updates
+This is a minor patch to update pm-tagger, fix the readme format and add optional loadBalancerClass for services.
+- PM-Tagger image updated (docker.io/caapim/pm-tagger:1.0.2)
+- Readme format fix
+- Added loadBalancerClass for services (optional)
+
 ## 3.0.34 OTK 4.6.4 Released
 - The default image tag in values.yaml and production-values.yaml for OTK updated to 4.6.4.
   - otk.job.image.tag: 4.6.4

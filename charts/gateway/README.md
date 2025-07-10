@@ -1,11 +1,11 @@
-ƒ# Layer7 API Gateway
+# Layer7 API Gateway
 This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana, redis.
 
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.34
+- Current Chart Version 3.0.35
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
@@ -199,7 +199,6 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
-
 | `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
 | `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
@@ -665,8 +664,8 @@ ingress:
 | `pmtagger.enabled`          | Enable pm-tagger | `false`  |
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.1`  |
+| `pmtagger.image.repository`          | Image Repository | `caapim/pm-tagger`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.2`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |

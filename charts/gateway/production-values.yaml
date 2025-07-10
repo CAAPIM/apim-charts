@@ -80,8 +80,8 @@ pmtagger:
   replicas: 1
   image:
     registry: docker.io
-    repository: layer7api/pm-tagger
-    tag: 1.0.1
+    repository: caapim/pm-tagger
+    tag: 1.0.2
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -609,6 +609,13 @@ management:
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    # loadBalancerSourceRanges:
+    # - 10.10.10.0/24
+    ## Set the ExternalIPs
+    # externalIPs:
+    ## Set the LoadBalancerIP
+    # loadBalancerIP:
+    # loadBalancerClass: "mylbclass"
     annotations: {}
       # cloud.google.com/load-balancer-type: "Internal"
     ports:
@@ -642,7 +649,7 @@ service:
   # externalIPs:
   ## Set the LoadBalancerIP
   # loadBalancerIP:
-
+  # loadBalancerClass: "mylbclass"
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
