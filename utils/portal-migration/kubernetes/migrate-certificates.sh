@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 
 ##################################################
 ## Run this script on a machine that has access ##
@@ -13,7 +14,7 @@ internal_cert_location="certificates/internal"
 internal_secretname="portal-internal-secret"
 external_cert_location="certificates/external"
 external_secretname="portal-external-secret"
-certs=(apim-datalake.p12 apim-dssg.p12 apim-tps.p12 pssg-ssl.p12 tps.p12 apim-ssl.p12 dispatcher-ssl.p12)
+certs=(apim-tps.p12 tps.p12 apim-ssl.p12 dispatcher-ssl.p12)
 os="$(uname -s)"
 ###############################################
 # Function to create corresponding secret Object in Kubernetes
