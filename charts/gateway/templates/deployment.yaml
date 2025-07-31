@@ -257,42 +257,37 @@ spec:
         {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.external  }}
-      {{- if .Values.config.gemfire.external.enabled }}
-            - name: {{ $.Release.Name }}-ext-gemfire
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire_connection.properties
-              subPath: gemfire_connection.properties
-        {{- if or (.Values.config.gemfire.external.auth.enabled) (.Values.config.gemfire.external.ssl.enabled) }}
-            - name: {{ $.Release.Name }}-ext-gemfire-security-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gfsecurity.properties
-              subPath: gfsecurity.properties
-        {{- end }}
-        {{- if .Values.config.gemfire.external.ssl.enabled }}
+      {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) }}
+            - name: {{ template "gateway.fullname" . }}-shared-state-client
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/sharedstate_client.yaml
+              subPath: sharedstate_client.yaml
+        {{- if .Values.config.gemfire.external.tls.enabled }}
             - name: {{ $.Release.Name }}-ext-gemfire-truststore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire-truststore
-              subPath: gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
+              subPath: truststore.p12
             - name: {{ $.Release.Name }}-ext-gemfire-keystore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalGemfireSharedStateProviderAssertion/gemfire-keystore
-              subPath: gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/keystore.p12
+              subPath: keystore.p12
         {{- end }}
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded  }}
-      {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+      {{ if ( .Values.config.gemfire.embedded.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
-        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
+        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
               subPath: gfsecurity.properties
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        {{- if .Values.config.gemfire.embedded.tls.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-truststore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-truststore
-              subPath: gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
+              subPath: truststore.p12
             - name: {{ $.Release.Name }}-emb-gemfire-keystore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-keystore
-              subPath: gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/keystore.p12
+              subPath: keystore.p12
         {{- end }}
       {{- end }}
 {{- end }}
@@ -597,66 +592,58 @@ spec:
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.external }}
-    {{- if .Values.config.gemfire.external.enabled }}
-        - name: {{ $.Release.Name }}-ext-gemfire
-          configMap:
-            name: {{ $.Release.Name }}-ext-gemfire-configmap
-            items:
-            - key: connection-properties
-              path: gemfire_connection.properties
-       {{- if or (.Values.config.gemfire.external.auth.enabled) (.Values.config.gemfire.external.ssl.enabled) }}
-        - name: {{ $.Release.Name }}-ext-gemfire-security-properties
+    {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-shared-state-client
           secret:
-            secretName: {{ $.Release.Name }}-ext-gemfire-security-properties
+            secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
             items:
-            - key: gfsecurity
-              path: gfsecurity.properties
-        {{- end }}
-        {{- if .Values.config.gemfire.external.ssl.enabled }}
+              - key: sharedstate_client.yaml
+                path: sharedstate_client.yaml
+        {{- if .Values.config.gemfire.external.tls.enabled }}
         - name: {{ $.Release.Name }}-ext-gemfire-keystore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
+            secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
             items:
-            - key: keystore
-              path: gemfire-keystore
+            - key: keystore.p12
+              path: keystore.p12
         - name: {{ $.Release.Name }}-ext-gemfire-truststore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
+            secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
             items:
-            - key: truststore
-              path: gemfire-truststore
+            - key: truststore.p12
+              path: truststore.p12
         {{- end }}
     {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded }}
-    {{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+    {{ if ( .Values.config.gemfire.embedded.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire
           configMap:
             name: {{ $.Release.Name }}-emb-gemfire-configmap
             items:
             - key: gemfire-properties
               path: gemfire.properties
-       {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
+       {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
-            - key: gfsecurity
+            - key: gfsecurity.properties
               path: gfsecurity.properties
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        {{- if .Values.config.gemfire.embedded.tls.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
+            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
             items:
-            - key: keystore
-              path: gemfire-keystore
+            - key: keystore.p12
+              path: keystore.p12
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
+            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
             items:
-            - key: truststore
-              path: gemfire-truststore
+            - key: truststore.p12
+              path: truststore.p12
         {{- end }}
     {{- end }}
 {{- end }}

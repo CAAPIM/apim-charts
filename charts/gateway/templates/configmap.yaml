@@ -93,24 +93,18 @@ data:
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
-{{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+{{ if ( .Values.config.gemfire.embedded.enabled) }}
     com.l7tech.external.assertions.embeddedgemfireprovider.locators={{- template "embedded.gemfire.locators" . }}
     com.l7tech.external.assertions.embeddedgemfireprovider.start.locator=false
 {{- if eq .Values.config.gemfire.embedded.auth.enabled false }}
     com.l7tech.external.assertions.embeddedgemfireprovider.requireAuth=false
 {{- end }}
-    # com.l7tech.external.assertions.embeddedgemfireprovider.locator.port=7011
-    # com.l7tech.external.assertions.embeddedgemfireprovider.jmx.manager.port=7012
-    # com.l7tech.external.assertions.embeddedgemfireprovider.cache.server.port=7013
-    # com.l7tech.external.assertions.embeddedgemfireprovider.membership.start.port=7014
-    # com.l7tech.external.assertions.embeddedgemfireprovider.membership.end.port=7016
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}
 {{- range .Values.config.additionalSystemProperties }}
     {{ .name }}={{ .value }}
 {{- end }}
 {{- end }}
-
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-
     #!/bin/bash

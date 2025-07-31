@@ -1,4 +1,4 @@
-{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -63,7 +63,7 @@ spec:
           {{- if .Values.config.gemfire.embedded.auth.enabled }}
             - --classpath=/gemfire/lib/layer7-gemfire-security.jar
           {{- end }}
-          {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
+          {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
             - --security-properties-file=/gemfire/config/gfsecurity.properties
           {{- end }}
             - --connect=false
@@ -85,7 +85,7 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
+        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /gemfire/config/gfsecurity.properties
               subPath: gfsecurity.properties
@@ -95,43 +95,43 @@ spec:
               mountPath: /gemfire/lib/layer7-gemfire-security.jar
               subPath: layer7-gemfire-security.jar
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+        {{- if .Values.config.gemfire.embedded.tls.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-truststore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-truststore
-              subPath: gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
+              subPath: truststore.p12
             - name: {{ $.Release.Name }}-emb-gemfire-keystore
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire-keystore
-              subPath: gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/keystore.p12
+              subPath: keystore.p12
         {{- end }}
       volumes:
-    {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.ssl.enabled) }}
+    {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
             items:
-              - key: gfsecurity
+              - key: gfsecurity.properties
                 path: gfsecurity.properties
     {{- end }}
     {{- if .Values.config.gemfire.embedded.auth.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-manager
-          configMap:
-            name: {{ $.Release.Name }}-emb-gemfire-security-manager-configmap
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-manager-jar
             items:
-              - key: layer7-gemfire-security-jar
+              - key: layer7-gemfire-security.jar
                 path: layer7-gemfire-security.jar
     {{- end }}
-    {{- if .Values.config.gemfire.embedded.ssl.enabled }}
+    {{- if .Values.config.gemfire.embedded.tls.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.keystore.existingSecret }}
+            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
             items:
-              - key: keystore
-                path: gemfire-keystore
+              - key: keystore.p12
+                path: keystore.p12
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-            secretName: {{ .Values.config.gemfire.embedded.ssl.truststore.existingSecret }}
+            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
             items:
-              - key: truststore
-                path: gemfire-truststore
+              - key: truststore.p12
+                path: truststore.p12
     {{- end }}
 {{- end }}
