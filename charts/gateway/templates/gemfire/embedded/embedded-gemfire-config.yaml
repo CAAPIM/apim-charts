@@ -1,4 +1,4 @@
-{{ if .Values.config.gemfire.embedded.enabled }}
+{{- if and (.Values.config.gemfire.embedded.enabled) (.Values.config.gemfire.embedded.caches.additionalProperties) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,11 +13,11 @@ metadata:
     {{- end }}
   {{- if  .Values.additionalAnnotations }}
   annotations:
-{{- range $key, $val := .Values.additionalAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
-{{- end }}
-{{- end }}
+  {{- end }}
+  {{- end }}
 data:
-  gemfire-properties: |-
+  gemfire.properties: |-
 {{ .Values.config.gemfire.embedded.caches.additionalProperties | indent 4 }}
-{{ end }}
+{{- end }}

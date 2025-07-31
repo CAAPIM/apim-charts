@@ -272,10 +272,12 @@ spec:
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded  }}
-      {{ if ( .Values.config.gemfire.embedded.enabled) }}
-            - name: {{ $.Release.Name }}-emb-gemfire
+      {{- if .Values.config.gemfire.embedded.enabled }}
+        {{- if .Values.config.gemfire.embedded.caches.additionalProperties }}
+            - name: {{ $.Release.Name }}-emb-gemfire-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
+        {{- end }}
         {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
@@ -616,14 +618,16 @@ spec:
     {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.embedded }}
-    {{ if ( .Values.config.gemfire.embedded.enabled) }}
-        - name: {{ $.Release.Name }}-emb-gemfire
+    {{- if ( .Values.config.gemfire.embedded.enabled) }}
+        {{- if .Values.config.gemfire.embedded.caches.additionalProperties }}
+        - name: {{ $.Release.Name }}-emb-gemfire-properties
           configMap:
             name: {{ $.Release.Name }}-emb-gemfire-configmap
             items:
-            - key: gemfire-properties
+            - key: gemfire.properties
               path: gemfire.properties
-       {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+        {{- end }}
+        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
