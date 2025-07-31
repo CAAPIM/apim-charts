@@ -84,6 +84,10 @@ spec:
         - secretRef:
             name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
+      {{- if and (.Values.otk.database.clientReadConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.clientRead" . }}
+      {{- end }}
         - configMapRef:
             name: {{ template "gateway.fullname" . }}-otk-install-configmap
         volumeMounts:

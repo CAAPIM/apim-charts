@@ -80,8 +80,8 @@ pmtagger:
   replicas: 1
   image:
     registry: docker.io
-    repository: layer7api/pm-tagger
-    tag: 1.0.1
+    repository: caapim/pm-tagger
+    tag: 1.0.2
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -671,6 +671,13 @@ management:
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    # loadBalancerSourceRanges:
+    # - 10.10.10.0/24
+    ## Set the ExternalIPs
+    # externalIPs:
+    ## Set the LoadBalancerIP
+    # loadBalancerIP:
+    # loadBalancerClass: "mylbclass"
     annotations: {}
       # cloud.google.com/load-balancer-type: "Internal"
     ports:
@@ -704,7 +711,7 @@ service:
   # externalIPs:
   ## Set the LoadBalancerIP
   # loadBalancerIP:
-
+  # loadBalancerClass: "mylbclass"
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -816,7 +823,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.3
+      tag: 4.6.4
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
@@ -861,7 +868,9 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
     useDemoDb: true
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
@@ -878,10 +887,6 @@ otk:
 
     # Update database connection properties during helm upgrade.
     updateConnection: true
-
-    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    changeLogSync: false
 
     sql:
 
@@ -915,6 +920,21 @@ otk:
       enabled: false
       # connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name
+      databaseName:
+
+    # Optionally configure Client read database connection for MySQL/Oracle.
+    clientReadConnection:
+      enabled: false
+      # connectionName: Oauth_Client_Read
+      # existingSecretName: otkClientReadSecret
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}

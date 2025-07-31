@@ -5,13 +5,8 @@ This Chart deploys the API Gateway v10.x onward with the following `optional` su
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.33
+- Current Chart Version 3.0.35
   - Please review release notes [here](./release-notes.md)
-  - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
-    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
-    ```
-    handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
-    ```
 
 ## Prerequisites
 - Kubernetes
@@ -204,7 +199,6 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.annotations`    | Additional annotations to add to the service               | {} |
 | `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
-
 | `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
 | `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
@@ -305,7 +299,14 @@ OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types 
 - On a Ephemeral gateway, before the start of gateway, initContainer is used to bootstrap gateway with OTK sub-solution kits.
 - On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
-***NOTE: In dual gateway installation, restart the pods after OTK install or upgrade is required.***
+***NOTE:***
+1. When installing or Upgrading Gateway with OTK enabled, add timeout with the helm command to ensure OTK install job waits for Gateway to be ready
+```
+Example: The timeout of 900s is recommended for helm upgrade since it takes additional time to complete
+  helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+   --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 900s
+```
+2. In dual gateway installation, restart the pods after OTK install or upgrade is required.
 
 Prerequisites:
 * Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
@@ -330,6 +331,8 @@ management:
 Limitations:
 * OTK Instance modifiers are not supported.
 * Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
+* The Cassandra install scripts have to executed manually for new install scenario 
+* The Cassandra upgrade & data migration scripts(if any) have to be executed manually for upgrade scenario
 * Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
 * OTK upgrade to 4.6.3 will not upgrade the DB with utf8mb4 character set. This has to be done seperately following the steps provided in upgrade section in [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database/mysql-database.html)
 
@@ -378,7 +381,7 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
-| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 | `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
 | `otk.database.connectionName`     | OTK database connection name | `OAuth`
 | `otk.database.existingSecretName` | Point to an existing OTK database Secret |
@@ -402,6 +405,16 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.readOnlyConnection.jdbcDriverClass` | OTK read only database sql driver class name (oracle/mysql)  |
 | `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
 | `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
+| `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only database connection | `false` |
+| `otk.database.clientReadConnection.connectionName` | OTK Client Read only database connection name  | `OAuth_Client_Read` |
+| `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only database Secret   |
+| `otk.database.clientReadConnection.username`  | OTK Client Read only database user name   |
+| `otk.database.clientReadConnection.password`  | OTK Client Read only database password       |
+| `otk.database.clientReadConnection.properties` | OTK Client Read only database additional properties  | `{}` |
+| `otk.database.clientReadConnection.jdbcURL`   | OTK Client Read only database sql jdbc URL (oracle/mysql)  |
+| `otk.database.clientReadConnection.jdbcDriverClass` | OTK Client Read only database sql driver class name (oracle/mysql)     |
+| `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only database mysql connection properties (oracle/mysql)   | `{}`
+| `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name   |
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
@@ -651,8 +664,8 @@ ingress:
 | `pmtagger.enabled`          | Enable pm-tagger | `false`  |
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.1`  |
+| `pmtagger.image.repository`          | Image Repository | `caapim/pm-tagger`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.2`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |
