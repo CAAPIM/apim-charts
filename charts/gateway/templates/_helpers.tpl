@@ -313,36 +313,10 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
- Define embedded gemfire external locators enabled
- */}}
-{{- define "embedded.gemfire.enabled" -}}
-{{- $lines := list -}}
-{{- if .Values.config.systemProperties -}}
-    {{- range (split "\n" .Values.config.systemProperties) -}}
-    {{- $lines = append $lines (trim .) -}}
-    {{- end -}}
-{{- end -}}
-{{- range .Values.config.additionalSystemProperties -}}
-    {{- if and .name .value }}
-        {{- $line := printf "%s=%s" .name .value -}}
-        {{- $lines = append $lines $line -}}
-    {{- end -}}
-{{- end -}}
-{{- $isProviderEmbeddedGemFire := false -}}
-{{- range $lines -}}
-    {{- $line := trim . -}}
-    {{- if and (not (hasPrefix "#" $line)) (regexMatch ".*shared.*Provider.*" $line) (hasSuffix "embeddedgemfire" $line) -}}
-        {{- $isProviderEmbeddedGemFire = true -}}
-    {{- end -}}
-{{- end -}}
-{{- $isProviderEmbeddedGemFire -}}
-{{- end -}}
-
-{{/*
  Define embedded gemfire external locators list
  */}}
 {{- define "embedded.gemfire.locators" -}}
-{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
     {{ $locators := list }}
     {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
     {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
@@ -350,14 +324,5 @@ Define OTK Image Pull Secret Name
 {{- join "," $locators -}}
 {{- else -}}
 {{- join "," .Values.config.gemfire.embedded.useExistingLocators -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
- Define external gemfire locators list
- */}}
-{{- define "external.gemfire.locators" -}}
-{{- if .Values.config.gemfire.external.enabled -}}
-{{- join "," .Values.config.gemfire.external.locators -}}
 {{- end -}}
 {{- end -}}

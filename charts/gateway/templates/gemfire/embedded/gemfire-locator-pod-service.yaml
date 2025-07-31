@@ -1,4 +1,4 @@
-{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 {{- $replicas := .Values.config.gemfire.embedded.externalLocators.replicas | int -}}
 {{- range $i,$e := until $replicas }}
 ---

@@ -1,4 +1,4 @@
-{{ if (eq (include "embedded.gemfire.enabled" .) "true") }}
+{{ if .Values.config.gemfire.embedded.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

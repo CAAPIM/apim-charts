@@ -1,4 +1,4 @@
-{{- if and (eq (include "embedded.gemfire.enabled" .) "true") (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
 apiVersion: v1
 kind: Service
 metadata:
