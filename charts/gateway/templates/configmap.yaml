@@ -93,11 +93,16 @@ data:
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
 {{- end }}
-{{ if ( .Values.config.gemfire.embedded.enabled) }}
+{{- if ( .Values.config.gemfire.embedded.enabled) }}
     com.l7tech.external.assertions.embeddedgemfireprovider.locators={{- template "embedded.gemfire.locators" . }}
     com.l7tech.external.assertions.embeddedgemfireprovider.start.locator=false
-{{- if eq .Values.config.gemfire.embedded.auth.enabled false }}
-    com.l7tech.external.assertions.embeddedgemfireprovider.requireAuth=false
+{{- if not .Values.config.gemfire.embedded.auth.enabled }}
+    com.l7tech.external.assertions.gemfireprovider.requireAuth=false
+{{- end }}   
+{{- end }}
+{{- if ( .Values.config.gemfire.external.enabled) }}
+{{- if not .Values.config.gemfire.external.auth.enabled }}
+    com.l7tech.external.assertions.gemfireprovider.requireAuth=false
 {{- end }}
 {{- end }}
 {{- if .Values.config.additionalSystemProperties }}

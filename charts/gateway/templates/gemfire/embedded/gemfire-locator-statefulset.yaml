@@ -123,13 +123,21 @@ spec:
     {{- if .Values.config.gemfire.embedded.tls.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
+          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-client-cert
+          {{- end }}
             items:
               - key: keystore.p12
                 path: keystore.p12
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
+          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-client-cert
+          {{- end }}
             items:
               - key: truststore.p12
                 path: truststore.p12

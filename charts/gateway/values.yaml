@@ -582,6 +582,8 @@ config:
     # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
     external:
       enabled: false
+      auth:
+        enabled: false
       tls:
         enabled: false
 
