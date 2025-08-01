@@ -1,0 +1,49 @@
+{{- if and (.Values.config.gemfire.embedded.enabled) (not .Values.config.gemfire.embedded.tls.existingSecret) }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $.Release.Name }}-gemfire-cert
+spec:
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+      - Example.com
+  commonName: {{ $.Release.Name }}-gemfire-cert
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - www.example.com
+  issuerRef:
+    kind: ClusterIssuer
+    name: gemfire-ca-issuer
+    group: cert-manager.io
+  secretName: {{ $.Release.Name }}-gemfire-cert
+  secretTemplate:
+    labels:
+      app: {{ template "gateway.name" . }}
+      chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{- range $key, $val := .Values.additionalLabels }}
+      {{ $key }}: "{{ $val }}"
+      {{- end }}
+    {{- if  .Values.additionalAnnotations }}
+    annotations:
+    {{- range $key, $val := .Values.additionalAnnotations }}
+      {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        key: password
+        name: {{ $.Release.Name }}-gemfire-cert
+{{- end }}
