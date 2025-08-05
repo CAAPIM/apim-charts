@@ -1,15 +1,16 @@
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" }}
 {{- if and (.Values.config.gemfire.embedded.enabled) (not .Values.config.gemfire.embedded.tls.existingSecret) }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ $.Release.Name }}-gemfire-cert
+  name: {{ $.Release.Name }}-gemfire-tls-cert
 spec:
   duration: 2160h # 90d
   renewBefore: 360h # 15d
   subject:
     organizations:
-      - Example.com
-  commonName: {{ $.Release.Name }}-gemfire-cert
+      - {{ template "gateway.name" . }}.com
+  commonName: {{ $.Release.Name }}-gemfire-tls-cert
   isCA: false
   privateKey:
     algorithm: RSA
@@ -19,12 +20,12 @@ spec:
     - server auth
     - client auth
   dnsNames:
-    - www.example.com
+    - {{ $.Release.Name }}-gemfire-locator
   issuerRef:
-    kind: ClusterIssuer
-    name: gemfire-ca-issuer
+    kind: Issuer
+    name: {{ $.Release.Name }}-local-issuer
     group: cert-manager.io
-  secretName: {{ $.Release.Name }}-gemfire-cert
+  secretName: {{ $.Release.Name }}-gemfire-tls-cert
   secretTemplate:
     labels:
       app: {{ template "gateway.name" . }}
@@ -45,5 +46,6 @@ spec:
       create: true
       passwordSecretRef:
         key: password
-        name: {{ $.Release.Name }}-gemfire-cert
+        name: {{ $.Release.Name }}-gemfire-tls-cert
+{{- end }}
 {{- end }}

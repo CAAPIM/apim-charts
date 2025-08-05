@@ -1,9 +1,12 @@
 {{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" }}
 {{- if and (.Values.config.gemfire.embedded.enabled) (not .Values.config.gemfire.embedded.tls.existingSecret) }}
-apiVersion: v1
-kind: Secret
+apiVersion: cert-manager.io/v1
+kind: Issuer
 metadata:
-  name: {{ $.Release.Name }}-gemfire-tls-cert
+  name: {{ $.Release.Name }}-local-issuer
+spec:
+  selfSigned: {}
+  commonName: {{ $.Release.Name }}-local-issuer
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
@@ -18,8 +21,5 @@ metadata:
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- end }}
-type: Opaque
-stringData:
-  password: {{ .Values.clusterPassword }}
 {{- end }}
 {{- end }}

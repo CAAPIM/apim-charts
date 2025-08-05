@@ -126,7 +126,7 @@ spec:
           {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
           {{- else }}
-            secretName: {{ $.Release.Name }}-gemfire-cert
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}
             items:
               - key: keystore.p12
@@ -136,7 +136,7 @@ spec:
           {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
           {{- else }}
-            secretName: {{ $.Release.Name }}-gemfire-cert
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}
             items:
               - key: truststore.p12
