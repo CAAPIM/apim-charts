@@ -28,5 +28,9 @@ data:
       CREATE USER '{{ .Values.otk.database.readOnlyConnection.username }}'@'%' identified by '{{ .Values.otk.database.readOnlyConnection.password }}';
       GRANT SELECT ON {{ .Values.otk.database.sql.databaseName}}.* TO '{{ .Values.otk.database.readOnlyConnection.username  }}'@'%';
       {{- end }}
+      {{- if  .Values.otk.database.clientReadConnection.enabled }}
+      CREATE USER '{{ .Values.otk.database.clientReadConnection.username }}'@'%' identified by '{{ .Values.otk.database.clientReadConnection.password }}';
+      GRANT SELECT ON {{ .Values.otk.database.sql.databaseName}}.* TO '{{ .Values.otk.database.clientReadConnection.username  }}'@'%';
+      {{- end }}
       flush privileges;
 {{ end }}

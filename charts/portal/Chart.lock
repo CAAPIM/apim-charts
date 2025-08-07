@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.15
+  version: 1.0.17
 - name: apim-intelligence
   repository: file://../intelligence
   version: 0.0.1
@@ -13,6 +13,6 @@ dependencies:
   version: 12.0.3
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 4.12.0
-digest: sha256:3e796ef32aa794a28e20612262e6169a05ca45d22236ca0104de7f6ede5aed5d
-generated: "2025-02-17T15:59:45.9451573+05:30"
+  version: 4.12.1
+digest: sha256:a232d427aafce12b14085dbf887219aaf83e563693d86fd6c0985e1d5c800810
+generated: "2025-06-17T23:17:16.7865154+05:30"
