@@ -1,4 +1,4 @@
-{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -60,10 +60,10 @@ spec:
             - --name=$(POD_NAME) 
             - --hostname-for-clients=localhost
             - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
-          {{- if .Values.config.gemfire.embedded.auth.enabled }}
+          {{- if .Values.config.gemfire.auth.enabled }}
             - --classpath=/gemfire/lib/layer7-gemfire-security.jar
           {{- end }}
-          {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+          {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
             - --security-properties-file=/gemfire/config/gfsecurity.properties
           {{- end }}
             - --connect=false
@@ -85,17 +85,17 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /gemfire/config/gfsecurity.properties
               subPath: gfsecurity.properties
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.auth.enabled }}
+        {{- if .Values.config.gemfire.auth.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-manager
               mountPath: /gemfire/lib/layer7-gemfire-security.jar
               subPath: layer7-gemfire-security.jar
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.tls.enabled }}
+        {{- if .Values.config.gemfire.tls.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-truststore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
               subPath: truststore.p12
@@ -104,7 +104,7 @@ spec:
               subPath: keystore.p12
         {{- end }}
       volumes:
-    {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+    {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
@@ -112,7 +112,7 @@ spec:
               - key: gfsecurity.properties
                 path: gfsecurity.properties
     {{- end }}
-    {{- if .Values.config.gemfire.embedded.auth.enabled }}
+    {{- if .Values.config.gemfire.auth.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-manager
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-manager-jar
@@ -120,11 +120,11 @@ spec:
               - key: layer7-gemfire-security.jar
                 path: layer7-gemfire-security.jar
     {{- end }}
-    {{- if .Values.config.gemfire.embedded.tls.enabled }}
+    {{- if .Values.config.gemfire.tls.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
-            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
           {{- else }}
             secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}
@@ -133,8 +133,8 @@ spec:
                 path: keystore.p12
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
-            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
           {{- else }}
             secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}

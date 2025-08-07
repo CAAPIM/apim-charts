@@ -256,12 +256,12 @@ spec:
 
         {{- end }}
 {{- end }}
-{{- if .Values.config.gemfire.external  }}
+{{- if .Values.config.gemfire.external }}
       {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) }}
             - name: {{ template "gateway.fullname" . }}-shared-state-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/sharedstate_client.yaml
               subPath: sharedstate_client.yaml
-        {{- if .Values.config.gemfire.external.tls.enabled }}
+        {{- if .Values.config.gemfire.tls.enabled }}
             - name: {{ $.Release.Name }}-ext-gemfire-truststore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
               subPath: truststore.p12
@@ -271,19 +271,19 @@ spec:
         {{- end }}
       {{- end }}
 {{- end }}
-{{- if .Values.config.gemfire.embedded  }}
+{{- if .Values.config.gemfire.embedded }}
       {{- if .Values.config.gemfire.embedded.enabled }}
         {{- if .Values.config.gemfire.embedded.caches.additionalProperties }}
             - name: {{ $.Release.Name }}-emb-gemfire-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
               subPath: gemfire.properties
         {{- end }}
-        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
             - name: {{ $.Release.Name }}-emb-gemfire-security-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
               subPath: gfsecurity.properties
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.tls.enabled }}
+        {{- if .Values.config.gemfire.tls.enabled }}
             - name: {{ $.Release.Name }}-emb-gemfire-truststore
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
               subPath: truststore.p12
@@ -594,23 +594,27 @@ spec:
       {{- end }}
 {{- end }}
 {{- if .Values.config.gemfire.external }}
-    {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) }}
+    {{- if .Values.config.gemfire.external.enabled }}
         - name: {{ template "gateway.fullname" . }}-shared-state-client
           secret:
+            {{- if .Values.config.sharedStateClient.existingConfigSecret }}
             secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
+            {{- else }}
+            secretName: {{ template "sharedStateClientSecretName" . }}
+            {{- end }}
             items:
               - key: sharedstate_client.yaml
                 path: sharedstate_client.yaml
-        {{- if .Values.config.gemfire.external.tls.enabled }}
+        {{- if .Values.config.gemfire.tls.enabled }}
         - name: {{ $.Release.Name }}-ext-gemfire-keystore
           secret:
-            secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
             items:
             - key: keystore.p12
               path: keystore.p12
         - name: {{ $.Release.Name }}-ext-gemfire-truststore
           secret:
-            secretName: {{ .Values.config.sharedStateClient.existingConfigSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
             items:
             - key: truststore.p12
               path: truststore.p12
@@ -627,7 +631,7 @@ spec:
             - key: gemfire.properties
               path: gemfire.properties
         {{- end }}
-        {{- if or (.Values.config.gemfire.embedded.auth.enabled) (.Values.config.gemfire.embedded.tls.enabled) }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
         - name: {{ $.Release.Name }}-emb-gemfire-security-properties
           secret:
             secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
@@ -635,11 +639,11 @@ spec:
             - key: gfsecurity.properties
               path: gfsecurity.properties
         {{- end }}
-        {{- if .Values.config.gemfire.embedded.tls.enabled }}
+        {{- if .Values.config.gemfire.tls.enabled }}
         - name: {{ $.Release.Name }}-emb-gemfire-keystore
           secret:
-          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
-            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
           {{- else }}
             secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}
@@ -648,8 +652,8 @@ spec:
               path: keystore.p12
         - name: {{ $.Release.Name }}-emb-gemfire-truststore
           secret:
-          {{- if .Values.config.gemfire.embedded.tls.existingSecret }}
-            secretName: {{ .Values.config.gemfire.embedded.tls.existingSecret }}
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
           {{- else }}
             secretName: {{ $.Release.Name }}-gemfire-tls-cert
           {{- end }}

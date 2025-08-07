@@ -316,13 +316,13 @@ Define OTK Image Pull Secret Name
  Define embedded gemfire external locators list
  */}}
 {{- define "embedded.gemfire.locators" -}}
-{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.embedded.useExistingLocators) -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
     {{ $locators := list }}
     {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
     {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
 {{- end -}}
 {{- join "," $locators -}}
 {{- else -}}
-{{- join "," .Values.config.gemfire.embedded.useExistingLocators -}}
+{{- join "," .Values.config.gemfire.useExistingLocators -}}
 {{- end -}}
 {{- end -}}
