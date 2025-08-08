@@ -532,8 +532,8 @@ config:
     # Authentication configuration for the GemFire peer.
     auth:
       enabled: false
-      username:
-      password:
+    # username:
+    # password:
     # SSL configuration for embedded GemFire.
     tls:
       enabled: false
@@ -570,12 +570,12 @@ config:
 
     # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
     external:
+      enabled: false
       testOnStart: false
       gwCounterRegionName: layer7gw_counter
       gwRateLimiterRegionName: layer7gw_ratelimiter
       gwKeyValueRegionName: layer7gw_keyvalue
       gwSortedSetRegionName: layer7gw_sortedset
-      enabled: false
 
     managementConsole:
       # Enable the GemFire Management Console, which provides a management dashboard.

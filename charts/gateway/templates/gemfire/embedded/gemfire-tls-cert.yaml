@@ -37,7 +37,7 @@ spec:
       {{- end }}
     {{- if  .Values.additionalAnnotations }}
     annotations:
-      "helm.sh/hook": pre-install,post-upgrade
+      "helm.sh/hook": pre-install
       "helm.sh/hook-weight": "-4"
     {{- range $key, $val := .Values.additionalAnnotations }}
       {{ $key }}: "{{ $val }}"
