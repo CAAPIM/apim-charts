@@ -1,0 +1,257 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelligence-server
+  labels:
+    app: intelligence-server
+    chart: {{ template "intelligence.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.intelligenceServer.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: {{ .Values.intelligenceServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: intelligence-server
+  template:
+    metadata:
+      labels:
+        app: intelligence-server
+        release: {{ .Release.Name }}
+      {{ if .Values.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
+      {{- if .Values.intelligenceServer.affinity }}
+      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligenceServer.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
+      initContainers:
+        - name: kafka-broker-discovery
+          image: "docker.io/bitnami/kubectl:1.33.3-debian-12-r3"
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              # This script discovers the external addresses of Kafka brokers
+              # and writes them to a shared volume for the main container to use.
+              RELEASE_NAME="{{ .Release.Name }}"
+              BROKER_LIST=""
+
+              # Function to retry a command
+              retry_while() {
+                  local -r cmd="${1:?cmd is missing}"
+                  local -r retries="${2:-12}"
+                  local -r sleep_time="${3:-5}"
+                  local return_value=1
+                  read -r -a command <<< "$cmd"
+                  for ((i = 1 ; i <= retries ; i+=1 )); do
+                      "${command[@]}" && return_value=0 && break
+                      echo "Retrying in ${sleep_time}s... (${i}/${retries})"
+                      sleep "$sleep_time"
+                  done
+                  return $return_value
+              }
+
+              # Function to get NodePort from a service
+              k8s_svc_node_port() {
+                  local node_port
+                  node_port=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.spec.ports[0].nodePort}")
+                  echo "$node_port"
+              }
+
+              # Function to get LoadBalancer IP or Hostname from a service
+              k8s_svc_lb_ip() {
+                  local service_ip
+                  local service_hostname
+                  service_ip=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+                  service_hostname=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+                  if [[ -n "${service_ip}" ]]; then echo "${service_ip}"; elif [[ -n "${service_hostname}" ]]; then echo "${service_hostname}"; else return 1; fi
+              }
+
+              discover_broker() {
+                  local SVC_NAME=$1
+                  local BROKER_ENDPOINT=""
+
+                  echo "Discovering broker: ${SVC_NAME}"
+
+                  if ! kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" > /dev/null 2>&1; then
+                    echo "Service $SVC_NAME not found, skipping."
+                    return
+                  fi
+
+                  AUTODISCOVERY_SERVICE_TYPE=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath='{.spec.type}')
+
+                  if [[ "$AUTODISCOVERY_SERVICE_TYPE" = "LoadBalancer" ]]; then
+                      if ! retry_while "kubectl get svc $SVC_NAME -n $MY_POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0]}'" ; then echo "Timed out waiting for LoadBalancer IP for service $SVC_NAME"; exit 1; fi
+                      EXTERNAL_ADDRESS=$(k8s_svc_lb_ip "$SVC_NAME" "$MY_POD_NAMESPACE")
+                      EXTERNAL_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].port}")
+                      BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                  elif [[ "$AUTODISCOVERY_SERVICE_TYPE" = "NodePort" ]]; then
+                      NODE_PORT=$(k8s_svc_node_port "$SVC_NAME" "$MY_POD_NAMESPACE")
+                      NODE_IP="{{ .Values.kafka.externalAccess.controller.nodeIP }}"
+                      if [ -z "$NODE_IP" ]; then echo "Error: kafka.externalAccess.controller.nodeIP must be set in values.yaml for NodePort discovery."; exit 1; fi
+                      BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                  fi
+
+                  if [ -n "$BROKER_ENDPOINT" ]; then
+                    if [ -z "$BROKER_LIST" ]; then BROKER_LIST="$BROKER_ENDPOINT"; else BROKER_LIST="$BROKER_LIST,$BROKER_ENDPOINT"; fi
+                  fi
+              }
+
+              # Discover controller nodes if they are also brokers
+              {{- if not .Values.kafka.controller.controllerOnly }}
+              CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
+              for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
+                SVC_NAME="${RELEASE_NAME}-kafka-controller-${i}-external"
+                discover_broker "$SVC_NAME"
+              done
+              {{- end }}
+
+              # Discover dedicated broker nodes
+              BROKER_COUNT={{ .Values.kafka.broker.replicaCount }}
+              if [ "$BROKER_COUNT" -gt 0 ]; then
+                for i in $(seq 0 $((BROKER_COUNT - 1))); do
+                  SVC_NAME="${RELEASE_NAME}-kafka-broker-${i}-external"
+                  discover_broker "$SVC_NAME"
+                done
+              fi
+
+              echo "Discovered Kafka brokers: ${BROKER_LIST}"
+              echo "KAFKA_EXTERNAL_ADVERTISED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+      containers:
+        - name: intelligence-server
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.intelligenceServer.image.pullPolicy }}"
+          {{- if .Values.intelligenceServer.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.intelligenceServer.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Source the environment file from the init container
+              if [ -f /shared/kafka.env ]; then
+                echo "Sourcing Kafka environment variables from init container..."
+                . /shared/kafka.env
+              fi
+
+              # NOTE: You must replace the command below with the original entrypoint or command for your image.
+              echo "Executing original entrypoint for intelligence-server..."
+              exec /opt/app/entrypoint.sh
+          {{- if .Values.intelligenceServer.affinity }}
+          affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.nodeSelector }}
+          nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.tolerations }}
+          tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+          {{- end }}
+          {{- if .Values.global.schedulerName }}
+          schedulerName: "{{ .Values.global.schedulerName }}"
+          {{- end }}
+          env:
+            - name: INTELLIGENCE_DATABASE_NAME
+              value: {{ template "intelligence-db-name" . }}
+            - name: DATABASE_HOST
+              value: {{ .Values.global.databaseHost }}
+            - name: DATABASE_USERNAME
+              value: {{ .Values.global.databaseUsername | quote }}
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+                  {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+                  {{- end }}
+          {{- if .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+            - name: KAFKA_CA_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+                  key: tls.crt
+                  optional: true
+            - name: KAFKA_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+                  key: tls.key
+                  optional: true
+          {{- end }}
+          {{- if .Values.intelligenceServer.kafkaClientTls.passwordSecretName }}
+            - name: KAFKA_CA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafkaClientTls.passwordSecretName }}
+                  key: {{ .Values.intelligenceServer.kafkaClientTls.passwordSecretKey }}
+                  optional: true
+          {{- end }}
+          envFrom:
+          - configMapRef:
+              name: intelligence-server-config
+          readinessProbe:
+            httpGet:
+              path: "/health/readiness"
+              port: 8282
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/health/liveness"
+              port: 8282
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          {{- if .Values.intelligenceServer.resources }}
+          resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+          ports:
+            - containerPort: 8282
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

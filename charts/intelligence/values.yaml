@@ -1,0 +1,95 @@
+# Default values for intelligence.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Force redeployment of statefulsets and deployments on upgrade
+forceRedeploy: false
+
+# Global values that are typically provided by a parent chart.
+# These are included here to allow the chart to be deployed standalone.
+global:
+  portalRepository: caapim/
+  pullSecret: "" # Name of an existing image pull secret
+  # Database settings for the intelligence service
+  databaseType: mysql
+  databaseSecret: "intelligence-db-secret" # A secret containing the database password
+  databaseUsername: "intelligence_user"
+  databaseHost: "mysql"
+  databasePort: 3306
+  databaseUseSSL: true
+  databaseRequireSSL: false
+  # Used for constructing database names
+  legacyDatabaseNames: false
+  subdomainPrefix: "dev-portal"
+  # Pod and container security contexts
+  podSecurityContext: {}
+  # fsGroup: 1001
+  containerSecurityContext: {}
+  # runAsUser: 1001
+  # schedulerName to be applied to pods
+  schedulerName: ""
+  # Additional labels to be applied to all resources
+  additionalLabels: {}
+
+# Image settings for the intelligence-server
+image:
+  intelligenceServer: "intelligence-server:latest"
+
+# Service Account for intelligence-server
+serviceAccount:
+  create: true
+  name: ""
+
+# Configuration for the intelligence-server deployment
+intelligenceServer:
+  replicaCount: 1
+  image:
+    pullPolicy: IfNotPresent
+  # Additional labels for the intelligence-server deployment
+  additionalLabels: {}
+  # Pod affinity, node selector, and tolerations
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  # Security contexts for the pod and container
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  # Resource requests and limits
+  resources: {}
+    # requests:
+    #   cpu: 200m
+    #   memory: 512Mi
+    # limits:
+    #   cpu: 500m
+    #   memory: 1Gi
+  # Service configuration
+  # Kafka client TLS settings from secrets
+  kafkaClientTls:
+    caSecretName: ""
+    passwordSecretName: ""
+    passwordSecretKey: "keypass.txt"
+
+  service:
+    type: ClusterIP
+    port: 8282
+    sessionAffinity: None
+    # sessionAffinityConfig:
+    #   clientIP:
+    #     timeoutSeconds: 10800
+    externalTrafficPolicy: ""
+    internalTrafficPolicy: ""
+
+# NOTE: When this chart is used as a subchart, it requires Kafka configuration
+# for its initContainer to discover brokers. The parent chart must provide these
+# values under the 'apim-intelligence.kafka' key.
+#
+# To avoid duplication, the parent chart's `values.yaml` can use a YAML alias:
+#
+# kafka: &kafka_config
+#   #... kafka subchart values
+#
+# apim-intelligence:
+#   kafka: *kafka_config
