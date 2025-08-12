@@ -168,9 +168,8 @@ spec:
                 . /shared/kafka.env
               fi
 
-              # NOTE: You must replace the command below with the original entrypoint or command for your image.
               echo "Executing original entrypoint for intelligence-server..."
-              exec /opt/app/entrypoint.sh
+              exec  "java -jar /opt/app/intelligence-server.jar"
           {{- if .Values.intelligenceServer.affinity }}
           affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
           {{- end }}
