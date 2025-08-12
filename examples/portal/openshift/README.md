@@ -37,7 +37,7 @@ $ oc apply -f portal-rolebinding.yaml
 5. Instead of executing the above step by step, go to examples/portal/openshift and execute.
 
 ```
-$ oc apply -f ./scc.yaml
+$ oc apply -f ./scc
 ```
 6. Next is to use the service-account created in the Step 3 to refer in the Portal values.yaml. Refer sample [oc-portal-values.yaml](oc-portal-values.yaml).
 
