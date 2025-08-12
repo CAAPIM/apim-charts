@@ -548,7 +548,7 @@ config:
         ssl-enabled-components=all
         ssl-keystore-type=PKCS12
         ssl-truststore-type=PKCS12
-    useExistingLocators: [ ]
+    useExistingLocators: []
     # - locator1[port]
     # - locator2[port] 
     # Configuration for embedded GemFire, where GemFire caches run within the Gateway process.

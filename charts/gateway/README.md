@@ -943,6 +943,137 @@ redis:
 
 [Back to Additional Guides](#additional-guides)
 
+### GemFire Config (11.1.3)
+Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
+Comment out the following
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+# com.l7tech.server.extension.sharedCounterProvider=ssgdb
+```
+Set the following system properties as needed
+ ```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedRateLimiterProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedSortedSetProvider=embeddedgemfire/externalgemfire
+# com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
+```
+| Parameter                                                 | Description                                                                                            | Default                                                                 |
+|-----------------------------------------------------------|--------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `config.gemfire.acceptTerms`                              | Accepting the terms of use for VMware Tanzu GemFire.                                                   | `false`                                                                 |
+| `config.gemfire.auth.enabled`                             | Enable security athentication.                                                                         | `true`                                                                  |
+| `config.gemfire.auth.username`                            | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.  | `default`                                                               |
+| `config.gemfire.auth.password`                            | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.   | '.Values.clusterPassword'                                        |
+| `config.gemfire.tls.enabled`                              | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                    | `false`                                                                 |
+| `config.gemfire.tls.existingSecret`                       | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12               | ``                                                                      |
+| `config.gemfire.tls.password`                             | Pasword for truststore.12 and keystore.p12, can be plaintext or openssl encrypted.                     | `` for externl GemFire and .Values.clusterPassword for embedded GemFire |
+| `config.gemfire.tls.additionalProperties`                 | Additional tls related properties.                                                                     | ``                                                                      |
+| `config.gemfire.useExistingLocators`                      | A list of existing locators to be used by gateway.                                                     | `[]`                                                                    |
+| `config.gemfire.embedded.enabled`                         | Enable embedded GemFire.                                                                               | ``                                                                      |
+| `config.gemfire.embedded.caches.additionalProperties`     | Additional properties for embedded GemFire caches.                                                     | ``                                                                      |
+| `config.gemfire.embedded.externalLocators.replicas`       | Number of GemFire locator replicas to deploy.                                                          | `2`                                                                     |
+| `config.gemfire.embedded.externalLocators.image.registry` | Image Registry                                                                                         | `docker.io`                                                             |
+| `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                       | `gemfire/gemfire`                                                       |
+| `config.gemfire.embedded.externalLocators.image.tag`      | Image Tag                                                                                              | `10.1.3-jdk17`                                                          |
+| `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                      | `IfNotPresent`                                                          |
+| `config.gemfire.external.enabled`                         | Enable external GemFire.                                                                               | ``                                                                      |
+| `config.gemfire.external.testOnStart`                     | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start. | `false`                                                                 |
+| `config.gemfire.external.gwCounterRegionName`             | GemFire data region name for gateway counter provider.                                                 | `layer7gw_counter`                                                      |
+| `config.gemfire.external.gwRateLimiterRegionName`         | GemFire data region name for gateway rate limiter provider.                                            | `layer7gw_ratelimiter`                                                  |
+| `config.gemfire.external.gwKeyValueRegionName`            | GemFire data region name for gateway key value store provider.                                         | `layer7gw_keyvalue`                                                     |
+| `config.gemfire.external.gwSortedSetRegionName`           | GemFire data region name for gateway sotred set provider.                                              | `layer7gw_sortedset`                                                    |
+| `config.gemfire.managementConsole.enabled`                | Enable GemFire management console.                                                                     | `false`                                                                 |
+| `config.gemfire.managementConsole.service.port`           | GemFire management console service port.                                                               | `8080`                                                                  |
+| `config.gemfire.managementConsole.service.annotations`    | GemFire management console service annotations.                                                        | `8080`                                                                  |
+| `config.gemfire.managementConsole.image.registry`  | Image Registry                                                                                         | `docker.io`                                                             |
+| `config.gemfire.managementConsole.image.repository` | Image Repository                                                                                       | `gemfire/gemfire`                                                       |
+| `config.gemfire.managementConsole.image.tag`      | Image Tag                                                                                              | `10.1.3-jdk17`                                                          |
+| `config.gemfire.managementConsole.image.pullPolicy` | Image Pull Policy                                                                                      | `IfNotPresent`                                                          |
+
+#### Creating your own Configuration
+Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-gemfire-datastore.html) for more context on the available configuration options
+
+#### Note
+The Gateway does not support using Redis and GemFire at the same time.
+
+#### Embedded GemFire
+Embedded gemfire will have external locators but gemfire cache servers are inside gateway container.
+If tls is enabled but tls secret is not provided, gateway require cert-manage to generate keystore and truststore for tls.
+```
+config:
+  gemfire:
+    auth:
+      enabled: true
+    tls:
+      enabled: true
+    embedded:
+      enabled: true
+```
+#### External GemFire
+Gateway as client connect to external gemfire cluster. Shared State Provider Config is used to configure gemfire.
+
+External gemfire, override-values.yaml:
+```
+config:
+  gemfire:
+    auth:
+      enabled: true
+      username: admin
+      password: "U2FsdGVkX18cMQyYp9nFTlj+efwsBMQJGn5eCDstlEcoTubmZdWC5w=="
+    # SSL configuration for embedded GemFire.
+    tls:
+      enabled: true
+      existingSecret: gemfire-tls-secret
+      password: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+    useExistingLocators:
+      - host: external-gemfire.servier-1.net
+        port: 10334
+      - host: external-gemfire.servier-2.net
+        port: 10334
+    external:
+      enabled: true
+      testOnStart: true
+  sharedStateClient:
+    enabled: true
+```
+Providing custom sharedstate_client.yaml from a secret
+
+override-values.yaml
+```
+config:
+  gemfire:
+    acceptTerms: true
+    testOnStart: true
+    auth:
+      enabled: true
+    tls:
+      enabled: true
+      existingSecret: gemfire-tls-secret
+    external:
+      enabled: true
+  sharedStateClient:
+    enabled: true
+    existingConfigSecret: shared-state-client-secret
+```
+sharedstate_client.yaml from secret
+```
+gemfire:
+  testOnStart: true
+  username: admin
+  password: "U2FsdGVkX18cMQyYp9nFTlj+efwsBMQJGn5eCDstlEcoTubmZdWC5w=="
+  locators:
+    - host: external-gemfire.servier-1.net
+      port: 10334
+    - host: external-gemfire.servier-2.net
+      port: 10334
+  ssl:
+    enabled: true
+    keystore: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/keystore.p12
+    keystorePassword: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+    truststore: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
+    truststorePassword: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+```
+
 ### Shared State Provider Config
 Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis. In order for this configuration to take effect config.redis.enabled must also be set to true.
 
@@ -951,33 +1082,6 @@ Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration
 | `config.sharedStateClient.enabled`          | Enable redis configuration | `true`  |
 | `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
 | `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
-
-### Gemfire Config
-Gemfire as shared data provider is supported with Gatway v11.1.2 onwards.
-
-Comment out the following
-```
-# com.l7tech.server.extension.sharedCounterProvider=ssgdb
-```
-Uncomment the following
- ```
-# com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire
-```
-| Parameter                                      | Description                                                                                                                     | Default                        |
-|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
-| `config.gemfire.acceptTerms`                   | Accepting the terms of use for VMware Tanzu GemFire.                                                                            | `false`                        |
-| `config.gemfire.externalLocators.replicas`     | Number of GemFire locator replicas to deploy.                                                                                   | `2`                            |
-| `config.gemfire.useExistingLocators`           | A list of existing locators to be used by gateway.                                                                              | `[]`                           |
-| `config.gemfire.auth.enabled`                  | Enable security athentication.                                                                                                  | `true`                         |
-| `config.gemfire.auth.securitymanager`          | Security manager used for authentication. Default to com.l7tech.external.assertions.gemfire.BasicSecurityManager if left blank. | ``                             |                           
-| `config.gemfire.auth.username`                 | Authentication username.                                                                                                        | `default`                      |
-| `config.gemfire.auth.password`                 | Authentication password.                                                                                                        | clusterPassword in values.yaml |
-| `config.gemfire.ssl.enabled`                   | Enable SSL/TLS for mutual athentication.                                                                                        | `false`                        |
-| `config.gemfire.ssl.truststore.existingSecret` | Name of an existing secret with an truststore (JKS format) - must contain a key called truststore.                              | ``                             |
-| `config.gemfire.ssl.truststore.password`       | Truststore Pasword.                                                                                                             | ``                             |
-| `config.gemfire.ssl.keystore.existingSecret`   | Name of an existing secret with an keystore (JKS format) - must contain a key called keystore.                                  | ``                             |
-| `config.gemfire.ssl.keystore.password`         | Keystore pasword.                                                                                                               | ``                             |
-
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
