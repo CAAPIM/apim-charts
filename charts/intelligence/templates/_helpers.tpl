@@ -85,3 +85,28 @@ Create Image Pull Secret
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password (printf "%s:%s" .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
+
+{{- define "intelligence.validate" -}}
+{{- $messages := list -}}
+{{- $messages := append $messages (include "intelligenceServer.validateValues.autoDiscoveryRBAC" .) -}}
+{{- $message := join "\n" $messages -}}
+{{- if $message -}}
+{{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
+{{- end -}}
+{{- end -}}
+
+{{/* Validate values of intelligenceServer - RBAC should be enabled when autoDiscovery is enabled */}}
+{{- define "intelligenceServer.validateValues.autoDiscoveryRBAC" -}}
+{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
+intelligenceServer: rbac-create
+    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+    an initContainer will be used to auto-detect the external IPs/ports by querying the
+    K8s API. Please note this initContainer requires specific RBAC resources.
+{{- end -}}
+{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
+intelligenceServer: serviceAccount-automountServiceAccountToken
+    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+    an initContainer will be used to auto-detect the external IPs/ports by querying the
+    K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
+{{- end -}}
+{{- end -}}

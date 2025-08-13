@@ -42,12 +42,33 @@ image:
 serviceAccount:
   create: true
   name: ""
+  automountServiceAccountToken: true
+
+# RBAC for intelligence-server
+rbac:
+  create: true
 
 # Configuration for the intelligence-server deployment
 intelligenceServer:
   replicaCount: 1
   image:
     pullPolicy: IfNotPresent
+  kafka:
+    autoDiscovery:
+      # When enabled, an initContainer is used to discover Kafka broker external addresses.
+      # This is useful when Kafka is deployed as part of the same release with external access enabled.
+      enabled: true
+      image:
+        repository: "docker.io/bitnami/kubectl"
+        tag: "1.33.3-debian-12-r0"
+        pullPolicy: IfNotPresent
+      # Resource requests and limits for the auto-discovery init container
+      # resources: {}
+    externalAdvertisedBrokers: ""
+    kafkaCa:
+      caSecretName: ""
+      passwordSecretName: ""
+      passwordSecretKey: "keypass.txt"
   # Additional labels for the intelligence-server deployment
   additionalLabels: {}
   # Pod affinity, node selector, and tolerations
@@ -67,10 +88,7 @@ intelligenceServer:
     #   memory: 1Gi
   # Service configuration
   # Kafka client TLS settings from secrets
-  kafkaClientTls:
-    caSecretName: ""
-    passwordSecretName: ""
-    passwordSecretKey: "keypass.txt"
+
 
   service:
     type: ClusterIP

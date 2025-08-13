@@ -34,6 +34,7 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- if .Values.intelligenceServer.affinity }}
       affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
       {{- end }}
@@ -48,6 +49,8 @@ spec:
       {{- else if .Values.global.podSecurityContext }}
       securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
       {{- end }}
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+      {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
           image: "docker.io/bitnami/kubectl:1.33.3-debian-12-r3"
@@ -150,6 +153,7 @@ spec:
           volumeMounts:
             - name: shared-data
               mountPath: /shared
+      {{- end }}
       containers:
         - name: intelligence-server
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
@@ -162,14 +166,18 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
+              {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
               # Source the environment file from the init container
               if [ -f /shared/kafka.env ]; then
-                echo "Sourcing Kafka environment variables from init container..."
+                echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from init container..."
                 . /shared/kafka.env
               fi
-
+              {{- else -}}
+              echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm..."
+              KAFKA_EXTERNAL_ADVERTISED_BROKERS={{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
+              {{- end }}
               echo "Executing original entrypoint for intelligence-server..."
-              exec  "java -jar /opt/app/intelligence-server.jar"
+              java -jar /opt/app/intelligence-server.jar
           {{- if .Values.intelligenceServer.affinity }}
           affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
           {{- end }}
@@ -185,8 +193,6 @@ spec:
           env:
             - name: INTELLIGENCE_DATABASE_NAME
               value: {{ template "intelligence-db-name" . }}
-            - name: DATABASE_HOST
-              value: {{ .Values.global.databaseHost }}
             - name: DATABASE_USERNAME
               value: {{ .Values.global.databaseUsername | quote }}
             - name: DATABASE_PASSWORD
@@ -196,26 +202,26 @@ spec:
                   {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
                   {{- end }}
-          {{- if .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+          {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
             - name: KAFKA_CA_CERTIFICATE
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
                   key: tls.crt
                   optional: true
             - name: KAFKA_CA_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafkaClientTls.caSecretName }}
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
                   key: tls.key
                   optional: true
           {{- end }}
-          {{- if .Values.intelligenceServer.kafkaClientTls.passwordSecretName }}
+          {{- if .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
             - name: KAFKA_CA_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafkaClientTls.passwordSecretName }}
-                  key: {{ .Values.intelligenceServer.kafkaClientTls.passwordSecretKey }}
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey }}
                   optional: true
           {{- end }}
           envFrom:
@@ -240,14 +246,18 @@ spec:
           {{- if .Values.intelligenceServer.resources }}
           resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
           {{- end }}
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
           volumeMounts:
             - name: shared-data
               mountPath: /shared
+          {{- end }}
           ports:
             - containerPort: 8282
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
       volumes:
         - name: shared-data
           emptyDir: {}
+      {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"

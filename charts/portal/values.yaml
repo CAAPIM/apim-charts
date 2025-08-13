@@ -719,23 +719,20 @@ kafka: &kafka_config
   defaultInitContainers:
     autoDiscovery:
       enabled: true
-  prepareConfig:
-    image: apim-docker-dev-local.usw1.packages.broadcom.com/apim-portal/tls-automator:kafka_certs
-    imagePullPolicy: IfNotPresent
   externalAccess:
     enabled: true
     controller:
       # If service type is NodePort, specify a reachable IP address for one of your Kubernetes nodes.
-      nodeIP: ""
+      nodeIP: "222.0.0.2"
       service:
         external: 9095
         type: NodePort
   controller:
     replicaCount: 1
-    controllerOnly: true
+    controllerOnly: false
     automountServiceAccountToken: true
   broker:
-    replicaCount: 3
+    replicaCount: 0
     automountServiceAccountToken: true
   image:
     registry: caapim
@@ -793,12 +790,33 @@ apim-intelligence:
   # This avoids duplicating the configuration and ensures the intelligence
   # subchart has the correct values for broker discovery.
   kafka: *kafka_config
+
+  rbac:
+    create: true
+
+  # Service Account for intelligence-server
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+    name: ""
+
   image:
     intelligenceServer: intelligence-server:latest
+
   intelligenceServer:
-    kafkaClientTls:
-      caSecretName: *kafkaCaSecretName
-      passwordSecretName: *internalSecretName
+    kafka:
+      autoDiscovery:
+        enabled: true
+        image:
+          repository: "docker.io/bitnami/kubectl"
+          tag: "1.33.3-debian-12-r0"
+          pullPolicy: IfNotPresent
+        # Resource requests and limits for the auto-discovery init container
+        # resources: {}
+      kafkaCa:
+        caSecretName: *kafkaCaSecretName
+        passwordSecretName: *internalSecretName
+        passwordSecretKey: "keypass.txt"
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
