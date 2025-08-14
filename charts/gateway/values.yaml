@@ -556,8 +556,8 @@ config:
       enabled: false
       caches:
         # Additional properties for embedded GemFire caches.
-        additionalProperties: |-
-          log-level=warning
+#        additionalProperties: |-
+
       externalLocators:
         # The number of GemFire locator replicas to deploy when using embedded GemFire.
         replicas: 2
@@ -576,6 +576,7 @@ config:
       gwRateLimiterRegionName: layer7gw_ratelimiter
       gwKeyValueRegionName: layer7gw_keyvalue
       gwSortedSetRegionName: layer7gw_sortedset
+#      dynamicProperties: |-
 
     managementConsole:
       # Enable the GemFire Management Console, which provides a management dashboard.
