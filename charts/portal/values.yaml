@@ -816,7 +816,7 @@ apim-intelligence:
         # Resource requests and limits for the auto-discovery init container
         # resources: {}
       kafkaCa:
-        caSecretName: *kafkaCaSecretName
+        caSecretName: *internalSecretName
         passwordSecretName: *internalSecretName
         passwordSecretKey: "keypass.txt"
 

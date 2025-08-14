@@ -206,14 +206,14 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-                  key: tls.crt
-                  optional: true
+                  key: apim-kafka-ca.crt
+                  optional: false
             - name: KAFKA_CA_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-                  key: tls.key
-                  optional: true
+                  key: apim-kafka-ca.key
+                  optional: false
           {{- end }}
           {{- if .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
             - name: KAFKA_CA_PASSWORD
@@ -221,7 +221,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
                   key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey }}
-                  optional: true
+                  optional: false
           {{- end }}
           envFrom:
           - configMapRef:
