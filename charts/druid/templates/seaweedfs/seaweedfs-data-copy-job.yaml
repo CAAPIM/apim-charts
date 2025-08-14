@@ -1,0 +1,70 @@
+{{- if (eq .Values.seaweedfs.migrateData true) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "portal.fullname" . }}-seaweedfs-data-copy-job
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "-4"
+spec:
+  suspend: false
+  parallelism: 1
+  template:
+    metadata:
+    spec:
+    {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+      containers:
+        - name: data-copier
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.rclone }}"
+          command: ["rclone", "--stats-one-line", "--stats", "2s", "-vv", "--progress", "copy", "minio:/api-metrics", "seaweedfs:/api-metrics"]
+          env:
+           - name: RCLONE_CONFIG_MINIO_TYPE
+             value: s3
+           - name: RCLONE_CONFIG_MINIO_PROVIDER
+             value: Minio
+           - name: RCLONE_CONFIG_MINIO_ENDPOINT
+             value: http://minio:9000
+           - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_ACCESS_KEY
+           - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_SECRET_KEY
+           - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
+             value: s3
+           - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
+             value: SeaweedFS
+           - name: RCLONE_CONFIG_SEAWEEDFS_ENDPOINT
+             value: http://seaweedfs-s3:8333
+           - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_ACCESS_KEY
+           - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_SECRET_KEY
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 4Gi
+      restartPolicy: "OnFailure"
+{{ end }}

@@ -1,0 +1,32 @@
+{{ if (eq .Values.seaweedfs.enabled true) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seaweedfs-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: seaweedfs
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- if .Values.seaweedfs.master.annotations }}
+  annotations:
+    {{- toYaml .Values.seaweedfs.master.annotations | nindent 4 }}
+{{- end }}
+data:
+  master.toml: |-
+    {{ .Values.seaweedfs.master.config | nindent 4 }}
+  filer.toml: |-
+    {{ .Values.seaweedfs.filer.config | nindent 4 }}
+  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+{{ if .Values.global.setupDemoDatabase}}
+  WEED_MYSQL_HOSTNAME: {{ .Release.Name }}-mysql-headless
+{{ else }}
+  WEED_MYSQL_HOSTNAME: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  WEED_MYSQL_PORT: {{ include "database-port" . | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
+  WEED_MYSQL_USERNAME: {{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername | quote }}
+{{ end }}
+  

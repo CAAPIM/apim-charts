@@ -1,0 +1,102 @@
+{{- if (eq .Values.seaweedfs.enabled true) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "portal.fullname" . }}-seaweedfs-init-db-job
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+    spec:
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+      containers:
+        - name: init-db
+          image: docker.io/bitnami/mysql:9.3.0-debian-12-r3
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+                 retry_while() {
+                  local retries="$1" # First argument
+                  local command="$2" # Second argument
+                
+                  # Run the command, and save the exit code
+                  $command
+                  local exit_code=$?
+                
+                  # If the exit code is non-zero (i.e. command failed), and we have not
+                  # reached the maximum number of retries, run the command again
+                  if [[ $exit_code -ne 0 && $retries -gt 0 ]]; then
+                    sleep 10
+                    retry_while $(($retries - 1)) "$command"
+                  else
+                    # Return the exit code from the command
+                    return $exit_code
+                  fi
+                 }
+
+                 echo "Waiting for host $DATABASE_HOST"
+
+                 mysql_is_ready() {
+                     if ! echo "SELECT 1" | mysql -h "$DATABASE_HOST" -P"$DATABASE_PORT_NUMBER" -D"$DATABASE_NAME" -u "$DATABASE_USER" -p"$PASSWORD"; then
+                         return 1
+                     fi
+                     return 0
+                 }
+                 if ! retry_while 10 "mysql_is_ready"; then
+                     error "Database not ready"
+                     exit 1
+                 fi
+                 echo "Database is ready"
+                 mysql -u "$DATABASE_USER" -h "$DATABASE_HOST" -P"$DATABASE_PORT_NUMBER" -D"$DATABASE_NAME"  -p"$PASSWORD" << EOF
+                 CREATE TABLE IF NOT EXISTS filemeta (
+                   dirhash   BIGINT NOT NULL       COMMENT 'first 64 bits of MD5 hash value of directory field',
+                   name      VARCHAR(766) NOT NULL COMMENT 'directory or file name',
+                   directory TEXT NOT NULL         COMMENT 'full path to parent directory',
+                   meta      LONGBLOB,
+                   PRIMARY KEY (dirhash, name)
+                 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+                 EOF
+          env:
+           - name: DATABASE_HOST
+         {{ if .Values.global.setupDemoDatabase }}
+             value: {{ .Release.Name }}-mysql-headless
+        {{ else }}
+             value: {{ .Values.global.databaseHost | quote }}
+        {{ end }}
+           - name: DATABASE_NAME
+             value: {{ include "druid-db-name" . | quote }}
+           - name: PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: {{ .Values.global.databaseSecret }}
+            {{ if eq .Values.global.databaseType "mysql" }}
+                 key: mysql-password
+            {{ end }}
+           - name: DATABASE_PORT_NUMBER
+             value: {{ include "database-port" . | quote }}
+           - name: DATABASE_USER
+             value: {{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername | quote }}
+           - name: DATABASE_TYPE
+             value: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+          resources:
+            limits:
+              cpu: 375m
+              ephemeral-storage: 2Gi
+              memory: 384Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 50Mi
+              memory: 256Mi
+      restartPolicy: "OnFailure"
+{{ end }}
