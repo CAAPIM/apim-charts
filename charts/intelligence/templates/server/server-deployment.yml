@@ -115,8 +115,7 @@ spec:
                       BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
                   elif [[ "$AUTODISCOVERY_SERVICE_TYPE" = "NodePort" ]]; then
                       NODE_PORT=$(k8s_svc_node_port "$SVC_NAME" "$MY_POD_NAMESPACE")
-                      NODE_IP="{{ .Values.kafka.externalAccess.controller.nodeIP }}"
-                      if [ -z "$NODE_IP" ]; then echo "Error: kafka.externalAccess.controller.nodeIP must be set in values.yaml for NodePort discovery."; exit 1; fi
+                      NODE_IP=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.clusterIP}")
                       BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
                   fi
 
