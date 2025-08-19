@@ -1,6 +1,6 @@
-# API Management Intelligence Service Chart
+# API Management Intelligence Chart
 
-This chart deploys the API Management Intelligence Service. The Intelligence Service is responsible for processing and aggregating policy code from the API Gateway and making it available to the Portal.
+This chart deploys the API Management Intelligence. APIM Intelligence is responsible for processing and aggregating policy code from the API Gateway and making it available to the Portal.
 
 ## Parameters
 
