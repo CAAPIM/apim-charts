@@ -37,6 +37,9 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
+  security:
+    # To allow broadcom hardened images to be used in bitnami sub-charts
+    allowInsecureImages: true
 
 portal:
   domain: example.com
@@ -795,7 +798,7 @@ kafka: &kafka_config
     # image.repository Kafka image repository
     repository: kafka
     # image.tag Kafka image tag
-    tag: "bitnami_kafka"
+    tag: 5.3.3
     # image.pullSecrets Specify docker-registry secret names as an array
     pullSecrets:
       - broadcom-apim
