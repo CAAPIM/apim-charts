@@ -28,9 +28,17 @@ spec:
       labels:
         app: intelligence-server
         release: {{ .Release.Name }}
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.intelligenceServer.podAnnotations }}
+      annotations: {{- toYaml .Values.intelligenceServer.podAnnotations | nindent 8 }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.intelligenceServer.podAnnotations }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
@@ -53,8 +61,8 @@ spec:
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
-          image: "docker.io/bitnami/kubectl:1.33.3-debian-12-r3"
-          imagePullPolicy: "IfNotPresent"
+          image: "{{ .Values.intelligenceServer.kafka.autoDiscovery.image.repository }}:{{ .Values.intelligenceServer.kafka.autoDiscovery.image.tag }}"
+          imagePullPolicy: "{{ .Values.intelligenceServer.kafka.autoDiscovery.image.pullPolicy }}"
           command:
             - /bin/bash
             - -ec
@@ -143,7 +151,7 @@ spec:
               fi
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
-              echo "KAFKA_EXTERNAL_ADVERTISED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -169,11 +177,15 @@ spec:
               # Source the environment file from the init container
               if [ -f /shared/kafka.env ]; then
                 echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from init container..."
-                . /shared/kafka.env
+                cat /shared/kafka.env
+                source /shared/kafka.env
+              else
+                echo "/shared/kafka.env  not found"
+                exit 1
               fi
-              {{- else -}}
+              {{- else }}
               echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm..."
-              KAFKA_EXTERNAL_ADVERTISED_BROKERS={{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
+              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
               {{- end }}
               echo "Executing original entrypoint for intelligence-server..."
               java -jar /opt/app/intelligence-server.jar
