@@ -474,7 +474,6 @@ druid:
     storage:
       historical: 50Gi
       minio: 40Gi
-      kafka: 10Gi
       zookeeper: 10Gi
 
   minio:
@@ -577,32 +576,6 @@ druid:
       # memory: 512Mi
       requests: {}
       # memory: 512Mi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
-
-  kafka:
-    forceRedeploy: false
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    replicaCount: 1
-    image:
-      pullPolicy: IfNotPresent
-    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-    podSecurityContext: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-    containerSecurityContext: {}
-    resources:
-      requests: {}
-      # cpu: 100m
-      # memory: 750Mi
-      limits: {}
-      # cpu: 1000m
-      # memory: 1.5Gi
   # nodeSelector: {}
   # tolerations: []
   # affinity: {}
@@ -713,7 +686,6 @@ druid:
     middlemanager: druid:5.3.4
     minio: minio:5.3.4
     historical: druid:5.3.4
-    kafka: kafka:5.3.4
     ingestion: ingestion-server:5.3.4
 
 # The following values are for the bitnami/kafka chart.

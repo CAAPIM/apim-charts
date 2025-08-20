@@ -27,7 +27,6 @@ image:
   middlemanager: druid:5.0
   minio: minio:5.0
   historical: druid:5.0
-  kafka: kafka:5.0
   ingestion: ingestion-server:5.0
 
 persistence:
@@ -167,25 +166,13 @@ ingestion:
     pullPolicy: IfNotPresent
   config:
     partitionCount: 1
+    kafkaReplicaCount: 1
+  port: 8082
   portName: ingestion-server
   resources:
     requests: {}
     # cpu: 100m
     # memory: 512Mi
-    limits: {}
-    # cpu: 1000m
-    # memory: 1.5Gi
-# nodeSelector: {}
-# affinity:
-
-kafka:
-  replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  resources:
-    requests: {}
-    # cpu: 100m
-    # memory: 750Mi
     limits: {}
     # cpu: 1000m
     # memory: 1.5Gi

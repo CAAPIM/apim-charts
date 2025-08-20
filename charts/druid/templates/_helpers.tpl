@@ -110,3 +110,10 @@ Portal Docops page
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Get "kafka" brokers
+*/}}
+{{- define "druid-kafka-brokers-list" -}}
+    {{- printf "%s-kafka:9092" .Release.Name -}}
+{{- end -}}

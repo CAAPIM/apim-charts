@@ -9,7 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   SERVICE_NAME: ingestion-server
-  KAFKA_BROKERS: kafka:9092
+  KAFKA_BROKERS: {{ include "druid-kafka-brokers-list" . | quote}}
   BROKER_PORT: "8082"
   OVERLORD_HOST: {{ .Values.coordinator.hostname }}
   OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
@@ -18,7 +18,7 @@ data:
   MINIO_URL: http://minio:9000
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
   PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
-  REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
+  REPLICATION_COUNT: "{{ .Values.ingestion.config.kafkaReplicaCount }}"
 {{ if .Values.global.setupDemoDatabase}}
   DATABASE_HOST: {{ .Release.Name }}-mysql-headless
 {{ else }}
