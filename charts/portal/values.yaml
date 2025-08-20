@@ -749,14 +749,14 @@ kafka: &kafka_config
         type: LoadBalancer
         ports:
           external: 9095
-        annotations: 
+        annotations:
           cloud.google.com/load-balancer-type: Internal
     broker:
       service:
         ports:
           external: 9095
         type: LoadBalancer
-        annotations: 
+        annotations:
           cloud.google.com/load-balancer-type: Internal
   # controller.replicaCount Number of Kafka controller-eligible nodes
   controller:
@@ -889,11 +889,11 @@ apim-intelligence:
     # Configuration for the Intelligence Server.
     kafka:
       # A list of external advertised Kafka brokers.
-      # externalAdvertisedBrokers: 
+      # externalAdvertisedBrokers:
       # Configuration for Kafka broker auto-discovery.
       autoDiscovery:
         # Enables or disables Kafka broker auto-discovery.
-        enabled: true        
+        enabled: true
         image:
           # The repository of the auto-discovery image.
           repository: "docker.io/bitnami/kubectl"
