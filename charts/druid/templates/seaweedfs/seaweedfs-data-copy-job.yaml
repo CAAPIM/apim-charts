@@ -26,7 +26,7 @@ spec:
           emptyDir: {}
       containers:
         - name: data-copier
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.rclone }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.migrationUtility }}"
           command: ["rclone", "--stats-one-line", "--stats", "2s", "-vv", "--progress", "copy", "minio:/api-metrics", "seaweedfs:/api-metrics"]
           env:
            - name: RCLONE_CONFIG_MINIO_TYPE
@@ -54,13 +54,13 @@ spec:
            - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
              valueFrom:
                secretKeyRef:
-                 name: minio-secret
-                 key: MINIO_ACCESS_KEY
+                 name: seaweedfs-s3-secret
+                 key: admin_access_key_id
            - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
              valueFrom:
                secretKeyRef:
-                 name: minio-secret
-                 key: MINIO_SECRET_KEY
+                 name: seaweedfs-s3-secret
+                 key: admin_secret_access_key
           resources:
             limits:
               memory: 4Gi

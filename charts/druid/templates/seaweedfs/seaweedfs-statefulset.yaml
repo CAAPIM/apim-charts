@@ -38,18 +38,6 @@ spec:
         {{- end }}
     spec:
       restartPolicy: {{ default .Values.global.restartPolicy .Values.seaweedfs.restartPolicy }}
-      {{- if .Values.seaweedfs.affinity }}
-      affinity:
-        {{ tpl .Values.seaweedfs.affinity . | nindent 8 | trim }}
-      {{- end }}
-      {{- if .Values.seaweedfs.topologySpreadConstraints }}
-      topologySpreadConstraints:
-        {{ tpl .Values.seaweedfs.topologySpreadConstraints . | nindent 8 | trim }}
-      {{- end }}
-      {{- if .Values.seaweedfs.tolerations }}
-      tolerations:
-        {{- tpl .Values.seaweedfs.tolerations . | nindent 8 }}
-      {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
@@ -59,12 +47,23 @@ spec:
       {{- if .Values.seaweedfs.priorityClassName }}
       priorityClassName: {{ .Values.seaweedfs.priorityClassName | quote }}
       {{- end }}
-      {{- if .Values.seaweedfs.serviceAccountName }}
-      serviceAccountName: {{ .Values.seaweedfs.serviceAccountName | quote }}
+      serviceAccountName: {{ include "druid.serviceAccountName" . }}
+      {{- if .Values.minio.affinity }}
+      affinity: {{- toYaml .Values.minio.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.seaweedfs.podSecurityContext.enabled }}
+      {{- if .Values.minio.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.minio.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.tolerations }}
+      tolerations: {{- toYaml .Values.minio.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.minio.podSecurityContext }}
+      securityContext: {{- toYaml .Values.minio.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- else }}
       securityContext:
-        {{- omit .Values.seaweedfs.podSecurityContext "enabled" | toYaml | nindent 8 }}
+        fsGroup: 1010
       {{- end }}
       initContainers:
         - name: init-db
@@ -213,28 +212,15 @@ spec:
           command:
             - "/bin/bash"
             - "-ec"
-            {{ if gt (.Values.seaweedfs.replicaCount | int) 1 }}
-            - |
-              POD_ORDINAL=${HOSTNAME##*-}
-              if [ "$POD_ORDINAL" = "0" ]; then
-                # Specific args for pod-0
-                PEERS=PEERS=seaweedfs-s3-2.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333,seaweedfs-s3-1.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333
-              elif [ "$POD_ORDINAL" = "1" ]; then
-                # Specific args for pod-1
-                PEERS=seaweedfs-s3-0.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333,seaweedfs-s3-2.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333
-              else
-                # Default args for other pods
-                PEERS=seaweedfs-s3-0.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333,seaweedfs-s3-1.seaweedfs-s3.fs-1-sm895441.svc.cluster.local:9333
-              fi
-            {{ else }}
-            {{ end }}
             - |
               /opt/bitnami/seaweedfs/bin/weed \
               -v={{ .Values.seaweedfs.loggingLevel }} \
               server \
               -dir=/opt/data \
               -master \
-              -master.peers=$PEERS \
+              {{ if gt (.Values.seaweedfs.replicaCount | int) 1 }}
+              - -peers={{ include "seaweedfs.master.servers" . }} \
+              {{ end }}
               -volume \
               {{- if .Values.seaweedfs.idleTimeout }}
               -idleTimeout={{ .Values.seaweedfs.idleTimeout }} \

@@ -492,10 +492,10 @@ druid:
     # Leave access_key and secret_key empty to auto-generate values.
     # access_key:
     # secret_key:
-      admin_access_key_id:
-      admin_secret_access_key:
-      read_access_key_id:
-      read_secret_access_key:
+      # admin_access_key_id:
+      # admin_secret_access_key:
+      # read_access_key_id:
+      # read_secret_access_key:
     cloudStorage: false
     bucketName: api-metrics
 
@@ -531,14 +531,16 @@ druid:
   # affinity: {}
 
   seaweedfs:
-    enabled: true
-    migrateData: true
+    enabled: false
+    migrateData: false
     imageOverride: null
     restartPolicy: Always
     imagePullPolicy: Always
     loggingLevel: 1
     replicaCount: 1
-  
+    clusterDomain: cluster.local
+    bucketName: api-metrics
+
     # Core configuration
     idleTimeout: 30  # Connection idle seconds
     dataCenter: ""  # Current volume server's data center name
@@ -548,6 +550,16 @@ druid:
     metricsPort: 9324  # Prometheus metrics listen port
     metricsIp: ""  # Metrics listen IP. If empty, defaults to bindAddress
     loggingOverrideLevel: null  # Override logging level
+
+    auth:
+      secretName: seaweedfs-s3-secret
+    # Leave access_key and secret_key empty to auto-generate values.
+    # access_key:
+    # secret_key:
+      # admin_access_key_id:
+      # admin_secret_access_key:
+      # read_access_key_id:
+      # read_secret_access_key:
   
     # Service configuration
     s3:
@@ -881,8 +893,8 @@ druid:
     historical: druid:5.3.3
     kafka: kafka:5.3.3
     ingestion: ingestion-server:5.3.3
-    seaweedfs: seaweedfs:5.3.3
-    rclone: rclone:5.3.3
+    seaweedfs: seaweedfs:bitnami_SeaweedFs_distroless
+    migrationUtility: seaweedfs:bitnami_SeaweedFs_distroless
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
