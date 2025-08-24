@@ -618,11 +618,11 @@ druid:
         path: /cluster/status
         port: 9333
       scheme: HTTP
-      initialDelaySeconds: 10
-      periodSeconds: 15
+      initialDelaySeconds: 30
+      periodSeconds: 10
       successThreshold: 1
-      failureThreshold: 3
-      timeoutSeconds: 5
+      failureThreshold: 6
+      timeoutSeconds: 30
   
     livenessProbe:
       enabled: true
@@ -630,11 +630,24 @@ druid:
         path: /cluster/status
         port: 9333
       scheme: HTTP
-      initialDelaySeconds: 20
-      periodSeconds: 30
+      initialDelaySeconds: 30
+      periodSeconds: 10
       successThreshold: 1
-      failureThreshold: 5
-      timeoutSeconds: 5
+      failureThreshold: 6
+      timeoutSeconds: 30
+
+    # Enable if replica count > 1
+    startupProbe:
+      enabled: false
+      httpGet:
+        path: /cluster/status
+        port: 9333
+      scheme: HTTP
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 15
+      timeoutSeconds: 30
   
     # Additional resources
     extraEnvironmentVars: {}  # Additional environment variables
@@ -895,6 +908,7 @@ druid:
     ingestion: ingestion-server:5.3.3
     seaweedfs: seaweedfs:bitnami_SeaweedFs_distroless
     migrationUtility: seaweedfs:bitnami_SeaweedFs_distroless
+    mysql: portaldb:5.3.3
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:

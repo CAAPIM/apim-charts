@@ -19,6 +19,9 @@ spec:
     matchLabels:
       app: seaweedfs-s3
   serviceName: seaweedfs-s3
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
   template:
     metadata:
       labels:
@@ -67,7 +70,7 @@ spec:
       {{- end }}
       initContainers:
         - name: init-db
-          image: docker.io/bitnami/mysql:9.3.0-debian-12-r3
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.mysql }}"
           command:
             - /bin/bash
           args:
@@ -218,9 +221,10 @@ spec:
               server \
               -dir=/opt/data \
               -master \
-              {{ if gt (.Values.seaweedfs.replicaCount | int) 1 }}
-              - -peers={{ include "seaweedfs.master.servers" . }} \
-              {{ end }}
+              {{ if gt (.Values.seaweedfs.replicaCount | int) 1 -}}
+              -master.peers={{ include "seaweedfs.master.servers" . }} \
+              -ip=$(POD_NAME).seaweedfs-s3.{{ .Release.Namespace }}.svc.{{ .Values.seaweedfs.clusterDomain }} \
+              {{ end -}}
               -volume \
               {{- if .Values.seaweedfs.idleTimeout }}
               -idleTimeout={{ .Values.seaweedfs.idleTimeout }} \
@@ -453,6 +457,18 @@ spec:
             successThreshold: {{ .Values.seaweedfs.livenessProbe.successThreshold }}
             failureThreshold: {{ .Values.seaweedfs.livenessProbe.failureThreshold }}
             timeoutSeconds: {{ .Values.seaweedfs.livenessProbe.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.seaweedfs.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.seaweedfs.startupProbe.httpGet.path }}
+              port: {{ .Values.seaweedfs.master.port }}
+              scheme: {{ .Values.seaweedfs.startupProbe.scheme }}
+            initialDelaySeconds: {{ .Values.seaweedfs.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.seaweedfs.startupProbe.periodSeconds }}
+            successThreshold: {{ .Values.seaweedfs.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.seaweedfs.startupProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.seaweedfs.startupProbe.timeoutSeconds }}
           {{- end }}
           {{- with .Values.seaweedfs.resources }}
           resources:
