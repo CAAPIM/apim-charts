@@ -27,7 +27,7 @@ spec:
       containers:
         - name: data-copier
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.migrationUtility }}"
-          command: ["rclone", "--stats-one-line", "--stats", "2s", "-vv", "--progress", "copy", "minio:/api-metrics", "seaweedfs:/api-metrics"]
+          command: ["rclone", "--stats-one-line", "--stats", "2s", "-vv", "--progress", "copy", "minio:/{{ .Values.minio.bucketName }}", "seaweedfs:/{{ .Values.seaweedfs.bucketName }}"]
           env:
            - name: RCLONE_CONFIG_MINIO_TYPE
              value: s3

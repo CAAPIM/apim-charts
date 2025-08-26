@@ -64,6 +64,18 @@ spec:
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
           env:
+          {{- if (eq .Values.seaweedfs.enabled true) }} 
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.seaweedfs.auth.secretName }}
+                  key: admin_access_key_id
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.seaweedfs.auth.secretName }}
+                  key: admin_secret_access_key
+          {{- else }}
             - name: MINIO_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
@@ -74,6 +86,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.minio.auth.secretName }}
                   key: MINIO_SECRET_KEY
+          {{- end }}
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:

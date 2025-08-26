@@ -39,6 +39,9 @@ spec:
         {{- with .Values.seaweedfs.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        {{- if .Values.seaweedfs.forceRedeploy }}
+        timestamp: {{ now | quote }}
+        {{- end }}
     spec:
       restartPolicy: {{ default .Values.global.restartPolicy .Values.seaweedfs.restartPolicy }}
       {{- if .Values.global.pullSecret }}
@@ -506,11 +509,15 @@ spec:
         - name: master-config
           configMap:
             name: seaweedfs-config
-            path: master.toml
+            items:
+              - key: master.toml
+                path: master.toml
         - name: filer-config
           configMap:
             name: seaweedfs-config
-            path: filer.toml
+            items:
+              - key: filer.toml
+                path: filer.toml
         {{- if .Values.global.enableSecurity }}
         - name: security-config
           configMap:

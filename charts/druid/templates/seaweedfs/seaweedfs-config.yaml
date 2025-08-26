@@ -5,10 +5,10 @@ metadata:
   name: seaweedfs-config
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: seaweedfs
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: seaweedfs-s3
+    chart: {{ template "druid.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 {{- if .Values.seaweedfs.master.annotations }}
   annotations:
     {{- toYaml .Values.seaweedfs.master.annotations | nindent 4 }}

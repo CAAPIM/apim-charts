@@ -44,4 +44,8 @@ data:
     druid.coordinator.kill.period=P1D
     druid.coordinator.kill.durationToRetain=PT1H
     druid.coordinator.kill.maxSegments=25
+{{- if (eq .Values.seaweedfs.enabled true) }}
+    druid.storage.bucket={{ .Values.seaweedfs.bucketName }}
+{{- else }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
+{{- end }}

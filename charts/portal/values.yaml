@@ -540,6 +540,7 @@ druid:
     replicaCount: 1
     clusterDomain: cluster.local
     bucketName: api-metrics
+    forceRedeploy: true
 
     # Core configuration
     idleTimeout: 30  # Connection idle seconds
@@ -577,6 +578,11 @@ druid:
       dirListLimit: 100000
       s3:
         enableAuth: true
+        createBuckets:
+          - name: api-metrics
+            anonymousRead: false
+          - name: file-storage
+            anonymousRead: false
       config: |
         [leveldb2]
         enabled = false
@@ -619,10 +625,10 @@ druid:
         port: 9333
       scheme: HTTP
       initialDelaySeconds: 30
-      periodSeconds: 10
+      periodSeconds: 40
       successThreshold: 1
       failureThreshold: 6
-      timeoutSeconds: 30
+      timeoutSeconds: 40
   
     livenessProbe:
       enabled: true
@@ -631,10 +637,10 @@ druid:
         port: 9333
       scheme: HTTP
       initialDelaySeconds: 30
-      periodSeconds: 10
+      periodSeconds: 40
       successThreshold: 1
       failureThreshold: 6
-      timeoutSeconds: 30
+      timeoutSeconds: 40
 
     # Enable if replica count > 1
     startupProbe:
@@ -644,10 +650,10 @@ druid:
         port: 9333
       scheme: HTTP
       initialDelaySeconds: 30
-      periodSeconds: 10
+      periodSeconds: 30
       successThreshold: 1
       failureThreshold: 15
-      timeoutSeconds: 30
+      timeoutSeconds: 40
   
     # Additional resources
     extraEnvironmentVars: {}  # Additional environment variables
