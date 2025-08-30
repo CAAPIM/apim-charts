@@ -1,4 +1,3 @@
-{{ if (eq .Values.seaweedfs.enabled true) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,15 +8,15 @@ metadata:
     chart: {{ template "druid.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-{{- if .Values.seaweedfs.master.annotations }}
+{{- if .Values.master.annotations }}
   annotations:
-    {{- toYaml .Values.seaweedfs.master.annotations | nindent 4 }}
+    {{- toYaml .Values.master.annotations | nindent 4 }}
 {{- end }}
 data:
   master.toml: |-
-    {{ .Values.seaweedfs.master.config | nindent 4 }}
+    {{ .Values.master.config | nindent 4 }}
   filer.toml: |-
-    {{ .Values.seaweedfs.filer.config | nindent 4 }}
+    {{ .Values.filer.config | nindent 4 }}
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
 {{ if .Values.global.setupDemoDatabase}}
   WEED_MYSQL_HOSTNAME: {{ .Release.Name }}-mysql-headless
@@ -28,5 +27,4 @@ data:
   DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   WEED_MYSQL_USERNAME: {{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername | quote }}
-{{ end }}
   

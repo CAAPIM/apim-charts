@@ -37,6 +37,10 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
+  deepStorage:
+    seaweedfs: false
+    auth:
+      secretName: seaweedfs-s3-secret
 
 portal:
   domain: example.com
@@ -454,6 +458,20 @@ image:
 ##
 ## Subchart Configuration
 ##
+seaweedfs:
+  image:
+    seaweedfs: seaweedfs:5.3.3
+    migrationUtility: seaweedfs:5.3.3
+  persistence:
+      storage:
+        seaweedfs: 50Gi
+  migrateData: false
+  startupProbe:
+    enabled: true
+  replicaCount: 1
+  bucketName: api-metrics
+  minio:
+    bucketName: api-metrics
 
 # Settings for Druid - this is a local sub chart
 druid:
@@ -915,6 +933,7 @@ druid:
     seaweedfs: seaweedfs:bitnami_SeaweedFs_distroless
     migrationUtility: seaweedfs:bitnami_SeaweedFs_distroless
     mysql: portaldb:5.3.3
+    dbUpgradeDruid: db-upgrade-druid:5.3
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:

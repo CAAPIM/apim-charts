@@ -15,7 +15,7 @@ data:
   OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
   COORDINATOR_HOST: {{ .Values.coordinator.hostname }}
   COORDINATOR_PORT: {{ .Values.coordinator.port | quote }}
-{{- if .Values.seaweedfs.enabled }}
+{{- if .Values.global.deepStorage.seaweedfs }}
   MINIO_URL: http://seaweedfs-s3:8333
   MINIO_HEALTH_URL: http://seaweedfs-s3:8333/status
 {{ else }}
