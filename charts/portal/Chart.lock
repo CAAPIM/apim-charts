@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.17
+  version: 1.0.18
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 1.0.1
@@ -14,5 +14,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:40325f6e3428e4a026294c8f1db3c75e6bf0c22393edf3ab200cad0e7004b8ea
-generated: "2025-08-30T22:20:16.9839232+05:30"
+digest: sha256:0023f65c31a891b2c52d96cedcce53c12f711c0d3c157dbe3cc970731b83d077
+generated: "2025-08-31T23:36:41.2457391+05:30"
