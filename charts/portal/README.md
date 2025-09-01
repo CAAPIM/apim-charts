@@ -6,6 +6,36 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.17 General Updates
+- This new version of the chart supports API Portal 5.3.4
+- Upgrade to 2.3.15 is only supported from 2.3.20 chart version as per the Portal version.
+- Added seaweedfs as s3 storage for analytics data
+  - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
+  - This is not ***enabled by default***.
+    - This only gets added when you install the Chart.
+    - If you wish to enable this and use seaweedfs as deep storage, set global.deepStorage.seaweedfs to true
+    ```
+    global:
+      deepStorage:
+        seaweedfs: false
+        ...
+        auth:
+          secretName: seaweedfs-s3-secret
+        ...
+    ```
+    - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
+      - A Helm install will ***NOT*** data migration.
+      - A Helm upgrade will run the data migration and bucket name can be customized.
+    ```
+    seaweedfs:
+      ...
+      migrateData: false
+      ...
+      bucketName: api-metrics
+      minio:
+        bucketName: api-metrics
+    ```
+
 ## 2.3.16 General Updates
 - This new version of the chart supports API Portal 5.3.3
 - Upgrade to 2.3.15 is only supported from 2.3.20 chart version as per the Portal version.

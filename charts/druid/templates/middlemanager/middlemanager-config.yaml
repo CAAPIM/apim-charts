@@ -43,4 +43,8 @@ data:
     # Hadoop indexing
     druid.indexer.task.hadoopWorkingPath=var/druid/hadoop-tmp
     
+{{- if (eq .Values.global.deepStorage.seaweedfs true) }}
+    druid.storage.bucket={{ .Values.global.deepStorage.bucketName }}
+{{- else }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
+{{- end }}

@@ -38,7 +38,6 @@ imagePullPolicy: Always
 loggingLevel: 1
 replicaCount: 1
 clusterDomain: cluster.local
-bucketName: api-metrics
 minio:
     bucketName: api-metrics
 forceRedeploy: true

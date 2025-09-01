@@ -14,7 +14,7 @@ data:
 {{- if .Values.global.deepStorage.seaweedfs }}
   MINIO_URL: http://seaweedfs-s3:8333
   MINIO_HEALTH_URL: http://seaweedfs-s3:8333/status
-  MINIO_BUCKET: {{ .Values.seaweedfs.bucketName }}
+  MINIO_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
 {{ else }}
   MINIO_URL: http://minio:9000
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
@@ -45,7 +45,7 @@ data:
     druid.coordinator.kill.durationToRetain=PT1H
     druid.coordinator.kill.maxSegments=25
 {{- if (eq .Values.global.deepStorage.seaweedfs true) }}
-    druid.storage.bucket={{ .Values.seaweedfs.bucketName }}
+    druid.storage.bucket={{ .Values.global.deepStorage.analytics.bucketName }}
 {{- else }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
 {{- end }}

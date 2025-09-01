@@ -18,10 +18,11 @@ data:
 {{- if .Values.global.deepStorage.seaweedfs }}
   MINIO_URL: http://seaweedfs-s3:8333
   MINIO_HEALTH_URL: http://seaweedfs-s3:8333/status
+  MINIO_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
 {{ else }}
   MINIO_URL: http://minio:9000
-{{ end }}
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
+{{ end }}
   PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
   REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
 {{ if .Values.global.setupDemoDatabase}}
