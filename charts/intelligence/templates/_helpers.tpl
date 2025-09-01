@@ -77,6 +77,7 @@ Get "kafka" brokers
 {{- define "kafka-brokers" -}}
     {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
 {{- end -}}
+
 {{/*
 Create Image Pull Secret
 */}}
