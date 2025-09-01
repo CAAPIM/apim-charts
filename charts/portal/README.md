@@ -18,6 +18,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
     global:
       deepStorage:
         seaweedfs: false
+        bucketName: api-metrics
         ...
         auth:
           secretName: seaweedfs-s3-secret
@@ -26,12 +27,20 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
     - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
       - A Helm install will ***NOT*** data migration.
       - A Helm upgrade will run the data migration and bucket name can be customized.
+      - Make Sure that the value seaweedfs.minio.bucketName is same as the druid.minio.bucketName.
+      - The migrated data will be stored in the new bucket global.deepStorage.bucketName which the druid stack starts using is seaweedfs is enabled.
     ```
+    global:
+      deepStorage:
+        seaweedfs: false
+        enableDataMigration: true
+        bucketName: api-metrics
+        ...
+        auth:
+          secretName: seaweedfs-s3-secret
+        ...
     seaweedfs:
       ...
-      migrateData: false
-      ...
-      bucketName: api-metrics
       minio:
         bucketName: api-metrics
     ```

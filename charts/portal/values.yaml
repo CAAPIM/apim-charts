@@ -39,6 +39,7 @@ global:
 # saas: false
   deepStorage:
     seaweedfs: false
+    enableDataMigration: false
     auth:
       secretName: seaweedfs-s3-secret
     analytics:
@@ -467,7 +468,6 @@ seaweedfs:
   persistence:
     storage:
       seaweedfs: 50Gi
-  migrateData: false
   replicaCount: 1
   bucketName: api-metrics
   minio:
