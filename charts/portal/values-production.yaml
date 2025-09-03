@@ -550,11 +550,11 @@ seaweedfs:
     secretName: seaweedfs-s3-secret
   # Leave access_key and secret_key empty to auto-generate values.
   # access_key:
-  # secret_key:
-    # admin_access_key_id:
-    # admin_secret_access_key:
-    # read_access_key_id:
-    # read_secret_access_key:
+  secret_key:
+    admin_access_key_id: HvT9ZJ3jUe
+    admin_secret_access_key: SjLmBVEHaUWe5RexNCuJAoyq0gC3PZZDLSaHfveu
+    read_access_key_id: XNFg4vjFR5
+    read_secret_access_key: BIFxdgbcgxBlYak1eICCOuPe8UvCtBq5JkNls88g
 
    # Service configuration
   s3:
