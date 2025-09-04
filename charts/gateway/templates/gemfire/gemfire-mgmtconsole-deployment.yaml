@@ -1,0 +1,42 @@
+{{- if .Values.config.gemfire.managementConsole.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-gemfire-mgmtconsole
+  labels:
+    app: {{ template "gateway.name" . }}-gemfire-mgmtconsole
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-gemfire-mgmtconsole
+      release: {{ .Release.Name }}
+  replicas: 1
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-gemfire-mgmtconsole
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-gemfire-mgmtconsole
+          image: {{ .Values.config.gemfire.managementConsole.image.registry }}/{{ .Values.config.gemfire.managementConsole.image.repository }}:{{ .Values.config.gemfire.managementConsole.image.tag }}
+          imagePullPolicy: {{ .Values.config.gemfire.managementConsole.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.config.gemfire.managementConsole.service.port }}
+              protocol: TCP
+{{- end }}

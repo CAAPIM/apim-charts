@@ -1,0 +1,145 @@
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Release.Name }}-gemfire-locator
+  labels:
+    app: {{ template "gateway.name" . }}-gemfire-locator
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+spec:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: Parallel
+  revisionHistoryLimit: 10
+  replicas: {{ .Values.config.gemfire.embedded.externalLocators.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $.Release.Name }}-gemfire-locator
+  serviceName: {{ $.Release.Name }}-gemfire-locator
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-gemfire-locator
+        release: {{ .Release.Name }}
+    {{- if  .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+    {{- end }}
+    {{- if  .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+    {{- end }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-gemfire-locator
+          image: {{ .Values.config.gemfire.embedded.externalLocators.image.registry }}/{{ .Values.config.gemfire.embedded.externalLocators.image.repository }}:{{ .Values.config.gemfire.embedded.externalLocators.image.tag }}
+          imagePullPolicy: {{ .Values.config.gemfire.embedded.externalLocators.image.pullPolicy }}
+          args: 
+            - gfsh
+            - start 
+            - locator 
+            - --name=$(POD_NAME) 
+            - --hostname-for-clients=localhost
+            - --J='-Dgemfire.jmx-manager-hostname-for-clients=localhost'
+          {{- if .Values.config.gemfire.auth.enabled }}
+            - --classpath=/gemfire/lib/layer7-gemfire-security.jar
+          {{- end }}
+          {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - --security-properties-file=/gemfire/config/gfsecurity.properties
+          {{- end }}
+            - --connect=false
+            - --locators={{ template "embedded.gemfire.locators" $ }}
+          env:
+            - name: ACCEPT_TERMS
+              value: {{ include "gemfire.acceptedTerms" . }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            limits:
+              cpu: "8"
+              memory: 16384Mi
+            requests:
+              cpu: "1"
+              memory: 1024Mi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+              mountPath: /gemfire/config/gfsecurity.properties
+              subPath: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.auth.enabled }}
+            - name: {{ $.Release.Name }}-emb-gemfire-security-manager
+              mountPath: /gemfire/lib/layer7-gemfire-security.jar
+              subPath: layer7-gemfire-security.jar
+        {{- end }}
+        {{- if .Values.config.gemfire.tls.enabled }}
+            - name: {{ $.Release.Name }}-emb-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
+              subPath: truststore.p12
+            - name: {{ $.Release.Name }}-emb-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/keystore.p12
+              subPath: keystore.p12
+        {{- end }}
+      volumes:
+    {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+        - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
+            items:
+              - key: gfsecurity.properties
+                path: gfsecurity.properties
+    {{- end }}
+    {{- if .Values.config.gemfire.auth.enabled }}
+        - name: {{ $.Release.Name }}-emb-gemfire-security-manager
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-manager-jar
+            items:
+              - key: layer7-gemfire-security.jar
+                path: layer7-gemfire-security.jar
+    {{- end }}
+    {{- if .Values.config.gemfire.tls.enabled }}
+        - name: {{ $.Release.Name }}-emb-gemfire-keystore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+              - key: keystore.p12
+                path: keystore.p12
+        - name: {{ $.Release.Name }}-emb-gemfire-truststore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+              - key: truststore.p12
+                path: truststore.p12
+    {{- end }}
+{{- end }}

@@ -1,0 +1,27 @@
+{{- if and (.Values.config.gemfire.embedded.enabled) (.Values.config.gemfire.tls.enabled) (not .Values.config.gemfire.tls.existingSecret) }}
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $.Release.Name }}-local-issuer
+spec:
+  selfSigned: {}
+  commonName: {{ $.Release.Name }}-local-issuer
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
