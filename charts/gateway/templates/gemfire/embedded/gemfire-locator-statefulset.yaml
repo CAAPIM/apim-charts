@@ -49,10 +49,39 @@ spec:
       annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
     {{- end }}
     spec:
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.topologySpreadConstraints | nindent 12 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}-gemfire-locator
           image: {{ .Values.config.gemfire.embedded.externalLocators.image.registry }}/{{ .Values.config.gemfire.embedded.externalLocators.image.repository }}:{{ .Values.config.gemfire.embedded.externalLocators.image.tag }}
           imagePullPolicy: {{ .Values.config.gemfire.embedded.externalLocators.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
           args: 
             - gfsh
             - start 
@@ -75,13 +104,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          resources:
-            limits:
-              cpu: "8"
-              memory: 16384Mi
-            requests:
-              cpu: "1"
-              memory: 1024Mi
           volumeMounts:
             - name: data
               mountPath: /data

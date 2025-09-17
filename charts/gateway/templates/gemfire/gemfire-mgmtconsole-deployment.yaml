@@ -31,10 +31,39 @@ spec:
         app: {{ $.Release.Name }}-gemfire-mgmtconsole
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.topologySpreadConstraints | nindent 12 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 12 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: {{ .Values.global.schedulerName }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}-gemfire-mgmtconsole
           image: {{ .Values.config.gemfire.managementConsole.image.registry }}/{{ .Values.config.gemfire.managementConsole.image.repository }}:{{ .Values.config.gemfire.managementConsole.image.tag }}
           imagePullPolicy: {{ .Values.config.gemfire.managementConsole.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.lifecycleHooks }}
+          lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
           ports:
             - name: http
               containerPort: {{ .Values.config.gemfire.managementConsole.service.port }}
