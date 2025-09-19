@@ -37,6 +37,9 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
+  # required by bitnamilegacy/mysql
+  security:
+    allowInsecureImages: true
 
 portal:
   domain: example.com
@@ -834,6 +837,7 @@ jobs:
 mysql:
   image:
     tag: "8.4.4-debian-12-r0"
+    repository: bitnamilegacy/mysql
   auth:
     username: portal
     existingSecret: database-secret
