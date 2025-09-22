@@ -78,7 +78,7 @@ Helm Version    Supported Kubernetes Versions
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
-* [Enable DualStack](#enable-dualstack)
+* [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
 * [Diskless Configuration](#diskless-configuration)
@@ -1039,7 +1039,7 @@ config:
 
 [Back to Additional Guides](#additional-guides)
 
-### Enable DualStack
+### Enable DualStack(IPv4/IPv6)
 To enable dual stack, you need to add or uncomment the given Java arguments, which can be configured in the values.yaml file. Gateway v11.1.3 supports dual stack.
  
 -Djava.net.preferIPv4Stack=false 
