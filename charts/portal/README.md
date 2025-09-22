@@ -6,6 +6,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.18 General Updates
+- Switch bitnami/mysql to bitnamilegacy/mysql.
+
 ## 2.3.16 General Updates
 - This new version of the chart supports API Portal 5.3.3.1
 - Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.

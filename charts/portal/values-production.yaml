@@ -35,6 +35,9 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
+  # required by bitnamilegacy/mysql
+  security:
+    allowInsecureImages: true
 
 portal:
   domain: example.com
@@ -980,6 +983,7 @@ jobs:
 mysql:
   image:
     tag: "8.4.4-debian-12-r0"
+    repository: bitnamilegacy/mysql
   auth:
     username: portal
     existingSecret: database-secret
