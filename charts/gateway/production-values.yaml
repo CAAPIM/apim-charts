@@ -2,6 +2,8 @@ nameOverride: ""
 fullnameOverride: ""
 global:
   schedulerName:
+  security:
+    allowInsecureImages: true
 
 # Use set file to place a Gateway license here
 license:
