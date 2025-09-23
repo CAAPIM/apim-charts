@@ -2,6 +2,8 @@ nameOverride: ""
 fullnameOverride: ""
 global:
   schedulerName:
+  security:
+    allowInsecureImages: true
 
 # Use set file to place a Gateway license here
 license:
@@ -25,7 +27,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.1
+  tag: 11.1.2
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -80,8 +82,8 @@ pmtagger:
   replicas: 1
   image:
     registry: docker.io
-    repository: layer7api/pm-tagger
-    tag: 1.0.1
+    repository: caapim/pm-tagger
+    tag: 1.0.2
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -216,7 +218,6 @@ config:
   log:
     override: true
     properties: |-
-      handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
       com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
       java.util.logging.SimpleFormatter.format=
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
@@ -242,6 +243,8 @@ config:
       # - name: otel.traceEnabled
       #   value: "true"
       # - name: otel.metricPrefix
+      #   value: l7_
+      # - name: otel.attributePrefix
       #   value: l7_
       # - name: otel.traceConfig
       #   value: |
@@ -526,6 +529,7 @@ config:
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
   sharedStateClient:
+    # Note: For this configuration to take effect config.redis.enabled above must be also be true
     enabled: true
   # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
   # existingConfigSecret: shared-state-client-secret
@@ -607,6 +611,13 @@ management:
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    # loadBalancerSourceRanges:
+    # - 10.10.10.0/24
+    ## Set the ExternalIPs
+    # externalIPs:
+    ## Set the LoadBalancerIP
+    # loadBalancerIP:
+    # loadBalancerClass: "mylbclass"
     annotations: {}
       # cloud.google.com/load-balancer-type: "Internal"
     ports:
@@ -640,7 +651,7 @@ service:
   # externalIPs:
   ## Set the LoadBalancerIP
   # loadBalancerIP:
-
+  # loadBalancerClass: "mylbclass"
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -752,7 +763,7 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.3
+      tag: 4.6.4
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
@@ -797,7 +808,9 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
     useDemoDb: true
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
@@ -814,10 +827,6 @@ otk:
 
     # Update database connection properties during helm upgrade.
     updateConnection: true
-
-    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    changeLogSync: false
 
     sql:
 
@@ -851,6 +860,21 @@ otk:
       enabled: false
       # connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name
+      databaseName:
+
+    # Optionally configure Client read database connection for MySQL/Oracle.
+    clientReadConnection:
+      enabled: false
+      # connectionName: Oauth_Client_Read
+      # existingSecretName: otkClientReadSecret
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
@@ -905,7 +929,7 @@ otk:
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
 ingress:
-  # Set to true to create ingress object
+  # Set to true to create ingress or route object
   enabled: false
   # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
   openshift:
@@ -1198,7 +1222,7 @@ redis:
     autoGenerated: true
   image:
     registry: docker.io
-    repository: bitnami/redis
+    repository: bitnamilegacy/redis
     tag: 7.2.1-debian-11-r0
     pullPolicy: IfNotPresent
   # replication or standalone
@@ -1237,7 +1261,7 @@ redis:
     # externalTrafficPolicy: Local
     image:
       registry: docker.io
-      repository: bitnami/redis-sentinel
+      repository: bitnamilegacy/redis-sentinel
       tag: 7.2.1-debian-11-r0
       digest: ""
       pullPolicy: IfNotPresent
@@ -1251,7 +1275,7 @@ redis:
 mysql:
   image:
     registry: docker.io
-    repository: bitnami/mysql
+    repository: bitnamilegacy/mysql
     tag: 8.4.3-debian-12-r5
     pullPolicy: IfNotPresent
     # pullSecrets:
@@ -1363,7 +1387,7 @@ grafana:
   enabled: false
   image:
     registry: docker.io
-    repository: bitnami/grafana
+    repository: bitnamilegacy/grafana
     tag: 9.0.7-debian-11-r0
     pullPolicy: IfNotPresent
     # pullSecrets:
