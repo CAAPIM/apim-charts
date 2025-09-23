@@ -78,7 +78,7 @@ spec:
             - containerPort: 9001
               protocol: TCP
           env:
-            - name: RABBITMQ_PASSWORD
+            - name: RABBITMQ_PASS
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.rabbitmq.auth.secretName }}

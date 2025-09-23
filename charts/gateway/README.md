@@ -1,11 +1,14 @@
-ƒ# Layer7 API Gateway
+# Layer7 API Gateway
 This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana, redis.
+
+## Bitnami Public Catalog Removal
+In preparation for the [Bitnami public catalog deletion](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon), mysql, redis and grafana images have been temporarily switched to the bitnami legacy repository.
 
 ### Important Note
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.34
+- Current Chart Version 3.0.36
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
@@ -669,8 +672,8 @@ ingress:
 | `pmtagger.enabled`          | Enable pm-tagger | `false`  |
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `layer7api/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.1`  |
+| `pmtagger.image.repository`          | Image Repository | `caapim/pm-tagger`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.2`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |

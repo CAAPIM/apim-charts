@@ -6,15 +6,28 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.18 General Updates
+- Switch bitnami/mysql to bitnamilegacy/mysql.
+
+## 2.3.16 General Updates
+- This new version of the chart supports API Portal 5.3.3.1
+- Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
+- Updated the Openshift installation procedure through an example. Refer examples/portal folder.
+
+## 2.3.15 General Updates
+- Adding pod annotations to all the jobs in portal.
+- Upgrade to 2.3.15 is only supported from 2.3.9 chart version as per the Portal version.
+
 ## 2.3.14 General Updates
 - Adding pod annotations to all the deployments and stateful sets in portal.
+- Druid level forceRedploy flag is removed and replaced at deployment and stateful set level.
 - Upgrade to 2.3.14 is only supported from 2.3.9 chart version as per the Portal version.
 
 ## 2.3.13 General Updates
 - Ingress-NGINX Subchart is upgraded to version 4.12.1 to fix [Vulnerability](https://github.com/kubernetes/kubernetes/issues/131007).
 - Upgrade to 2.3.13 is only supported from 2.3.9 chart version as per the Portal version.
 ## 2.3.12 General Updates
-- This new version of the chart supports API Portal 5.2.3
+- This new version of the chart supports API Portal 5.3.2
 - Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
 - Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
 - DB container(for testing) upgraded to support 8.4.4 MySQL version.
@@ -316,145 +329,146 @@ This section describes configurable parameters in **values.yaml**, there is also
 
 
 ### Container Deployment Configurations
-| Parameter                            | Description                                                  | Default                                                      |
-| ------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `analytics.forceRedeploy`            | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `analytics.replicaCount`             | Number of analytics nodes                                    | `1`                                                          |
-| `analytics.image.pullPolicy`         | Analytics image pull policy                                  | `IfNotPresent`                                               |
-| `analytics.pdb.create`               | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `analytics.pdb.maxUnavailable`       | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `analytics.pdb.minAvailable`         | Minimum number of available pods                             | `1`                                                          |
-| `analytics.podAnnotations`           | Analytics pod annotations settings.                          | `{} evaluated as a template`                                 |
-| `analytics.podSecurityContext`       | Analytics pod's security context settings. Overrides global.podSecurityContext settings                           | `{} evaluated as a template`
-| `analytics.containerSecurityContext` | Analytics container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
-| `analytics.strategy`                 | Update strategy                                              | `{} evaluated as a template`                                 |
-| `analytics.resources`                | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `analytics.nodeSelector`             | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `analytics.tolerations`              | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `analytics.affinity`                 | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `analytics.additionalLabels`         | A list of custom key: value labels                           | `not set`                                                    |
-| `apim.forceRedeploy`                 | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `apim.preflightCheck.enabled`        | Resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready |`true`                                                      |
-| `apim.replicaCount`                  | Number of APIM nodes                                         | `1`                                                          |
-| `apim.image.pullPolicy`              | APIM image pull policy                                       | `IfNotPresent`                                               |
-| `apim.otkDb.name`                    | APIM OTK Database name                                       | `otk_db`                                                     |
-| `apim.pdb.create`                    | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `apim.pdb.maxUnavailable`            | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `apim.pdb.minAvailable`              | Minimum number of available pods                             | `1`                                                          |
-| `apim.podAnnotations`                | APIM pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `apim.podSecurityContext`            | APIM pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `apim.containerSecurityContext`      | APIM container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `apim.strategy`                      | Update strategy                                              | `{} evaluated as a template`                                 |
-| `apim.resources`                     | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `apim.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `apim.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `apim.affinity`                      | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `apim.additionalLabels`              | A list of custom key: value labels                           | `not set`                                                    |
-| `apim.additionalEnv.CONFIG_8443_TLS` | Enabled Port 8443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                    |
-| `apim.additionalEnv.CONFIG_9443_TLS` | Enabled Port 9443 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9446_TLS` | Enabled Port 9446 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9448_TLS` | Enabled Port 9448 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9449_TLS` | Enabled Port 9449 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_1885_TLS` | Enabled Port 1885 TLS Versions                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_8443_CIPHER_SUITE` | Enabled Port 8443 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9443_CIPHER_SUITE` | Enabled Port 9443 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9446_CIPHER_SUITE` | Enabled Port 9446 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9448_CIPHER_SUITE` | Enabled Port 9448 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_9449_CIPHER_SUITE` | Enabled Port 9449 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `apim.additionalEnv.CONFIG_1885_CIPHER_SUITE` | Enabled Port 1885 Cipher Suites                     | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `authenticator.forceRedeploy`        | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `authenticator.replicaCount`         | Number of authenticator nodes                                | `1`                                                          |
-| `authenticator.javaOptions`          | Java Options to pass in                                      | `-Xms1g -Xmx1g`                                              |
-| `authenticator.image.pullPolicy`     | authenticator image pull policy                              | `IfNotPresent`                                               |
-| `authenticator.pdb.create`           | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `authenticator.pdb.maxUnavailable`   | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `authenticator.pdb.minAvailable`     | Minimum number of available pods                             | `1`                                                          |
-| `authenticator.podAnnotations`       | authenticator pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `authenticator.podSecurityContext`   | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `authenticator.containerSecurityContext`      | authenticator container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `authenticator.strategy`             | Update strategy                                              | `{} evaluated as a template`                                 |
-| `authenticator.resources`            | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `authenticator.nodeSelector`         | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `authenticator.tolerations`          | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `authenticator.affinity`             | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `authenticator.additionalLabels`     | A list of custom key: value labels                           | `not set`                                                    |
-| `dispatcher.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `dispatcher.replicaCount`            | Number of dispatcher nodes                                   | ``                                                          |
-| `dispatcher.image.pullPolicy`        | Dispatcher image pull policy                                 | `IfNotPresent`                                               |
-| `dispatcher.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `dispatcher.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `dispatcher.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
-| `dispatcher.podAnnotations`          | Dispatcher pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `dispatcher.podSecurityContext`      | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `dispatcher.containerSecurityContext`| Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `dispatcher.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
-| `dispatcher.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `dispatcher.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `dispatcher.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `dispatcher.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `dispatcher.readinessProbe`          | Readiness Probe for Dispatcher                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
-| `dispatcher.livenessProbe`           | Liveness Probe for Dispatcher                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
-| `dispatcher.additionalEnv.PROBE_IP_RANGE` | IP address range in CIDR notation to whitelist readiness and liveness probes for Dispatcher | `not set`                                                    |
-| `dispatcher.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
-| `dispatcher.additionalEnv.CONFIG_HTTPS_TLS` | Enabled HTTPS TLS Versions                            | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
-| `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE` | Enabled HTTPS Cipher Suites                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
-| `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS` |Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com| `not set`                                                   |
-| `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` |allowed rate limit per minute to the Portal health check endpoint| 	`6`                                                   |
-| `portalData.forceRedeploy`           | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `portalData.replicaCount`            | Number of portal data nodes                                  | `1`                                                          |
-| `portalData.javaOptions`             | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
-| `portalData.image.pullPolicy`        | Portal-data image pull policy                                | `IfNotPresent`                                               |
-| `portalData.pdb.create`              | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `portalData.pdb.maxUnavailable`      | Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `portalData.pdb.minAvailable`        | Minimum number of available pods                             | `1`                                                          |
-| `portalData.strategy`                | Update strategy                                              | `{} evaluated as a template`                                 |
-| `portalData.resources`               | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `portalData.nodeSelector`            | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `portalData.tolerations`             | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `portalData.affinity`                | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `portalData.additionalLabels`        | A list of custom key: value labels                           | `not set`                                                    |
-| `portalData.podAnnotations`          | Portal-data pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `portalData.podSecurityContext`      | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `portalData.containerSecurityContext`| Portal-data container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `portalEnterprise.replicaCount`      | Number of portal-enterprise nodes                            | `1`                                                          |
-| `portalEnterprise.javaOptions`       | Java Options to pass in                                      | `-Xms2g -Xmx2g`                                              |
-| `portalEnterprise.image.pullPolicy`  | Portal enterprise image pull policy                          | `IfNotPresent`                                               |
-| `portalEnterprise.pdb.create`        | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `portalEnterprise.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                    |
-| `portalEnterprise.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                          |
-| `portalEnterprise.strategy`          | Update strategy                                              | `{} evaluated as a template`                                 |
-| `portalEnterprise.resources`         | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `portalEnterprise.nodeSelector`      | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `portalEnterprise.tolerations`       | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `portalEnterprise.affinity`          | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `portalEnterprise.additionalLabels`  | A list of custom key: value labels                           | `not set`                                                    |
-| `portalEnterprise.podAnnotations`    | Portal enterprise pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `portalEnterprise.podSecurityContext`| Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `portalEnterprise.containerSecurityContext`| Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `portalEnterprise.forceRedeploy`     | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `tenantProvisioner.forceRedeploy`    | Force redeployment during helm upgrade whether there is a change or not | `false`                                                      |
-| `tenantProvisioner.replicaCount`     | Number of tenant provisioner nodes                           | `1`                                                          |
-| `tenantProvisioner.javaOptions`      | Java Options to pass in                                      | `-Xms512m -Xmx512m`                                          |
-| `tenantProvisioner.image.pullPolicy` | Tenant provisioner image pull policy                         | `IfNotPresent`                                               |
-| `tenantProvisioner.pdb.create`       | Create PodDisruptionBudget (PDB) object                      | `false`                                                      |
-| `tenantProvisioner.pdb.maxUnavailable`| Maximum number of simultaneous unavailable pods              | `not set`                                                   |
-| `tenantProvisioner.pdb.minAvailable`  | Minimum number of available pods                             | `1`                                                         |
-| `tenantProvisioner.strategy`         | Update strategy                                              | `{} evaluated as a template`                                 |
-| `tenantProvisioner.resources`        | Resource request/limits                                      | `{} evaluated as a template`                                 |
-| `tenantProvisioner.nodeSelector `    | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `tenantProvisioner.tolerations`      | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `tenantProvisioner.affinity `        | Affinity for pod assignment                                  | `{} evaluated as a template`                                 |
-| `tenantProvisioner.additionalLabels` | A list of custom key: value labels                           | `not set`                                                    |
-| `tenantProvisioner.podAnnotations`   | Tenant provisioner pod annotations settings.                               | `{} evaluated as a template`                                 |
-| `tenantProvisioner.podSecurityContext`| Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `tenantProvisioner.containerSecurityContext`| Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
-| `jobs.nodeSelector`                  | Node labels for pod assignment                               | `{} evaluated as a template`                                 |
-| `jobs.tolerations`                   | Pod tolerations for pod assignment                           | `{} evaluated as a template`                                 |
-| `jobs.labels`                        | A list of custom key: value labels applied to jobs           | `not set`                                 |
-| `jobs.image.PullPolicy`              | Image pull policy applied to jobs                            | `IfNotPresent`                                 |
-| `jobs.podSecurityContext`            | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                          | `{} evaluated as a template`                                 |
-| `jobs.containerSecurityContext`| Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                              | `{} evaluated as a template`                                 |
+| Parameter                                                      | Description                                                                                                                  | Default                                                      |
+|----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------| ------------------------------------------------------------ |
+| `analytics.forceRedeploy`                                      | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `analytics.replicaCount`                                       | Number of analytics nodes                                                                                                    | `1`                                                          |
+| `analytics.image.pullPolicy`                                   | Analytics image pull policy                                                                                                  | `IfNotPresent`                                               |
+| `analytics.pdb.create`                                         | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `analytics.pdb.maxUnavailable`                                 | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `analytics.pdb.minAvailable`                                   | Minimum number of available pods                                                                                             | `1`                                                          |
+| `analytics.podAnnotations`                                     | Analytics pod annotations settings.                                                                                          | `{} evaluated as a template`                                 |
+| `analytics.podSecurityContext`                                 | Analytics pod's security context settings. Overrides global.podSecurityContext settings                                      | `{} evaluated as a template`
+| `analytics.containerSecurityContext`                           | Analytics container's security context settings. Overrides global.containerSecurityContext settings                          | `{} evaluated as a template`                                 |
+| `analytics.strategy`                                           | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `analytics.resources`                                          | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `analytics.nodeSelector`                                       | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `analytics.tolerations`                                        | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `analytics.affinity`                                           | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `analytics.additionalLabels`                                   | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `apim.forceRedeploy`                                           | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `apim.preflightCheck.enabled`                                  | Resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready |`true`                                                      |
+| `apim.replicaCount`                                            | Number of APIM nodes                                                                                                         | `1`                                                          |
+| `apim.image.pullPolicy`                                        | APIM image pull policy                                                                                                       | `IfNotPresent`                                               |
+| `apim.otkDb.name`                                              | APIM OTK Database name                                                                                                       | `otk_db`                                                     |
+| `apim.pdb.create`                                              | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `apim.pdb.maxUnavailable`                                      | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `apim.pdb.minAvailable`                                        | Minimum number of available pods                                                                                             | `1`                                                          |
+| `apim.podAnnotations`                                          | APIM pod annotations settings.                                                                                               | `{} evaluated as a template`                                 |
+| `apim.podSecurityContext`                                      | APIM pod's security context settings. Overrides global.podSecurityContext settings                                           | `{} evaluated as a template`                                 |
+| `apim.containerSecurityContext`                                | APIM container's security context settings. Overrides global.containerSecurityContext settings                               | `{} evaluated as a template`                                 |
+| `apim.strategy`                                                | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `apim.resources`                                               | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `apim.nodeSelector`                                            | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `apim.tolerations`                                             | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `apim.affinity`                                                | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `apim.additionalLabels`                                        | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `apim.additionalEnv.CONFIG_8443_TLS`                           | Enabled Port 8443 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                    |
+| `apim.additionalEnv.CONFIG_9443_TLS`                           | Enabled Port 9443 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9446_TLS`                           | Enabled Port 9446 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9448_TLS`                           | Enabled Port 9448 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9449_TLS`                           | Enabled Port 9449 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_1885_TLS`                           | Enabled Port 1885 TLS Versions                                                                                               | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_8443_CIPHER_SUITE`                  | Enabled Port 8443 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9443_CIPHER_SUITE`                  | Enabled Port 9443 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9446_CIPHER_SUITE`                  | Enabled Port 9446 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9448_CIPHER_SUITE`                  | Enabled Port 9448 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_9449_CIPHER_SUITE`                  | Enabled Port 9449 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `apim.additionalEnv.CONFIG_1885_CIPHER_SUITE`                  | Enabled Port 1885 Cipher Suites                                                                                              | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `authenticator.forceRedeploy`                                  | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `authenticator.replicaCount`                                   | Number of authenticator nodes                                                                                                | `1`                                                          |
+| `authenticator.javaOptions`                                    | Java Options to pass in                                                                                                      | `-Xms1g -Xmx1g`                                              |
+| `authenticator.image.pullPolicy`                               | authenticator image pull policy                                                                                              | `IfNotPresent`                                               |
+| `authenticator.pdb.create`                                     | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `authenticator.pdb.maxUnavailable`                             | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `authenticator.pdb.minAvailable`                               | Minimum number of available pods                                                                                             | `1`                                                          |
+| `authenticator.podAnnotations`                                 | authenticator pod annotations settings.                                                                                      | `{} evaluated as a template`                                 |
+| `authenticator.podSecurityContext`                             | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                  | `{} evaluated as a template`                                 |
+| `authenticator.containerSecurityContext`                       | authenticator container's security context settings. Overrides global.containerSecurityContext settings                      | `{} evaluated as a template`                                 |
+| `authenticator.strategy`                                       | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `authenticator.resources`                                      | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `authenticator.nodeSelector`                                   | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `authenticator.tolerations`                                    | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `authenticator.affinity`                                       | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `authenticator.additionalLabels`                               | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `dispatcher.forceRedeploy`                                     | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `dispatcher.replicaCount`                                      | Number of dispatcher nodes                                                                                                   | ``                                                          |
+| `dispatcher.image.pullPolicy`                                  | Dispatcher image pull policy                                                                                                 | `IfNotPresent`                                               |
+| `dispatcher.pdb.create`                                        | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `dispatcher.pdb.maxUnavailable`                                | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `dispatcher.pdb.minAvailable`                                  | Minimum number of available pods                                                                                             | `1`                                                          |
+| `dispatcher.podAnnotations`                                    | Dispatcher pod annotations settings.                                                                                         | `{} evaluated as a template`                                 |
+| `dispatcher.podSecurityContext`                                | Dispatcher pod's security context settings. Overrides global.podSecurityContext settings                                     | `{} evaluated as a template`                                 |
+| `dispatcher.containerSecurityContext`                          | Dispatcher container's security context settings. Overrides global.containerSecurityContext settings                         | `{} evaluated as a template`                                 |
+| `dispatcher.strategy`                                          | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `dispatcher.resources`                                         | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `dispatcher.nodeSelector`                                      | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `dispatcher.tolerations`                                       | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `dispatcher.affinity`                                          | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `dispatcher.readinessProbe`                                    | Readiness Probe for Dispatcher                                                                                               | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.livenessProbe`                                     | Liveness Probe for Dispatcher                                                                                                | `{} evaluated as a template` <br />`If not specfied, http get request on nginx status gets checked ` |
+| `dispatcher.additionalEnv.PROBE_IP_RANGE`                      | IP address range in CIDR notation to whitelist readiness and liveness probes for Dispatcher                                  | `not set`                                                    |
+| `dispatcher.additionalLabels`                                  | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `dispatcher.additionalEnv.CONFIG_HTTPS_TLS`                    | Enabled HTTPS TLS Versions                                                                                                   | `If not specfied, Portal TLS defaults are enabled` see [Portal TLS Defaults](#portal-tls-defaults)                                                   |
+| `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE`           | Enabled HTTPS Cipher Suites                                                                                                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
+| `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS`         | Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com                                              | `not set`                                                   |
+| `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` | allowed rate limit per minute to the Portal health check endpoint                                                            | 	`6`                                                   |
+| `portalData.forceRedeploy`                                     | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `portalData.replicaCount`                                      | Number of portal data nodes                                                                                                  | `1`                                                          |
+| `portalData.javaOptions`                                       | Java Options to pass in                                                                                                      | `-Xms2g -Xmx2g`                                              |
+| `portalData.image.pullPolicy`                                  | Portal-data image pull policy                                                                                                | `IfNotPresent`                                               |
+| `portalData.pdb.create`                                        | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `portalData.pdb.maxUnavailable`                                | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `portalData.pdb.minAvailable`                                  | Minimum number of available pods                                                                                             | `1`                                                          |
+| `portalData.strategy`                                          | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `portalData.resources`                                         | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `portalData.nodeSelector`                                      | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `portalData.tolerations`                                       | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `portalData.affinity`                                          | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `portalData.additionalLabels`                                  | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `portalData.podAnnotations`                                    | Portal-data pod annotations settings.                                                                                        | `{} evaluated as a template`                                 |
+| `portalData.podSecurityContext`                                | Portal-data pod's security context settings. Overrides global.podSecurityContext settings                                    | `{} evaluated as a template`                                 |
+| `portalData.containerSecurityContext`                          | Portal-data container's security context settings. Overrides global.containerSecurityContext settings                        | `{} evaluated as a template`                                 |
+| `portalEnterprise.forceRedeploy`                               | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `portalEnterprise.replicaCount`                                | Number of portal-enterprise nodes                                                                                            | `1`                                                          |
+| `portalEnterprise.javaOptions`                                 | Java Options to pass in                                                                                                      | `-Xms2g -Xmx2g`                                              |
+| `portalEnterprise.image.pullPolicy`                            | Portal enterprise image pull policy                                                                                          | `IfNotPresent`                                               |
+| `portalEnterprise.pdb.create`                                  | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `portalEnterprise.pdb.maxUnavailable`                          | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
+| `portalEnterprise.pdb.minAvailable`                            | Minimum number of available pods                                                                                             | `1`                                                          |
+| `portalEnterprise.strategy`                                    | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `portalEnterprise.resources`                                   | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `portalEnterprise.nodeSelector`                                | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `portalEnterprise.tolerations`                                 | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `portalEnterprise.affinity`                                    | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `portalEnterprise.additionalLabels`                            | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `portalEnterprise.podAnnotations`                              | Portal enterprise pod annotations settings.                                                                                  | `{} evaluated as a template`                                 |
+| `portalEnterprise.podSecurityContext`                          | Portal enterprise pod's security context settings. Overrides global.podSecurityContext settings                              | `{} evaluated as a template`                                 |
+| `portalEnterprise.containerSecurityContext`                    | Portal enterprise container's security context settings. Overrides global.containerSecurityContext settings                  | `{} evaluated as a template`                                 |
+| `portalEnterprise.forceRedeploy`                               | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `tenantProvisioner.forceRedeploy`                              | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
+| `tenantProvisioner.replicaCount`                               | Number of tenant provisioner nodes                                                                                           | `1`                                                          |
+| `tenantProvisioner.javaOptions`                                | Java Options to pass in                                                                                                      | `-Xms512m -Xmx512m`                                          |
+| `tenantProvisioner.image.pullPolicy`                           | Tenant provisioner image pull policy                                                                                         | `IfNotPresent`                                               |
+| `tenantProvisioner.pdb.create`                                 | Create PodDisruptionBudget (PDB) object                                                                                      | `false`                                                      |
+| `tenantProvisioner.pdb.maxUnavailable`                         | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                   |
+| `tenantProvisioner.pdb.minAvailable`                           | Minimum number of available pods                                                                                             | `1`                                                         |
+| `tenantProvisioner.strategy`                                   | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
+| `tenantProvisioner.resources`                                  | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `tenantProvisioner.nodeSelector `                              | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `tenantProvisioner.tolerations`                                | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `tenantProvisioner.affinity `                                  | Affinity for pod assignment                                                                                                  | `{} evaluated as a template`                                 |
+| `tenantProvisioner.additionalLabels`                           | A list of custom key: value labels                                                                                           | `not set`                                                    |
+| `tenantProvisioner.podAnnotations`                             | Tenant provisioner pod annotations settings.                                                                                 | `{} evaluated as a template`                                 |
+| `tenantProvisioner.podSecurityContext`                         | Tenant provisioner pod's security context settings. Overrides global.podSecurityContext settings                             | `{} evaluated as a template`                                 |
+| `tenantProvisioner.containerSecurityContext`                   | Tenant provisioner container's security context settings. Overrides global.containerSecurityContext settings                 | `{} evaluated as a template`                                 |
+| `jobs.nodeSelector`                                            | Node labels for pod assignment                                                                                               | `{} evaluated as a template`                                 |
+| `jobs.podAnnotations`                                          | Portal jobs pod annotations settings.                                                                                        | `{} evaluated as a template`                                 |
+| `jobs.tolerations`                                             | Pod tolerations for pod assignment                                                                                           | `{} evaluated as a template`                                 |
+| `jobs.labels`                                                  | A list of custom key: value labels applied to jobs                                                                           | `not set`                                 |
+| `jobs.image.PullPolicy`                                        | Image pull policy applied to jobs                                                                                            | `IfNotPresent`                                 |
+| `jobs.podSecurityContext`                                      | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                | `{} evaluated as a template`                                 |
+| `jobs.containerSecurityContext`                                | Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                    | `{} evaluated as a template`                                 |
 
 ### Database Node Pool Configurations
 
@@ -683,19 +697,19 @@ Portal Analytics
 
 
 ### Portal Images
-| Parameter                                 | Description                                                                                                          | Default                                                      |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.2` |
-| `image.apim` | APIM ingress image | `ingress:5.3.2` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.2` |
-| `image.data` | portal-data image | `portal-data:5.3.2` |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.2` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.2` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.2` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.2` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.2` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.2` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.2` |
+| Parameter                                 | Description                                                                                                          | Default                             |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.3`                  |
+| `image.apim` | APIM ingress image | `ingress:5.3.3`                     |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.3.1`         |
+| `image.data` | portal-data image | `portal-data:5.3.3.1`               |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3.3`            |
+| `image.authenticator` | Authenticator image | `authenticator:5.3.3`               |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.3`           |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3`             |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.3`              |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3.3`               |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -705,7 +719,6 @@ The following table lists the configured parameters of the Druid Subchart:
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `druid.forceRedeploy` | Force redeployment (all druid components) during helm upgrade whether there is a change or not | `false` |
 | `druid.serviceAccount.create` | Enable creation of ServiceAccount for the Druid Chart   | `true` |
 | `druid.serviceAccount.name` |  Name of the created serviceAccount   | Generated using the `druid.fullname` template` |
 | `druid.persistence.storage.historical` | Historical PVC Size   | `50Gi` |
@@ -835,14 +848,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.2`        |
-| `druid.image.broker`        | Broker image        | `druid:5.3.2`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.3.2`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.2`            |
-| `druid.image.minio`         | Minio image         | `minio:5.3.2`            |
-| `druid.image.historical`    | Historical image    | `druid:5.3.2`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.3.2`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.2` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.3`        |
+| `druid.image.broker`        | Broker image        | `druid:5.3.3`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.3.3`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.3`            |
+| `druid.image.minio`         | Minio image         | `minio:5.3.3`            |
+| `druid.image.historical`    | Historical image    | `druid:5.3.3`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.3.3`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.3` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -851,7 +864,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.2` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.3` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
 | `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
@@ -966,6 +979,10 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Installing in OpenShift
+To install Portal >=5.3.3.1, refer examples/portal/openshift folder.
+
+The below procedure works for portal < v5.3.3.1
+
 Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
 [Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
 
