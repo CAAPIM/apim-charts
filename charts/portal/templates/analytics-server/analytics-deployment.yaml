@@ -29,9 +29,17 @@ spec:
     metadata:
       labels:
         app: analytics-server
-      {{ if .Values.analytics.forceRedeploy }}
+      {{- if  .Values.analytics.podAnnotations }}
+      annotations: {{- toYaml .Values.analytics.podAnnotations | nindent 8 }}
+      {{- if .Values.analytics.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.analytics.podAnnotations }}
+      {{- if .Values.analytics.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

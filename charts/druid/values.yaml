@@ -20,8 +20,6 @@ global:
   legacyDatabaseNames: false
 # databasePassword: 7layer
 
-forceRedeploy: false
-
 image:
   zookeeper: zookeeper:5.0
   broker: druid:5.0

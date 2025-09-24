@@ -2,6 +2,8 @@ nameOverride: ""
 fullnameOverride: ""
 global:
   schedulerName:
+  security:
+    allowInsecureImages: true
 
 # Use set file to place a Gateway license here
 license:
@@ -884,7 +886,7 @@ otk:
     # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
     # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
-    useDemoDb: true
+    useDemoDb: false
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
     username: otk_user
@@ -944,7 +946,7 @@ otk:
       databaseName:
 
     # Optionally configure Client read database connection for MySQL/Oracle.
-      clientReadConnection:
+    clientReadConnection:
       enabled: false
       # connectionName: Oauth_Client_Read
       # existingSecretName: otkClientReadSecret
@@ -1010,14 +1012,11 @@ ingress:
       enabled: false
       wildcardPolicy: None
     # weight: 100
-
   # Ingress Class Name
   ingressClassName: nginx
-  # Ingress labels (also apply to routes)
-  labels: {}
-  # Ingress annotations (also apply to routes)
-  annotations: {}
-  # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  # Ingress annotations
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
   tls:
@@ -1358,7 +1357,6 @@ mysql:
     password: mypassword
     database: ssg
     rootPassword: mypassword
-  initdbScriptsConfigMap: otk-db-scripts-cm
   primary:
     # persistence:
     #   enabled: true
