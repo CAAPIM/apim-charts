@@ -28,6 +28,9 @@ spec:
   {{- if .Values.management.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges: {{- toYaml .Values.management.service.loadBalancerSourceRanges | nindent 4 }}
   {{- end }}
+  {{- if .Values.management.service.loadBalancerClass }}
+  loadBalancerClass: {{ .Values.management.service.loadBalancerClass }}
+  {{- end }}
   {{- end }}
   {{- if .Values.management.service.externalIPs }}
   externalIPs: {{- toYaml .Values.management.service.externalIPs | nindent 4 }}

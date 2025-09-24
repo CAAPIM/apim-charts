@@ -1,0 +1,52 @@
+global:
+  setupDemoDatabase: true
+  databaseType: mysql
+  databaseUsername: portal
+  databasePassword: 7layer
+  databasePort: 3306
+  databaseSecret: database-secret
+  subdomainPrefix: octest
+  containerSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1010
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: "RuntimeDefault"
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1010
+    runAsGroup: 1010
+
+portal:
+  analytics:
+    enabled: true
+  domain: trial-openshift.com #replace it with correct openshift domain name.
+
+rabbitmq:
+  serviceAccount:
+    create: false
+    name: portal-sa
+  rbac:
+    create: false
+serviceAccount:
+  create: false
+  name: portal-sa
+rbac:
+  create: false
+
+druid:
+  serviceAccount:
+    create: false
+    name: portal-sa
+
+ingress:
+  create: false
+  type:
+    kubernetes: false
+    openshift: true
+  tenantIds:
+    - t1testportal
+
+
