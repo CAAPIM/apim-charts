@@ -26,7 +26,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 2Gi
+            storage: {{ .Values.config.gemfire.embedded.externalLocators.persistence.size }}
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Retain
     whenScaled: Retain
@@ -80,8 +80,9 @@ spec:
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
           {{- end }}
-          resources:
-{{ toYaml .Values.resources | indent 12 }}
+          {{- if .Values.config.gemfire.embedded.externalLocators.resources }}
+          resources: {{- toYaml .Values.config.gemfire.embedded.externalLocators.resources | nindent 12 }}
+          {{- end }}
           args: 
             - gfsh
             - start 

@@ -566,6 +566,11 @@ config:
           repository: gemfire/gemfire
           tag: 10.1.3-jdk17
           pullPolicy: IfNotPresent
+        resources:
+          limits: {}
+          requests: {}
+        persistence:
+          size: 2Gi
       # A list of existing GemFire locators to use instead of deploying new ones. Each locator should be specified in the format "locator-host[port]".
 
     # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
