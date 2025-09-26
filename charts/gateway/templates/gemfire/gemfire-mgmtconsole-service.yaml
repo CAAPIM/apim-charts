@@ -1,0 +1,28 @@
+{{- if .Values.config.gemfire.managementConsole.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" . }}-gemfire-mgmtconsole
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  name: {{ $.Release.Name }}-gemfire-mgmtconsole
+  annotations:
+    description: "GemFire Management Console Service"
+{{- range $key, $val := .Values.config.gemfire.managementConsole.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  selector:
+    app: {{ $.Release.Name }}-gemfire-mgmtconsole
+    release: {{ .Release.Name }}
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: {{ .Values.config.gemfire.managementConsole.service.port }}
+      targetPort: {{ .Values.config.gemfire.managementConsole.service.port }}
+      name: http
+{{- end }}

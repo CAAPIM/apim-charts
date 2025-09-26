@@ -313,3 +313,29 @@ Define OTK Image Pull Secret Name
     {{- printf "%s" .Values.otk.restmanHost -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+  Check if GemFire terms are accepted
+ */}}
+{{- define "gemfire.acceptedTerms" -}}
+{{- if .Values.config.gemfire.acceptTerms -}}
+    "y"
+{{- else -}}
+    {{- fail "\nTo use GemFire, the GemFire Terms of Use must be accepted by setting config.gemfire.acceptTerms to true (boolean) in your values yaml." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators list
+ */}}
+{{- define "embedded.gemfire.locators" -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+    {{ $locators := list }}
+    {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
+    {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
+{{- end -}}
+{{- join "," $locators -}}
+{{- else -}}
+{{- join "," .Values.config.gemfire.useExistingLocators -}}
+{{- end -}}
+{{- end -}}
