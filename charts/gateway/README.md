@@ -993,7 +993,7 @@ Set the following system properties as needed
 | `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
 
 #### Creating your own Configuration
-Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-gemfire-datastore.html) for more context on the available configuration options
+Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-a-gemfire-datastore.html) for more context on the available configuration options
 
 #### Embedded GemFire
 Embedded gemfire will have external locators but gemfire cache servers are inside gateway container.
