@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.37 General Updates
+- Adding support for Dual Stack Network in Gateway
+
 ## 3.0.36 General Updates
 Images for mysql, redis and grafana have been temporarily switched to [bitnamilegacy](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon) to avoid disruption during the bitnami secure switch.
 
