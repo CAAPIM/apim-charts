@@ -84,6 +84,10 @@ spec:
         - secretRef:
             name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
+      {{- if and (.Values.otk.database.clientReadConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.clientRead" . }}
+      {{- end }}
         - configMapRef:
             name: {{ template "gateway.fullname" . }}-otk-install-configmap
         volumeMounts:
@@ -236,11 +240,13 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
         {{- end }}
 {{- end }}
-{{- if .Values.config.redis  }}
-        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+{{- if and (.Values.config.sharedStateClient.enabled) (or (.Values.config.redis.enabled) ( .Values.config.gemfire.external.enabled) ) }}
             - name: {{ template "gateway.fullname" . }}-shared-state-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/sharedstate_client.yaml
               subPath: sharedstate_client.yaml
+{{- end }}
+{{- if .Values.config.redis  }}
+        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
         {{- if .Values.config.redis.tls.enabled }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
@@ -255,6 +261,38 @@ spec:
         {{- end }}
 
         {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.external }}
+      {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - name: {{ $.Release.Name }}-ext-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
+              subPath: truststore.p12
+            - name: {{ $.Release.Name }}-ext-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/keystore.p12
+              subPath: keystore.p12
+      {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded }}
+      {{- if .Values.config.gemfire.embedded.enabled }}
+        {{- if and (index .Values.config.gemfire.embedded "caches") (index .Values.config.gemfire.embedded.caches "additionalProperties") }}
+            - name: {{ $.Release.Name }}-emb-gemfire-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
+              subPath: gemfire.properties
+        {{- end }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
+              subPath: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.tls.enabled }}
+            - name: {{ $.Release.Name }}-emb-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
+              subPath: truststore.p12
+            - name: {{ $.Release.Name }}-emb-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/keystore.p12
+              subPath: keystore.p12
+        {{- end }}
+      {{- end }}
 {{- end }}
 {{- if .Values.existingHealthCheck }}
 {{- if .Values.existingHealthCheck.enabled }}
@@ -375,6 +413,11 @@ spec:
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: {{ template "gateway.otel.resource.attributes" . }}
           {{- end }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
@@ -523,14 +566,16 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
-{{- if .Values.config.redis }}
-       {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+{{- if and (.Values.config.sharedStateClient.enabled) (or (.Values.config.redis.enabled) ( .Values.config.gemfire.external.enabled)) }}
         - name: {{ template "gateway.fullname" . }}-shared-state-client
           secret:
             secretName: {{ template "sharedStateClientSecretName" . }}
             items:
-            - key: sharedstate_client.yaml
-              path: sharedstate_client.yaml
+              - key: sharedstate_client.yaml
+                path: sharedstate_client.yaml
+{{- end }}
+{{- if .Values.config.redis }}
+       {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
        {{- if .Values.config.redis.tls.enabled }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
@@ -550,6 +595,64 @@ spec:
       {{- end }}
       {{- end }}
       {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.external }}
+    {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.gemfire.tls.enabled) }}
+        - name: {{ $.Release.Name }}-ext-gemfire-keystore
+          secret:
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+            items:
+            - key: keystore.p12
+              path: keystore.p12
+        - name: {{ $.Release.Name }}-ext-gemfire-truststore
+          secret:
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+            items:
+            - key: truststore.p12
+              path: truststore.p12
+    {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded }}
+    {{- if ( .Values.config.gemfire.embedded.enabled) }}
+        {{- if and (index .Values.config.gemfire.embedded "caches") (index .Values.config.gemfire.embedded.caches "additionalProperties") }}
+        - name: {{ $.Release.Name }}-emb-gemfire-properties
+          configMap:
+            name: {{ $.Release.Name }}-emb-gemfire-configmap
+            items:
+            - key: gemfire.properties
+              path: gemfire.properties
+        {{- end }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+        - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
+            items:
+            - key: gfsecurity.properties
+              path: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.tls.enabled }}
+        - name: {{ $.Release.Name }}-emb-gemfire-keystore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: keystore.p12
+              path: keystore.p12
+        - name: {{ $.Release.Name }}-emb-gemfire-truststore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: truststore.p12
+              path: truststore.p12
+        {{- end }}
+    {{- end }}
 {{- end }}
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}

@@ -26,9 +26,17 @@ spec:
     metadata:
       labels:
         app: historical
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.historical.podAnnotations }}
+      annotations: {{- toYaml .Values.historical.podAnnotations | nindent 8 }}
+      {{- if .Values.historical.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.historical.podAnnotations }}
+      {{- if .Values.historical.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}

@@ -269,6 +269,18 @@ Define OTK Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define OTK database Client Read Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.clientRead" -}}
+{{- if .Values.otk.database.clientReadConnection.existingSecretName -}}
+    {{ .Values.otk.database.clientReadConnection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "crconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
  Define OTK install image pullSecret
  */}}
@@ -299,5 +311,31 @@ Define OTK Image Pull Secret Name
     {{- printf "%s" (include "gateway.fullname" .) -}}
 {{- else -}}
     {{- printf "%s" .Values.otk.restmanHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Check if GemFire terms are accepted
+ */}}
+{{- define "gemfire.acceptedTerms" -}}
+{{- if .Values.config.gemfire.acceptTerms -}}
+    "y"
+{{- else -}}
+    {{- fail "\nTo use GemFire, the GemFire Terms of Use must be accepted by setting config.gemfire.acceptTerms to true (boolean) in your values yaml." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators list
+ */}}
+{{- define "embedded.gemfire.locators" -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+    {{ $locators := list }}
+    {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
+    {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
+{{- end -}}
+{{- join "," $locators -}}
+{{- else -}}
+{{- join "," .Values.config.gemfire.useExistingLocators -}}
 {{- end -}}
 {{- end -}}

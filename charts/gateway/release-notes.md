@@ -7,14 +7,44 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
-## 3.0.33 General Updates
+## 3.0.37 General Updates
 - Adding support for Dual Stack Network in Gateway
 
+## 3.0.36 General Updates
+Images for mysql, redis and grafana have been temporarily switched to [bitnamilegacy](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon) to avoid disruption during the bitnami secure switch.
+
+## 3.0.35 General Updates
+This is a minor patch to update pm-tagger, fix the readme format and add optional loadBalancerClass for services.
+- PM-Tagger image updated (docker.io/caapim/pm-tagger:1.0.2)
+- Readme format fix
+- Added loadBalancerClass for services (optional)
+
+## 3.0.34 OTK 4.6.4 Released
+- The default image tag in values.yaml and production-values.yaml for OTK updated to 4.6.4.
+  - otk.job.image.tag: 4.6.4
+- Adding support to Oauth_Client_Read database connection
+- The field otk.database.sql.databaseName is mandatory
+- Removing changelogsync parameter from values.yaml
+  - This is handled in the otk-db-upgrade job automatically
+- Updated comments & documentation for better clarity
+
+## 3.0.33 General Updates
+This is a minor patch to remove the use of AWK in the following optional scripts
+- Bootstrap script
+- Graceful shutdown script
+
 ## 3.0.32 General Updates
-- Support for Mysql version 8.4.x
+- Default image updated to v11.1.2
+  - Gateway v11.1.2 onwards has updated defaults for config.log.override.properties
+    - Please review your configuration and remove this line prior to upgrading to avoid log duplication
+    ```
+    handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
+    ```
+  - [New Redis Password Encryption](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-an-external-redis-datastore.html#concept.dita_d3303fde-e786-4fd4-b0b6-e3a28fd60a82_encrypt_pw)
+- Support for MySQL version 8.4.x
   - Gateway 11.1.x supports 8.4.x
-  - By Default, Mysql version is updated to 8.4.3
-  - Mysql internal chart is updated to 12.1.0
+  - By Default, the MySQL version is updated to 8.4.3
+  - The MySQL subChart (testing/development only) has been updated to 12.1.0
   
 ## 3.0.31 General Updates
 - Support for Openshift Routes (disabled by default)
