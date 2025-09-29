@@ -8,7 +8,7 @@ In preparation for the [Bitnami public catalog deletion](https://community.broad
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.36
+- Current Chart Version 3.0.37
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
