@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{ if and (.Values.ingress.enabled) (.Values.ingress.openshift.route.enabled) }}
 {{- $gatewayFullName := include "gateway.fullname" . }}
 {{- range $i,$rule := .Values.ingress.rules }}

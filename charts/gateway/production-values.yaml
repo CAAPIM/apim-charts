@@ -27,7 +27,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.2
+  tag: 11.1.3
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -83,7 +83,7 @@ pmtagger:
   image:
     registry: docker.io
     repository: caapim/pm-tagger
-    tag: 1.0.2
+    tag: 1.0.3
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -215,6 +215,8 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    # - -Djava.net.preferIPv4Stack=false
+    # - -Djava.net.preferIPv6Addresses=true
   log:
     override: true
     properties: |-
@@ -527,9 +529,84 @@ config:
     #         - host: 192.168.0.1
     #           port: 26379
 
+  # Configuration for GemFire, a distributed data management platform.
+  gemfire:
+    # Must be set to true to enable GemFire functionality, indicating that the GemFire terms of use have been accepted.
+    acceptTerms: true
+    # Authentication configuration for the GemFire peer.
+    auth:
+      enabled: false
+    # username:
+    # password:
+    # SSL configuration for embedded GemFire.
+    tls:
+      enabled: false
+    # existingSecret:
+    # password:
+      # Additional SSL properties for embedded GemFire.
+      additionalProperties: |-
+        ssl-require-authentication=true
+        ssl-ciphers=any
+        ssl-protocols=any
+        ssl-endpoint-identification-enabled=false
+        ssl-enabled-components=all
+        ssl-keystore-type=PKCS12
+        ssl-truststore-type=PKCS12
+    useExistingLocators: []
+    # - locator1[port]
+    # - locator2[port] 
+    # Configuration for embedded GemFire, where GemFire caches run within the Gateway process.
+    embedded:
+      enabled: false
+      caches:
+        # Additional properties for embedded GemFire caches.
+#        additionalProperties: |-
+
+      externalLocators:
+        # The number of GemFire locator replicas to deploy when using embedded GemFire.
+        replicas: 2
+        image:
+          registry: docker.io
+          repository: gemfire/gemfire
+          tag: 10.1.3-jdk17
+          pullPolicy: IfNotPresent
+        resources:
+          limits: {}
+          requests:
+            cpu: 2000m
+            memory: 2Gi
+          persistence:
+            size: 20Gi
+      # A list of existing GemFire locators to use instead of deploying new ones. Each locator should be specified in the format "locator-host[port]".
+
+    # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
+    external:
+      enabled: false
+      testOnStart: false
+      gwCounterRegionName: layer7gw_counter
+      gwRateLimiterRegionName: layer7gw_ratelimiter
+      gwKeyValueRegionName: layer7gw_keyvalue
+      gwSortedSetRegionName: layer7gw_sortedset
+#      dynamicProperties: |-
+
+    managementConsole:
+      # Enable the GemFire Management Console, which provides a management dashboard.
+      enabled: false
+      service:
+        port: 8080
+        annotations: {}
+      image:
+        registry: docker.io
+        repository: gemfire/gemfire-management-console
+        tag: 1.3.1
+        pullPolicy: IfNotPresent
+
+
+
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
+  # In Gateway v11.1.3 gemfire can be configured in a yaml file
   sharedStateClient:
-    # Note: For this configuration to take effect config.redis.enabled above must be also be true
+    # Note: For this configuration to take effect config.redis.enabled or config.gemfire.external.enabled must be also be true
     enabled: true
   # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
   # existingConfigSecret: shared-state-client-secret
@@ -608,6 +685,12 @@ management:
     loadServiceAccountToken: false
   service:
     enabled: true
+    # Gateway Management Service ipFamilyPolicy
+    # SingleStack, PreferDualStack or RequireDualStack
+    # ipFamilyPolicy: PreferDualStack
+    # Gateway Management Service ipFamilies
+    # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ipFamilies: []
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
@@ -643,6 +726,12 @@ management:
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: ClusterIP
+  # Gateway Service ipFamilyPolicy
+  # SingleStack, PreferDualStack or RequireDualStack
+  # ipFamilyPolicy: PreferDualStack
+  # Gateway Service ipFamilies
+  # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+  ipFamilies: []
   ## Load Balancer sources
   ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
   # loadBalancerSourceRanges:

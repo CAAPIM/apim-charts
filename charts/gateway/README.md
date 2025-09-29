@@ -8,7 +8,7 @@ In preparation for the [Bitnami public catalog deletion](https://community.broad
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.36
+- Current Chart Version 3.0.37
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
@@ -77,10 +77,12 @@ Helm Version    Supported Kubernetes Versions
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Shared State Preview Features](#shared-state-preview-features)
 * [Redis Configuration](#redis-configuration)
+* [GemFire Configuration](#gemfire-configuration-1113)
 * [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [Database Configuration](#database-configuration)
 * [Cluster-Wide Properties](#cluster-wide-properties)
+* [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
 * [Java Args](#java-args)
 * [System Properties](#system-properties)
 * [Diskless Configuration](#diskless-configuration)
@@ -168,6 +170,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `management.username`          | Policy Manager Username | `admin`  |
 | `management.password`          | Policy Manager Password | `mypassword`  |
 | `management.kubernetes.loadServiceAccountToken`    | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`  |
+| `management.service.ipFamilyPolicy`   | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `commented out`  |
+| `management.service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `nil`  |
 | `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
 | `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
 | `database.username`          | Database Username | `gateway`  |
@@ -197,6 +201,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
 | `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
 | `service.type`    | Service Type               | `LoadBalancer` |
+| `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
+| `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
 | `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
 | `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
 | `service.annotations`    | Additional annotations to add to the service               | {} |
@@ -668,7 +674,7 @@ ingress:
 | `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
 | `pmtagger.image.registry`          | Image Registry | `docker.io`  |
 | `pmtagger.image.repository`          | Image Repository | `caapim/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.2`  |
+| `pmtagger.image.tag`          | Image Tag | `1.0.3`  |
 | `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
 | `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
 | `pmtagger.resources`                | Resources   | `see values.yaml` |
@@ -959,6 +965,145 @@ redis:
 
 [Back to Additional Guides](#additional-guides)
 
+### GemFire Configuration (11.1.3)
+Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
+Comment out the following
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
+# com.l7tech.server.extension.sharedCounterProvider=ssgdb
+```
+Set the following system properties as needed
+```
+# com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedRateLimiterProvider=embeddedgemfire/externalgemfire
+# com.l7tech.server.extension.sharedSortedSetProvider=embeddedgemfire/externalgemfire
+# com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
+```
+| Parameter                                                   | Description                                                                                                             | Default                                                                 |
+|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `config.gemfire.acceptTerms`                                | Accepting the terms of use for VMware Tanzu GemFire.                                                                    | `true`                                                                  |
+| `config.gemfire.auth.enabled`                               | Enable security athentication.                                                                                          | `false`                                                                 |
+| `config.gemfire.auth.username`                              | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.                   | `default`                                                               |
+| `config.gemfire.auth.password`                              | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.                    | ''                                                                      |
+| `config.gemfire.tls.enabled`                                | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                                     | `false`                                                                 |
+| `config.gemfire.tls.existingSecret`                         | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12                                | ``                                                                      |
+| `config.gemfire.tls.password`                               | Pasword for truststore.12 and keystore.p12, can be plaintext or openssl encrypted.                                      | `` for externl GemFire and .Values.clusterPassword for embedded GemFire |
+| `config.gemfire.tls.additionalProperties`                   | Additional tls related properties.                                                                                      | ``                                                                      |
+| `config.gemfire.useExistingLocators`                        | A list of existing locators to be used by gateway.                                                                      | `[]`                                                                    |
+| `config.gemfire.embedded.enabled`                           | Enable embedded GemFire.                                                                                                | `false`                                                                 |
+| `config.gemfire.embedded.caches.additionalProperties`       | Additional properties for embedded GemFire caches.                                                                      | ``                                                                      |
+| `config.gemfire.embedded.externalLocators.replicas`         | Number of GemFire locator replicas to deploy.                                                                           | `2`                                                                     |
+| `config.gemfire.embedded.externalLocators.image.registry`   | Image Registry                                                                                                          | `docker.io`                                                             |
+| `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
+| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                               | `10.1.3-jdk17`                                                          |
+| `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
+| `config.gemfire.embedded.externalLocators.resources`        | Locator pod resources                                                                                                   | {}                                                                      |
+| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                    | `2Gi`                                                          |
+| `config.gemfire.external.enabled`                           | Enable external GemFire.                                                                                                | `false`                                                                 |
+| `config.gemfire.external.testOnStart`                       | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start. | `false`                                                                 |
+| `config.gemfire.external.gwCounterRegionName`               | GemFire data region name for gateway counter provider.                                                                  | `layer7gw_counter`                                                      |
+| `config.gemfire.external.gwRateLimiterRegionName`           | GemFire data region name for gateway rate limiter provider.                                                             | `layer7gw_ratelimiter`                                                  |
+| `config.gemfire.external.gwKeyValueRegionName`              | GemFire data region name for gateway key value store provider.                                                          | `layer7gw_keyvalue`                                                     |
+| `config.gemfire.external.gwSortedSetRegionName`             | GemFire data region name for gateway sotred set provider.                                                               | `layer7gw_sortedset`                                                    |
+| `config.gemfire.external.dynamicProperties`                 | Additional GemFire properties from gemfire.properties or gfsecurity.properties.                                         | ``                                                                      |
+| `config.gemfire.managementConsole.enabled`                  | Enable GemFire management console.                                                                                      | `false`                                                                 |
+| `config.gemfire.managementConsole.service.port`             | GemFire management console service port.                                                                                | `8080`                                                                  |
+| `config.gemfire.managementConsole.service.annotations`      | GemFire management console service annotations.                                                                         | `{}`                                                                    |
+| `config.gemfire.managementConsole.image.registry`           | Image Registry                                                                                                          | `docker.io`                                                             |
+| `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
+| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                               | `1.3.1`                                                                 |
+| `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
+
+#### Creating your own Configuration
+Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-a-gemfire-datastore.html) for more context on the available configuration options
+
+#### Embedded GemFire
+Embedded gemfire will have external locators but gemfire cache servers are inside gateway container.
+If tls is enabled but tls secret is not provided, gateway require cert-manager to generate keystore and truststore for tls.
+```
+config:
+  gemfire:
+    auth:
+      enabled: true
+    tls:
+      enabled: true
+    embedded:
+      enabled: true
+```
+#### External GemFire
+Gateway as client connect to external gemfire cluster. Shared State Provider Config is used to configure gemfire.
+
+External gemfire, override-values.yaml:
+```
+config:
+  gemfire:
+    auth:
+      enabled: true
+      username: admin
+      password: "U2FsdGVkX18cMQyYp9nFTlj+efwsBMQJGn5eCDstlEcoTubmZdWC5w=="
+    # SSL configuration for embedded GemFire.
+    tls:
+      enabled: true
+      existingSecret: gemfire-tls-secret
+      password: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+    useExistingLocators:
+      - host: external-gemfire.servier-1.net
+        port: 10334
+      - host: external-gemfire.servier-2.net
+        port: 10334
+    external:
+      enabled: true
+      testOnStart: true
+  sharedStateClient:
+    enabled: true
+```
+Providing custom sharedstate_client.yaml from a secret
+
+override-values.yaml
+```
+config:
+  gemfire:
+    acceptTerms: true
+    testOnStart: true
+    auth:
+      enabled: true
+    tls:
+      enabled: true
+      existingSecret: gemfire-tls-secret
+    external:
+      enabled: true
+      dynamicProperties: |-
+        ssl-protocols: TLSv1.3
+        ssl-ciphers: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
+  sharedStateClient:
+    enabled: true
+    existingConfigSecret: shared-state-client-secret
+```
+sharedstate_client.yaml from secret
+```
+gemfire:
+  testOnStart: true
+  username: admin
+  password: "U2FsdGVkX18cMQyYp9nFTlj+efwsBMQJGn5eCDstlEcoTubmZdWC5w=="
+  locators:
+    - host: external-gemfire.servier-1.net
+      port: 10334
+    - host: external-gemfire.servier-2.net
+      port: 10334
+  ssl:
+    enabled: true
+    keystore: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/keystore.p12
+    keystorePassword: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+    truststore: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
+    truststorePassword: "U2FsdGVkX18SFF4+lV0uiQebfK1rjliyoJfpZIWhU33Z16eKMfhKmA=="
+  dynamicProperties: 
+    ssl-protocols: TLSv1.3
+    ssl-ciphers: TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384   
+```
+
+[Back to Additional Guides](#additional-guides)
+
 ### Shared State Provider Config
 Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis. In order for this configuration to take effect config.redis.enabled must also be set to true.
 
@@ -967,6 +1112,8 @@ Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration
 | `config.sharedStateClient.enabled`          | Enable redis configuration | `true`  |
 | `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
 | `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
+
+[Back to Additional Guides](#additional-guides)
 
 ### Database Configuration
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
@@ -1034,6 +1181,48 @@ config:
       - name: audit.setDetailLevel.FINE
         value: 152 7101 7103 9648 9645 7026 7027 4155 150 4716 4114 6306 4100 9655 150 151 11000 4104
 ```
+
+[Back to Additional Guides](#additional-guides)
+
+### Enable DualStack(IPv4/IPv6)
+To enable dual stack, you need to add or uncomment the given Java arguments, which can be configured in the values.yaml file. Gateway v11.1.3 supports dual stack.
+
+-Djava.net.preferIPv4Stack=false 
+-Djava.net.preferIPv6Addresses=true
+
+| Java Argument                         | Description                                                                                                                                                                                                      | Default   |
+|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `-Djava.net.preferIPv4Stack=false`    |  If IPv6 is available on the operating system, the underlying native socket will, by default, be an IPv6 socket. This allows applications to connect to, and accept connections from, both IPv4 and IPv6 hosts.  | `true`    |
+| `-Djava.net.preferIPv6Addresses=true` |  When connecting to a host that has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer IPv4 addresses over IPv6.                        | `false`   |
+
+
+```
+config:
+  heapSize: "2g"
+  minHeapSize: "1g"
+  maxHeapSize: "3g"
+  javaArgs:
+    - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
+    - -Dcom.l7tech.server.audit.message.saveToInternal=false
+    - -Dcom.l7tech.server.audit.admin.saveToInternal=false
+    - -Dcom.l7tech.server.audit.system.saveToInternal=false
+    - -Dcom.l7tech.server.audit.log.format=json
+    - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
+    - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
+    - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    - -Djava.net.preferIPv4Stack=false
+    - -Djava.net.preferIPv6Addresses=true
+```
+
+Gateway and Management Service can optionally configure it as dual stack.
+
+| Parameter                           | Description                                                                                                          | Default         |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------|
+| `service.ipFamilyPolicy`            | Gateway Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack             | `commented out` |
+| `service.ipFamilies`                | Gateway Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]        | `nil`           |
+| `management.service.ipFamilyPolicy` | PolicyManager Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack       | `commented out` |
+| `management.service.ipFamilies`     | PolicyMananger Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"] | `nil`           |
+
 
 [Back to Additional Guides](#additional-guides)
 
