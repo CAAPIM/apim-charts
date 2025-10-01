@@ -413,11 +413,6 @@ spec:
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: {{ template "gateway.otel.resource.attributes" . }}
           {{- end }}
-          env:
-            - name: POD_IP
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
