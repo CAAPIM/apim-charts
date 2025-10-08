@@ -16,6 +16,9 @@ disklessConfig:
   # true - environment variables are used for gateway configuration
   # false - node.properties is used for gateway configuration
   enabled: true
+  # true - node.properties is set by initContainer and bootstrap script
+  # false - node.properties is set by existingSecret
+  setSecretByInitContainer: false
   existingSecret: {}
   #   name: gateway-secret
   #   csi:
