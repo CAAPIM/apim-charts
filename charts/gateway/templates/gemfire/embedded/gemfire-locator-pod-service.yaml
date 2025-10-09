@@ -1,0 +1,40 @@
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+{{- $replicas := .Values.config.gemfire.embedded.externalLocators.replicas | int -}}
+{{- range $i,$e := until $replicas }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    chart: {{ template "gateway.chart" $ }}-gemfire-locator-{{ $i }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  name: {{ $.Release.Name }}-gemfire-locator-{{ $i }}
+  annotations:
+    description: "GemFire Locator Pod Service"
+{{- range $key, $val := $.Values.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ $.Release.Name }}-gemfire-locator-{{ $i }}
+    release: {{ $.Release.Name }}
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 10334
+      targetPort: locator
+      name: locator
+    - protocol: TCP
+      port: 4321
+      targetPort: 4321
+      name: locator-metrics
+    - protocol: TCP
+      port: 7070
+      targetPort: 7070
+      name: locator-management-api
+{{- end }}
+{{- end }}

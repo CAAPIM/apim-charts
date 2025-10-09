@@ -1,0 +1,25 @@
+{{- if .Values.config.gemfire.embedded.enabled }}
+{{- if and (index .Values.config.gemfire.embedded "caches") (index .Values.config.gemfire.embedded.caches "additionalProperties") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Release.Name }}-emb-gemfire-configmap
+  labels:
+    app: {{ template "gateway.name" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if  .Values.additionalAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+data:
+  gemfire.properties: |-
+{{ .Values.config.gemfire.embedded.caches.additionalProperties | indent 4 }}
+{{- end }}
+{{- end }}
