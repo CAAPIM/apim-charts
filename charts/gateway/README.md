@@ -1373,7 +1373,8 @@ disklessConfig:
 
 From Gateway v11.2.0 onwards, node.properties support secrets provided in different format by different third party secret managers using InitContainer.
 InitContainer can be used to fetch the secret from a secure source and format and mount node.properties to shared volume /opt/docker/custom/custom-properties.
-[Bootstrap Script](#bootstrap-script) will copy it to the right location.
+Gateway container mounts only /opt/docker/custom/custom-properties/node.properties  to /opt/SecureSpan/Gateway/node/default/etc/conf using subPath.
+InitContainer volumeMounts name has to be **shared-secret**
 
 values.yaml
 ```
@@ -1381,10 +1382,6 @@ disklessConfig:
   enabled: false
   setSecretByInitContainer: true
   existingSecret: {}
-
-bootstrap:
-  script:
-    enabled: true
     
 initContainers:
   - name: aws-init
