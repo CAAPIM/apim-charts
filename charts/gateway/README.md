@@ -1396,17 +1396,17 @@ initContainers:
           --region us-west-2 \
           --secret-id gateway.node.properties \
           --query SecretString \
-          --output text > /opt/docker/custom/custom-properties/node.json
+          --output text > /opt/docker/conf/node.json
 
         # Parse JSON into .properties format
         apk add --no-cache jq > /dev/null 2>&1 || yum install -y jq || true
         jq -r '
           to_entries |
           map("\(.key)=\(.value)") |
-          .[]' /opt/docker/custom/custom-properties/node.json > /opt/docker/custom/custom-properties/node.properties
+          .[]' /opt/docker/conf/node.json > /opt/docker/conf/node.properties
     volumeMounts:
       - name: shared-secret
-        mountPath:  /opt/docker/custom/custom-properties
+        mountPath:  /opt/docker/conf
   
 
 ```
