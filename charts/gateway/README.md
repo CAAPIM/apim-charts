@@ -1404,6 +1404,7 @@ initContainers:
           to_entries |
           map("\(.key)=\(.value)") |
           .[]' /opt/docker/conf/node.json > /opt/docker/conf/node.properties
+    # volumeMount name shared-secret is required for successful mounting to final location by Gateway container
     volumeMounts:
       - name: shared-secret
         mountPath:  /opt/docker/conf
