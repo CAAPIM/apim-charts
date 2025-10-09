@@ -866,76 +866,8 @@ kafka: &kafka_config
   serviceAccount:
     create: true
 
-# Settings for the intelligence subchart
-apim-intelligence:
-  # Use a YAML alias (*) to reference the Kafka configuration from above.
-  # This avoids duplicating the configuration and ensures the intelligence
-  # subchart has the correct values for broker discovery.
-  kafka: *kafka_config
-
-  rbac:
-    create: true
-
-  # Service Account for intelligence-server
-  serviceAccount:
-    create: true
-    automountServiceAccountToken: true
-    name: ""
-
-  image:
-    intelligenceServer: intelligence-server:latest
-
-  intelligenceServer:
-    # Configuration for the Intelligence Server.
-    kafka:
-      # A list of external advertised Kafka brokers.
-      # externalAdvertisedBrokers:
-      # Configuration for Kafka broker auto-discovery.
-      autoDiscovery:
-        # Enables or disables Kafka broker auto-discovery.
-        enabled: true
-        image:
-          # The repository of the auto-discovery image.
-          repository: "docker.io/bitnami/kubectl"
-          # The tag of the auto-discovery image.
-          tag: "1.33.3-debian-12-r0"
-          # The pull policy for the auto-discovery image.
-          pullPolicy: IfNotPresent
-        # Resource requests and limits for the auto-discovery init container
-        # resources: {}
-      # Configuration for the Kafka CA certificate.
-      kafkaCa:
-        # The name of the secret containing the Kafka CA certificate.
-        caSecretName: *internalSecretName
-        # The name of the secret containing the password for the Kafka CA certificate.
-        passwordSecretName: *internalSecretName
-        # The key in the password secret that contains the password.
-        passwordSecretKey: "keypass.txt"
-    forceRedeploy: false
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    replicaCount: 1
-    image:
-      pullPolicy: IfNotPresent
-    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-    podSecurityContext: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-    containerSecurityContext: {}
-    resources:
-      requests: {}
-      # memory: 4Gi
-      limits: {}
-      # memory: 4Gi
-    # nodeSelector: {}
-    # tolerations: []
-    # affinity: {}
-
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
-rabbitmq:
+rabbitmq: &rabbitmq_config
   enabled: true
   host: rabbitmq
   fullnameOverride: rabbitmq
@@ -1017,6 +949,75 @@ rabbitmq:
         - sh
         - -ec
         - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/local-alarms
+
+# Settings for the intelligence subchart
+apim-intelligence:
+  # Use a YAML alias (*) to reference the Kafka configuration from above.
+  # This avoids duplicating the configuration and ensures the intelligence
+  # subchart has the correct values for broker discovery.
+  kafka: *kafka_config
+  rabbitmq: *rabbitmq_config
+
+  rbac:
+    create: true
+
+  # Service Account for intelligence-server
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+    name: ""
+
+  image:
+    intelligenceServer: intelligence-server:latest
+
+  intelligenceServer:
+    # Configuration for the Intelligence Server.
+    kafka:
+      # A list of external advertised Kafka brokers.
+      # externalAdvertisedBrokers:
+      # Configuration for Kafka broker auto-discovery.
+      autoDiscovery:
+        # Enables or disables Kafka broker auto-discovery.
+        enabled: true
+        image:
+          # The repository of the auto-discovery image.
+          repository: "docker.io/bitnami/kubectl"
+          # The tag of the auto-discovery image.
+          tag: "1.33.3-debian-12-r0"
+          # The pull policy for the auto-discovery image.
+          pullPolicy: IfNotPresent
+        # Resource requests and limits for the auto-discovery init container
+        # resources: {}
+      # Configuration for the Kafka CA certificate.
+      kafkaCa:
+        # The name of the secret containing the Kafka CA certificate.
+        caSecretName: *internalSecretName
+        # The name of the secret containing the password for the Kafka CA certificate.
+        passwordSecretName: *internalSecretName
+        # The key in the password secret that contains the password.
+        passwordSecretKey: "keypass.txt"
+    forceRedeploy: false
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    replicaCount: 1
+    image:
+      pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
+    resources:
+      requests: {}
+      # memory: 4Gi
+      limits: {}
+      # memory: 4Gi
+    # nodeSelector: {}
+    # tolerations: []
+    # affinity: {}
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:

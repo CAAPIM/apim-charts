@@ -202,6 +202,12 @@ spec:
           schedulerName: "{{ .Values.global.schedulerName }}"
           {{- end }}
           env:
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+                  optional: false
             - name: INTELLIGENCE_DATABASE_NAME
               value: {{ template "intelligence-db-name" . }}
             - name: DATABASE_USERNAME
