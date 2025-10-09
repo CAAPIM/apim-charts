@@ -200,6 +200,11 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
 {{- end }}
+{{- if and (not .Values.disklessConfig.enabled) (.Values.disklessConfig.setSecretByInitContainer) }}
+            - name: shared-secret
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
