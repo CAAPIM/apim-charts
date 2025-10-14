@@ -8,7 +8,7 @@ global:
   subdomainPrefix: octest
   containerSecurityContext:
     runAsNonRoot: true
-    runAsUser: 1001
+    runAsUser: 1010
     allowPrivilegeEscalation: false
     capabilities:
       drop: ["ALL"]
@@ -16,8 +16,8 @@ global:
       type: "RuntimeDefault"
   podSecurityContext:
     runAsNonRoot: true
-    runAsUser: 1001
-    runAsGroup: 1001
+    runAsUser: 1010
+    runAsGroup: 1010
 
 portal:
   analytics:

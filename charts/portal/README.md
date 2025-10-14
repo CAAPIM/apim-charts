@@ -6,13 +6,17 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.18 General Updates
+- Switch bitnami/mysql to bitnamilegacy/mysql.
+
 ## 2.3.17 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
 
 ## 2.3.16 General Updates
-- This new version of the chart supports API Portal 5.3.3
-- Upgrade to 2.3.15 is only supported from 2.3.20 chart version as per the Portal version.
-- 
+- This new version of the chart supports API Portal 5.3.3.1
+- Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
+- Updated the Openshift installation procedure through an example. Refer examples/portal folder.
+
 ## 2.3.15 General Updates
 - Adding pod annotations to all the jobs in portal.
 - Upgrade to 2.3.15 is only supported from 2.3.9 chart version as per the Portal version.
@@ -696,19 +700,19 @@ Portal Analytics
 
 
 ### Portal Images
-| Parameter                                 | Description                                                                                                          | Default                                                      |
-|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.3` |
-| `image.apim` | APIM ingress image | `ingress:5.3.3` |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.3` |
-| `image.data` | portal-data image | `portal-data:5.3.3` |
+| Parameter                                 | Description                                                                                                          | Default                             |
+|-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-------------------------------------|
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.3`                  |
+| `image.apim` | APIM ingress image | `ingress:5.3.3`                     |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.3.1`         |
+| `image.data` | portal-data image | `portal-data:5.3.3.1`               |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.3` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.3` |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.3` |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.3` |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3` |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.3` |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.3` |
+| `image.analytics` | Analytics image | `analytics-server:5.3.3`            |
+| `image.authenticator` | Authenticator image | `authenticator:5.3.3`               |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.3`           |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3`             |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.3`              |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.3.3`               |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -978,6 +982,10 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Installing in OpenShift
+To install Portal >=5.3.3.1, refer examples/portal/openshift folder.
+
+The below procedure works for portal < v5.3.3.1
+
 Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
 [Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
 

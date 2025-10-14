@@ -208,7 +208,8 @@ Define OTK Image Pull Secret Name
  Define OTEL_RESOURCE_ATTRIBUTES Environment variable
  */}}
 {{- define "gateway.otel.resource.attributes" -}}
-{{ $resourceAttributes := printf "%s,service.version=%s" "k8s.container.name=$(CONTAINER_NAME),k8s.deployment.name=$(OTEL_SERVICE_NAME),service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(NAMESPACE),k8s.node.name=$(NODE_NAME),k8s.pod.name=$(POD_NAME)" .Values.image.tag }}
+{{- $imageTag := .Values.image.tag | quote  -}}
+{{ $resourceAttributes := printf "%s,service.version=%s" "k8s.container.name=$(CONTAINER_NAME),k8s.deployment.name=$(OTEL_SERVICE_NAME),service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(NAMESPACE),k8s.node.name=$(NODE_NAME),k8s.pod.name=$(POD_NAME)" $imageTag  }}
 {{- if and (.Values.config.otel.sdkOnly.enabled) (.Values.config.otel.additionalResourceAttributes) -}}
  {{- $additionalResourceAttributes := join "," .Values.config.otel.additionalResourceAttributes }}
  {{- printf "%s,%s" $resourceAttributes $additionalResourceAttributes -}}
@@ -310,5 +311,31 @@ Define OTK Image Pull Secret Name
     {{- printf "%s" (include "gateway.fullname" .) -}}
 {{- else -}}
     {{- printf "%s" .Values.otk.restmanHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Check if GemFire terms are accepted
+ */}}
+{{- define "gemfire.acceptedTerms" -}}
+{{- if .Values.config.gemfire.acceptTerms -}}
+    "y"
+{{- else -}}
+    {{- fail "\nTo use GemFire, the GemFire Terms of Use must be accepted by setting config.gemfire.acceptTerms to true (boolean) in your values yaml." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators list
+ */}}
+{{- define "embedded.gemfire.locators" -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+    {{ $locators := list }}
+    {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
+    {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
+{{- end -}}
+{{- join "," $locators -}}
+{{- else -}}
+{{- join "," .Values.config.gemfire.useExistingLocators -}}
 {{- end -}}
 {{- end -}}

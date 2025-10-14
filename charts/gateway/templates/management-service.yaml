@@ -16,6 +16,12 @@ metadata:
     {{ $key }}: "{{ $val }}"
 {{- end }}
 spec:
+  {{- if .Values.management.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.management.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.management.service.ipFamilies }}
+  ipFamilies: {{- toYaml .Values.management.service.ipFamilies | nindent 4 }}
+  {{- end }}
   selector:
     app: {{ template "gateway.fullname" . }}
     management-access: leader
@@ -27,6 +33,9 @@ spec:
   {{- end }}
   {{- if .Values.management.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges: {{- toYaml .Values.management.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- if .Values.management.service.loadBalancerClass }}
+  loadBalancerClass: {{ .Values.management.service.loadBalancerClass }}
   {{- end }}
   {{- end }}
   {{- if .Values.management.service.externalIPs }}

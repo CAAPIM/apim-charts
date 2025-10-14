@@ -505,8 +505,8 @@ tenantProvisioner:
 image:
   dispatcher: dispatcher:5.3.3
   apim: ingress:5.3.3
-  enterprise: portal-enterprise:5.3.3
-  data: portal-data:5.3.3
+  enterprise: portal-enterprise:5.3.3.1
+  data: portal-data:5.3.3.1
   tps: tenant-provisioning-service:5.3.3
   analytics: analytics-server:5.3.3
   authenticator: authenticator:5.3.3
