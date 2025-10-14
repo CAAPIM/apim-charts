@@ -2,7 +2,6 @@
  apiVersion: rbac.authorization.k8s.io/v1
  metadata:
    name: portal-rolebinding
-   namespace: layer7portal
  subjects:
    - kind: ServiceAccount
      name: portal-sa

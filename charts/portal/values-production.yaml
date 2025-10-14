@@ -35,6 +35,9 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
+  # required by bitnamilegacy/mysql
+  security:
+    allowInsecureImages: true
 
 portal:
   domain: example.com
@@ -500,17 +503,17 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.3.3
-  apim: ingress:5.3.3
-  enterprise: portal-enterprise:5.3.3
-  data: portal-data:5.3.3
-  tps: tenant-provisioning-service:5.3.3
-  analytics: analytics-server:5.3.3
-  authenticator: authenticator:5.3.3
-  dbUpgrade: db-upgrade-portal:5.3.3
-  rbacUpgrade: db-upgrade-rbac:5.3.3
-  upgradeVerify: upgrade-verify:5.3.3
-  tlsManager: tls-automator:5.3.3
+  dispatcher: dispatcher:5.4
+  apim: ingress:5.4
+  enterprise: portal-enterprise:5.4
+  data: portal-data:5.4
+  tps: tenant-provisioning-service:5.4
+  analytics: analytics-server:5.4
+  authenticator: authenticator:5.4
+  dbUpgrade: db-upgrade-portal:5.4
+  rbacUpgrade: db-upgrade-rbac:5.4
+  upgradeVerify: upgrade-verify:5.4
+  tlsManager: tls-automator:5.4
 
 
 ##
@@ -1046,14 +1049,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.3.3
-    broker: druid:5.3.3
-    coordinator: druid:5.3.3
-    middlemanager: druid:5.3.3
-    minio: minio:5.3.3
-    historical: druid:5.3.3
-    kafka: kafka:5.3.3
-    ingestion: ingestion-server:5.3.3
+    zookeeper: zookeeper:5.4
+    broker: druid:5.4
+    coordinator: druid:5.4
+    middlemanager: druid:5.4
+    minio: minio:5.4
+    historical: druid:5.4
+    kafka: kafka:5.4
+    ingestion: ingestion-server:5.4
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -1063,7 +1066,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.3.3"
+    tag: "5.4"
     pullSecrets:
       - broadcom-apim
   pdb:
@@ -1192,6 +1195,7 @@ jobs:
 mysql:
   image:
     tag: "8.4.4-debian-12-r0"
+    repository: bitnamilegacy/mysql
   auth:
     username: portal
     existingSecret: database-secret
