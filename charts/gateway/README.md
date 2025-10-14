@@ -1385,29 +1385,24 @@ disklessConfig:
     
 initContainers:
   - name: aws-init
-    image: amazon/aws-cli:2.15.0
-    command:
-      - sh
-      - -c
-      - |
-        set -e
-        # Fetch secret JSON from AWS
-        aws secretsmanager get-secret-value \
-          --region us-west-2 \
-          --secret-id gateway.node.properties \
-          --query SecretString \
-          --output text > /opt/docker/conf/node.json
-
-        # Parse JSON into .properties format
-        apk add --no-cache jq > /dev/null 2>&1 || yum install -y jq || true
-        jq -r '
-          to_entries |
-          map("\(.key)=\(.value)") |
-          .[]' /opt/docker/conf/node.json > /opt/docker/conf/node.properties
-    # volumeMount name shared-secret is required for successful mounting to final location by Gateway container
+    image: amazon/aws-cli:latest # or your selected version
+    env:
+      - name: AWS_REGION
+        value: us-west-2 # or your-aws-region
     volumeMounts:
       - name: shared-secret
-        mountPath:  /opt/docker/conf
+        mountPath: /opt/docker/config
+    command: ["sh", "-c"]
+    args:
+      - |
+        set -e
+        # Fetch secret from AWS, replace secret-id with your node.properties secret name
+        aws secretsmanager get-secret-value --secret-id gateway.node.properties --query SecretString \
+          --output text > /opt/docker/config/node.json
+
+        # Parse JSON into .properties format
+        yum install -y jq
+        jq -r 'to_entries | map("\(.key)=\(.value)") |.[]' /opt/docker/config/node.json > /opt/docker/config/node.properties
   
 
 ```
