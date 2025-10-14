@@ -32,6 +32,8 @@ persistence:
 
 
 migrateData: false
+# time post-install hook re-tries to create the bucket.
+waitForS3InSeconds: 1200
 imageOverride: null
 restartPolicy: Always
 imagePullPolicy: Always
