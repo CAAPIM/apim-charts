@@ -1373,7 +1373,7 @@ disklessConfig:
 
 From Gateway v11.2.0 onwards, node.properties support secrets provided in different format by different third party secret managers using InitContainer.
 InitContainer can be used to fetch the secret from a secure source and format and mount node.properties to shared volume /opt/docker/custom/custom-properties.
-Gateway container mounts only /opt/docker/custom/custom-properties/node.properties  to /opt/SecureSpan/Gateway/node/default/etc/conf using subPath.
+Gateway container mounts only /opt/docker/custom/custom-properties/node.properties to /opt/SecureSpan/Gateway/node/default/etc/conf using subPath.
 InitContainer volumeMounts name has to be **shared-secret**
 
 values.yaml
@@ -1403,9 +1403,8 @@ initContainers:
         # Parse JSON into .properties format
         yum install -y jq
         jq -r 'to_entries | map("\(.key)=\(.value)") |.[]' /opt/docker/config/node.json > /opt/docker/config/node.properties
-  
-
 ```
+More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
 [Back to Additional Guides](#additional-guides)
 
