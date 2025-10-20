@@ -1347,6 +1347,13 @@ admin.pass=mypassword
 node.db.type=derby
 node.db.config.main.user=gateway
 ```
+Unlike interactive password changes in Policy Manager, the container startup scripts validate the following username and password against a restricted character set (for parsing/scripting safety):
+```
+admin.user, admin.pass, node.db.config.main.user, node.db.config.main.pass
+```
+They may contain alphanumeric ASCII characters and any of the following symbols:
+
+! @ . = - _ ^ + ; : # , %. Do NOT use space characters. 
 
 ##### Update values.yaml
 Update your values file to use the new node.properties file.
