@@ -268,7 +268,7 @@ service:
 
 ### Production Values Default
 Sample entry that exposes 8443 which is one of the default TLS ports on the API Gateway
-Note that the service type is ClusterIP which does not receive an external IP address. We can make this service accessible by configuring an [ingress resource](#ingress-configuration).
+Note that the service type is ClusterIP which does not receive an external IP address. We can make this service accessible by configuring an [ingress resource](#ingress-configuration). If direct external access is needed, we can make this service of type NodePort and uncomment the nodePort value. Set the nodePort port number to the actual port you want each Kubernetes Worker Node to listen on for the Gateway Service.
 
 ```
 service:
@@ -278,11 +278,11 @@ service:
     - name: https
       internal: 8443
       external: 8443
-      #nodePort: 8443
+      #nodePort: 30443
       protocol: TCP
 ```
 ### Gateway Management Service
-The Gateway Management Service is primarily used to expose Gateway Ports that you wish to use for Internal Management Access for tools like Policy Manager. This Service requires the [PM Tagger](#pm-tagger) to function correctly.
+The Gateway Management Service is primarily used to expose Gateway Ports that you wish to use for Internal Management Access for tools like Policy Manager. This Service requires the [PM Tagger](#pm-tagger) to function correctly. Like the main service, the Management Service can be set to type NodePort and the nodePort value uncommented to provide direct external access to the service.
 
 ```
 management:
@@ -297,7 +297,7 @@ management:
       - name: management
         internal: 9443
         external: 9443
-        #nodePort: 9443
+        #nodePort: 31443
         protocol: TCP
 ```
 
