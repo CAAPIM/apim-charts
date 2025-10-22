@@ -278,6 +278,7 @@ service:
     - name: https
       internal: 8443
       external: 8443
+      #nodePort: 8443
       protocol: TCP
 ```
 ### Gateway Management Service
@@ -296,6 +297,7 @@ management:
       - name: management
         internal: 9443
         external: 9443
+        #nodePort: 9443
         protocol: TCP
 ```
 
