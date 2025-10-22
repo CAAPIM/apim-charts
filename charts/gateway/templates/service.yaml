@@ -45,7 +45,7 @@ spec:
       port: {{ .external }}
       targetPort: {{ .name }}
       name: {{ .name | quote }}
-      {{- if .nodePort }}
+      {{- if and ( .nodePort ) (eq $.Values.service.type "NodePort") }}
       nodePort: {{ .nodePort }}
       {{- end }}
   {{- end }}
