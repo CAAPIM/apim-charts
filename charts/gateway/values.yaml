@@ -700,13 +700,16 @@ management:
     annotations: {}
       # cloud.google.com/load-balancer-type: "Internal"
     ports:
+      ## If using type: NodePort above, include nodePort value in each port object below
       # - name: https
       #   internal: 8443
       #   external: 8443
+      #   nodePort: 30443
       #   protocol: TCP
       - name: management
         internal: 9443
         external: 9443
+        # nodePort: 31443
         protocol: TCP
     # Uncomment the following section to enable session affinity
     # sessionAffinity: ClientIP
@@ -739,13 +742,16 @@ service:
   # loadBalancerClass: "mylbclass"
   # Update this port list if additional ports need to be exposed
   ports:
+    ## If using type: NodePort above, include nodePort value in each port object below
     - name: https
       internal: 8443
       external: 8443
+      #nodePort: 30443
       protocol: TCP
     # - name: management
     #   internal: 9443
     #   external: 9443
+    #   nodePort: 31443
     #   protocol: TCP
   # Additional Service annotations, the example below shows configuration for an internal load balancer on GCP
   # See the docs for more ==> https://kubernetes.io/docs/concepts/services-networking/service/
