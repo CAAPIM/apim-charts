@@ -45,6 +45,9 @@ spec:
       port: {{ .external }}
       targetPort: {{ .name }}
       name: {{ .name | quote }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
   {{- end }}
   {{- if .Values.service.sessionAffinity }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
