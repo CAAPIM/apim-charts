@@ -11,8 +11,14 @@ data:
   SERVICE_NAME: historical
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
+{{- if .Values.global.deepStorage.seaweedfs }}
+  MINIO_URL: http://seaweedfs-s3:8333
+  MINIO_HEALTH_URL: http://seaweedfs-s3:8333/status
+  MINIO_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
+{{ else }}
   MINIO_URL: http://minio:9000
   MINIO_BUCKET: {{ .Values.minio.bucketName }}
+{{ end }}
   CONTAINER_LOG_LEVEL: {{ .Values.historical.loglevel }}
   runtime.properties: |-
     druid.service=druid/historical
@@ -35,4 +41,8 @@ data:
     druid.cache.type=caffeine
     druid.cache.sizeInBytes=10000000
 
+{{- if (eq .Values.global.deepStorage.seaweedfs true) }}
+    druid.storage.bucket={{ .Values.global.deepStorage.analytics.bucketName }}
+{{- else }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
+{{- end }}

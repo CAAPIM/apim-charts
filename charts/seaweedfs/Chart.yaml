@@ -1,11 +1,11 @@
 apiVersion: v2
-name: druid
-description: Broadcom APIM Portal Analytics Chart
+name: seaweedfs
+description: Broadcom APIM Portal SeaweedFS Chart
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
   - name: Gazza7205
 sources:
   - https://github.com/CAAPIM/apim-charts
-version: 1.0.18
-appVersion: 31.0
+version: 1.0.1
+appVersion: 41.0

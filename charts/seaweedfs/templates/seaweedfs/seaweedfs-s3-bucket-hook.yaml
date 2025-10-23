@@ -1,0 +1,115 @@
+{{- if .Values.filer.s3.createBuckets }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ $.Release.Name }}-bucket-hook"
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": post-install, post-upgrade
+    "helm.sh/hook-weight": "-5"
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+    spec:
+      restartPolicy: Never
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      containers:
+      - name: install-bucket-job
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+        imagePullPolicy: {{ default "IfNotPresent" .Values.imagePullPolicy }}
+        env:
+          - name: WEED_CLUSTER_DEFAULT
+            value: "sw"
+          - name: WEED_CLUSTER_SW_MASTER
+            value: "seaweedfs-s3:{{ .Values.master.port }}"
+          - name: WEED_CLUSTER_SW_S3
+            value: "seaweedfs-s3:{{ .Values.s3.port }}"
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: SEAWEEDFS_FULLNAME
+            value: "seaweedfs-s3"
+        command:
+          - "/bin/bash"
+          - "-ec"
+          - |
+            wait_for_service() {
+              local port=$1
+              local waitForS3InSeconds=$2
+              local max_attempts=$(($waitForS3InSeconds/5))  # 10 minutes total (5s * 120)
+              local attempt=1
+              
+              echo "Waiting for service at seaweedfs-s3/$port... for $waitForS3InSeconds seconds"
+              while [ $attempt -le $max_attempts ]; do
+                if timeout 5 bash -c ">/dev/tcp/seaweedfs-s3/$port" 2>/dev/null; then
+                  echo "Service at seaweedfs-s3:$port is up!"
+                  return 0
+                fi
+                echo "Attempt $attempt: Service not ready yet, retrying in 5s..."
+                sleep 5
+                attempt=$((attempt + 1))
+              done
+              echo "Service at seaweedfs-s3:$port failed to become ready within 10 minutes"
+              exit 1
+            }
+            wait_for_service "{{ .Values.readinessProbe.httpGet.port }}" "{{ .Values.waitForS3InSeconds }}"
+          {{- range $reg, $props := $.Values.filer.s3.createBuckets }}
+            exec /bin/echo \
+            "s3.bucket.create --name {{ $props.name }}" |\
+            /opt/bitnami/seaweedfs/bin/weed shell
+          {{- end }}
+          {{- range $reg, $props := $.Values.filer.s3.createBuckets }}
+          {{- if $props.anonymousRead }}
+            exec /bin/echo \
+            "s3.configure --user anonymous \
+                --buckets {{ $props.name }} \
+                --actions Read \
+                --apply true" |\
+                /opt/bitnami/seaweedfs/bin/weed shell
+          {{- end }}  
+          {{- end }}
+        {{- if .Values.filer.s3.enableAuth }}
+        volumeMounts:
+          - name: config-users
+            mountPath: /etc/sw
+            readOnly: true
+        {{- end }}
+        ports:
+          - containerPort: {{ .Values.master.port }}
+            name: swfs-master
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
+    {{- if .Values.filer.s3.enableAuth }}
+      volumes:
+        - name: config-users
+          secret:
+            defaultMode: 420
+            {{- if not (empty .Values.filer.s3.existingConfigSecret) }}
+            secretName: {{ .Values.filer.s3.existingConfigSecret }}
+            {{- else }}
+            secretName: seaweedfs-s3-secret
+            {{- end }}
+    {{- end }}{{/** if .Values.filer.s3.enableAuth **/}}
+{{- end }}{{/** if .Values.filer.s3.createBuckets **/}}

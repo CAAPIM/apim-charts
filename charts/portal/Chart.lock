@@ -1,7 +1,10 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.17
+  version: 1.0.18
+- name: seaweedfs
+  repository: file://../seaweedfs
+  version: 1.0.1
 - name: mysql
   repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 12.2.2
@@ -11,5 +14,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:a232d427aafce12b14085dbf887219aaf83e563693d86fd6c0985e1d5c800810
-generated: "2025-06-17T23:17:16.7865154+05:30"
+digest: sha256:0023f65c31a891b2c52d96cedcce53c12f711c0d3c157dbe3cc970731b83d077
+generated: "2025-08-31T23:36:41.2457391+05:30"
