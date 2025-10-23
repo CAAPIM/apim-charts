@@ -119,9 +119,9 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.databaseSecret }}
-            {{ if eq .Values.global.databaseType "mysql" }}
+            {{- if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
-            {{ end }}
+            {{- end }}
             - name: WEED_MYSQL_CONNECTION_MAX_IDLE
               value: "5"
             - name: WEED_MYSQL_CONNECTION_MAX_OPEN
@@ -130,6 +130,38 @@ spec:
               value: "600"
             - name: WEED_MYSQL_INTERPOLATEPARAMS
               value: "true"
+            - name: RCLONE_CONFIG_MINIO_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_MINIO_PROVIDER
+              value: Minio
+            - name: RCLONE_CONFIG_MINIO_ENDPOINT
+              value: http://minio:9000
+            - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ACCESS_KEY
+            - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_SECRET_KEY
+            - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
+              value: SeaweedFS
+            - name: RCLONE_CONFIG_SEAWEEDFS_ENDPOINT
+              value: http://seaweedfs-s3:8333
+            - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: seaweedfs-s3-secret
+                  key: admin_access_key_id
+            - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: seaweedfs-s3-secret
+                  key: admin_secret_access_key
           envFrom:
           - configMapRef:
               name: seaweedfs-config

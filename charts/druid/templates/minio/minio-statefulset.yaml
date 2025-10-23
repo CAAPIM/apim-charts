@@ -1,5 +1,4 @@
 {{- if not .Values.minio.cloudStorage }}
-{{- if or (not .Values.global.deepStorage.seaweedfs ) ( and .Values.global.deepStorage.seaweedfs .Values.global.deepStorage.enableDataMigration )}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -137,5 +136,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.persistence.storage.minio }}
-{{- end }}
 {{- end }}

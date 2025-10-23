@@ -1,5 +1,4 @@
 {{ if .Values.minio.pdb.create }}
-{{- if or (not .Values.global.deepStorage.seaweedfs ) ( and .Values.global.deepStorage.seaweedfs .Values.global.deepStorage.enableDataMigration )}}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
@@ -16,5 +15,4 @@ spec:
   selector:
     matchLabels:
       app: minio
-{{ end }}
 {{- end }}
