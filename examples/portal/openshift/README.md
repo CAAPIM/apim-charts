@@ -47,6 +47,11 @@ $ helm install  <release-name>   --set-file "portal.registryCredentials=/path/to
 ```
 7. [Create a new tenant](https://github.com/CAAPIM/apim-charts/tree/stable/utils)
 
+8. Add new tenant route in Openshift.
+```
+$ oc process -f new-tenant-route-template.yaml -p TENANT_NAME=<YOUR-TENANT-NAME> -p PORTAL_DOMAIN=<PORTAL-DOMAIN> | oc apply -f -
+```
+
 ## Note
 Openshift works on routes(similar to ingress in k8s). so in the oc-portal-values.yaml, ingress.type.openshift set to true and ingress.type.kubernetes set to false.
 
