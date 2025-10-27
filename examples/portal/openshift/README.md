@@ -49,7 +49,7 @@ $ helm install  <release-name>   --set-file "portal.registryCredentials=/path/to
 
 8. update and apply new-tenant-route.yaml
 ```
-$ oc apply -f ./new-tenant-route.yaml
+$ oc process -f new-tenant-route-template.yaml -p TENANT_NAME=<YOUR-TENANT-NAME> -p PORTAL_DOMAIN=<PORTAL-DOMAIN> | oc apply -f -
 ```
 
 ## Note
