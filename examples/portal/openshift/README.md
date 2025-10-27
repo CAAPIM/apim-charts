@@ -47,7 +47,7 @@ $ helm install  <release-name>   --set-file "portal.registryCredentials=/path/to
 ```
 7. [Create a new tenant](https://github.com/CAAPIM/apim-charts/tree/stable/utils)
 
-8. update and apply new-tenant-route.yaml
+8. Add new tenant route in Openshift.
 ```
 $ oc process -f new-tenant-route-template.yaml -p TENANT_NAME=<YOUR-TENANT-NAME> -p PORTAL_DOMAIN=<PORTAL-DOMAIN> | oc apply -f -
 ```
