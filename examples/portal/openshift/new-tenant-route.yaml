@@ -3,7 +3,7 @@ apiVersion: route.openshift.io/v1
 metadata:
   name: portal-tenant-route
 spec:
-  host: <new-tenant-name>.portal.example.com   #replace portal.example.com with the right domain.
+  host: <new-tenant-name>.portal.example.com   #replace portal.example.com with the right domain.Should be same as values.portal.domain
   to:
     kind: Service
     name: dispatcher
