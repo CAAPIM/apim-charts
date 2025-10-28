@@ -6,11 +6,19 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.19 General Updates
+- This new version of the chart supports API Portal 5.4
+- DB container(for testing) upgraded to support 8.4.5 MySQL version.
+- Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
+
 ## 2.3.18 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
 
-## 2.3.16 General Updates
+## 2.3.17 General Updates
 - This new version of the chart supports API Portal 5.3.3.1
+
+## 2.3.16 General Updates
+- This new version of the chart supports API Portal 5.3.3
 - Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
 - Updated the Openshift installation procedure through an example. Refer examples/portal folder.
 
@@ -132,7 +140,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39/8.4.4 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39/8.4.4/8.4.5 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-4/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -699,17 +707,17 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                             |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.3`                  |
-| `image.apim` | APIM ingress image | `ingress:5.3.3`                     |
-| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.3.1`         |
-| `image.data` | portal-data image | `portal-data:5.3.3.1`               |
-| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.3` |
-| `image.analytics` | Analytics image | `analytics-server:5.3.3`            |
-| `image.authenticator` | Authenticator image | `authenticator:5.3.3`               |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.3.3`           |
-| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.3.3`             |
-| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.3.3`              |
-| `image.tlsManager` | TLS manager image | `tls-automator:5.3.3`               |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.4`                  |
+| `image.apim` | APIM ingress image | `ingress:5.4`                     |
+| `image.enterprise` | portal-enterprise image | `portal-enterprise:5.4`         |
+| `image.data` | portal-data image | `portal-data:5.4`               |
+| `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.4` |
+| `image.analytics` | Analytics image | `analytics-server:5.4`            |
+| `image.authenticator` | Authenticator image | `authenticator:5.4`               |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.4`           |
+| `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.4`             |
+| `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.4`              |
+| `image.tlsManager` | TLS manager image | `tls-automator:5.4`               |
 
 ## Subcharts
 For Production, use an external MySQL Server.
@@ -848,14 +856,14 @@ The following table lists the configured parameters of the Druid Subchart
 
 | Parameter                   | Description         | Default                  |
 |-----------------------------|---------------------|--------------------------|
-| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.3.3`        |
-| `druid.image.broker`        | Broker image        | `druid:5.3.3`            |
-| `druid.image.coordinator`   | Coordinator         | `druid:5.3.3`            |
-| `druid.image.middlemanager` | Middlemanager image | `druid:5.3.3`            |
-| `druid.image.minio`         | Minio image         | `minio:5.3.3`            |
-| `druid.image.historical`    | Historical image    | `druid:5.3.3`            |
-| `druid.image.kafka`         | Kafka image         | `kafka:5.3.3`            |
-| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.3.3` |
+| `druid.image.zookeeper `    | Zookeeper image     | `zookeeper:5.4`        |
+| `druid.image.broker`        | Broker image        | `druid:5.4`            |
+| `druid.image.coordinator`   | Coordinator         | `druid:5.4`            |
+| `druid.image.middlemanager` | Middlemanager image | `druid:5.4`            |
+| `druid.image.minio`         | Minio image         | `minio:5.4`            |
+| `druid.image.historical`    | Historical image    | `druid:5.4`            |
+| `druid.image.kafka`         | Kafka image         | `kafka:5.4`            |
+| `druid.image.ingestion`     | Ingestion image     | `ingestion-server:5.4` |
 
 ## RabbitMQ
 The following table lists the configured parameters of the Bitnami RabbitMQ Subchart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
@@ -864,7 +872,7 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `rabbitmq.enabled`                | Enable this subchart   | `true` |
 | `rabbitmq.host`                |  Host - must match fullnameOverride  | `rabbitmq` |
-| `rabbitmq.image.tag`    | RabbitMQ image version | `5.3.3` |
+| `rabbitmq.image.tag`    | RabbitMQ image version | `5.4` |
 | `rabbitmq.fullnameOverride`                | Overrides the name of the subchart   | `rabbitmq` |
 | `rabbitmq.pdb.create`    | Create PodDisruptionBudget (PDB) Object   | `false` |
 | `rabbitmq.pdb.maxUnavailable   | Maximum number of simultaneous unavailable pods   | `not set` |
@@ -979,9 +987,9 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Installing in OpenShift
-To install Portal >=5.3.3.1, refer examples/portal/openshift folder.
+To install Portal >=5.3.3, refer examples/portal/openshift folder.
 
-The below procedure works for portal < v5.3.3.1
+The below procedure works for portal < v5.3.3
 
 Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
 [Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)

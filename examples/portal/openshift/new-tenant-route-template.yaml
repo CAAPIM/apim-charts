@@ -1,0 +1,27 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: portal-tenant-route-template
+parameters:
+  - name: TENANT_NAME
+    description: Name of the tenant (subdomain)
+    required: true
+  - name: PORTAL_DOMAIN
+    description: Base domain for the portal
+    required: true
+objects:
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: "${TENANT_NAME}-route"
+    spec:
+      host: "${TENANT_NAME}.${PORTAL_DOMAIN}"
+      to:
+        kind: Service
+        name: dispatcher
+        weight: 100
+      port:
+        targetPort: portal-https
+      tls:
+        termination: passthrough
+      wildcardPolicy: None
