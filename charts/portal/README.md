@@ -987,9 +987,9 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Installing in OpenShift
-To install Portal >=5.4, refer examples/portal/openshift folder.
+To install Portal >=5.3.3, refer examples/portal/openshift folder.
 
-The below procedure works for portal < v5.4
+The below procedure works for portal < v5.3.3
 
 Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
 [Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
