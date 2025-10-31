@@ -40,13 +40,6 @@ global:
   # required by bitnamilegacy/mysql
   security:
     allowInsecureImages: true
-  deepStorage:
-    seaweedfs: false
-    enableDataMigration: false
-    auth:
-      secretName: seaweedfs-s3-secret
-    analytics:
-      bucketName: api-metrics
 
 portal:
   domain: example.com
@@ -1045,7 +1038,7 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.4.4-debian-12-r0"
+    tag: "8.4.5-debian-12-r0"
     repository: bitnamilegacy/mysql
   auth:
     username: portal

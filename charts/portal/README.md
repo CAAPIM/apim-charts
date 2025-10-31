@@ -6,8 +6,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.3.20 General Updates
+## 2.3.19 General Updates
 - This new version of the chart supports API Portal 5.4
+- DB container(for testing) upgraded to support 8.4.5 MySQL version.
+- Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
 - Added seaweedfs as s3 storage for analytics data
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
   - This is not ***enabled by default***.
@@ -48,10 +50,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Switch bitnami/mysql to bitnamilegacy/mysql.
 
 ## 2.3.17 General Updates
-- Switch bitnami/mysql to bitnamilegacy/mysql.
+- This new version of the chart supports API Portal 5.3.3.1
 
 ## 2.3.16 General Updates
-- This new version of the chart supports API Portal 5.3.3.1
+- This new version of the chart supports API Portal 5.3.3
 - Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
 - Updated the Openshift installation procedure through an example. Refer examples/portal folder.
 
@@ -173,7 +175,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
 ### Production
-- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39/8.4.4 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-4/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
+- A dedicated MySQL 8.0.31/8.0.33/8.0.34/8.0.37/8.0.39/8.4.4/8.4.5 server [See TechDocs for more information](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-4/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-an-external-database.html)
 - 3 Worker nodes with at least 4vcpu and 32GB ram - High Availability with analytics
 - Access to a DNS Server
 - Signed SSL Server Certificate
@@ -1020,9 +1022,9 @@ Resulting hostnames:
 | API analytics | `dev-portal-analytics.example.com` | `analytics.example.com` |
 
 ## Installing in OpenShift
-To install Portal >=5.4, refer examples/portal/openshift folder.
+To install Portal >=5.3.3, refer examples/portal/openshift folder.
 
-The below procedure works for portal < v5.4
+The below procedure works for portal < v5.3.3
 
 Fetch the OC namespace openshift.io/sa.scc.uid-range values(`<runAsUser-start>/<end>`) and openshift.io/sa.scc.supplemental-groups(`<fsGroupId-start>/<end>`) annotation values.
 [Refer to OpenShift documentation](https://docs.openshift.com/dedicated/authentication/managing-security-context-constraints.html#security-context-constraints-pre-allocated-values_configuring-internal-oauth)
