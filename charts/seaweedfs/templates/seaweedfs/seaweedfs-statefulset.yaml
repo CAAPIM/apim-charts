@@ -8,6 +8,12 @@ metadata:
     chart: {{ template "seaweedfs.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
   {{- if .Values.annotations }}
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}
@@ -489,10 +495,6 @@ spec:
             secretName: seaweedfs-client-cert
         {{- end }}
         {{ tpl .Values.extraVolumes . | nindent 8 }}
-      {{- if .Values.nodeSelector }}
-      nodeSelector:
-        {{ tpl .Values.nodeSelector . | nindent 8 }}
-      {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: seaweedfs-vol-claim

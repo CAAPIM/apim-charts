@@ -41,6 +41,12 @@ global:
   security:
     allowInsecureImages: true
 
+  deepStorage:
+    auth:
+      secretName: seaweedfs-s3-secret
+    analytics:
+      bucketName: api-metrics
+
 portal:
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
