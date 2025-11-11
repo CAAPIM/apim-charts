@@ -478,6 +478,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `jobs.image.PullPolicy`                                        | Image pull policy applied to jobs                                                                                            | `IfNotPresent`                                 |
 | `jobs.podSecurityContext`                                      | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                | `{} evaluated as a template`                                 |
 | `jobs.containerSecurityContext`                                | Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                    | `{} evaluated as a template`                                 |
+| `jobs.dbUpgradePortal.resources`                               | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `jobs.dbUpgradeRbac.resources`                                 | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
 
 ### Database Node Pool Configurations
 
