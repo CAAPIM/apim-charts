@@ -1,0 +1,339 @@
+{{- if .Values.config.redis.subChart.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "gateway.fullname" . }}-redis
+  labels:
+    app: {{ template "gateway.name" . }}-redis
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: redis
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  {{- if or .Values.additionalAnnotations .Values.redis.commonAnnotations }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.redis.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+spec:
+  replicas: 1
+  serviceName: {{ template "gateway.fullname" . }}-redis-headless
+  podManagementPolicy: {{ .Values.redis.podManagementPolicy | default "OrderedReady" | quote }}
+  revisionHistoryLimit: {{ .Values.redis.revisionHistoryLimit | default 10 }}
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-redis
+      release: {{ .Release.Name }}
+      app.kubernetes.io/component: redis
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.redis.podAnnotations }}
+        {{- toYaml .Values.redis.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ template "gateway.fullname" . }}-redis
+        chart: {{ template "gateway.chart" . }}
+        release: {{ .Release.Name }}
+        app.kubernetes.io/component: redis
+        {{- if .Values.redis.podLabels }}
+        {{- toYaml .Values.redis.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.redis.schedulerName }}
+      schedulerName: {{ .Values.redis.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.redis.priorityClassName }}
+      priorityClassName: {{ .Values.redis.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.redis.affinity }}
+      affinity: {{- toYaml .Values.redis.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.redis.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.redis.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.redis.tolerations }}
+      tolerations: {{- toYaml .Values.redis.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.redis.podSecurityContext }}
+      securityContext: {{- toYaml .Values.redis.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.redis.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.redis.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if and .Values.redis.auth.enabled .Values.redis.auth.username }}
+      initContainers:
+      - name: generate-acl
+        image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        {{- if .Values.redis.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.redis.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        command:
+        - sh
+        - -c
+        - |
+          cat > /etc/redis/users.acl << EOF
+          user default off
+          user ${REDIS_USERNAME} on >${REDIS_PASSWORD} ~* &* +@all
+          EOF
+        env:
+        - name: REDIS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-redis-secret
+              key: redis-username
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-redis-secret
+              key: redis-password
+        volumeMounts:
+        - name: redis-acl
+          mountPath: /etc/redis
+      {{- end }}
+      containers:
+      - name: redis
+        image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        {{- if .Values.redis.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.redis.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        command:
+        - sh
+        - -c
+        - |
+          # Substitute environment variables in redis.conf and start Redis
+          envsubst < /etc/redis/redis.conf > /tmp/redis.conf
+          exec redis-server /tmp/redis.conf
+        env:
+        {{- if .Values.redis.auth.enabled }}
+        {{- if .Values.redis.auth.username }}
+        - name: REDIS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-redis-secret
+              key: redis-username
+        {{- end }}
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-redis-secret
+              key: redis-password
+        {{- end }}
+        {{- if .Values.redis.extraEnvVars }}
+        {{- toYaml .Values.redis.extraEnvVars | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: redis
+          containerPort: 6379
+          protocol: TCP
+        {{- if .Values.redis.livenessProbe.enabled | default true }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            {{- if .Values.redis.tls.enabled }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt ping | grep PONG
+            {{- end }}
+            {{- else }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli ping | grep PONG
+            {{- end }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.redis.livenessProbe.initialDelaySeconds | default 5 }}
+          periodSeconds: {{ .Values.redis.livenessProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.redis.livenessProbe.timeoutSeconds | default 5 }}
+          successThreshold: {{ .Values.redis.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.redis.livenessProbe.failureThreshold | default 5 }}
+        {{- end }}
+        {{- if .Values.redis.readinessProbe.enabled | default true }}
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            {{- if .Values.redis.tls.enabled }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt ping | grep PONG
+            {{- end }}
+            {{- else }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli ping | grep PONG
+            {{- end }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.redis.readinessProbe.initialDelaySeconds | default 5 }}
+          periodSeconds: {{ .Values.redis.readinessProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.redis.readinessProbe.timeoutSeconds | default 1 }}
+          successThreshold: {{ .Values.redis.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.redis.readinessProbe.failureThreshold | default 5 }}
+        {{- end }}
+        {{- if .Values.redis.startupProbe.enabled }}
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            {{- if .Values.redis.tls.enabled }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli --tls --cert /opt/redis/certs/tls.crt --key /opt/redis/certs/tls.key --cacert /opt/redis/certs/ca.crt ping | grep PONG
+            {{- end }}
+            {{- else }}
+            {{- if .Values.redis.auth.enabled }}
+            {{- if .Values.redis.auth.username }}
+            - redis-cli --user ${REDIS_USERNAME} -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- else }}
+            - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+            {{- end }}
+            {{- else }}
+            - redis-cli ping | grep PONG
+            {{- end }}
+            {{- end }}
+          initialDelaySeconds: {{ .Values.redis.startupProbe.initialDelaySeconds | default 0 }}
+          periodSeconds: {{ .Values.redis.startupProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.redis.startupProbe.timeoutSeconds | default 1 }}
+          successThreshold: {{ .Values.redis.startupProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.redis.startupProbe.failureThreshold | default 30 }}
+        {{- end }}
+        {{- if .Values.redis.resources }}
+        resources: {{- toYaml .Values.redis.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.redis.persistence.enabled }}
+        - name: data
+          mountPath: /data
+          {{- if .Values.redis.persistence.subPath }}
+          subPath: {{ .Values.redis.persistence.subPath }}
+          {{- end }}
+        {{- end }}
+        - name: config
+          mountPath: /etc/redis/redis.conf
+          subPath: redis.conf
+        {{- if and .Values.redis.auth.enabled .Values.redis.auth.username }}
+        - name: redis-acl
+          mountPath: /etc/redis/users.acl
+          subPath: users.acl
+        {{- end }}
+        {{- if .Values.redis.tls.enabled }}
+        - name: redis-certificates
+          mountPath: /opt/redis/certs
+          readOnly: true
+        {{- end }}
+        {{- if .Values.redis.extraVolumeMounts }}
+        {{- toYaml .Values.redis.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+      - name: {{ include "gateway.imagePullSecret" . }}
+      {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "gateway.fullname" . }}-redis-config
+      {{- if and .Values.redis.auth.enabled .Values.redis.auth.username }}
+      - name: redis-acl
+        emptyDir: {}
+      {{- end }}
+      {{- if .Values.redis.tls.enabled }}
+      - name: redis-certificates
+        secret:
+          {{- if .Values.redis.tls.autoGenerated }}
+          secretName: {{ template "gateway.fullname" . }}-redis-tls
+          {{- else }}
+          secretName: {{ .Values.redis.tls.certificatesSecret }}
+          {{- end }}
+          defaultMode: 0400
+      {{- end }}
+      {{- if not .Values.redis.persistence.enabled }}
+      - name: data
+        emptyDir: {}
+      {{- end }}
+      {{- if .Values.redis.extraVolumes }}
+      {{- toYaml .Values.redis.extraVolumes | nindent 6 }}
+      {{- end }}
+{{- if and .Values.redis.persistence.enabled (not .Values.redis.persistence.existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: {{ template "gateway.fullname" . }}-redis
+        chart: {{ template "gateway.chart" . }}
+        release: {{ .Release.Name }}
+        app.kubernetes.io/component: redis
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+      annotations:
+        meta.helm.sh/release-name: {{ .Release.Name }}
+        meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+        {{- if .Values.redis.persistence.annotations }}
+        {{- toYaml .Values.redis.persistence.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.redis.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      {{- if .Values.redis.persistence.storageClass }}
+      {{- if (eq "-" .Values.redis.persistence.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: {{ .Values.redis.persistence.storageClass | quote }}
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.redis.persistence.size | quote }}
+      {{- if .Values.redis.persistence.selector }}
+      selector: {{- toYaml .Values.redis.persistence.selector | nindent 8 }}
+      {{- end }}
+{{- else if and .Values.redis.persistence.enabled .Values.redis.persistence.existingClaim }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.redis.persistence.existingClaim }}
+{{- end }}
+{{- end }}
+

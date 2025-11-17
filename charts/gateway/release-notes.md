@@ -7,6 +7,26 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.39 Bitnami SubChart removal
+- All Bitnami SubCharts have been removed from the Gateway Helm Chart
+- Statefulsets for mysql and redis have been added to replace the subCharts
+  - These are examples only and should <b>NOT</b> be used in production environments!
+  - If you are using the mysql subChart in a development environment, a new persistent volume claim will be created.
+    - use graphman to export your gateway configuration prior to upgrading
+    - your old mysql claim and statefulset will remain
+  - The new Redis Statefulset is standalone only with optional SSL/TLS and password auth
+- Upgrading to the latest version of the Chart
+  - will not remove the existing mysql statefulset or associated persistent volume claim
+    - you will need to clean these up manually
+  - will not redeploy the Gateway if restartOnConfigChange.enabled is not true
+    - ```kubectl rollout restart deployment <release-name>-gateway```
+
+## General Updates
+- InfluxDB and the service metrics example have been removed
+  - using the [OTel integration](./README.md#opentelemetry-configuration) is a much better alternative
+- installSolutionKits has been removed
+  - if you were using this functionality in previous versions of the Gateway we recommend configuring a kubernetes job instead
+
 ## 3.0.38 General Updates
 - Remove extra gateway container env config
 

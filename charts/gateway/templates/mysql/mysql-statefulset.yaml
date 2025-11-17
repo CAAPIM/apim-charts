@@ -1,0 +1,264 @@
+{{- if .Values.database.create }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "gateway.fullname" . }}-mysql
+  labels:
+    app: {{ template "gateway.name" . }}-mysql
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  {{- end }}
+  {{- end }}
+spec:
+  replicas: 1
+  serviceName: {{ template "gateway.fullname" . }}-mysql
+  podManagementPolicy: {{ .Values.mysql.podManagementPolicy | default "OrderedReady" | quote }}
+  revisionHistoryLimit: {{ .Values.mysql.revisionHistoryLimit | default 10 }}
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-mysql
+      release: {{ .Release.Name }}
+      app.kubernetes.io/component: mysql
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.mysql.podAnnotations }}
+        {{- toYaml .Values.mysql.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        app: {{ template "gateway.fullname" . }}-mysql
+        chart: {{ template "gateway.chart" . }}
+        release: {{ .Release.Name }}
+        app.kubernetes.io/component: mysql
+        {{- if .Values.mysql.podLabels }}
+        {{- toYaml .Values.mysql.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.mysql.schedulerName }}
+      schedulerName: {{ .Values.mysql.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.mysql.priorityClassName }}
+      priorityClassName: {{ .Values.mysql.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.mysql.affinity }}
+      affinity: {{- toYaml .Values.mysql.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.mysql.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.mysql.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.mysql.tolerations }}
+      tolerations: {{- toYaml .Values.mysql.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.mysql.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml .Values.mysql.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.mysql.podSecurityContext }}
+      securityContext: {{- toYaml .Values.mysql.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.mysql.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.mysql.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if .Values.mysql.initContainers }}
+      initContainers: {{- toYaml .Values.mysql.initContainers | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: mysql
+        image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+        imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+        {{- if .Values.mysql.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.mysql.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-mysql-secret
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-mysql-secret
+              key: mysql-database
+        {{- if .Values.mysql.auth.username }}
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-mysql-secret
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "gateway.fullname" . }}-mysql-secret
+              key: mysql-password
+        {{- end }}
+        {{- if .Values.mysql.extraEnvVars }}
+        {{- toYaml .Values.mysql.extraEnvVars | nindent 8 }}
+        {{- end }}
+        {{- if .Values.mysql.extraEnvVarsCM }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.mysql.extraEnvVarsCM }}
+        {{- end }}
+        {{- if .Values.mysql.extraEnvVarsSecret }}
+        - secretRef:
+            name: {{ .Values.mysql.extraEnvVarsSecret }}
+        {{- end }}
+        ports:
+        - name: mysql
+          containerPort: 3306
+          protocol: TCP
+        {{- if .Values.mysql.livenessProbe.enabled | default true }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+          initialDelaySeconds: {{ .Values.mysql.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.mysql.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.mysql.livenessProbe.timeoutSeconds | default 5 }}
+          successThreshold: {{ .Values.mysql.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.mysql.livenessProbe.failureThreshold | default 3 }}
+        {{- end }}
+        {{- if .Values.mysql.readinessProbe.enabled | default true }}
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+          initialDelaySeconds: {{ .Values.mysql.readinessProbe.initialDelaySeconds | default 5 }}
+          periodSeconds: {{ .Values.mysql.readinessProbe.periodSeconds | default 5 }}
+          timeoutSeconds: {{ .Values.mysql.readinessProbe.timeoutSeconds | default 1 }}
+          successThreshold: {{ .Values.mysql.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.mysql.readinessProbe.failureThreshold | default 3 }}
+        {{- end }}
+        {{- if .Values.mysql.startupProbe.enabled }}
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+          initialDelaySeconds: {{ .Values.mysql.startupProbe.initialDelaySeconds | default 0 }}
+          periodSeconds: {{ .Values.mysql.startupProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.mysql.startupProbe.timeoutSeconds | default 5 }}
+          successThreshold: {{ .Values.mysql.startupProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.mysql.startupProbe.failureThreshold | default 30 }}
+        {{- end }}
+        {{- if .Values.mysql.resources }}
+        resources: {{- toYaml .Values.mysql.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.mysql.persistence.enabled }}
+        - name: data
+          mountPath: /var/lib/mysql
+          {{- if .Values.mysql.persistence.subPath }}
+          subPath: {{ .Values.mysql.persistence.subPath }}
+          {{- end }}
+        {{- end }}
+        - name: config
+          mountPath: /etc/my.cnf
+          subPath: my.cnf
+        {{- if or .Values.mysql.initdbScriptsConfigMap .Values.mysql.initdbScripts (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+        - name: custom-init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        {{- end }}
+        {{- if .Values.mysql.extraVolumeMounts }}
+        {{- toYaml .Values.mysql.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+      {{- if .Values.mysql.sidecars }}
+      {{- toYaml .Values.mysql.sidecars | nindent 6 }}
+      {{- end }}
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+      - name: {{ include "gateway.imagePullSecret" . }}
+      {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "gateway.fullname" . }}-mysql-config
+      {{- if or .Values.mysql.initdbScriptsConfigMap .Values.mysql.initdbScripts (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+      - name: custom-init-scripts
+        configMap:
+          {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+          name: otk-db-scripts-cm
+          {{- else }}
+          name: {{ .Values.mysql.initdbScriptsConfigMap | default (printf "%s-mysql-init-scripts" (include "gateway.fullname" .)) }}
+          {{- end }}
+      {{- end }}
+      {{- if not .Values.mysql.persistence.enabled }}
+      - name: data
+        emptyDir: {}
+      {{- end }}
+      {{- if .Values.mysql.extraVolumes }}
+      {{- toYaml .Values.mysql.extraVolumes | nindent 6 }}
+      {{- end }}
+{{- if and .Values.mysql.persistence.enabled (not .Values.mysql.persistence.existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: {{ template "gateway.fullname" . }}-mysql
+        chart: {{ template "gateway.chart" . }}
+        release: {{ .Release.Name }}
+        app.kubernetes.io/component: mysql
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+      annotations:
+        meta.helm.sh/release-name: {{ .Release.Name }}
+        meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+        {{- if .Values.mysql.persistence.annotations }}
+        {{- toYaml .Values.mysql.persistence.annotations | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+        helm.sh/hook: pre-install,post-upgrade
+        helm.sh/hook-weight: "-10"
+        {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.mysql.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      {{- if .Values.mysql.persistence.storageClass }}
+      {{- if (eq "-" .Values.mysql.persistence.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: {{ .Values.mysql.persistence.storageClass | quote }}
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.mysql.persistence.size | quote }}
+      {{- if .Values.mysql.persistence.selector }}
+      selector: {{- toYaml .Values.mysql.persistence.selector | nindent 8 }}
+      {{- end }}
+{{- else if and .Values.mysql.persistence.enabled .Values.mysql.persistence.existingClaim }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.mysql.persistence.existingClaim }}
+{{- end }}
+{{- end }}
+

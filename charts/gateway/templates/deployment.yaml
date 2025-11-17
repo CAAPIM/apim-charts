@@ -127,39 +127,6 @@ spec:
           {{- end }}
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
-          {{- else if .Values.installSolutionKits.enabled }}
-          lifecycle:
-            {{- if .Values.preStopScript.enabled }}
-            preStop:
-              exec:
-                command:
-                - /bin/bash
-                - /opt/docker/gracefulshutdown.sh
-                - {{ .Values.preStopScript.timeoutSeconds | quote }}
-                - {{ .Values.preStopScript.periodSeconds | quote }}
-                {{- range .Values.preStopScript.excludedPorts}}
-                - {{ . | quote }}
-                {{- end }}
-            {{- end }}
-            postStart:
-              exec:
-                command:
-                  - '/bin/sh'
-                  - '-c'
-                  - |
-                    declare -i restmanReadyAttempted=0
-                    until [[ "$(curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} --silent --output /dev/null --write ''%{http_code}'' -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/doc/)" == "200" ]]; do
-                      if [ "$((++restmanReadyAttempted))" -ge {{ $.Values.installSolutionKits.restmanReadyWaitMaxAttempt }} ]; then
-                        echo "Max restman ready wait attempted (max={{ $.Values.installSolutionKits.restmanReadyWaitMaxAttempt }}, interval={{ $.Values.installSolutionKits.restmanReadyWaitInterval }} )." >&2
-                        exit 1
-                      fi
-                      sleep {{ $.Values.installSolutionKits.restmanReadyWaitInterval }}
-                    done
-                    {{- range .Values.installSolutionKits.solutionKits }}
-                    {{ .preInstallCommand }}
-                    curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
-                    {{ .postInstallCommand }}
-                    {{- end }}
           {{- else if .Values.preStopScript.enabled }}
           lifecycle:
             preStop:
@@ -204,10 +171,6 @@ spec:
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
-{{- end }}
-{{- if .Values.serviceMetrics.enabled }}
-            - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/servicemetrics
 {{- end }}
 {{- if .Values.config.log.override }}
             - name: {{ template "gateway.fullname" . }}-log-config-override
@@ -704,13 +667,6 @@ spec:
             defaultMode: 292
             optional: false
             name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
-{{- end }}
-{{- if .Values.serviceMetrics.enabled }}
-        - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-          configMap:
-            defaultMode: 292
-            optional: false
-            name: {{ template "gateway.fullname" . }}-service-metrics-configmap
 {{- end }}
 {{- if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman

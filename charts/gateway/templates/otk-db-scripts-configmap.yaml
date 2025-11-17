@@ -1,8 +1,8 @@
-{{- if .Values.database.create }}
+{{- if and .Values.database.create .Values.otk.enabled .Values.otk.database.useDemoDb }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.mysql.initdbScriptsConfigMap }}
+  name: {{ .Values.mysql.initdbScriptsConfigMap | default "otk-db-scripts-cm" }}
   labels:
     app: {{ template "gateway.name" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

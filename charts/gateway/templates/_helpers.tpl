@@ -110,8 +110,10 @@ Redis config secret name
 Redis TLS secret name
 */}}
 {{- define "redisTlsSecretName" }}
-{{- if not .Values.config.redis.tls.existingSecret }}
-{{- printf "%s-%s" .Release.Name "redis-crt" -}}
+{{- if .Values.config.redis.subChart.enabled }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-tls" -}}
+{{- else if not .Values.config.redis.tls.existingSecret }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-crt" -}}
 {{- else }}
 {{- .Values.config.redis.tls.existingSecret }}
 {{- end }}
