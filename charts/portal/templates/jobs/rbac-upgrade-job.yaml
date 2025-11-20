@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -35,6 +36,9 @@ spec:
           imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
           {{- if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.jobs.dbUpgradeRbac.resources }}
+          resources: {{- toYaml .Values.jobs.dbUpgradeRbac.resources | nindent 12 }}
           {{- end }}
           env:
            - name: HOST

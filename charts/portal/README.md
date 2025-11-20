@@ -6,6 +6,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.20 General Updates
+- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
+
 ## 2.3.19 General Updates
 - This new version of the chart supports API Portal 5.4
 - DB container(for testing) upgraded to support 8.4.5 MySQL version.
@@ -477,6 +480,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `jobs.image.PullPolicy`                                        | Image pull policy applied to jobs                                                                                            | `IfNotPresent`                                 |
 | `jobs.podSecurityContext`                                      | Pod's security context settings applied to jobs. Overrides global.podSecurityContext settings                                | `{} evaluated as a template`                                 |
 | `jobs.containerSecurityContext`                                | Container's security context settings applied to jobs. Overrides global.containerSecurityContext settings                    | `{} evaluated as a template`                                 |
+| `jobs.dbUpgradePortal.resources`                               | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
+| `jobs.dbUpgradeRbac.resources`                                 | Resource request/limits                                                                                                      | `{} evaluated as a template`                                 |
 
 ### Database Node Pool Configurations
 
