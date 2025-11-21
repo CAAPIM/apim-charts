@@ -627,8 +627,7 @@ seaweedfs:
 
    # nodeSelector labels for master pod assignment, formatted as a muli-line string.
   # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
-  nodeSelector: |
-    kubernetes.io/arch: amd64
+  nodeSelector: {}
 
    # Used to assign priority to master pods
   # ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
