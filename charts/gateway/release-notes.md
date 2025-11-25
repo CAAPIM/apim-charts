@@ -3,9 +3,9 @@
 Back to [Readme](./README.md#release-notes)
 
 # Java 21
-The Layer7 API Gateway is now running with Java 21 with the release of v11.2.00.
+The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
-If you use Policy Manager, you will need to update to v11.2.00.
+If you use Policy Manager, you will need to update to v11.2.0.
 
 ## 3.0.39 General Updates
 - Add using initContainer to mount secret
