@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
 
 If you use Policy Manager, you will need to update to v11.1.00.
 
+## 3.0.39 General Updates
+Images for mysql, redis and grafana have been temporarily switched to caapim to avoid disruption during future changes to the bitnami legacy repository.
+
 ## 3.0.38 General Updates
 - Remove extra gateway container env config
 
