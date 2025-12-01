@@ -73,6 +73,7 @@ Helm Version    Supported Kubernetes Versions
 * [Service Configuration](#port-configuration)
 * [Gateway Application Ports](#gateway-application-ports)
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
+* [OTK Compatibility with Gateway 11.2](#otk-compatibility-with-gateway-112)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Shared State Preview Features](#shared-state-preview-features)
@@ -301,6 +302,19 @@ management:
 ```
 
 [Back to Additional Guides](#additional-guides)
+
+### OTK Compatibility with Gateway 11.2
+These below information is relevant for those who are upgrading their Gateway to version 11.2 and utilizing the OAuth Toolkit (OTK)
+1. **OTK 4.6.4** is presently the only version that provides seamless support for Gateway 11.2
+2. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
+   * After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
+       * 4.6.0.1
+       * 4.6.1.1
+       * 4.6.2.1
+       * 4.6.3.1
+   * It has to be ensured that Evaluate JSON Path Assertion (V1) assertion is added to the GW. 
+     * This will be provided as Tactical assertion. Please find more information on how to get the assertion [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
+     * In Helm chart, this can be done using init Containers. For more information & examples refer to [Utilities](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
 
 ### OTK install or upgrade
 OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
