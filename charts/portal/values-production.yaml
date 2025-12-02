@@ -486,10 +486,10 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.3.2
+  dispatcher: dispatcher:5.3.2.1
   apim: ingress:5.3.2
   enterprise: portal-enterprise:5.3.2
-  data: portal-data:5.3.2
+  data: portal-data:5.3.2.1
   tps: tenant-provisioning-service:5.3.2
   analytics: analytics-server:5.3.2
   authenticator: authenticator:5.3.2
