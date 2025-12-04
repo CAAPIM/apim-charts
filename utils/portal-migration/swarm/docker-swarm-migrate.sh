@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 
 ##################################################
 ## Run this script on your docker swarm node    ##
@@ -41,9 +42,6 @@ function copy_certs() {
     mv $folder/apim.pem $internal_path/apim-tps.pem
     rm $folder/apim.*
 
-    mv $folder/datalake.p12 $internal_path/apim-datalake.p12
-    mv $folder/dssg.p12 $internal_path/apim-dssg.p12
-    mv $folder/pssg.p12 $internal_path/pssg-ssl.p12
     mv $folder/tps.p12 $internal_path/tps.p12
 
     mv $folder/dispatcher.p12 $external_path/dispatcher-ssl.p12
@@ -64,12 +62,6 @@ function format_certs() {
     for pass in $passArr; do
         pass=(${pass//=/ })
         case $pass in
-        DATALAKE_SSL_KEY_PASS)
-            update_keypass ${pass[1]} $internalKeyPass $internal_path apim-datalake
-            ;;
-        PSSG_SSL_KEY_PASS)
-            update_keypass ${pass[1]} $internalKeyPass $internal_path pssg-ssl
-            ;;
         APIM_SSL_KEY_PASS)
             update_keypass ${pass[1]} $externalKeyPass $external_path apim-ssl
             ;;
@@ -78,9 +70,6 @@ function format_certs() {
             ;;
         TPS_SSL_KEY_PASS)
             update_keypass ${pass[1]} $internalKeyPass $internal_path tps
-            ;;
-        DSSG_SSL_KEY_PASS)
-            update_keypass ${pass[1]} $internalKeyPass $internal_path apim-dssg
             ;;
         esac
 

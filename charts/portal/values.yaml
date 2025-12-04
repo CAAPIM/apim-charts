@@ -1055,12 +1055,28 @@ jobs:
   image:
     pullPolicy: IfNotPresent
 
+  dbUpgradePortal:
+    resources:
+      requests: {}
+      # cpu: 100m
+      # memory: 250Mi
+      limits: {}
+      # cpu: 1000m
+      # memory: 1000Mi
+  dbUpgradeRbac:
+    resources:
+      requests: {}
+      # cpu: 100m
+      # memory: 250Mi
+      limits: {}
+      # cpu: 1000m
+      # memory: 1000Mi
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.4.4-debian-12-r0"
+    tag: "8.4.5-debian-12-r0"
     repository: bitnamilegacy/mysql
   auth:
     username: portal

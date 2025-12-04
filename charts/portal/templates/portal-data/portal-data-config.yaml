@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -44,12 +45,12 @@ data:
   CONFIG_APIM_PORT: {{ .Values.portal.otk.port | quote }}
   CONFIG_BROKER_HOST: {{ include "broker-host" . | quote }}
   CONFIG_BROKER_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
-  CONFIG_PSSG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
-  CONFIG_PSSG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
-  CONFIG_PSSG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
+  CONFIG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
+  CONFIG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
+  CONFIG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
   {{- if .Values.portal.hostnameWhitelist }}
   HOSTNAME_WHITELIST: {{ .Values.portal.hostnameWhitelist}}
   {{- end }}

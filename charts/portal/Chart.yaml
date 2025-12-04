@@ -2,7 +2,7 @@ apiVersion: v2
 appVersion: "5.3.4"
 description: CA API Developer Portal
 name: portal
-version: 2.3.18
+version: 2.3.20
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
@@ -19,7 +19,7 @@ dependencies:
   condition: portal.intelligence.enabled
   repository: "file://../intelligence"
 - name: mysql
-  version: 12.2.2
+  version: 12.3.5
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: global.setupDemoDatabase
 - name: rabbitmq
