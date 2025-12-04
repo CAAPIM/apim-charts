@@ -285,7 +285,7 @@ Mount it in the StatefulSet by customizing the deployment.
 ```yaml
 kafka:
   image:
-    kafka: kafka:4.0.0
+    kafka: kafka:latest
   
   kafka:
     replicaCount: 3
