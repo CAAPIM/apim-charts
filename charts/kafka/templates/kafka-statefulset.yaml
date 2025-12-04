@@ -61,43 +61,59 @@ spec:
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         command:
-          - /bin/bash
+          - /bin/sh
           - -c
           - |
-            set -e
-            echo "Initializing Kafka KRaft configuration..."
+            set -ex
+            echo "=== Initializing Kafka KRaft configuration ==="
             
             # Extract pod ordinal from hostname
             POD_NAME=$(hostname)
-            NODE_ID=$(echo $POD_NAME | rev | cut -d'-' -f1 | rev)
             echo "Pod name: $POD_NAME"
+            
+            NODE_ID=$(echo "$POD_NAME" | rev | cut -d'-' -f1 | rev)
             echo "Node ID: $NODE_ID"
+            
+            # Validate NODE_ID is a number
+            if ! echo "$NODE_ID" | grep -qE '^[0-9]+$'; then
+              echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
+              exit 1
+            fi
+            
+            # Create shared directory if it doesn't exist
+            mkdir -p /shared
             
             # Write node ID to shared volume
             echo "KAFKA_CFG_NODE_ID=$NODE_ID" > /shared/node-id.env
+            echo "Wrote KAFKA_CFG_NODE_ID to /shared/node-id.env"
             
             {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
-            # Build advertised listeners
+            echo "Building advertised listeners with external access..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            echo "Internal listener: $INTERNAL_LISTENER"
             
             {{- if .Values.externalAccess.hostname }}
             # Use provided hostname for external listener
             EXTERNAL_LISTENER="EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ .Values.externalAccess.port }}"
+            echo "External listener (hostname): $EXTERNAL_LISTENER"
             {{- else }}
             # Use pod-specific external service
             EXTERNAL_LISTENER="EXTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}-external:{{ .Values.externalAccess.port }}"
+            echo "External listener (service): $EXTERNAL_LISTENER"
             {{- end }}
             
             ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${EXTERNAL_LISTENER}"
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
             {{- else }}
-            # Internal only advertised listeners
+            echo "Building advertised listeners (internal only)..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            echo "Internal listener: $INTERNAL_LISTENER"
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER" >> /shared/node-id.env
             {{- end }}
             
-            echo "Configuration written to /shared/node-id.env:"
+            echo "=== Configuration written to /shared/node-id.env ==="
             cat /shared/node-id.env
+            echo "=== Init container completed successfully ==="
         volumeMounts:
         - name: shared-config
           mountPath: /shared
@@ -113,7 +129,7 @@ spec:
         {{- end }}
         {{- if .Values.kafka.kraft.enabled }}
         command:
-          - /bin/bash
+          - /bin/sh
           - -c
           - |
             set -e
