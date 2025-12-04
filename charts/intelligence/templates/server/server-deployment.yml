@@ -134,15 +134,15 @@ spec:
 
               # Discover Kafka broker nodes
               # For custom Kafka subchart
-              {{- if .Values.kafka.kafka }}
+              {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
               for i in $(seq 0 $((BROKER_COUNT - 1))); do
                 SVC_NAME="${RELEASE_NAME}-kafka-${i}-external"
                 discover_broker "$SVC_NAME"
               done
-              {{- else }}
+              {{- else if and .Values.kafka (hasKey .Values.kafka "controller") .Values.kafka.controller }}
               # For Bitnami Kafka chart (backward compatibility)
-              {{- if not .Values.kafka.controller.controllerOnly }}
+              {{- if and .Values.kafka.controller.replicaCount (not .Values.kafka.controller.controllerOnly) }}
               CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
               for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
                 SVC_NAME="${RELEASE_NAME}-kafka-controller-${i}-external"
@@ -151,6 +151,7 @@ spec:
               {{- end }}
 
               # Discover dedicated broker nodes
+              {{- if and (hasKey .Values.kafka "broker") .Values.kafka.broker .Values.kafka.broker.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.broker.replicaCount }}
               if [ "$BROKER_COUNT" -gt 0 ]; then
                 for i in $(seq 0 $((BROKER_COUNT - 1))); do
@@ -158,6 +159,10 @@ spec:
                   discover_broker "$SVC_NAME"
                 done
               fi
+              {{- end }}
+              {{- else }}
+              # Fallback: No Kafka configuration found
+              echo "Warning: No Kafka broker configuration found"
               {{- end }}
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
