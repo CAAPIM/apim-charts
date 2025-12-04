@@ -28,7 +28,7 @@ dependencies:
   condition: rabbitmq.enabled
 - name: kafka
   version: ^1.0.0
-  condition: portal.intelligence.enabled
+  condition: portal.intelligence.enabled, portal.analytics.enabled
   repository: "file://../kafka"
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"

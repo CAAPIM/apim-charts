@@ -75,7 +75,16 @@ Get "database-port" based on databaseType value
 Get "kafka" brokers
 */}}
 {{- define "kafka-brokers" -}}
-    {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
+    {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
+        {{- /* Custom Kafka subchart */ -}}
+        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
+    {{- else if and .Values.kafka.listeners .Values.kafka.listeners.client }}
+        {{- /* Bitnami Kafka chart */ -}}
+        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
+    {{- else }}
+        {{- /* Default fallback */ -}}
+        {{- printf "%s-kafka:9092" .Release.Name -}}
+    {{- end }}
 {{- end -}}
 
 {{/*
