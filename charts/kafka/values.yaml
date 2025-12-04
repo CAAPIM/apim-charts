@@ -1,0 +1,189 @@
+# Global values (inherited from parent chart)
+global:
+  portalRepository: ""
+  storageClass: ""
+  pullSecret: ""
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  additionalLabels: {}
+  # Portal subdomain (used for advertised listeners)
+  subdomainPrefix: ""
+
+# Kafka image configuration
+image:
+  kafka: kafka:4.0.0
+  pullPolicy: IfNotPresent
+
+# Kafka deployment configuration
+kafka:
+  # Number of Kafka broker replicas
+  replicaCount: 1
+  
+  # Additional labels for Kafka pods
+  additionalLabels: {}
+  
+  # Pod annotations
+  podAnnotations: {}
+  
+  # Force redeploy by adding timestamp annotation
+  forceRedeploy: false
+  
+  # Pod affinity rules
+  affinity: {}
+  
+  # Node selector
+  nodeSelector: {}
+  
+  # Tolerations
+  tolerations: []
+  
+  # Pod security context
+  podSecurityContext: {}
+  
+  # Container security context
+  containerSecurityContext: {}
+  
+  # Resource requests and limits
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 750Mi
+    # limits:
+    #   cpu: 1000m
+    #   memory: 1.5Gi
+  
+  # KRaft Mode Configuration (Kafka 4.0.0+)
+  kraft:
+    # Enable KRaft mode (Zookeeper-less)
+    enabled: true
+    # Cluster ID for KRaft (auto-generated if empty)
+    clusterId: ""
+    # Node ID (will be set based on pod ordinal if empty)
+    nodeId: ""
+    # Process roles (broker, controller, or both)
+    processRoles: "broker,controller"
+    # Controller quorum voters format: id@host:port
+    # For StatefulSet with 3 replicas: "0@kafka-0.kafka:9093,1@kafka-1.kafka:9093,2@kafka-2.kafka:9093"
+    controllerQuorumVoters: ""
+  
+  # Listener Configuration
+  listeners:
+    # Internal listener for inter-broker and client communication within cluster
+    internal:
+      enabled: true
+      port: 9092
+      protocol: PLAINTEXT
+    # External listener for clients outside the cluster
+    external:
+      enabled: true
+      port: 9094
+      protocol: SSL
+    # Controller listener for KRaft mode
+    controller:
+      enabled: true
+      port: 9093
+      protocol: PLAINTEXT
+    # Inter-broker listener name
+    interBrokerListenerName: INTERNAL
+  
+  # Advertised Listeners Configuration
+  # Custom advertised listeners (portal-dist style)
+  # Format: "INTERNAL://kafka:9092,EXTERNAL://apim-kafka.subdomain:9094"
+  # Leave empty to auto-generate based on externalAccess settings
+  advertisedListeners: ""
+  
+  # Log retention configuration
+  logRetentionHours: 6
+  
+  # TLS/SSL Configuration
+  tls:
+    # Enable TLS/SSL
+    enabled: false
+    # TLS type (PEM or JKS)
+    type: PEM
+    # Client authentication (none, requested, required)
+    clientAuth: required
+    
+    # ============================================
+    # Option 1: Kubernetes Secret (Recommended)
+    # ============================================
+    # Secret containing TLS certificates
+    # Should contain: keystore.key, truststore.pem
+    secretName: ""
+    # Keys in the secret
+    keystoreKeyKey: "keystore.key"
+    truststoreCertKey: "truststore.pem"
+    # Password secret for encrypted keys
+    passwordSecretName: ""
+    passwordSecretKey: "keypass.txt"
+    
+    # ============================================
+    # Option 2: Inline Certificates (portal-dist style)
+    # ============================================
+    # Pass certificates as environment variables
+    # These take precedence over secretName if both are set
+    # Can be base64 encoded or PEM format
+    truststoreCertContent: ""
+    keystoreKeyContent: ""
+    
+    # ============================================
+    # Option 3: CA Certificates (analytics_util style)
+    # ============================================
+    # Alternative certificate format
+    caKey: ""
+    caCertificate: ""
+    caTruststoreCertificate: ""
+  
+  # SASL Authentication Configuration
+  sasl:
+    # Enable SASL authentication
+    enabled: false
+    # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+    mechanisms: PLAIN
+    # Inter-broker SASL mechanism
+    interBrokerProtocol: PLAIN
+    # JAAS configuration file path
+    jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
+
+# Zookeeper configuration
+zookeeper:
+  hostname: zookeeper
+  port: 2181
+
+# Persistence configuration
+persistence:
+  storage:
+    kafka: 10Gi
+
+# Service Account
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # Automount service account token
+  automountServiceAccountToken: true
+
+# External access configuration for autodiscovery
+externalAccess:
+  # Enable external access to Kafka brokers
+  enabled: true
+  # Service type for external access (LoadBalancer or NodePort)
+  serviceType: LoadBalancer
+  # Port for external access (should match kafka.listeners.external.port)
+  port: 9094
+  # Hostname/domain for external access (used in advertised listeners)
+  # Format: apim-kafka.{subdomain} or specific hostname
+  hostname: ""
+  # Annotations for external services
+  annotations: {}
+  # LoadBalancer IPs (optional, for static IPs)
+  loadBalancerIPs: []
+  # NodePort values (optional, for NodePort service type)
+  nodePorts: []
+  # Auto-generate advertised listeners based on service IPs
+  autoAdvertisedListeners: true
+

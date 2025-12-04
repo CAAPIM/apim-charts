@@ -132,7 +132,16 @@ spec:
                   fi
               }
 
-              # Discover controller nodes if they are also brokers
+              # Discover Kafka broker nodes
+              # For custom Kafka subchart
+              {{- if .Values.kafka.kafka }}
+              BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
+              for i in $(seq 0 $((BROKER_COUNT - 1))); do
+                SVC_NAME="${RELEASE_NAME}-kafka-${i}-external"
+                discover_broker "$SVC_NAME"
+              done
+              {{- else }}
+              # For Bitnami Kafka chart (backward compatibility)
               {{- if not .Values.kafka.controller.controllerOnly }}
               CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
               for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
@@ -149,6 +158,7 @@ spec:
                   discover_broker "$SVC_NAME"
                 done
               fi
+              {{- end }}
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
               echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env

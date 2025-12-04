@@ -447,17 +447,17 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.3.4
-  apim: ingress:5.3.4
-  enterprise: portal-enterprise:5.3.4
-  data: portal-data:5.3.4
-  tps: tenant-provisioning-service:5.3.4
-  analytics: analytics-server:5.3.4
-  authenticator: authenticator:5.3.4
-  dbUpgrade: db-upgrade-portal:5.3.4
-  rbacUpgrade: db-upgrade-rbac:5.3.4
-  upgradeVerify: upgrade-verify:5.3.4
-  tlsManager: tls-automator:5.3.4
+  dispatcher: dispatcher:5.4
+  apim: ingress:5.4
+  enterprise: portal-enterprise:5.4
+  data: portal-data:5.4
+  tps: tenant-provisioning-service:5.4
+  analytics: analytics-server:5.4
+  authenticator: authenticator:5.4
+  dbUpgrade: db-upgrade-portal:5.4
+  rbacUpgrade: db-upgrade-rbac:5.4
+  upgradeVerify: upgrade-verify:5.4
+  tlsManager: tls-automator:5.4
 
 ##
 ## Subchart Configuration
@@ -474,8 +474,15 @@ druid:
     storage:
       historical: 50Gi
       minio: 40Gi
-      kafka: 10Gi
       zookeeper: 10Gi
+  # Kafka configuration for druid ingestion service
+  kafka:
+    # Reference to Kafka broker service name (deployed as separate subchart)
+    brokerService: kafka
+    # Kafka broker port
+    brokerPort: 9092
+    # Kafka replication count (should match kafka.kafka.replicaCount)
+    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -707,164 +714,152 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.3.4
-    broker: druid:5.3.4
-    coordinator: druid:5.3.4
-    middlemanager: druid:5.3.4
-    minio: minio:5.3.4
-    historical: druid:5.3.4
-    kafka: kafka:5.3.4
-    ingestion: ingestion-server:5.3.4
+    zookeeper: zookeeper:5.4
+    broker: druid:5.4
+    coordinator: druid:5.4
+    middlemanager: druid:5.4
+    minio: minio:5.4
+    historical: druid:5.4
+    ingestion: ingestion-server:5.4
 
-# The following values are for the bitnami/kafka chart.
-# For more information, please see the bitnami/kafka chart documentation.
+# Configuration for the custom Kafka subchart
 kafka: &kafka_config
-  # enabled Whether to deploy the Kafka chart.
-  enabled: false
-  metrics:
-    enabled: false
-  # clusterId Kafka Kraft cluster ID (ignored if existingKraftSecret is set). A random cluster ID will be generated the 1st time Kraft is initialized if not set.
-  clusterId: "apim-kafka"
-  # overrideConfiguration Kafka common configuration override. Values defined here takes precedence over the ones defined at `config`
-  overrideConfiguration:
-    offsets.topic.replication.factor: 1
-    transaction.state.log.replication.factor: 1
-    log.retention.hours: 6
-  # defaultInitContainers.autoDiscovery.enabled Enable init container that auto-detects external IPs/ports by querying the K8s API
-  defaultInitContainers:
-    autoDiscovery:
-      enabled: true
-      image:
-        registry: docker.io
-        repository: bitnamilegacy/kubectl
-        tag: 1.33.4-debian-12-r0
-        pullPolicy: IfNotPresent
-        pullSecrets:
-          - broadcom-apim
-  # externalAccess.enabled Enable Kubernetes external cluster access to Kafka brokers
-  externalAccess:
-    enabled: true
-    controller:
-      service:
-        type: LoadBalancer
-        ports:
-          external: 9095
-        annotations:
-          cloud.google.com/load-balancer-type: Internal
-    broker:
-      service:
-        ports:
-          external: 9095
-        type: LoadBalancer
-        annotations:
-          cloud.google.com/load-balancer-type: Internal
-  # controller.replicaCount Number of Kafka controller-eligible nodes
-  controller:
-    replicaCount: 1
-    # controller.controllerOnly If set to true, controller nodes will be deployed as dedicated controllers, instead of controller+broker processes.
-    controllerOnly: false
-    # controller.automountServiceAccountToken Mount Service Account token in pod
-    automountServiceAccountToken: true
-    ## controller.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    ## Example:
-    ## resources:
-    ##   requests:
-    ##     cpu: 2
-    ##     memory: 512Mi
-    ##   limits:
-    ##     cpu: 3
-    ##     memory: 1024Mi
-    ##
-    resources: {}
-  # broker.replicaCount Number of Kafka broker-only nodes
-  broker:
-    replicaCount: 0
-    # broker.automountServiceAccountToken Mount Service Account token in pod
-    automountServiceAccountToken: true
-    ## controller.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
-    ## Example:
-    ## resources:
-    ##   requests:
-    ##     cpu: 2
-    ##     memory: 512Mi
-    ##   limits:
-    ##     cpu: 3
-    ##     memory: 1024Mi
-    ##
-    resources: {}
+  # Global configuration passed to Kafka subchart
+  global:
+    subdomainPrefix: "" # Set to your portal subdomain for advertised listeners
+  
+  # Image configuration
   image:
-    # image.registry Kafka image registry
-    registry: caapim
-    # image.repository Kafka image repository
-    repository: kafka
-    # image.tag Kafka image tag
-    tag: "5.3.4"
-    # image.pullSecrets Specify docker-registry secret names as an array
-    pullSecrets:
-      - broadcom-apim
-    # image.debug Specify if debug values should be set
-    debug: false
-  # persistence.enabled Enable Kafka data persistence using PVC
-  persistence:
-    enabled: true
-  # Kafka listeners configuration
-  listeners:
-    # listeners.client.name Name for the Kafka client listener
-    # listeners.client.containerPort Port for the Kafka client listener
-    # listeners.client.protocol Security protocol for the Kafka client listener.
-    client:
-      containerPort: 9092
-      protocol: PLAINTEXT
-      name: CLIENT
-    # listeners.controller.name Name for the Kafka controller listener
-    # listeners.controller.containerPort Port for the Kafka controller listener
-    # listeners.controller.protocol Security protocol for the Kafka controller listener.
-    controller:
-      name: CONTROLLER
-      containerPort: 9093
-      protocol: PLAINTEXT
-    # listeners.interbroker.name Name for the Kafka inter-broker listener
-    # listeners.interbroker.containerPort Port for the Kafka inter-broker listener
-    # listeners.interbroker.protocol Security protocol for the Kafka inter-broker listener.
-    interbroker:
-      containerPort: 9094
-      protocol: PLAINTEXT
-      name: INTERNAL
-    # listeners.external.name Name for the Kafka external listener
-    # listeners.external.containerPort Port for the Kafka external listener
-    # listeners.external.protocol Security protocol for the Kafka external listener.
-    # listeners.external.sslClientAuth. Set to 'required' to enforce mTLS
-    external:
-      containerPort: 9095
-      protocol: SSL
-      name: EXTERNAL
-      sslClientAuth: "required"
-  # Kafka TLS settings
-  tls:
-    # tls.type Format to use for TLS certificates. Allowed types: `JKS` and `PEM`
-    type: PEM
-    # tls.existingSecret Name of the existing secret containing the TLS certificates for the Kafka nodes.
-    existingSecret: portal-kafka-tls-secret
-    # tls.passwordsSecret Name of the secret containing the password to access the JKS files or PEM key when they are password-protected. (`key`: `password`)
-    passwordsSecret: portal-internal-secret
-    # tls.passwordsSecretKeystoreKey The secret key from the tls.passwordsSecret containing the password for the Keystore.
-    passwordsSecretKeystoreKey: keypass.txt
-    # tls.passwordsSecretTruststoreKey The secret key from the tls.passwordsSecret containing the password for the Truststore.
-    passwordsSecretTruststoreKey: keypass.txt
-    # tls.endpointIdentificationAlgorithm The endpoint identification algorithm to validate server hostname using server certificate
-    # Blank to skip hostname validation
-    endpointIdentificationAlgorithm:
-    # tls.sslClientAuth Sets the default value for the ssl.client.auth Kafka setting.
-    sslClientAuth: "required"
-    # tls.autoGenerated.enabled Enable automatic generation of TLS certificates (only supported if `tls.type` is `PEM`)
-    autoGenerated:
+    kafka: kafka:4.0.0
+    pullPolicy: IfNotPresent
+  
+  # Kafka deployment configuration
+  kafka:
+    # Number of Kafka broker replicas
+    replicaCount: 1
+    # Additional labels for Kafka pods
+    additionalLabels: {}
+    # Pod annotations
+    podAnnotations: {}
+    # Force redeploy by adding timestamp annotation
+    forceRedeploy: false
+    # Pod affinity rules
+    affinity: {}
+    # Node selector
+    nodeSelector: {}
+    # Tolerations
+    tolerations: []
+    # Pod security context
+    podSecurityContext: {}
+    # Container security context
+    containerSecurityContext: {}
+    # Resource requests and limits
+    resources: {}
+      # requests:
+      #   cpu: 100m
+      #   memory: 750Mi
+      # limits:
+      #   cpu: 1000m
+      #   memory: 1.5Gi
+    
+    # KRaft Mode Configuration (Kafka 4.0.0+)
+    kraft:
+      # Enable KRaft mode (Zookeeper-less)
+      enabled: true
+      # Cluster ID for KRaft (auto-generated if empty)
+      clusterId: ""
+      # Process roles (broker, controller, or both)
+      processRoles: "broker,controller"
+      # Controller quorum voters (auto-generated based on replicas if empty)
+      controllerQuorumVoters: ""
+    
+    # Listener Configuration
+    listeners:
+      # Internal listener for inter-broker and client communication
+      internal:
+        enabled: true
+        port: 9092
+        protocol: PLAINTEXT
+      # External listener for clients outside the cluster
+      external:
+        enabled: true
+        port: 9094
+        protocol: SSL
+      # Controller listener for KRaft mode
+      controller:
+        enabled: true
+        port: 9093
+        protocol: PLAINTEXT
+      # Inter-broker listener name
+      interBrokerListenerName: INTERNAL
+    
+    # Log retention configuration
+    logRetentionHours: 6
+    
+    # TLS/SSL Configuration
+    tls:
+      # Enable TLS/SSL
       enabled: false
-  # rbac.create Whether to create & use RBAC resources or not
-  rbac:
-    create: true
-  # serviceAccount.create Enable creation of ServiceAccount for Kafka pods
+      # TLS type (PEM or JKS)
+      type: PEM
+      # Client authentication (none, requested, required)
+      clientAuth: required
+      # Secret containing TLS certificates
+      secretName: ""
+      # Keys in the secret
+      keystoreKeyKey: "keystore.key"
+      truststoreCertKey: "truststore.pem"
+      # Password secret for encrypted keys
+      passwordSecretName: ""
+      passwordSecretKey: "keypass.txt"
+    
+    # SASL Authentication Configuration
+    sasl:
+      # Enable SASL authentication
+      enabled: false
+      # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+      mechanisms: PLAIN
+      # Inter-broker SASL mechanism
+      interBrokerProtocol: PLAIN
+      # JAAS configuration file path
+      jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
+  
+  # Zookeeper configuration (not used in KRaft mode, kept for compatibility)
+  zookeeper:
+    hostname: zookeeper
+    port: 2181
+  
+  # Persistence configuration
+  persistence:
+    storage:
+      kafka: 10Gi
+  
+  # Service Account
   serviceAccount:
     create: true
+    annotations: {}
+    name: ""
+    automountServiceAccountToken: true
+  
+  # External access configuration for autodiscovery
+  externalAccess:
+    # Enable external access to Kafka brokers
+    enabled: true
+    # Service type for external access (LoadBalancer or NodePort)
+    serviceType: LoadBalancer
+    # Port for external access
+    port: 9094
+    # Hostname/domain for external access (used in advertised listeners)
+    hostname: ""
+    # Annotations for external services
+    annotations:
+      cloud.google.com/load-balancer-type: Internal
+    # LoadBalancer IPs (optional, for static IPs)
+    loadBalancerIPs: []
+    # NodePort values (optional, for NodePort service type)
+    nodePorts: []
+    # Auto-generate advertised listeners based on service IPs
+    autoAdvertisedListeners: true
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq: &rabbitmq_config
@@ -874,7 +869,7 @@ rabbitmq: &rabbitmq_config
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.3.4"
+    tag: "5.4"
     pullSecrets:
       - broadcom-apim
   pdb:
@@ -981,7 +976,7 @@ apim-intelligence:
         enabled: true
         image:
           # The repository of the auto-discovery image.
-          repository: "docker.io/bitnamilegacy/kubectl"
+          repository: "docker.io/bitnami/kubectl"
           # The tag of the auto-discovery image.
           tag: "1.33.3-debian-12-r0"
           # The pull policy for the auto-discovery image.

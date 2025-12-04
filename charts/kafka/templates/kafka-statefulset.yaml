@@ -1,0 +1,216 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kafka.fullname" . }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kafka.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "kafka.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "kafka.fullname" . }}
+  replicas: {{ .Values.kafka.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.selectorLabels" . | nindent 8 }}
+      {{- if  .Values.kafka.podAnnotations }}
+      annotations: {{- toYaml .Values.kafka.podAnnotations | nindent 8 }}
+      {{- if .Values.kafka.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.kafka.podAnnotations }}
+      {{- if .Values.kafka.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "kafka.serviceAccountName" . }}
+      {{- if .Values.kafka.affinity }}
+      affinity: {{- toYaml .Values.kafka.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.kafka.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.tolerations }}
+      tolerations: {{- toYaml .Values.kafka.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.podSecurityContext }}
+      securityContext: {{- toYaml .Values.kafka.podSecurityContext | nindent 8 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- else }}
+      securityContext:
+        fsGroup: 1010
+      {{- end }}
+      {{- if .Values.kafka.kraft.enabled }}
+      initContainers:
+      # Init container to set node ID based on pod ordinal
+      - name: kafka-init
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+            echo "Initializing Kafka KRaft configuration..."
+            
+            # Extract pod ordinal from hostname
+            POD_NAME=$(hostname)
+            NODE_ID=$(echo $POD_NAME | rev | cut -d'-' -f1 | rev)
+            echo "Pod name: $POD_NAME"
+            echo "Node ID: $NODE_ID"
+            
+            # Write node ID to shared volume
+            echo "KAFKA_CFG_NODE_ID=$NODE_ID" > /shared/node-id.env
+            
+            {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
+            # Build advertised listeners
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            
+            {{- if .Values.externalAccess.hostname }}
+            # Use provided hostname for external listener
+            EXTERNAL_LISTENER="EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ .Values.externalAccess.port }}"
+            {{- else }}
+            # Use pod-specific external service
+            EXTERNAL_LISTENER="EXTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}-external:{{ .Values.externalAccess.port }}"
+            {{- end }}
+            
+            ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${EXTERNAL_LISTENER}"
+            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
+            {{- else }}
+            # Internal only advertised listeners
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER" >> /shared/node-id.env
+            {{- end }}
+            
+            echo "Configuration written to /shared/node-id.env:"
+            cat /shared/node-id.env
+        volumeMounts:
+        - name: shared-config
+          mountPath: /shared
+      {{- end }}
+      containers:
+      - name: kafka
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        {{- if .Values.kafka.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.kafka.containerSecurityContext | nindent 10 }}
+        {{- else if .Values.global.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        {{- if .Values.kafka.kraft.enabled }}
+        command:
+          - /bin/bash
+          - -c
+          - |
+            set -e
+            # Source node-specific configuration from init container
+            if [ -f /shared/node-id.env ]; then
+              echo "Loading node-specific configuration..."
+              cat /shared/node-id.env
+              source /shared/node-id.env
+              export KAFKA_CFG_NODE_ID
+              export KAFKA_CFG_ADVERTISED_LISTENERS
+            fi
+            
+            # Start Kafka with the original entrypoint
+            exec /opt/ca/start-kafka.sh
+        {{- end }}
+        env:
+        {{- if .Values.kafka.tls.enabled }}
+        {{- if .Values.kafka.tls.secretName }}
+        - name: KAFKA_CFG_SSL_KEYSTORE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.kafka.tls.secretName }}
+              key: {{ .Values.kafka.tls.keystoreKeyKey }}
+        - name: KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.kafka.tls.secretName }}
+              key: {{ .Values.kafka.tls.truststoreCertKey }}
+        {{- end }}
+        {{- if .Values.kafka.tls.passwordSecretName }}
+        - name: KAFKA_CFG_SSL_KEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.kafka.tls.passwordSecretName }}
+              key: {{ .Values.kafka.tls.passwordSecretKey }}
+        {{- end }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "kafka.fullname" . }}-config
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.kafka.listeners.internal.port }}
+          initialDelaySeconds: 90
+          timeoutSeconds: 5
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.kafka.listeners.internal.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        {{- if .Values.kafka.resources }}
+        resources: {{- toYaml .Values.kafka.resources | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.kafka.listeners.internal.port }}
+          name: kafka
+        {{- if and .Values.kafka.listeners.external.enabled .Values.externalAccess.enabled }}
+        - containerPort: {{ .Values.kafka.listeners.external.port }}
+          name: external
+        {{- end }}
+        {{- if and .Values.kafka.kraft.enabled .Values.kafka.listeners.controller.enabled }}
+        - containerPort: {{ .Values.kafka.listeners.controller.port }}
+          name: controller
+        {{- end }}
+        volumeMounts:
+        - name: kafka-vol-claim
+          mountPath: /opt/ca/kafka/kafka-logs
+          subPath: data/kafka/kafka-logs
+        {{- if .Values.kafka.kraft.enabled }}
+        - name: shared-config
+          mountPath: /shared
+        {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      volumes:
+      {{- if .Values.kafka.kraft.enabled }}
+      - name: shared-config
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.kafka }}
