@@ -447,11 +447,11 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4
-  apim: ingress:5.4
+  dispatcher: dispatcher:intel_integration
+  apim: ingress:apim_intelligence
   enterprise: portal-enterprise:5.4
-  data: portal-data:5.4
-  tps: tenant-provisioning-service:5.4
+  data: portal-data:apim_intelligence
+  tps: tenant-provisioning-service:apim_intelligence
   analytics: analytics-server:5.4
   authenticator: authenticator:5.4
   dbUpgrade: db-upgrade-portal:5.4
@@ -730,7 +730,7 @@ kafka: &kafka_config
   
   # Image configuration
   image:
-    kafka: kafka:4.0.0
+    kafka: kafka:mr_kafka4_intel
     pullPolicy: IfNotPresent
   
   # Kafka deployment configuration
@@ -963,7 +963,7 @@ apim-intelligence:
     name: ""
 
   image:
-    intelligenceServer: intelligence-server:latest
+    intelligenceServer: intelligence-server:mr_bitnami_kafka
 
   intelligenceServer:
     # Configuration for the Intelligence Server.

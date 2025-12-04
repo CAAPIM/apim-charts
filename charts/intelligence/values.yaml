@@ -36,7 +36,7 @@ global:
 
 # Image settings for the intelligence-server
 image:
-  intelligenceServer: "intelligence-server:latest"
+  intelligenceServer: "intelligence-server:mr_bitnami_kafka"
 
 # Service Account for intelligence-server
 serviceAccount:

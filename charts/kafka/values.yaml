@@ -11,7 +11,7 @@ global:
 
 # Kafka image configuration
 image:
-  kafka: kafka:4.0.0
+  kafka: kafka:latest
   pullPolicy: IfNotPresent
 
 # Kafka deployment configuration
