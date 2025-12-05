@@ -65,6 +65,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         command:
           - /bin/sh
           - -c
@@ -137,6 +141,9 @@ spec:
           - -c
           - |
             set -e
+            # Set HOSTNAME if not already set (for compatibility)
+            export HOSTNAME=${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo "kafka")}
+            
             # Source node-specific configuration from init container
             if [ -f /shared/node-id.env ]; then
               echo "Loading node-specific configuration..."
@@ -150,6 +157,10 @@ spec:
             exec /opt/ca/start-kafka.sh
         {{- end }}
         env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         {{- if .Values.kafka.tls.enabled }}
         {{- if .Values.kafka.tls.secretName }}
         - name: KAFKA_CFG_SSL_KEYSTORE_KEY
