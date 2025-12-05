@@ -60,6 +60,11 @@ spec:
       - name: kafka-init
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         command:
           - /bin/sh
           - -c
@@ -67,8 +72,7 @@ spec:
             set -ex
             echo "=== Initializing Kafka KRaft configuration ==="
             
-            # Extract pod ordinal from hostname
-            POD_NAME=$(hostname)
+            # Use POD_NAME from environment (injected via downward API)
             echo "Pod name: $POD_NAME"
             
             NODE_ID=$(echo "$POD_NAME" | rev | cut -d'-' -f1 | rev)
