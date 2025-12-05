@@ -90,7 +90,9 @@ spec:
             # Use POD_NAME from environment (injected via downward API)
             echo "Pod name: $POD_NAME"
             
-            NODE_ID=$(echo "$POD_NAME" | rev | cut -d'-' -f1 | rev)
+            # Extract node ID from pod name (e.g., kafka-0 -> 0)
+            # Using parameter expansion instead of rev command
+            NODE_ID="${POD_NAME##*-}"
             echo "Node ID: $NODE_ID"
             
             # Validate NODE_ID is a number
