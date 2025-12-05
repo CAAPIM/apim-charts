@@ -27,7 +27,7 @@ dependencies:
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: rabbitmq.enabled
 - name: kafka
-  version: 1.1.5
+  version: 1.1.6
   condition: portal.intelligence.enabled, portal.analytics.enabled
   repository: "file://../kafka"
 - name: ingress-nginx

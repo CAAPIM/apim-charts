@@ -730,7 +730,7 @@ kafka: &kafka_config
   
   # Image configuration
   image:
-    kafka: kafka:5.4
+    kafka: kafka:mr_kafka4_intel
     pullPolicy: IfNotPresent
   
   # Kafka deployment configuration
