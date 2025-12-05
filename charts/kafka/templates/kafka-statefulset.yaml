@@ -74,6 +74,16 @@ spec:
           - -c
           - |
             set -ex
+            
+            # Create hostname command wrapper if it doesn't exist
+            if ! command -v hostname >/dev/null 2>&1; then
+              echo "hostname command not found, creating wrapper..."
+              echo '#!/bin/sh' > /tmp/hostname
+              echo 'echo $HOSTNAME' >> /tmp/hostname
+              chmod +x /tmp/hostname
+              export PATH="/tmp:$PATH"
+            fi
+            
             echo "=== Initializing Kafka KRaft configuration ==="
             
             # Use POD_NAME from environment (injected via downward API)
@@ -141,6 +151,16 @@ spec:
           - -c
           - |
             set -e
+            
+            # Create hostname command wrapper if it doesn't exist
+            if ! command -v hostname >/dev/null 2>&1; then
+              echo "hostname command not found, creating wrapper..."
+              echo '#!/bin/sh' > /tmp/hostname
+              echo 'echo $HOSTNAME' >> /tmp/hostname
+              chmod +x /tmp/hostname
+              export PATH="/tmp:$PATH"
+            fi
+            
             # Set HOSTNAME if not already set (for compatibility)
             export HOSTNAME=${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo "kafka")}
             
