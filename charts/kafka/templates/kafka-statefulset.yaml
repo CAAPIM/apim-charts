@@ -71,6 +71,7 @@ spec:
               fieldPath: metadata.name
         command:
           - /bin/sh
+        args:
           - -c
           - |
             set -ex
@@ -148,6 +149,7 @@ spec:
         {{- if .Values.kafka.kraft.enabled }}
         command:
           - /bin/sh
+        args:
           - -c
           - |
             set -e
