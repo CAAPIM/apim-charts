@@ -7,7 +7,8 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
-For Specific compatibility changes related to OTK, please refer to [here](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/README.md#otk-compatibility-with-gateway-112) to have continous support
+## 3.0.40 General Updates
+For Specific compatibility changes related to OTK, please refer to [here](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/README.md#otk-compatibility-with-gateway-112) to have continuous support
 
 ## 3.0.39 General Updates
 - Add using initContainer to mount secret
