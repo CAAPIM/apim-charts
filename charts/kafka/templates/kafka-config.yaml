@@ -49,7 +49,7 @@ data:
   # Auto-generate controller quorum voters based on replica count
   {{- $fullName := include "kafka.fullname" . }}
   {{- $replicaCount := int .Values.kafka.replicaCount }}
-  {{- $controllerPort := .Values.kafka.listeners.controller.port }}
+  {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
   {{- $voters := list }}
   {{- range $i := until $replicaCount }}
   {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $i $fullName $i $fullName $controllerPort) }}
@@ -107,8 +107,8 @@ data:
   {{- else if .Values.externalAccess.enabled }}
   # Auto-generate advertised listeners for external access
   {{- $fullName := include "kafka.fullname" . }}
-  {{- $internalPort := .Values.kafka.listeners.internal.port }}
-  {{- $externalPort := .Values.externalAccess.port }}
+  {{- $internalPort := int .Values.kafka.listeners.internal.port }}
+  {{- $externalPort := int .Values.externalAccess.port }}
   {{- $hostname := .Values.externalAccess.hostname }}
   {{- if $hostname }}
   KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ $hostname }}:{{ $externalPort }}"
