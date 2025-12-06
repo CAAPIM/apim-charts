@@ -86,8 +86,8 @@ spec:
             EXTERNAL_SVC="{{ include "kafka.fullname" . }}-${NODE_ID}-external"
             echo "External service: $EXTERNAL_SVC"
             
-            # Wait for LoadBalancer to be assigned (max 60 seconds)
-            for i in $(seq 1 12); do
+            # Wait for LoadBalancer to be assigned (max 30 seconds)
+            for i in $(seq 1 6); do
               EXTERNAL_IP=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
               EXTERNAL_HOSTNAME=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
               
@@ -101,13 +101,14 @@ spec:
                 break
               fi
               
-              echo "Waiting for LoadBalancer IP/hostname... (attempt $i/12)"
+              echo "Waiting for LoadBalancer IP/hostname... (attempt $i/6)"
               sleep 5
             done
             
             if [ -z "$EXTERNAL_ADDRESS" ]; then
-              echo "ERROR: LoadBalancer IP/hostname not found after 60 seconds"
-              exit 1
+              echo "WARNING: LoadBalancer IP/hostname not found after 30 seconds"
+              echo "Using service name as fallback"
+              EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
             fi
             
             # Write external address to shared volume
