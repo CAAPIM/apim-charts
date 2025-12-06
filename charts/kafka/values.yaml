@@ -186,4 +186,9 @@ externalAccess:
   nodePorts: []
   # Auto-generate advertised listeners based on service IPs
   autoAdvertisedListeners: true
+  # Discovery image for LoadBalancer IP detection (kubectl)
+  discoveryImage:
+    repository: "registry.k8s.io/kubectl"
+    tag: "v1.31.0"
+    pullPolicy: IfNotPresent
 
