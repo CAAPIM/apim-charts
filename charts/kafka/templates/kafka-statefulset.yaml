@@ -113,6 +113,9 @@ spec:
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
             
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            echo "Controller listener: $CONTROLLER_LISTENER"
+            
             {{- if .Values.externalAccess.hostname }}
             # Use provided hostname for external listener
             EXTERNAL_LISTENER="EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ .Values.externalAccess.port }}"
@@ -123,13 +126,17 @@ spec:
             echo "External listener (service): $EXTERNAL_LISTENER"
             {{- end }}
             
-            ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${EXTERNAL_LISTENER}"
+            ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${CONTROLLER_LISTENER},${EXTERNAL_LISTENER}"
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
             {{- else }}
             echo "Building advertised listeners (internal only)..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
-            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER" >> /shared/node-id.env
+            
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            echo "Controller listener: $CONTROLLER_LISTENER"
+            
+            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER,$CONTROLLER_LISTENER" >> /shared/node-id.env
             {{- end }}
             
             echo "=== Configuration written to /shared/node-id.env ==="

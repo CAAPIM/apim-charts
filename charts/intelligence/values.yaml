@@ -59,8 +59,8 @@ intelligenceServer:
       # This is useful when Kafka is deployed as part of the same release with external access enabled.
       enabled: true
       image:
-        repository: "docker.io/bitnami/kubectl"
-        tag: "1.33.3-debian-12-r0"
+        repository: "registry.k8s.io/kubectl"
+        tag: "v1.31.0"
         pullPolicy: IfNotPresent
       # Resource requests and limits for the auto-discovery init container
       # resources: {}
