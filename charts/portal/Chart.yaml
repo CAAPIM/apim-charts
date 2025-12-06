@@ -15,7 +15,7 @@ dependencies:
   condition: portal.analytics.enabled
   repository: "file://../druid"
 - name: apim-intelligence
-  version: ^1.0.0
+  version: 1.0.1
   condition: portal.intelligence.enabled
   repository: "file://../intelligence"
 - name: mysql
