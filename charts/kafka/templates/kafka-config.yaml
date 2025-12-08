@@ -113,8 +113,8 @@ data:
   {{- if $hostname }}
   KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ $hostname }}:{{ $externalPort }}"
   {{- else }}
-  # Will be set at runtime based on external service IP
-  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://${EXTERNAL_IP}:{{ $externalPort }}"
+  # Will be overridden at runtime by init container with actual external service name
+  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://PLACEHOLDER:{{ $externalPort }}"
   {{- end }}
   {{- else }}
   # Internal only

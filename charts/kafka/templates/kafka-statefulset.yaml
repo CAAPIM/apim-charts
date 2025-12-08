@@ -132,13 +132,7 @@ spec:
             
             ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${CONTROLLER_LISTENER},${EXTERNAL_LISTENER}"
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
-            
-            # Also set EXTERNAL_IP for ConfigMap compatibility
-            {{- if .Values.externalAccess.hostname }}
-            echo "EXTERNAL_IP={{ .Values.externalAccess.hostname }}" >> /shared/node-id.env
-            {{- else }}
-            echo "EXTERNAL_IP={{ include "kafka.fullname" . }}-${NODE_ID}-external" >> /shared/node-id.env
-            {{- end }}
+            echo "=== Final advertised listeners: $ADVERTISED_LISTENERS ==="
             {{- else }}
             echo "Building advertised listeners (internal only)..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
@@ -193,7 +187,6 @@ spec:
               source /shared/node-id.env
               export KAFKA_CFG_NODE_ID
               export KAFKA_CFG_ADVERTISED_LISTENERS
-              export EXTERNAL_IP
             fi
             
             # Start Kafka with the original entrypoint
