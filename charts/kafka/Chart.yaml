@@ -7,6 +7,6 @@ maintainers:
   - name: Gazza7205
 sources:
   - https://github.com/CAAPIM/apim-charts
-version: 1.2.2
+version: 1.2.4
 appVersion: 5.4
 

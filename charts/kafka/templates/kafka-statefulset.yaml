@@ -56,105 +56,9 @@ spec:
       {{- end }}
       {{- if .Values.kafka.kraft.enabled }}
       initContainers:
-      {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners (not .Values.externalAccess.hostname) }}
-      # Init container to discover LoadBalancer IP/hostname
-      - name: kafka-lb-discovery
-        image: "{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
-        imagePullPolicy: "{{ .Values.externalAccess.discoveryImage.pullPolicy }}"
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        command:
-          - /bin/sh
-        args:
-          - -c
-          - |
-            set -ex
-            
-            echo "=== Discovering LoadBalancer IP/hostname ==="
-            
-            # Extract node ID from pod name
-            NODE_ID="${POD_NAME##*-}"
-            echo "Node ID: $NODE_ID"
-            
-            EXTERNAL_SVC="{{ include "kafka.fullname" . }}-${NODE_ID}-external"
-            echo "External service: $EXTERNAL_SVC"
-            
-            # Check service type and discover external address accordingly
-            SERVICE_TYPE=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.spec.type}' 2>/dev/null || echo "")
-            echo "Service type: $SERVICE_TYPE"
-            
-            if [ "$SERVICE_TYPE" = "LoadBalancer" ]; then
-              echo "Discovering LoadBalancer IP/hostname..."
-              # Wait for LoadBalancer to be assigned (max 30 seconds)
-              for i in $(seq 1 6); do
-                EXTERNAL_IP=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
-                EXTERNAL_HOSTNAME=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
-                
-                if [ -n "$EXTERNAL_IP" ]; then
-                  EXTERNAL_ADDRESS="$EXTERNAL_IP"
-                  echo "Found LoadBalancer IP: $EXTERNAL_ADDRESS"
-                  break
-                elif [ -n "$EXTERNAL_HOSTNAME" ]; then
-                  EXTERNAL_ADDRESS="$EXTERNAL_HOSTNAME"
-                  echo "Found LoadBalancer hostname: $EXTERNAL_ADDRESS"
-                  break
-                fi
-                
-                echo "Waiting for LoadBalancer IP/hostname... (attempt $i/6)"
-                sleep 5
-              done
-              
-              if [ -z "$EXTERNAL_ADDRESS" ]; then
-                echo "WARNING: LoadBalancer IP/hostname not found after 30 seconds"
-                echo "Using service name as fallback"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
-              fi
-              
-            elif [ "$SERVICE_TYPE" = "NodePort" ]; then
-              echo "Discovering NodePort configuration..."
-              # Get NodePort
-              NODE_PORT=$(kubectl get svc $EXTERNAL_SVC -n $POD_NAMESPACE -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "")
-              # Get any node IP (we'll use the first ready node)
-              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || echo "")
-              if [ -z "$NODE_IP" ]; then
-                NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
-              fi
-              
-              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
-                EXTERNAL_ADDRESS="${NODE_IP}"
-                EXTERNAL_PORT="$NODE_PORT"
-                echo "Found NodePort: ${NODE_IP}:${NODE_PORT}"
-              else
-                echo "WARNING: Could not determine NodePort configuration"
-                echo "Using service name as fallback"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
-                EXTERNAL_PORT="{{ .Values.externalAccess.port }}"
-              fi
-              
-            else
-              echo "WARNING: Unknown service type: $SERVICE_TYPE"
-              echo "Using service name as fallback"
-              EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
-            fi
-            
-            # Write external address to shared volume
-            mkdir -p /shared
-            echo "EXTERNAL_ADDRESS=${EXTERNAL_ADDRESS}" > /shared/lb-address.env
-            if [ -n "$EXTERNAL_PORT" ]; then
-              echo "EXTERNAL_PORT=${EXTERNAL_PORT}" >> /shared/lb-address.env
-            fi
-            echo "=== External access discovery complete ==="
-            cat /shared/lb-address.env
-        volumeMounts:
-        - name: shared-config
-          mountPath: /shared
+      {{- if false }}
+      # Discovery init container disabled due to crash loop
+      # Will use service name fallback in kafka-init container
       {{- end }}
       # Init container to set node ID and configure advertised listeners
       - name: kafka-init
@@ -221,23 +125,20 @@ spec:
             EXTERNAL_LISTENER="EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ .Values.externalAccess.port }}"
             echo "External listener (hostname): $EXTERNAL_LISTENER"
             {{- else }}
-            # Load external address from discovery init container
-            if [ -f /shared/lb-address.env ]; then
-              echo "Loading external address from discovery..."
-              source /shared/lb-address.env
-              # Use discovered port if available, otherwise use configured port
-              EXTERNAL_PORT_TO_USE="${EXTERNAL_PORT:-{{ .Values.externalAccess.port }}}"
-              EXTERNAL_LISTENER="EXTERNAL://${EXTERNAL_ADDRESS}:${EXTERNAL_PORT_TO_USE}"
-              echo "External listener: $EXTERNAL_LISTENER"
-            else
-              echo "WARNING: External address not found, using service name"
-              EXTERNAL_LISTENER="EXTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}-external:{{ .Values.externalAccess.port }}"
-              echo "External listener (fallback): $EXTERNAL_LISTENER"
-            fi
+            # Use external service name directly (discovery disabled due to issues)
+            EXTERNAL_LISTENER="EXTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}-external:{{ .Values.externalAccess.port }}"
+            echo "External listener: $EXTERNAL_LISTENER"
             {{- end }}
             
             ADVERTISED_LISTENERS="${INTERNAL_LISTENER},${CONTROLLER_LISTENER},${EXTERNAL_LISTENER}"
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
+            
+            # Also set EXTERNAL_IP for ConfigMap compatibility
+            {{- if .Values.externalAccess.hostname }}
+            echo "EXTERNAL_IP={{ .Values.externalAccess.hostname }}" >> /shared/node-id.env
+            {{- else }}
+            echo "EXTERNAL_IP={{ include "kafka.fullname" . }}-${NODE_ID}-external" >> /shared/node-id.env
+            {{- end }}
             {{- else }}
             echo "Building advertised listeners (internal only)..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
@@ -292,6 +193,7 @@ spec:
               source /shared/node-id.env
               export KAFKA_CFG_NODE_ID
               export KAFKA_CFG_ADVERTISED_LISTENERS
+              export EXTERNAL_IP
             fi
             
             # Start Kafka with the original entrypoint
