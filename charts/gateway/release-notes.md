@@ -7,8 +7,8 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
-## 3.0.40 General Updates
-- Add default property for embedded gemfire
+## 3.0.40 General Updates 
+- Gemfire property statistic-sampling-enabled=false is added to disable Statistic sampling which is not supported for embedded gemfire on container gateway  
 
 ## 3.0.39 General Updates
 - Add using initContainer to mount secret
