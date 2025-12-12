@@ -563,7 +563,8 @@ config:
       enabled: false
       caches:
         # Additional properties for embedded GemFire caches.
-#        additionalProperties: |-
+        additionalProperties: |-
+          statistic-sampling-enabled=false
 
       externalLocators:
         # The number of GemFire locator replicas to deploy when using embedded GemFire.
