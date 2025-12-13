@@ -853,6 +853,9 @@ otk:
     image:
       repository: caapim/otk-install
       tag: 4.6.4
+      # OTK 4.6.4 is presently the only version that provides seamless support for Gateway 11.2
+      # There are limitations in older versions (< OTK 4.6.4) with respect to Evaluate JSON Path Assertion (V1) assertion & other support limitations
+      # This requires specific actions as mentioned in the release notes Chart Version 3.0.41
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
