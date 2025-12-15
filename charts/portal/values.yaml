@@ -42,6 +42,11 @@ global:
     allowInsecureImages: true
 
   deepStorage:
+    # Set to true during helm upgrade to migrate data from Minio to SeaweedFS
+    # The migration job will run in the background, allowing helm upgrade to complete immediately
+    # Monitor progress: kubectl get job -l component=data-migration -n <namespace>
+    # Set back to false after migration is complete for subsequent upgrades
+    enableDataMigration: false
     auth:
       secretName: seaweedfs-s3-secret
     analytics:

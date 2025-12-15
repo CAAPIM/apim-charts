@@ -1,4 +1,12 @@
 {{- if (eq .Values.global.deepStorage.enableDataMigration true) }}
+# Data Migration Job for Minio to SeaweedFS
+# 
+# Usage:
+#   1. Enable migration: --set global.deepStorage.enableDataMigration=true
+#   2. Run helm upgrade (completes immediately)
+#   3. Monitor: kubectl get job <release>-seaweedfs-data-copy-job -n <namespace>
+#   4. Check logs: kubectl logs job/<release>-seaweedfs-data-copy-job -n <namespace>
+#   5. Disable for next upgrade: --set global.deepStorage.enableDataMigration=false
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -8,10 +16,16 @@ metadata:
     chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    component: data-migration
+    migration-source: minio
+    migration-target: seaweedfs
   annotations:
     "helm.sh/hook": post-upgrade
     "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": before-hook-creation
 spec:
+  ttlSecondsAfterFinished: 86400  # Keep Job for 24 hours for inspection
+  backoffLimit: 3  # Allow 3 retries on failure
   suspend: false
   parallelism: 1
   template:
