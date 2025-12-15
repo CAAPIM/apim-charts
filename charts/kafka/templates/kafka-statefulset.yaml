@@ -62,8 +62,15 @@ spec:
       {{- end }}
       # Init container to set node ID and configure advertised listeners
       - name: kafka-init
+        {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners (not .Values.externalAccess.hostname) }}
+        # Use kubectl image for service discovery
+        image: "{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        imagePullPolicy: "{{ .Values.externalAccess.discoveryImage.pullPolicy }}"
+        {{- else }}
+        # Use Kafka image when discovery not needed
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        {{- end }}
         env:
         - name: POD_NAME
           valueFrom:
@@ -112,6 +119,11 @@ spec:
             echo "KAFKA_CFG_NODE_ID=$NODE_ID" > /shared/node-id.env
             echo "Wrote KAFKA_CFG_NODE_ID to /shared/node-id.env"
             
+            {{- if .Values.kafka.tls.enabled }}
+            # Note: TSSG certificates will be loaded by main container from /opt/ca/certs/
+            echo "=== TSSG certificates (apim-ssl) available at /opt/ca/certs/ ==="
+            {{- end }}
+            
             {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
             echo "Building advertised listeners with external access..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
@@ -125,8 +137,55 @@ spec:
             EXTERNAL_LISTENER="EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ .Values.externalAccess.port }}"
             echo "External listener (hostname): $EXTERNAL_LISTENER"
             {{- else }}
-            # Use external service name directly (discovery disabled due to issues)
-            EXTERNAL_LISTENER="EXTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}-external:{{ .Values.externalAccess.port }}"
+            # Discover external IP/hostname
+            EXTERNAL_SVC="{{ include "kafka.fullname" . }}-${NODE_ID}-external"
+            echo "Discovering external address for service: $EXTERNAL_SVC"
+            
+            # Get the service type
+            SERVICE_TYPE=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.type}' 2>/dev/null || echo "")
+            echo "Service type: $SERVICE_TYPE"
+            
+            EXTERNAL_ADDRESS=""
+            EXTERNAL_PORT="{{ .Values.externalAccess.port }}"
+            
+            if [ "$SERVICE_TYPE" = "LoadBalancer" ]; then
+              echo "Waiting for LoadBalancer IP (max 60 seconds)..."
+              # Wait for LoadBalancer IP with timeout
+              for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+                LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+                if [ -n "$LB_IP" ]; then
+                  EXTERNAL_ADDRESS="$LB_IP"
+                  echo "Discovered LoadBalancer IP: ${EXTERNAL_ADDRESS}"
+                  break
+                fi
+                echo "Attempt $i/12: LoadBalancer IP not ready yet, waiting 5s..."
+                sleep 5
+              done
+              
+              if [ -z "$EXTERNAL_ADDRESS" ]; then
+                echo "Warning: LoadBalancer IP not available after 60s, using service name"
+                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+              fi
+            elif [ "$SERVICE_TYPE" = "NodePort" ]; then
+              # For NodePort, try to get node IP and NodePort
+              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
+              NODE_PORT=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "")
+              
+              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+                EXTERNAL_ADDRESS="${NODE_IP}"
+                EXTERNAL_PORT="${NODE_PORT}"
+                echo "Discovered NodePort: ${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+              else
+                echo "Warning: Could not discover NodePort IP/Port, using service name"
+                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+              fi
+            else
+              # Fallback to service name
+              echo "Using service name as fallback"
+              EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+            fi
+            
+            EXTERNAL_LISTENER="EXTERNAL://${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
             echo "External listener: $EXTERNAL_LISTENER"
             {{- end }}
             
@@ -181,13 +240,39 @@ spec:
             export HOSTNAME=${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo "kafka")}
             
             # Source node-specific configuration from init container
+            # This MUST override the ConfigMap values
             if [ -f /shared/node-id.env ]; then
               echo "Loading node-specific configuration..."
               cat /shared/node-id.env
+              # Unset ConfigMap values first to ensure our values take precedence
+              unset KAFKA_CFG_NODE_ID
+              unset KAFKA_CFG_ADVERTISED_LISTENERS
+              # Now source and export our values
               source /shared/node-id.env
               export KAFKA_CFG_NODE_ID
               export KAFKA_CFG_ADVERTISED_LISTENERS
+              echo "Final KAFKA_CFG_ADVERTISED_LISTENERS: $KAFKA_CFG_ADVERTISED_LISTENERS"
             fi
+            
+            {{- if .Values.kafka.tls.enabled }}
+            # Load TSSG certificates (apim-ssl) from mounted volume
+            echo "=== Loading TSSG certificates for Kafka SSL ==="
+            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }} ]; then
+              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }})
+              echo "Loaded TSSG keystore key (PKCS#8)"
+            else
+              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }}"
+              exit 1
+            fi
+            
+            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }} ]; then
+              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }})
+              echo "Loaded TSSG truststore certificate"
+            else
+              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }}"
+              exit 1
+            fi
+            {{- end }}
             
             # Start Kafka with the original entrypoint
             exec /opt/ca/start-kafka.sh
@@ -259,6 +344,11 @@ spec:
         - name: shared-config
           mountPath: /shared
         {{- end }}
+        {{- if .Values.kafka.tls.enabled }}
+        - name: internal-certs
+          mountPath: /opt/ca/certs
+          readOnly: true
+        {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
@@ -267,6 +357,16 @@ spec:
       {{- if .Values.kafka.kraft.enabled }}
       - name: shared-config
         emptyDir: {}
+      {{- end }}
+      {{- if .Values.kafka.tls.enabled }}
+      - name: internal-certs
+        secret:
+          secretName: {{ .Values.kafka.tls.internalSecretName | default "portal-internal-secret" }}
+          items:
+          - key: {{ .Values.kafka.tls.tssgKeyKey }}
+            path: apim-ssl.p8.key
+          - key: {{ .Values.kafka.tls.tssgCertKey }}
+            path: apim-ssl.crt
       {{- end }}
       restartPolicy: Always
       terminationGracePeriodSeconds: 60

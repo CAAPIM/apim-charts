@@ -1,0 +1,94 @@
+{{- if .Values.kafka.externalAccess.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-kafka-external-ip-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: portal
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: kafka-external-ip-discovery
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: portal
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: kafka-external-ip-discovery
+    spec:
+      serviceAccountName: {{ .Release.Name }}-kafka-external-ip-discovery
+      restartPolicy: OnFailure
+      containers:
+      - name: discovery
+        image: alpine/k8s:1.31.2
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Discovering Kafka LoadBalancer IP..."
+          
+          MAX_RETRIES=30
+          RETRY_COUNT=0
+          EXTERNAL_IP=""
+          
+          # Wait for the service to exist first
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            if kubectl get svc {{ .Release.Name }}-kafka-0-external -n {{ .Release.Namespace }} >/dev/null 2>&1; then
+              echo "✓ Service {{ .Release.Name }}-kafka-0-external found"
+              break
+            fi
+            echo "Waiting for service to be created... (attempt $((RETRY_COUNT+1))/$MAX_RETRIES)"
+            sleep 2
+            RETRY_COUNT=$((RETRY_COUNT+1))
+          done
+          
+          # Now wait for LoadBalancer IP
+          RETRY_COUNT=0
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            EXTERNAL_IP=$(kubectl get svc {{ .Release.Name }}-kafka-0-external -n {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+            
+            if [ -n "$EXTERNAL_IP" ]; then
+              echo "✓ Discovered LoadBalancer IP: $EXTERNAL_IP"
+              
+              # Create/update ConfigMap with the discovered IP
+              kubectl create configmap {{ .Release.Name }}-kafka-external-ip \
+                --from-literal=KAFKA_EXTERNAL_IP=$EXTERNAL_IP \
+                --from-literal=KAFKA_EXTERNAL_ADVERTISED_LISTENER="EXTERNAL://${EXTERNAL_IP}:{{ .Values.kafka.externalAccess.port }}" \
+                -n {{ .Release.Namespace }} \
+                --dry-run=client -o yaml | kubectl apply -f -
+              
+              echo "✓ ConfigMap created/updated with LoadBalancer IP"
+              
+              # Check if Kafka needs restart
+              echo "Checking if Kafka pod needs restart..."
+              CURRENT_ADVERTISED=$(kubectl exec {{ .Release.Name }}-kafka-0 -n {{ .Release.Namespace }} -- \
+                grep "^advertised.listeners=" /opt/ca/kafka/config/server.properties 2>/dev/null | \
+                grep -o "EXTERNAL://[^,]*" || echo "")
+              
+              EXPECTED_ADVERTISED="EXTERNAL://${EXTERNAL_IP}:{{ .Values.kafka.externalAccess.port }}"
+              
+              if [ "$CURRENT_ADVERTISED" != "$EXPECTED_ADVERTISED" ]; then
+                echo "Current: $CURRENT_ADVERTISED"
+                echo "Expected: $EXPECTED_ADVERTISED"
+                echo "Kafka needs restart - deleting pod (will be recreated by StatefulSet)"
+                kubectl delete pod {{ .Release.Name }}-kafka-0 -n {{ .Release.Namespace }} --ignore-not-found=true
+                echo "✓ Kafka pod deleted - it will restart with correct LoadBalancer IP"
+              else
+                echo "✓ Kafka already configured with correct LoadBalancer IP"
+              fi
+              
+              echo "✓ Discovery complete"
+              exit 0
+            fi
+            
+            echo "Waiting for LoadBalancer IP... (attempt $((RETRY_COUNT+1))/$MAX_RETRIES)"
+            sleep 5
+            RETRY_COUNT=$((RETRY_COUNT+1))
+          done
+          
+          echo "✗ Failed to discover LoadBalancer IP after $MAX_RETRIES attempts"
+          exit 1
+{{- end }}
+

@@ -1,0 +1,11 @@
+apiVersion: v2
+appVersion: 1.0.0
+description: APIM Intelligence
+home: https://github.com/CAAPIM/apim-chart
+maintainers:
+- name: Layer7
+name: apim-intelligence
+sources:
+- https://github.com/CAAPIM/apim-charts
+type: application
+version: 1.0.10

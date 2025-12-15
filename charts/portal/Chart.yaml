@@ -15,9 +15,10 @@ dependencies:
   condition: portal.analytics.enabled
   repository: "file://../druid"
 - name: apim-intelligence
-  version: 1.0.1
+  version: 1.0.10
   condition: portal.intelligence.enabled
   repository: "file://../intelligence"
+# Note: mysql and rabbitmq .tgz files are manually copied from the reference chart
 - name: mysql
   version: 12.3.5
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
@@ -27,7 +28,7 @@ dependencies:
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: rabbitmq.enabled
 - name: kafka
-  version: 1.2.5
+  version: 1.3.2
   condition: portal.intelligence.enabled, portal.analytics.enabled
   repository: "file://../kafka"
 - name: ingress-nginx

@@ -12,10 +12,7 @@ metadata:
     {{- end }}
 data:
   SERVICE_NAME: {{ include "kafka.fullname" . }}
-
-  # Intelligence enabled flag (controls EXTERNAL listener)
-  INTELLIGENCE_ENABLED: {{ .Values.global.intelligenceEnabled | quote }}
-
+  
   # Portal subdomain for advertised listeners
   {{- if .Values.global.subdomainPrefix }}
   APIM_PORTAL_SUBDOMAIN: {{ .Values.global.subdomainPrefix | quote }}
@@ -107,15 +104,18 @@ data:
   {{- if .Values.kafka.advertisedListeners }}
   # Custom advertised listeners (portal-dist style)
   KAFKA_CFG_ADVERTISED_LISTENERS: {{ .Values.kafka.advertisedListeners | quote }}
-  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.hostname }}
-  # Use provided hostname for external access
+  {{- else if .Values.externalAccess.enabled }}
+  # Auto-generate advertised listeners for external access
   {{- $fullName := include "kafka.fullname" . }}
   {{- $internalPort := int .Values.kafka.listeners.internal.port }}
   {{- $externalPort := int .Values.externalAccess.port }}
-  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ $externalPort }}"
-  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
-  # Will be set at runtime by init container - DO NOT set here to avoid override
-  # KAFKA_CFG_ADVERTISED_LISTENERS will be sourced from /shared/node-id.env
+  {{- $hostname := .Values.externalAccess.hostname }}
+  {{- if $hostname }}
+  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ $hostname }}:{{ $externalPort }}"
+  {{- else }}
+  # Will be overridden at runtime by init container with actual external service name
+  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://PLACEHOLDER:{{ $externalPort }}"
+  {{- end }}
   {{- else }}
   # Internal only
   KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
@@ -142,9 +142,25 @@ data:
   KAFKA_CFG_SSL_KEYSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
   KAFKA_CFG_SSL_TRUSTSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
   
-  # Note: KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES and KAFKA_CFG_SSL_KEYSTORE_KEY
-  # are loaded from mounted files in the StatefulSet command and exported as env vars
-  # This allows the certificate content to be passed to the Kafka startup script
+  # Certificate content (inline environment variables)
+  # These support portal-dist style certificate passing
+  {{- if .Values.kafka.tls.truststoreCertContent }}
+  KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES: {{ .Values.kafka.tls.truststoreCertContent | quote }}
+  {{- end }}
+  {{- if .Values.kafka.tls.keystoreKeyContent }}
+  KAFKA_CFG_SSL_KEYSTORE_KEY: {{ .Values.kafka.tls.keystoreKeyContent | quote }}
+  {{- end }}
+  
+  # Alternative: CA certificate variables (analytics_util style)
+  {{- if .Values.kafka.tls.caKey }}
+  KAFKA_CA_KEY: {{ .Values.kafka.tls.caKey | quote }}
+  {{- end }}
+  {{- if .Values.kafka.tls.caCertificate }}
+  KAFKA_CA_CERTIFICATE: {{ .Values.kafka.tls.caCertificate | quote }}
+  {{- end }}
+  {{- if .Values.kafka.tls.caTruststoreCertificate }}
+  KAFKA_CA_TRUSTSTORE_CERTIFICATE: {{ .Values.kafka.tls.caTruststoreCertificate | quote }}
+  {{- end }}
   {{- end }}
   
   # ============================================
