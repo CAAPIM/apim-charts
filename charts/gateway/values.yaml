@@ -16,6 +16,9 @@ disklessConfig:
   # true - environment variables are used for gateway configuration
   # false - node.properties is used for gateway configuration
   enabled: true
+  # true - node.properties is set by initContainer and bootstrap script
+  # false - node.properties is set by existingSecret
+  setSecretByInitContainer: false
   existingSecret: {}
   #   name: gateway-secret
   #   csi:
@@ -27,7 +30,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.3
+  tag: 11.2.0
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -560,7 +563,8 @@ config:
       enabled: false
       caches:
         # Additional properties for embedded GemFire caches.
-#        additionalProperties: |-
+        additionalProperties: |-
+          statistic-sampling-enabled=false
 
       externalLocators:
         # The number of GemFire locator replicas to deploy when using embedded GemFire.
@@ -568,7 +572,7 @@ config:
         image:
           registry: docker.io
           repository: gemfire/gemfire
-          tag: 10.1.3-jdk17
+          tag: 10.2.0-jdk21
           pullPolicy: IfNotPresent
         resources:
           limits: {}
@@ -596,7 +600,7 @@ config:
       image:
         registry: docker.io
         repository: gemfire/gemfire-management-console
-        tag: 1.3.1
+        tag: 1.4.1
         pullPolicy: IfNotPresent
 
   # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
@@ -849,6 +853,9 @@ otk:
     image:
       repository: caapim/otk-install
       tag: 4.6.4
+      # OTK 4.6.4 is presently the only version that provides seamless support for Gateway 11.2
+      # There are limitations in older versions (< OTK 4.6.4) with respect to Evaluate JSON Path Assertion (V1) assertion & other support limitations
+      # This requires specific actions as mentioned in the release notes Chart Version 3.0.41
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
