@@ -14,10 +14,6 @@ dependencies:
   version: ^1.0.0
   condition: portal.analytics.enabled
   repository: "file://../druid"
-- name: apim-intelligence
-  version: 1.0.11
-  condition: portal.intelligence.enabled
-  repository: "file://../intelligence"
 # Note: mysql and rabbitmq .tgz files are manually copied from the reference chart
 - name: mysql
   version: 12.3.5
