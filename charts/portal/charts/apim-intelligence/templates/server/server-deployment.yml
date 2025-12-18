@@ -118,23 +118,39 @@ spec:
 
                   if ! kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" > /dev/null 2>&1; then
                     echo "Service $SVC_NAME not found, skipping."
-                    return
+                    return 1
                   fi
 
                   AUTODISCOVERY_SERVICE_TYPE=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath='{.spec.type}' 2>/dev/null || echo "")
 
                   if [ "$AUTODISCOVERY_SERVICE_TYPE" = "LoadBalancer" ]; then
+                      echo "Waiting for LoadBalancer IP for service $SVC_NAME..."
                       if ! retry_while "kubectl get svc $SVC_NAME -n $MY_POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0]}'" ; then 
-                          echo "Timed out waiting for LoadBalancer IP for service $SVC_NAME"
-                          exit 1
+                          echo "Warning: Timed out waiting for LoadBalancer IP for service $SVC_NAME, skipping this broker"
+                          return 1
                       fi
                       EXTERNAL_ADDRESS=$(k8s_svc_lb_ip "$SVC_NAME" "$MY_POD_NAMESPACE")
                       EXTERNAL_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].port}" 2>/dev/null || echo "")
-                      BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                      if [ -n "$EXTERNAL_ADDRESS" ] && [ -n "$EXTERNAL_PORT" ]; then
+                          BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                          echo "Successfully discovered broker: $BROKER_ENDPOINT"
+                      else
+                          echo "Warning: Failed to get complete address for $SVC_NAME, skipping"
+                          return 1
+                      fi
                   elif [ "$AUTODISCOVERY_SERVICE_TYPE" = "NodePort" ]; then
                       NODE_PORT=$(k8s_svc_node_port "$SVC_NAME" "$MY_POD_NAMESPACE")
                       NODE_IP=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.clusterIP}" 2>/dev/null || echo "")
-                      BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                      if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+                          BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                          echo "Successfully discovered broker: $BROKER_ENDPOINT"
+                      else
+                          echo "Warning: Failed to get complete NodePort address for $SVC_NAME, skipping"
+                          return 1
+                      fi
+                  else
+                      echo "Warning: Unknown service type '$AUTODISCOVERY_SERVICE_TYPE' for $SVC_NAME, skipping"
+                      return 1
                   fi
 
                   if [ -n "$BROKER_ENDPOINT" ]; then
@@ -143,6 +159,9 @@ spec:
                     else 
                         BROKER_LIST="$BROKER_LIST,$BROKER_ENDPOINT"
                     fi
+                    return 0
+                  else
+                    return 1
                   fi
               }
 
@@ -150,10 +169,22 @@ spec:
               # For custom Kafka subchart
               {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
+              echo "Starting discovery of $BROKER_COUNT Kafka brokers..."
+              DISCOVERED_COUNT=0
               for i in $(seq 0 $((BROKER_COUNT - 1))); do
                 SVC_NAME="${RELEASE_NAME}-kafka-${i}-external"
-                discover_broker "$SVC_NAME"
+                if discover_broker "$SVC_NAME"; then
+                  DISCOVERED_COUNT=$((DISCOVERED_COUNT + 1))
+                  echo "Successfully discovered broker $i: $SVC_NAME"
+                else
+                  echo "Failed to discover broker $i: $SVC_NAME"
+                fi
               done
+              echo "Discovery complete: $DISCOVERED_COUNT out of $BROKER_COUNT brokers discovered"
+              if [ "$DISCOVERED_COUNT" -eq 0 ]; then
+                echo "ERROR: No brokers were discovered! Cannot proceed."
+                exit 1
+              fi
               {{- else if and .Values.kafka (hasKey .Values.kafka "controller") .Values.kafka.controller }}
               # For Bitnami Kafka chart (backward compatibility)
               {{- if and .Values.kafka.controller.replicaCount (not .Values.kafka.controller.controllerOnly) }}
@@ -179,8 +210,16 @@ spec:
               echo "Warning: No Kafka broker configuration found"
               {{- end }}
 
-              echo "Discovered Kafka brokers: ${BROKER_LIST}"
-              echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              if [ -n "$BROKER_LIST" ]; then
+                echo "=== FINAL BROKER DISCOVERY RESULT ==="
+                echo "Discovered Kafka brokers: ${BROKER_LIST}"
+                echo "Total brokers found: $(echo "$BROKER_LIST" | tr ',' '\n' | wc -l)"
+                echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+                echo "Broker discovery completed successfully!"
+              else
+                echo "ERROR: No brokers were discovered in BROKER_LIST!"
+                exit 1
+              fi
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:

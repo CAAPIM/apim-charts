@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kafka.fullname" . }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kafka.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    app.kubernetes.io/component: broker
+spec:
+  serviceName: {{ include "kafka.fullname" . }}
+  replicas: {{ .Values.kafka.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kafka.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: broker
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.selectorLabels" . | nindent 8 }}
+        {{- range $key, $val := .Values.global.additionalLabels }}
+        {{ $key }}: "{{ $val }}"
+        {{- end }}
+        {{- range $key, $val := .Values.kafka.additionalLabels }}
+        {{ $key }}: "{{ $val }}"
+        {{- end }}
+        app.kubernetes.io/component: broker
+      annotations:
+        {{- if .Values.kafka.forceRedeploy }}
+        rollme: {{ randAlphaNum 5 | quote }}
+        {{- end }}
+        {{- with .Values.kafka.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.global.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafka.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kafka.serviceAccountName" . }}
+      {{- if .Values.externalAccess.enabled }}
+      initContainers:
+      - name: external-ip-discovery
+        image: alpine/k8s:{{ .Values.externalAccess.discoveryImage.tag | default "1.31.2" }}
+        imagePullPolicy: {{ .Values.externalAccess.discoveryImage.pullPolicy }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          # Get pod ordinal from hostname
+          POD_ORDINAL=$(echo $HOSTNAME | rev | cut -d "-" -f 1)
+          
+          # Wait for external service to be ready
+          SERVICE_NAME="{{ include "kafka.fullname" . }}-${POD_ORDINAL}-external"
+          echo "Waiting for service $SERVICE_NAME to get external IP..."
+          
+          for i in {1..60}; do
+            EXTERNAL_IP=$(kubectl get service $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+            if [ -n "$EXTERNAL_IP" ] && [ "$EXTERNAL_IP" != "null" ]; then
+              echo "External IP found: $EXTERNAL_IP"
+              echo "EXTERNAL://apim-kafka-${POD_ORDINAL}.{{ .Values.global.subdomainPrefix | default "dev-portal" }}.{{ .Values.portal.domain | default "example.com" }}:{{ .Values.externalAccess.port }}" > /shared/advertised-listeners-external
+              exit 0
+            fi
+            echo "Waiting for external IP... (attempt $i/60)"
+            sleep 5
+          done
+          
+          echo "Failed to get external IP, using service name as fallback"
+          echo "EXTERNAL://$SERVICE_NAME:{{ .Values.externalAccess.port }}" > /shared/advertised-listeners-external
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: shared-data
+          mountPath: /shared
+        {{- with .Values.kafka.containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: kafka
+        image: {{ .Values.global.portalRepository }}{{ .Values.image.kafka }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: internal
+          containerPort: {{ .Values.kafka.listeners.internal.port }}
+          protocol: TCP
+        {{- if .Values.kafka.listeners.external.enabled }}
+        - name: external
+          containerPort: {{ .Values.kafka.listeners.external.port }}
+          protocol: TCP
+        {{- end }}
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        {{- if .Values.externalAccess.enabled }}
+        - name: KAFKA_CFG_ADVERTISED_LISTENERS_COMMAND
+          value: |
+            INTERNAL_LISTENER="INTERNAL://$(hostname -f):{{ .Values.kafka.listeners.internal.port }}"
+            if [ -f /shared/advertised-listeners-external ]; then
+              EXTERNAL_LISTENER=$(cat /shared/advertised-listeners-external)
+              echo "${INTERNAL_LISTENER},${EXTERNAL_LISTENER}"
+            else
+              echo "${INTERNAL_LISTENER}"
+            fi
+        {{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "kafka.fullname" . }}-config
+        {{- if .Values.kafka.tls.enabled }}
+        {{- if .Values.kafka.tls.secretName }}
+        - secretRef:
+            name: {{ .Values.kafka.tls.secretName }}
+        {{- end }}
+        {{- if .Values.kafka.tls.passwordSecretName }}
+        - secretRef:
+            name: {{ .Values.kafka.tls.passwordSecretName }}
+        {{- end }}
+        {{- end }}
+        volumeMounts:
+        - name: kafka-data
+          mountPath: /opt/ca/kafka/data
+        {{- if .Values.externalAccess.enabled }}
+        - name: shared-data
+          mountPath: /shared
+        {{- end }}
+        {{- if .Values.kafka.tls.enabled }}
+        {{- if .Values.kafka.tls.secretName }}
+        - name: tls-certs
+          mountPath: /opt/ca/kafka/certs
+          readOnly: true
+        {{- end }}
+        {{- end }}
+        {{- with .Values.kafka.containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.kafka.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          tcpSocket:
+            port: internal
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          tcpSocket:
+            port: internal
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+      volumes:
+      {{- if .Values.externalAccess.enabled }}
+      - name: shared-data
+        emptyDir: {}
+      {{- end }}
+      {{- if .Values.kafka.tls.enabled }}
+      {{- if .Values.kafka.tls.secretName }}
+      - name: tls-certs
+        secret:
+          secretName: {{ .Values.kafka.tls.secretName }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.kafka.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafka.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kafka.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: kafka-data
+      labels:
+        {{- include "kafka.labels" . | nindent 8 }}
+        app.kubernetes.io/component: broker
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      {{- if .Values.global.storageClass }}
+      storageClassName: {{ .Values.global.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.storage.kafka }}

@@ -16,4 +16,5 @@ spec:
     targetPort: 9092
   selector:
     {{- include "kafka.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: broker
 

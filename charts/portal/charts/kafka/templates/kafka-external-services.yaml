@@ -45,5 +45,6 @@ spec:
   selector:
     {{- include "kafka.selectorLabels" $ | nindent 4 }}
     statefulset.kubernetes.io/pod-name: {{ $fullName }}-{{ $i }}
+    app.kubernetes.io/component: broker
 {{- end }}
 {{- end }}

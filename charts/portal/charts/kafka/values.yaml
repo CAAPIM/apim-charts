@@ -61,9 +61,59 @@ kafka:
     # Node ID (will be set based on pod ordinal if empty)
     nodeId: ""
     # Process roles (broker, controller, or both)
+    # For separate controller deployment, set to "broker" only
     processRoles: "broker,controller"
     # Controller quorum voters format: id@host:port
     # For StatefulSet with 3 replicas: "0@kafka-0.kafka:9093,1@kafka-1.kafka:9093,2@kafka-2.kafka:9093"
+    # For separate controllers: auto-generated based on controller configuration
+    controllerQuorumVoters: ""
+
+# Controller configuration (for separate controller deployment)
+controller:
+  # Enable separate controller deployment
+  enabled: false
+  
+  # Number of controller replicas (should be odd number for quorum)
+  replicaCount: 3
+  
+  # Additional labels for controller pods
+  additionalLabels: {}
+  
+  # Pod annotations
+  podAnnotations: {}
+  
+  # Force redeploy by adding timestamp annotation
+  forceRedeploy: false
+  
+  # Pod affinity rules
+  affinity: {}
+  
+  # Node selector
+  nodeSelector: {}
+  
+  # Tolerations
+  tolerations: []
+  
+  # Pod security context
+  podSecurityContext: {}
+  
+  # Container security context
+  containerSecurityContext: {}
+  
+  # Resource requests and limits (controllers are lightweight)
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 256Mi
+    # limits:
+    #   cpu: 500m
+    #   memory: 512Mi
+  
+  # KRaft Mode Configuration for Controllers
+  kraft:
+    # Process roles (controller only for separate deployment)
+    processRoles: "controller"
+    # Controller quorum voters (auto-generated if empty)
     controllerQuorumVoters: ""
   
   # Listener Configuration
@@ -158,6 +208,7 @@ zookeeper:
 persistence:
   storage:
     kafka: 10Gi
+    controller: 5Gi
 
 # Service Account
 serviceAccount:
@@ -192,7 +243,7 @@ externalAccess:
   autoAdvertisedListeners: true
   # Discovery image for LoadBalancer IP detection (kubectl)
   discoveryImage:
-    repository: "registry.k8s.io/kubectl"
-    tag: "v1.31.0"
+    repository: "alpine/k8s"
+    tag: "1.31.2"
     pullPolicy: IfNotPresent
 

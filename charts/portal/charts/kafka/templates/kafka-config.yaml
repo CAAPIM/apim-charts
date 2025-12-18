@@ -37,7 +37,13 @@ data:
   {{- end }}
   
   # Process roles (broker, controller, or both)
+  {{- if .Values.controller.enabled }}
+  # For separate controller deployment, brokers only handle broker role
+  KAFKA_CFG_PROCESS_ROLES: "broker"
+  {{- else }}
+  # For combined deployment, use configured process roles
   KAFKA_CFG_PROCESS_ROLES: {{ .Values.kafka.kraft.processRoles | quote }}
+  {{- end }}
   
   # Controller listener names
   KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
@@ -45,8 +51,20 @@ data:
   # Controller quorum voters
   {{- if .Values.kafka.kraft.controllerQuorumVoters }}
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ .Values.kafka.kraft.controllerQuorumVoters | quote }}
+  {{- else if .Values.controller.enabled }}
+  # Auto-generate controller quorum voters for separate controller deployment
+  {{- $fullName := include "kafka.fullname" . }}
+  {{- $controllerReplicaCount := int .Values.controller.replicaCount }}
+  {{- $brokerReplicaCount := int .Values.kafka.replicaCount }}
+  {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
+  {{- $voters := list }}
+  {{- range $i := until $controllerReplicaCount }}
+  {{- $nodeId := add $i $brokerReplicaCount }}
+  {{- $voters = append $voters (printf "%d@%s-controller-%d.%s-controller:%d" $nodeId $fullName $i $fullName $controllerPort) }}
+  {{- end }}
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ join "," $voters | quote }}
   {{- else }}
-  # Auto-generate controller quorum voters based on replica count
+  # Auto-generate controller quorum voters based on combined broker+controller replica count
   {{- $fullName := include "kafka.fullname" . }}
   {{- $replicaCount := int .Values.kafka.replicaCount }}
   {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
@@ -79,7 +97,7 @@ data:
   {{- if .Values.kafka.listeners.external.enabled }}
   {{- $listeners = append $listeners (printf "EXTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.external.port)) }}
   {{- end }}
-  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- if and .Values.kafka.listeners.controller.enabled (not .Values.controller.enabled) }}
   {{- $listeners = append $listeners (printf "CONTROLLER://0.0.0.0:%d" (int .Values.kafka.listeners.controller.port)) }}
   {{- end }}
   KAFKA_CFG_LISTENERS: {{ join "," $listeners | quote }}
@@ -92,7 +110,7 @@ data:
   {{- if .Values.kafka.listeners.external.enabled }}
   {{- $protocolMap = append $protocolMap (printf "EXTERNAL:%s" .Values.kafka.listeners.external.protocol) }}
   {{- end }}
-  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- if and .Values.kafka.listeners.controller.enabled (not .Values.controller.enabled) }}
   {{- $protocolMap = append $protocolMap (printf "CONTROLLER:%s" .Values.kafka.listeners.controller.protocol) }}
   {{- end }}
   KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: {{ join "," $protocolMap | quote }}

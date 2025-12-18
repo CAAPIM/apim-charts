@@ -1,0 +1,24 @@
+{{- if .Values.controller.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kafka.fullname" . }}-controller
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    app.kubernetes.io/component: controller
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: controller
+    port: {{ .Values.kafka.listeners.controller.port }}
+    targetPort: controller
+    protocol: TCP
+  selector:
+    {{- include "kafka.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+{{- end }}
+
