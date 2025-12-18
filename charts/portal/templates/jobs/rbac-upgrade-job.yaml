@@ -38,7 +38,7 @@ spec:
           {{- end }}
           {{- if .Values.jobs.dbUpgradeRbac.resources }}
           resources: {{- toYaml .Values.jobs.dbUpgradeRbac.resources | nindent 12 }}
-          {{- end }}          
+          {{- end }}
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
