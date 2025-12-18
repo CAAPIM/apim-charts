@@ -447,7 +447,7 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:intel_integration
+  dispatcher: dispatcher:5.4
   apim: ingress:5.4
   enterprise: portal-enterprise:5.4
   data: portal-data:5.4
@@ -730,7 +730,7 @@ kafka: &kafka_config
   
   # Image configuration
   image:
-    kafka: kafka:mr_kafka4_intel
+    kafka: kafka:5.4
     pullPolicy: IfNotPresent
   
   # Kafka deployment configuration
