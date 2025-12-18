@@ -326,7 +326,7 @@ spec:
           {{- end }}
             # APIM SSG Hostname (uses Kafka public host pattern with full hostname)
             - name: APIM_SSG_HOSTNAME
-              value: {{ include "kafka-public-host" . | quote }}
+              value: ""
             # Kafka External Advertised Brokers (for user-facing connections)
           {{- if not .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
           {{- if .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
