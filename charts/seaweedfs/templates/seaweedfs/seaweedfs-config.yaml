@@ -16,15 +16,23 @@ data:
   master.toml: |-
     {{ .Values.master.config | nindent 4 }}
   filer.toml: |-
-    {{ .Values.filer.config | nindent 4 }}
-  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+    [filer.options]
+    recursive_delete = false
+
+    [mysql]
+    enabled = true
 {{ if .Values.global.setupDemoDatabase}}
-  WEED_MYSQL_HOSTNAME: {{ .Release.Name }}-mysql-headless
+    hostname = "{{ .Release.Name }}-mysql-headless"
 {{ else }}
-  WEED_MYSQL_HOSTNAME: {{ .Values.global.databaseHost | quote }}
+    hostname = "{{ .Values.global.databaseHost }}"
 {{ end }}
-  WEED_MYSQL_PORT: {{ include "database-port" . | quote }}
-  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
-  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
-  WEED_MYSQL_USERNAME: {{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername | quote }}
+    port = {{ include "database-port" . }}
+    user = "{{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername }}"
+    password = "${WEED_MYSQL_PASSWORD}"
+    database = "{{ include "portal-db-name" . }}"
+    connection_max_idle = 10
+    connection_max_open = 100
+    connection_max_lifetime_seconds = 0
+    interpolateParams = true
+    allowFallbackToPlaintext = true
   
