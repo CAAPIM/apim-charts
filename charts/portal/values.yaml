@@ -724,6 +724,9 @@ druid:
 
 # Configuration for the custom Kafka subchart
 kafka: &kafka_config
+  # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
+  fullnameOverride: kafka
+  
   # Global configuration passed to Kafka subchart
   global:
     subdomainPrefix: "" # Set to your portal subdomain for advertised listeners
