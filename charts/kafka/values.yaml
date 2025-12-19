@@ -176,8 +176,9 @@ serviceAccount:
 
 # External access configuration for autodiscovery
 externalAccess:
-  # Enable external access to Kafka brokers
-  enabled: true
+  # External access should be enabled only when Intelligence is enabled
+  # Analytics (Druid) uses internal Kafka service only
+  enabled: false
   # Service type for external access (LoadBalancer or NodePort)
   serviceType: LoadBalancer
   # Port for external access (should match kafka.listeners.external.port)
