@@ -721,7 +721,8 @@ kafka: &kafka_config
 
   # Global configuration passed to Kafka subchart
   global:
-    subdomainPrefix: "" # Set to your portal subdomain for advertised listeners
+    # Set to your portal subdomain for advertised listeners
+    subdomainPrefix: ""
 
   # Image configuration
   image:
