@@ -475,14 +475,6 @@ druid:
       historical: 50Gi
       minio: 40Gi
       zookeeper: 10Gi
-  # Kafka configuration for druid ingestion service
-  kafka:
-    # Reference to Kafka broker service name (deployed as separate subchart)
-    brokerService: kafka
-    # Kafka broker port
-    brokerPort: 9092
-    # Kafka replication count (should match kafka.kafka.replicaCount)
-    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -726,16 +718,16 @@ druid:
 kafka: &kafka_config
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
-  
+
   # Global configuration passed to Kafka subchart
   global:
     subdomainPrefix: "" # Set to your portal subdomain for advertised listeners
-  
+
   # Image configuration
   image:
     kafka: kafka:mr_kafka4_intel
     pullPolicy: IfNotPresent
-  
+
   # Kafka deployment configuration
   kafka:
     # Number of Kafka broker replicas
@@ -764,7 +756,7 @@ kafka: &kafka_config
       # limits:
       #   cpu: 1000m
       #   memory: 1.5Gi
-    
+
     # KRaft Mode Configuration (Kafka 4.0.0+)
     kraft:
       # Enable KRaft mode (Zookeeper-less)
@@ -775,7 +767,7 @@ kafka: &kafka_config
       processRoles: "broker,controller"
       # Controller quorum voters (auto-generated based on replicas if empty)
       controllerQuorumVoters: ""
-    
+
     # Listener Configuration
     listeners:
       # Internal listener for inter-broker and client communication
@@ -795,10 +787,10 @@ kafka: &kafka_config
         protocol: PLAINTEXT
       # Inter-broker listener name
       interBrokerListenerName: INTERNAL
-    
+
     # Log retention configuration
     logRetentionHours: 6
-    
+
     # TLS/SSL Configuration
     tls:
       # Enable TLS/SSL
@@ -815,7 +807,7 @@ kafka: &kafka_config
       # Password secret for encrypted keys
       passwordSecretName: ""
       passwordSecretKey: "keypass.txt"
-    
+
     # SASL Authentication Configuration
     sasl:
       # Enable SASL authentication
@@ -826,24 +818,24 @@ kafka: &kafka_config
       interBrokerProtocol: PLAIN
       # JAAS configuration file path
       jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
-  
+
   # Zookeeper configuration (not used in KRaft mode, kept for compatibility)
   zookeeper:
     hostname: zookeeper
     port: 2181
-  
+
   # Persistence configuration
   persistence:
     storage:
       kafka: 10Gi
-  
+
   # Service Account
   serviceAccount:
     create: true
     annotations: {}
     name: ""
     automountServiceAccountToken: true
-  
+
   # External access configuration for autodiscovery
   externalAccess:
     # External access is only needed for Intelligence
