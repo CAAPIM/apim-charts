@@ -1,4 +1,4 @@
-{{- if .Values.kafka.externalAccess.enabled }}
+{{- if and .Values.kafka.externalAccess.enabled .Values.portal.intelligence.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
