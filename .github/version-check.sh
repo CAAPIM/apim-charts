@@ -3,7 +3,7 @@ set -e pipefail
 #### Pre-flight script to ensure that CAAPIM Charts have been versioned correctly before the release pipeline gets run.
 
 # Check if Charts have Changed
-charts=(gateway portal druid)
+charts=(gateway portal gateway-otk druid)
 
 # Get latest available versions
 l7json=$(helm search repo layer7/ -o json)
