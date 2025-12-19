@@ -23,6 +23,10 @@ dependencies:
   version: 12.0.3
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: rabbitmq.enabled
+- name: apim-intelligence
+  version: ^1.0.0
+  condition: portal.intelligence.enabled
+  repository: "file://../intelligence"
 - name: kafka
   version: 1.3.3
   condition: portal.intelligence.enabled, portal.analytics.enabled

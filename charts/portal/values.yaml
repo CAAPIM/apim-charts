@@ -47,7 +47,7 @@ portal:
   analytics:
     enabled: true
   intelligence:
-    enabled: true
+    enabled: false
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
