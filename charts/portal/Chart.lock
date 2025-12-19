@@ -2,6 +2,12 @@ dependencies:
 - name: druid
   repository: file://../druid
   version: 1.0.17
+- name: mysql
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  version: 12.3.5
+- name: rabbitmq
+  repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  version: 12.0.3
 - name: apim-intelligence
   repository: file://../intelligence
   version: 1.0.11
