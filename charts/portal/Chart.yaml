@@ -30,7 +30,7 @@ dependencies:
 # Note: Kafka is required by both Analytics (Druid) and Intelligence
 # Since Intelligence requires Kafka, ensure analytics.enabled=true when using Intelligence
 - name: kafka
-  version: 1.3.3
+  version: ^1.3.3
   condition: portal.analytics.enabled
   repository: "file://../kafka"
 - name: ingress-nginx
