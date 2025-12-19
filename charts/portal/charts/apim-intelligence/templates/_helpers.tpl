@@ -73,17 +73,18 @@ Get "database-port" based on databaseType value
 
 {{/*
 Get "kafka" brokers
+For StatefulSet with headless service, use pod hostname format
 */}}
 {{- define "kafka-brokers" -}}
     {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
-        {{- /* Custom Kafka subchart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
+        {{- /* Custom Kafka subchart - use StatefulSet pod hostname */ -}}
+        {{- printf "%s-portal-kafka-0.%s-portal-kafka:%g" .Release.Name .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
     {{- else if and .Values.kafka.listeners .Values.kafka.listeners.client }}
         {{- /* Bitnami Kafka chart */ -}}
         {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
     {{- else }}
-        {{- /* Default fallback */ -}}
-        {{- printf "%s-kafka:9092" .Release.Name -}}
+        {{- /* Default fallback - use StatefulSet pod hostname */ -}}
+        {{- printf "%s-portal-kafka-0.%s-portal-kafka:9092" .Release.Name .Release.Name -}}
     {{- end }}
 {{- end -}}
 
