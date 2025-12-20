@@ -42,11 +42,14 @@ global:
     allowInsecureImages: true
 
   deepStorage:
-    # Set to true during helm upgrade to migrate data from Minio to SeaweedFS
-    # The migration job will run in the background, allowing helm upgrade to complete immediately
-    # Monitor progress: kubectl get job -l component=data-migration -n <namespace>
-    # Set back to false after migration is complete for subsequent upgrades
+    # Set to true to create a data migration Job from Minio to SeaweedFS
+    # The Job runs independently and will not block helm operations
+    # Rclone will automatically retry if services are not ready
+    # Set to false to remove the Job resource
     enableDataMigration: false
+    # Maximum time in seconds to wait for services to become ready (default: 600 = 10 minutes)
+    # The Job will check service accessibility every 10 seconds until ready or timeout
+    migrationInitialDelaySeconds: 600
     auth:
       secretName: seaweedfs-s3-secret
     analytics:
