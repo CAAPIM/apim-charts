@@ -21,18 +21,3 @@ data:
 
     [mysql]
     enabled = true
-{{ if .Values.global.setupDemoDatabase}}
-    hostname = "{{ .Release.Name }}-mysql-headless"
-{{ else }}
-    hostname = "{{ .Values.global.databaseHost }}"
-{{ end }}
-    port = {{ include "database-port" . }}
-    user = "{{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername }}"
-    password = "${WEED_MYSQL_PASSWORD}"
-    database = "{{ include "portal-db-name" . }}"
-    connection_max_idle = 10
-    connection_max_open = 100
-    connection_max_lifetime_seconds = 0
-    interpolateParams = true
-    allowFallbackToPlaintext = true
-  

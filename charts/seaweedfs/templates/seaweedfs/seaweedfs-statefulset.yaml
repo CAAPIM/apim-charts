@@ -76,33 +76,6 @@ spec:
       securityContext:
         fsGroup: 1010
       {{- end }}
-      initContainers:
-        - name: configure-filer
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
-          command:
-            - "/bin/bash"
-            - "-c"
-            - |
-              # Copy filer.toml from ConfigMap to writable location
-              cp /etc/seaweedfs-config/filer.toml /etc/seaweedfs/filer.toml
-              
-              # Replace password placeholder with actual value from secret
-              sed -i "s|\${WEED_MYSQL_PASSWORD}|${WEED_MYSQL_PASSWORD}|g" /etc/seaweedfs/filer.toml
-              
-              echo "filer.toml configured successfully"
-          env:
-            - name: WEED_MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.databaseSecret }}
-            {{- if eq .Values.global.databaseType "mysql" }}
-                  key: mysql-password
-            {{- end }}
-          volumeMounts:
-            - name: filer-config-template
-              mountPath: /etc/seaweedfs-config
-            - name: filer-config
-              mountPath: /etc/seaweedfs
       containers:
         - name: seaweedfs
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
@@ -146,8 +119,16 @@ spec:
             {{- end }}
             - name: WEED_MYSQL_ENABLED
               value: "true"
-            - name: WEED_MYSQL_DATABASE
-              value: {{ include "portal-db-name" . | quote }}
+            - name: WEED_MYSQL_HOSTNAME
+              {{- if .Values.global.setupDemoDatabase }}
+              value: "{{ .Release.Name }}-mysql-headless"
+              {{- else }}
+              value: "{{ .Values.global.databaseHost }}"
+              {{- end }}
+            - name: WEED_MYSQL_PORT
+              value: {{ include "database-port" . | quote }}
+            - name: WEED_MYSQL_USERNAME
+              value: "{{ required "Please fill in databaseUsername in values.yaml" .Values.global.databaseUsername }}"
             - name: WEED_MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -155,13 +136,19 @@ spec:
             {{- if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
             {{- end }}
+            - name: WEED_MYSQL_DATABASE
+              value: {{ include "portal-db-name" . | quote }}
             - name: WEED_MYSQL_CONNECTION_MAX_IDLE
-              value: "5"
+              value: "10"
             - name: WEED_MYSQL_CONNECTION_MAX_OPEN
-              value: "75"
+              value: "100"
             - name: WEED_MYSQL_CONNECTION_MAX_LIFETIME_SECONDS
-              value: "600"
+              value: "0"
             - name: WEED_MYSQL_INTERPOLATEPARAMS
+              value: "true"
+            - name: WEED_MYSQL_TLS
+              value: "true"
+            - name: WEED_MYSQL_ALLOW_FALLBACK_TO_PLAINTEXT
               value: "true"
             - name: RCLONE_CONFIG_MINIO_TYPE
               value: s3
@@ -205,138 +192,138 @@ spec:
             - "server"
             - "-dir=/opt/data"
             - "-master"
-            {{ if gt (.Values.replicaCount | int) 1 -}}
+              {{ if gt (.Values.replicaCount | int) 1 -}}
             - "-master.peers={{ include "seaweedfs.master.servers" . }}"
             - "-ip=$(POD_NAME).seaweedfs-s3.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}"
-            {{ end -}}
+              {{ end -}}
             - "-volume"
-            {{- if .Values.idleTimeout }}
+              {{- if .Values.idleTimeout }}
             - "-idleTimeout={{ .Values.idleTimeout }}"
-            {{- end }}
-            {{- if .Values.dataCenter }}
+              {{- end }}
+              {{- if .Values.dataCenter }}
             - "-dataCenter={{ .Values.dataCenter }}"
-            {{- end }}
-            {{- if .Values.rack }}
+              {{- end }}
+              {{- if .Values.rack }}
             - "-rack={{ .Values.rack }}"
-            {{- end }}
-            {{- if .Values.whiteList }}
+              {{- end }}
+              {{- if .Values.whiteList }}
             - "-whiteList={{ .Values.whiteList }}"
-            {{- end }}
-            {{- if .Values.disableHttp }}
+              {{- end }}
+              {{- if .Values.disableHttp }}
             - "-disableHttp={{ .Values.disableHttp }}"
-            {{- end }}
-            {{- if and (.Values.volume.dataDirs) (index .Values.volume.dataDirs 0 "maxVolumes") }}
+              {{- end }}
+              {{- if and (.Values.volume.dataDirs) (index .Values.volume.dataDirs 0 "maxVolumes") }}
             - "-volume.max={{ index .Values.volume.dataDirs 0 "maxVolumes" }}"
-            {{- end }}
+              {{- end }}
             - "-master.port={{ .Values.master.port }}"
-            {{- if .Values.global.enableReplication }}
+              {{- if .Values.global.enableReplication }}
             - "-master.defaultReplication={{ .Values.global.replicationPlacement }}"
-            {{- else }}
+              {{- else }}
             - "-master.defaultReplication={{ .Values.master.defaultReplication }}"
-            {{- end }}
-            {{- if .Values.master.volumePreallocate }}
+              {{- end }}
+              {{- if .Values.master.volumePreallocate }}
             - "-master.volumePreallocate"
-            {{- end }}
+              {{- end }}
             - "-master.volumeSizeLimitMB={{ .Values.master.volumeSizeLimitMB }}"
-            {{- if .Values.master.garbageThreshold }}
+              {{- if .Values.master.garbageThreshold }}
             - "-master.garbageThreshold={{ .Values.master.garbageThreshold }}"
-            {{- end }}
+              {{- end }}
             - "-volume.port={{ .Values.volume.port }}"
             - "-volume.readMode={{ .Values.volume.readMode }}"
-            {{- if .Values.volume.imagesFixOrientation }}
+              {{- if .Values.volume.imagesFixOrientation }}
             - "-volume.images.fix.orientation"
-            {{- end }}
-            {{- if .Values.volume.index }}
+              {{- end }}
+              {{- if .Values.volume.index }}
             - "-volume.index={{ .Values.volume.index }}"
-            {{- end }}
-            {{- if .Values.volume.fileSizeLimitMB }}
+              {{- end }}
+              {{- if .Values.volume.fileSizeLimitMB }}
             - "-volume.fileSizeLimitMB={{ .Values.volume.fileSizeLimitMB }}"
-            {{- end }}
+              {{- end }}
             - "-volume.minFreeSpacePercent={{ .Values.volume.minFreeSpacePercent }}"
             - "-volume.compactionMBps={{ .Values.volume.compactionMBps }}"
-            {{- if .Values.metricsPort }}
+              {{- if .Values.metricsPort }}
             - "-metricsPort={{ .Values.metricsPort }}"
-            {{- else if .Values.master.metricsPort }}
+              {{- else if .Values.master.metricsPort }}
             - "-metricsPort={{ .Values.master.metricsPort }}"
-            {{- end }}
+              {{- end }}
             - "-filer"
             - "-filer.port={{ .Values.filer.port }}"
-            {{- if .Values.filer.disableDirListing }}
+              {{- if .Values.filer.disableDirListing }}
             - "-filer.disableDirListing"
-            {{- end }}
+              {{- end }}
             - "-filer.dirListLimit={{ .Values.filer.dirListLimit }}"
-            {{- if .Values.global.enableReplication }}
+              {{- if .Values.global.enableReplication }}
             - "-filer.defaultReplicaPlacement={{ .Values.global.replicationPlacement }}"
-            {{- else }}
+              {{- else }}
             - "-filer.defaultReplicaPlacement={{ .Values.filer.defaultReplicaPlacement }}"
-            {{- end }}
-            {{- if .Values.filer.maxMB }}
+              {{- end }}
+              {{- if .Values.filer.maxMB }}
             - "-filer.maxMB={{ .Values.filer.maxMB }}"
-            {{- end }}
-            {{- if .Values.filer.encryptVolumeData }}
+              {{- end }}
+              {{- if .Values.filer.encryptVolumeData }}
             - "-filer.encryptVolumeData"
-            {{- end }}
-            {{- if .Values.filer.filerGroup}}
+              {{- end }}
+              {{- if .Values.filer.filerGroup}}
             - "-filer.filerGroup={{ .Values.filer.filerGroup}}"
-            {{- end }}
-            {{- if .Values.filer.rack }}
+              {{- end }}
+              {{- if .Values.filer.rack }}
             - "-filer.rack={{ .Values.filer.rack }}"
-            {{- end }}
-            {{- if .Values.filer.dataCenter }}
+              {{- end }}
+              {{- if .Values.filer.dataCenter }}
             - "-filer.dataCenter={{ .Values.filer.dataCenter }}"
-            {{- end }}
-            {{- if .Values.s3.enabled }}
+              {{- end }}
+              {{- if .Values.s3.enabled }}
             - "-s3"
             - "-s3.port={{ .Values.s3.port }}"
-            {{- if .Values.s3.domainName }}
+              {{- if .Values.s3.domainName }}
             - "-s3.domainName={{ .Values.s3.domainName }}"
-            {{- end }}
-            {{- if .Values.global.enableSecurity }}
-            {{- if .Values.s3.httpsPort }}
+              {{- end }}
+              {{- if .Values.global.enableSecurity }}
+              {{- if .Values.s3.httpsPort }}
             - "-s3.port.https={{ .Values.s3.httpsPort }}"
-            {{- end }}
+              {{- end }}
             - "-s3.cert.file=/usr/local/share/ca-certificates/client/tls.crt"
             - "-s3.key.file=/usr/local/share/ca-certificates/client/tls.key"
-            {{- end }}
-            {{- if eq (typeOf .Values.s3.allowEmptyFolder) "bool" }}
+              {{- end }}
+              {{- if eq (typeOf .Values.s3.allowEmptyFolder) "bool" }}
             - "-s3.allowEmptyFolder={{ .Values.s3.allowEmptyFolder }}"
-            {{- end }}
-            {{- if .Values.s3.enableAuth }}
+              {{- end }}
+              {{- if .Values.s3.enableAuth }}
             - "-s3.config=/etc/sw/s3/seaweedfs_s3_config"
-            {{- end }}
-            {{- if .Values.s3.auditLogConfig }}
+              {{- end }}
+              {{- if .Values.s3.auditLogConfig }}
             - "-s3.auditLogConfig=/etc/sw/s3/s3_auditLogConfig.json"
-            {{- end }}
-            {{- end }}
-            {{- if .Values.sftp.enabled }}
+              {{- end }}
+              {{- end }}
+              {{- if .Values.sftp.enabled }}
             - "-sftp"
             - "-sftp.port={{ .Values.sftp.port }}"
-            {{- if .Values.sftp.sshPrivateKey }}
+              {{- if .Values.sftp.sshPrivateKey }}
             - "-sftp.sshPrivateKey={{ .Values.sftp.sshPrivateKey }}"
-            {{- end }}
-            {{- if .Values.sftp.hostKeysFolder }}
+              {{- end }}
+              {{- if .Values.sftp.hostKeysFolder }}
             - "-sftp.hostKeysFolder={{ .Values.sftp.hostKeysFolder }}"
-            {{- end }}
-            {{- if .Values.sftp.authMethods }}
+              {{- end }}
+              {{- if .Values.sftp.authMethods }}
             - "-sftp.authMethods={{ .Values.sftp.authMethods }}"
-            {{- end }}
-            {{- if .Values.sftp.maxAuthTries }}
+              {{- end }}
+              {{- if .Values.sftp.maxAuthTries }}
             - "-sftp.maxAuthTries={{ .Values.sftp.maxAuthTries }}"
-            {{- end }}
-            {{- if .Values.sftp.bannerMessage }}
+              {{- end }}
+              {{- if .Values.sftp.bannerMessage }}
             - "-sftp.bannerMessage={{ .Values.sftp.bannerMessage }}"
-            {{- end }}
-            {{- if .Values.sftp.loginGraceTime }}
+              {{- end }}
+              {{- if .Values.sftp.loginGraceTime }}
             - "-sftp.loginGraceTime={{ .Values.sftp.loginGraceTime }}"
-            {{- end }}
-            {{- if .Values.sftp.clientAliveInterval }}
+              {{- end }}
+              {{- if .Values.sftp.clientAliveInterval }}
             - "-sftp.clientAliveInterval={{ .Values.sftp.clientAliveInterval }}"
-            {{- end }}
-            {{- if .Values.sftp.clientAliveCountMax }}
+              {{- end }}
+              {{- if .Values.sftp.clientAliveCountMax }}
             - "-sftp.clientAliveCountMax={{ .Values.sftp.clientAliveCountMax }}"
-            {{- end }}
+              {{- end }}
             - "-sftp.userStoreFile=/etc/sw/sftp/seaweedfs_sftp_config"
-            {{- end }}
+              {{- end }}
 
           volumeMounts:
             - name: seaweedfs-vol-claim
@@ -365,7 +352,9 @@ spec:
               subPath: master.toml
               readOnly: true
             - name: filer-config
-              mountPath: /etc/seaweedfs
+              mountPath: /etc/seaweedfs/filer.toml
+              subPath: filer.toml
+              readOnly: true
             {{- if .Values.global.enableSecurity }}
             - name: security-config
               mountPath: /etc/seaweedfs/security.toml
@@ -492,14 +481,12 @@ spec:
             items:
               - key: master.toml
                 path: master.toml
-        - name: filer-config-template
+        - name: filer-config
           configMap:
             name: seaweedfs-config
             items:
               - key: filer.toml
                 path: filer.toml
-        - name: filer-config
-          emptyDir: {}
         {{- if .Values.global.enableSecurity }}
         - name: security-config
           configMap:
