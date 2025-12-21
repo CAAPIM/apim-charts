@@ -192,10 +192,10 @@ spec:
             - "server"
             - "-dir=/opt/data"
             - "-master"
-              {{ if gt (.Values.replicaCount | int) 1 -}}
+              {{- if gt (.Values.replicaCount | int) 1 }}
             - "-master.peers={{ include "seaweedfs.master.servers" . }}"
             - "-ip=$(POD_NAME).seaweedfs-s3.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}"
-              {{ end -}}
+              {{- end }}
             - "-volume"
               {{- if .Values.idleTimeout }}
             - "-idleTimeout={{ .Values.idleTimeout }}"
