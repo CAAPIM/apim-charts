@@ -42,6 +42,7 @@ global:
     allowInsecureImages: true
 
   deepStorage:
+    seaweedfs: true
     # Set to true to create a data migration Job from Minio to SeaweedFS
     # The Job runs independently and will not block helm operations
     # Rclone will automatically retry if services are not ready
