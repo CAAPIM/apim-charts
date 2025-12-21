@@ -77,7 +77,7 @@ spec:
           {{- range $reg, $props := $.Values.filer.s3.createBuckets }}
             exec /bin/echo \
             "s3.bucket.create --name {{ $props.name }}" |\
-            /opt/bitnami/seaweedfs/bin/weed shell
+            /usr//bin/weed shell
           {{- end }}
           {{- range $reg, $props := $.Values.filer.s3.createBuckets }}
           {{- if $props.anonymousRead }}
@@ -86,7 +86,7 @@ spec:
                 --buckets {{ $props.name }} \
                 --actions Read \
                 --apply true" |\
-                /opt/bitnami/seaweedfs/bin/weed shell
+                /usr//bin/weed shell
           {{- end }}  
           {{- end }}
         {{- if .Values.filer.s3.enableAuth }}
