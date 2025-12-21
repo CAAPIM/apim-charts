@@ -60,6 +60,8 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  intelligence:
+    enabled: false
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -121,8 +123,11 @@ tls:
 # These secrets are NOT Helm managed, you will need to clean them up manually.
 # This will force all of the deployments that use the secrets to upgrade
 # If you don't do this, you will have to perform a manual restart of each affected container
-  internalSecretName: portal-internal-secret
+  internalSecretName: &internalSecretName portal-internal-secret
   externalSecretName: portal-external-secret
+  kafkaCaSecretName: &kafkaCaSecretName portal-kafka-ca-secret
+  kafkaSecretName: portal-kafka-tls-secret
+
   useSignedCertificates: false
 # crt, crtChain and key expect files, use --set-file or add them here
 # in pem format
@@ -684,7 +689,6 @@ druid:
     storage:
       historical: 50Gi
       minio: 40Gi
-      kafka: 10Gi
       zookeeper: 10Gi
 
   minio:
@@ -923,11 +927,154 @@ druid:
     middlemanager: druid:5.4
     minio: minio:5.4
     historical: druid:5.4
-    kafka: kafka:5.4
     ingestion: ingestion-server:5.4
 
+# Configuration for the custom Kafka subchart
+kafka: &kafka_config
+  # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
+  fullnameOverride: kafka
+
+  # Global configuration passed to Kafka subchart
+  global:
+    # Set to your portal subdomain for advertised listeners
+    subdomainPrefix: ""
+
+  # Image configuration
+  image:
+    kafka: kafka:mr_kafka4_intel
+    pullPolicy: IfNotPresent
+
+  # Kafka deployment configuration
+  kafka:
+    # Number of Kafka broker replicas
+    replicaCount: 1
+    # Additional labels for Kafka pods
+    additionalLabels: {}
+    # Pod annotations
+    podAnnotations: {}
+    # Force redeploy by adding timestamp annotation
+    forceRedeploy: false
+    # Pod affinity rules
+    affinity: {}
+    # Node selector
+    nodeSelector: {}
+    # Tolerations
+    tolerations: []
+    # Pod security context
+    podSecurityContext: {}
+    # Container security context
+    containerSecurityContext: {}
+    # Resource requests and limits
+    resources: {}
+      # requests:
+      #   cpu: 100m
+      #   memory: 750Mi
+      # limits:
+      #   cpu: 1000m
+      #   memory: 1.5Gi
+
+    # KRaft Mode Configuration (Kafka 4.0.0+)
+    kraft:
+      # Enable KRaft mode (Zookeeper-less)
+      enabled: true
+      # Cluster ID for KRaft (auto-generated if empty)
+      clusterId: ""
+      # Process roles (broker, controller, or both)
+      processRoles: "broker,controller"
+      # Controller quorum voters (auto-generated based on replicas if empty)
+      controllerQuorumVoters: ""
+
+    # Listener Configuration
+    listeners:
+      # Internal listener for inter-broker and client communication
+      internal:
+        enabled: true
+        port: 9092
+        protocol: PLAINTEXT
+      # External listener for clients outside the cluster
+      external:
+        enabled: true
+        port: 9094
+        protocol: SSL
+      # Controller listener for KRaft mode
+      controller:
+        enabled: true
+        port: 9093
+        protocol: PLAINTEXT
+      # Inter-broker listener name
+      interBrokerListenerName: INTERNAL
+
+    # Log retention configuration
+    logRetentionHours: 6
+
+    # TLS/SSL Configuration
+    tls:
+      # Enable TLS/SSL
+      enabled: false
+      # TLS type (PEM or JKS)
+      type: PEM
+      # Client authentication (none, requested, required)
+      clientAuth: required
+      # Secret containing TLS certificates
+      secretName: ""
+      # Keys in the secret
+      keystoreKeyKey: "keystore.key"
+      truststoreCertKey: "truststore.pem"
+      # Password secret for encrypted keys
+      passwordSecretName: ""
+      passwordSecretKey: "keypass.txt"
+
+    # SASL Authentication Configuration
+    sasl:
+      # Enable SASL authentication
+      enabled: false
+      # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+      mechanisms: PLAIN
+      # Inter-broker SASL mechanism
+      interBrokerProtocol: PLAIN
+      # JAAS configuration file path
+      jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
+
+  # Zookeeper configuration (not used in KRaft mode, kept for compatibility)
+  zookeeper:
+    hostname: zookeeper
+    port: 2181
+
+  # Persistence configuration
+  persistence:
+    storage:
+      kafka: 10Gi
+
+  # Service Account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+    automountServiceAccountToken: true
+
+  # External access configuration for autodiscovery
+  externalAccess:
+    # External access is only needed for Intelligence
+    # Analytics (Druid) uses internal Kafka service
+    enabled: false
+    # Service type for external access (LoadBalancer or NodePort)
+    serviceType: LoadBalancer
+    # Port for external access
+    port: 9094
+    # Hostname/domain for external access (used in advertised listeners)
+    hostname: ""
+    # Annotations for external services
+    annotations:
+      cloud.google.com/load-balancer-type: Internal
+    # LoadBalancer IPs (optional, for static IPs)
+    loadBalancerIPs: []
+    # NodePort values (optional, for NodePort service type)
+    nodePorts: []
+    # Auto-generate advertised listeners based on service IPs
+    autoAdvertisedListeners: true
+
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
-rabbitmq:
+rabbitmq: &rabbitmq_config
   enabled: true
   host: rabbitmq
   fullnameOverride: rabbitmq
@@ -1010,6 +1157,75 @@ rabbitmq:
         - -ec
         - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/local-alarms
 
+# Settings for the intelligence subchart
+apim-intelligence:
+  # Use a YAML alias (*) to reference the Kafka configuration from above.
+  # This avoids duplicating the configuration and ensures the intelligence
+  # subchart has the correct values for broker discovery.
+  kafka: *kafka_config
+  rabbitmq: *rabbitmq_config
+
+  rbac:
+    create: true
+
+  # Service Account for intelligence-server
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+    name: ""
+
+  image:
+    intelligenceServer: intelligence-server:latest
+
+  intelligenceServer:
+    # Configuration for the Intelligence Server.
+    kafka:
+      # A list of external advertised Kafka brokers.
+      # externalAdvertisedBrokers:
+      # Configuration for Kafka broker auto-discovery.
+      autoDiscovery:
+        # Enables or disables Kafka broker auto-discovery.
+        enabled: true
+        image:
+          # The repository of the auto-discovery image.
+          repository: "docker.io/bitnami/kubectl"
+          # The tag of the auto-discovery image.
+          tag: "1.33.3-debian-12-r0"
+          # The pull policy for the auto-discovery image.
+          pullPolicy: IfNotPresent
+        # Resource requests and limits for the auto-discovery init container
+        # resources: {}
+      # Configuration for the Kafka CA certificate.
+      kafkaCa:
+        # The name of the secret containing the Kafka CA certificate.
+        caSecretName: *internalSecretName
+        # The name of the secret containing the password for the Kafka CA certificate.
+        passwordSecretName: *internalSecretName
+        # The key in the password secret that contains the password.
+        passwordSecretKey: "keypass.txt"
+    forceRedeploy: false
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    replicaCount: 1
+    image:
+      pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
+    resources:
+      requests: {}
+      # memory: 4Gi
+      limits: {}
+      # memory: 4Gi
+    # nodeSelector: {}
+    # tolerations: []
+    # affinity: {}
+
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:
   podSecurityPolicy:
@@ -1046,6 +1262,22 @@ jobs:
   image:
     pullPolicy: IfNotPresent
 
+  dbUpgradePortal:
+    resources:
+      requests: {}
+      # cpu: 100m
+      # memory: 250Mi
+      limits: {}
+      # cpu: 1000m
+      # memory: 1000Mi
+  dbUpgradeRbac:
+    resources:
+      requests: {}
+      # cpu: 100m
+      # memory: 250Mi
+      limits: {}
+      # cpu: 1000m
+      # memory: 1000Mi
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
 # in any production environment.
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql

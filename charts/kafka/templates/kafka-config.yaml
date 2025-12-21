@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kafka.fullname" . }}-config
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kafka.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+data:
+  SERVICE_NAME: {{ include "kafka.fullname" . }}
+
+  # Intelligence enabled flag (controls EXTERNAL listener)
+  INTELLIGENCE_ENABLED: {{ .Values.global.intelligenceEnabled | quote }}
+
+  # Portal subdomain for advertised listeners
+  {{- if .Values.global.subdomainPrefix }}
+  APIM_PORTAL_SUBDOMAIN: {{ .Values.global.subdomainPrefix | quote }}
+  {{- end }}
+  
+  {{- if .Values.kafka.kraft.enabled }}
+  # ============================================
+  # KRaft Mode Configuration (Kafka 4.0.0+)
+  # ============================================
+  
+  # KRaft cluster ID (will be auto-generated if not set)
+  {{- if .Values.kafka.kraft.clusterId }}
+  KAFKA_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
+  {{- end }}
+  
+  # Node ID (uses pod ordinal from hostname if not explicitly set)
+  {{- if .Values.kafka.kraft.nodeId }}
+  KAFKA_CFG_NODE_ID: {{ .Values.kafka.kraft.nodeId | quote }}
+  {{- else }}
+  # Node ID will be extracted from pod hostname (e.g., kafka-0 -> 0)
+  KAFKA_CFG_NODE_ID_COMMAND: echo $HOSTNAME | rev | cut -d "-" -f 1
+  {{- end }}
+  
+  # Process roles (broker, controller, or both)
+  KAFKA_CFG_PROCESS_ROLES: {{ .Values.kafka.kraft.processRoles | quote }}
+  
+  # Controller listener names
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+  
+  # Controller quorum voters
+  {{- if .Values.kafka.kraft.controllerQuorumVoters }}
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ .Values.kafka.kraft.controllerQuorumVoters | quote }}
+  {{- else }}
+  # Auto-generate controller quorum voters based on replica count
+  {{- $fullName := include "kafka.fullname" . }}
+  {{- $replicaCount := int .Values.kafka.replicaCount }}
+  {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
+  {{- $voters := list }}
+  {{- range $i := until $replicaCount }}
+  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $i $fullName $i $fullName $controllerPort) }}
+  {{- end }}
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ join "," $voters | quote }}
+  {{- end }}
+  
+  {{- else }}
+  # ============================================
+  # Zookeeper Mode Configuration (Legacy)
+  # ============================================
+  KAFKA_ZOOKEEPER_CONNECT: {{ .Values.zookeeper.hostname }}:{{ .Values.zookeeper.port }}
+  KAFKA_ADVERTISED_HOST_NAME: {{ include "kafka.fullname" . }}
+  BROKER_ID_COMMAND: echo $HOSTNAME | rev | cut -d "-" -f 1
+  {{- end }}
+  
+  # ============================================
+  # Listener Configuration
+  # ============================================
+  
+  {{- if .Values.kafka.kraft.enabled }}
+  # Build listeners string
+  {{- $listeners := list }}
+  {{- if .Values.kafka.listeners.internal.enabled }}
+  {{- $listeners = append $listeners (printf "INTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.internal.port)) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.external.enabled }}
+  {{- $listeners = append $listeners (printf "EXTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.external.port)) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- $listeners = append $listeners (printf "CONTROLLER://0.0.0.0:%d" (int .Values.kafka.listeners.controller.port)) }}
+  {{- end }}
+  KAFKA_CFG_LISTENERS: {{ join "," $listeners | quote }}
+  
+  # Build listener security protocol map
+  {{- $protocolMap := list }}
+  {{- if .Values.kafka.listeners.internal.enabled }}
+  {{- $protocolMap = append $protocolMap (printf "INTERNAL:%s" .Values.kafka.listeners.internal.protocol) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.external.enabled }}
+  {{- $protocolMap = append $protocolMap (printf "EXTERNAL:%s" .Values.kafka.listeners.external.protocol) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- $protocolMap = append $protocolMap (printf "CONTROLLER:%s" .Values.kafka.listeners.controller.protocol) }}
+  {{- end }}
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: {{ join "," $protocolMap | quote }}
+  
+  # Inter-broker listener name
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: {{ .Values.kafka.listeners.interBrokerListenerName | quote }}
+  
+  # Advertised listeners
+  {{- if .Values.kafka.advertisedListeners }}
+  # Custom advertised listeners (portal-dist style)
+  KAFKA_CFG_ADVERTISED_LISTENERS: {{ .Values.kafka.advertisedListeners | quote }}
+  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.hostname }}
+  # Use provided hostname for external access
+  {{- $fullName := include "kafka.fullname" . }}
+  {{- $internalPort := int .Values.kafka.listeners.internal.port }}
+  {{- $externalPort := int .Values.externalAccess.port }}
+  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ $externalPort }}"
+  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
+  # Will be set at runtime by init container - DO NOT set here to avoid override
+  # KAFKA_CFG_ADVERTISED_LISTENERS will be sourced from /shared/node-id.env
+  {{- else }}
+  # Internal only
+  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+  {{- end }}
+  
+  {{- else }}
+  # Legacy listener configuration
+  KAFKA_PORT: {{ .Values.kafka.listeners.internal.port | default "9092" | quote }}
+  KAFKA_LISTENERS: PLAINTEXT://:{{ .Values.kafka.listeners.internal.port | default "9092" }}
+  KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://:{{ .Values.kafka.listeners.internal.port | default "9092" }}
+  {{- end }}
+  
+  # ============================================
+  # Log Retention Configuration
+  # ============================================
+  KAFKA_CFG_LOG_RETENTION_HOURS: {{ .Values.kafka.logRetentionHours | quote }}
+  
+  # ============================================
+  # SSL/TLS Configuration
+  # ============================================
+  {{- if .Values.kafka.tls.enabled }}
+  KAFKA_TLS_TYPE: {{ .Values.kafka.tls.type | quote }}
+  KAFKA_CFG_SSL_CLIENT_AUTH: {{ .Values.kafka.tls.clientAuth | quote }}
+  KAFKA_CFG_SSL_KEYSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
+  KAFKA_CFG_SSL_TRUSTSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
+  
+  # Note: KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES and KAFKA_CFG_SSL_KEYSTORE_KEY
+  # are loaded from mounted files in the StatefulSet command and exported as env vars
+  # This allows the certificate content to be passed to the Kafka startup script
+  {{- end }}
+  
+  # ============================================
+  # SASL Authentication Configuration
+  # ============================================
+  {{- if .Values.kafka.sasl.enabled }}
+  KAFKA_CFG_SASL_ENABLED_MECHANISMS: {{ .Values.kafka.sasl.mechanisms | quote }}
+  KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: {{ .Values.kafka.sasl.interBrokerProtocol | quote }}
+  KAFKA_CFG_OPTS: "-Djava.security.auth.login.config={{ .Values.kafka.sasl.jaasConfigPath }}"
+  {{- end }}
