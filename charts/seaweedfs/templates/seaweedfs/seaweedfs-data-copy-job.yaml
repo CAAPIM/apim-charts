@@ -137,6 +137,26 @@ spec:
                 secretKeyRef:
                   name: seaweedfs-s3-secret
                   key: admin_secret_access_key
+            - name: RCLONE_CONFIG_MINIO_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_MINIO_PROVIDER
+              value: Minio
+            - name: RCLONE_CONFIG_MINIO_ENDPOINT
+              value: http://minio:9000
+            - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+              value: $(MINIO_ACCESS_KEY)
+            - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+              value: $(MINIO_SECRET_KEY)
+            - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
+              value: SeaweedFS
+            - name: RCLONE_CONFIG_SEAWEEDFS_ENDPOINT
+              value: http://seaweedfs-s3:8333
+            - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
+              value: $(SEAWEEDFS_ACCESS_KEY)
+            - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
+              value: $(SEAWEEDFS_SECRET_KEY)
       volumes:
         - name: empty-dir
           emptyDir: {}
