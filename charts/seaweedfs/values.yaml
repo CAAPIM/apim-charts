@@ -25,7 +25,6 @@ global:
 
 image:
     seaweedfs: seaweedfs:5.3.3
-    migrationUtility: seaweedfs:5.3.3
 persistence:
     storage:
       seaweedfs: 50Gi

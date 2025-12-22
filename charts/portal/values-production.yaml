@@ -521,7 +521,6 @@ image:
 seaweedfs:
   image:
     seaweedfs: seaweedfs:5.4
-    migrationUtility: seaweedfs:5.4
   persistence:
     storage:
       seaweedfs: 50Gi
