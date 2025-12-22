@@ -696,7 +696,6 @@ seaweedfs:
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   # Example:
   podSecurityContext:
-    enabled: true
     runAsUser: 1000
     runAsGroup: 3000
     fsGroup: 2000
