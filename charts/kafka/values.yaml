@@ -59,6 +59,7 @@ kafka:
     # Cluster ID for KRaft (auto-generated if empty)
     clusterId: ""
     # Node ID (will be set based on pod ordinal if empty)
+    # IMPORTANT: Leave empty to use pod ordinal (0, 1, 2) for StatefulSet
     nodeId: ""
     # Process roles (broker, controller, or both)
     processRoles: "broker,controller"
@@ -117,11 +118,12 @@ kafka:
     passwordSecretName: ""
     passwordSecretKey: "keypass.txt"
     
-    # TSSG Certificates (always use apim-ssl from internal secret)
+    # TSSG Certificates (use apim-ssl from internal secret by default)
     # The internal secret name is passed from parent chart
+    # These can be overridden if using custom certificates
     internalSecretName: "portal-internal-secret"
-    tssgKeyKey: "apim-ssl.p8.key"
-    tssgCertKey: "apim-ssl.crt"
+    tssgKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl, can be overridden
+    tssgCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
     passwordKey: "keypass.txt"
     
     # ============================================

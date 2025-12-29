@@ -75,15 +75,21 @@ Get "database-port" based on databaseType value
 Get "kafka" brokers
 */}}
 {{- define "kafka-brokers" -}}
+    {{- $kafkaName := "kafka" -}}
+    {{- if .Values.kafka.fullnameOverride -}}
+        {{- $kafkaName = .Values.kafka.fullnameOverride -}}
+    {{- else -}}
+        {{- $kafkaName = printf "%s-kafka" .Release.Name -}}
+    {{- end -}}
     {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
         {{- /* Custom Kafka subchart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
     {{- else if and .Values.kafka.listeners .Values.kafka.listeners.client }}
         {{- /* Bitnami Kafka chart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.listeners.client.containerPort -}}
     {{- else }}
         {{- /* Default fallback */ -}}
-        {{- printf "%s-kafka:9092" .Release.Name -}}
+        {{- printf "%s:9092" $kafkaName -}}
     {{- end }}
 {{- end -}}
 
@@ -130,5 +136,31 @@ Uses the full hostname pattern with -kafka suffix
         {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "kafka" .Values.portal.domain -}}
     {{- else }}
         {{- printf "%s-%s-kafka.%s" .Values.portal.defaultTenantId .Values.global.subdomainPrefix .Values.portal.domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate TSSG (Gateway) public hostname for PAPI_PUBLIC_HOST
+Uses the same pattern as portal's tssg-public-host helper
+*/}}
+{{- define "tssg-public-host" -}}
+    {{- if .Values.global.legacyHostnames }}
+        {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "ssg" .Values.portal.domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "apim-ssg-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate TSSG (Gateway) public port for PAPI_PUBLIC_PORT
+Defaults to 443 for HTTPS
+*/}}
+{{- define "tssg-public-port" -}}
+    {{- if .Values.intelligenceServer.papiPublicPort }}
+        {{- .Values.intelligenceServer.papiPublicPort -}}
+    {{- else }}
+        {{- "443" -}}
     {{- end }}
 {{- end -}}

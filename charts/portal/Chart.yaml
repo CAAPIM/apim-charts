@@ -25,7 +25,7 @@ dependencies:
   condition: rabbitmq.enabled
 - name: apim-intelligence
   version: ^1.0.0
-  condition: portal.intelligence.enabled
+  condition: global.intelligenceEnabled
   repository: "file://../intelligence"
 # Note: Kafka is required by both Analytics (Druid) and Intelligence
 # Since Intelligence requires Kafka, ensure analytics.enabled=true when using Intelligence

@@ -256,20 +256,21 @@ spec:
             
             {{- if .Values.kafka.tls.enabled }}
             # Load TSSG certificates (apim-ssl) from mounted volume
+            # Note: Volume mount maps secret keys to apim-ssl.p8.key and apim-ssl.crt paths
             echo "=== Loading TSSG certificates for Kafka SSL ==="
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }} ]; then
-              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }})
+            if [ -f /opt/ca/certs/apim-ssl.p8.key ]; then
+              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/apim-ssl.p8.key)
               echo "Loaded TSSG keystore key (PKCS#8)"
             else
-              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }}"
+              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/apim-ssl.p8.key"
               exit 1
             fi
             
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }} ]; then
-              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }})
+            if [ -f /opt/ca/certs/apim-ssl.crt ]; then
+              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/apim-ssl.crt)
               echo "Loaded TSSG truststore certificate"
             else
-              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }}"
+              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/apim-ssl.crt"
               exit 1
             fi
             {{- end }}

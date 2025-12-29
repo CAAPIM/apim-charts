@@ -151,7 +151,7 @@ spec:
               {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
               for i in $(seq 0 $((BROKER_COUNT - 1))); do
-                SVC_NAME="${RELEASE_NAME}-kafka-${i}-external"
+                SVC_NAME="kafka-${i}-external"
                 discover_broker "$SVC_NAME"
               done
               {{- else if and .Values.kafka (hasKey .Values.kafka "controller") .Values.kafka.controller }}
@@ -159,7 +159,7 @@ spec:
               {{- if and .Values.kafka.controller.replicaCount (not .Values.kafka.controller.controllerOnly) }}
               CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
               for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
-                SVC_NAME="${RELEASE_NAME}-kafka-controller-${i}-external"
+                SVC_NAME="kafka-controller-${i}-external"
                 discover_broker "$SVC_NAME"
               done
               {{- end }}
@@ -169,7 +169,7 @@ spec:
               BROKER_COUNT={{ .Values.kafka.broker.replicaCount }}
               if [ "$BROKER_COUNT" -gt 0 ]; then
                 for i in $(seq 0 $((BROKER_COUNT - 1))); do
-                  SVC_NAME="${RELEASE_NAME}-kafka-broker-${i}-external"
+                  SVC_NAME="kafka-broker-${i}-external"
                   discover_broker "$SVC_NAME"
                 done
               fi
@@ -199,7 +199,7 @@ spec:
           {{- else if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
@@ -218,16 +218,16 @@ spec:
               {{- end }}
               
               {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-              # Base64 encode TSSG certificates for intelligence server
-              # The Java code expects base64-encoded certificates
-              echo "Encoding TSSG certificates for intelligence server..."
+              # Load TSSG certificates for intelligence server
+              # Certificates are already base64 encoded in the secret, so just read them directly
+              echo "Loading TSSG certificates for intelligence server..."
               if [ -f "$KAFKA_CA_CERT_FILE" ]; then
-                export KAFKA_CA_CERTIFICATE=$(cat "$KAFKA_CA_CERT_FILE" | base64 -w 0)
-                echo "KAFKA_CA_CERTIFICATE encoded"
+                export KAFKA_CA_CERTIFICATE=$(cat "$KAFKA_CA_CERT_FILE")
+                echo "KAFKA_CA_CERTIFICATE loaded"
               fi
               if [ -f "$KAFKA_CA_KEY_FILE" ]; then
-                export KAFKA_CA_KEY=$(cat "$KAFKA_CA_KEY_FILE" | base64 -w 0)
-                echo "KAFKA_CA_KEY encoded"
+                export KAFKA_CA_KEY=$(cat "$KAFKA_CA_KEY_FILE")
+                echo "KAFKA_CA_KEY loaded"
               fi
               {{- end }}
               
@@ -252,12 +252,20 @@ spec:
                   key: mysql-password
                   {{- end }}
           # TSSG Certificates (always use apim-ssl from internal secret)
-          # Note: These are mounted as files and will be base64 encoded in the startup command
+          # Intelligence server expects certificate and key content in environment variables
           {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-            - name: KAFKA_CA_CERT_FILE
-              value: "/opt/ca/certs/{{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}"
-            - name: KAFKA_CA_KEY_FILE
-              value: "/opt/ca/certs/{{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}"
+            - name: KAFKA_CA_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
+                  optional: false
+            - name: KAFKA_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.p8.key" }}
+                  optional: false
           {{- else }}
             # Provide empty values when using PLAINTEXT Kafka (no SSL)
             - name: KAFKA_CA_CERTIFICATE
@@ -285,15 +293,36 @@ spec:
             - name: TSSG_SSL_KEY_PASS
               value: ""
           {{- end }}
-            # APIM SSG Hostname (uses Kafka public host pattern with full hostname)
-            - name: APIM_SSG_HOSTNAME
-              value: ""
             # Kafka External Advertised Brokers (for user-facing connections)
           {{- if not .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
           {{- if .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
             - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
               value: {{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers | quote }}
           {{- end }}
+          {{- end }}
+          {{- $hasPapiHost := false }}
+          {{- $hasPapiPort := false }}
+          {{- if .Values.intelligenceServer.env }}
+          {{- range $key, $value := .Values.intelligenceServer.env }}
+            {{- if eq $key "PAPI_PUBLIC_HOST" }}
+              {{- $hasPapiHost = true }}
+            {{- end }}
+            {{- if eq $key "PAPI_PUBLIC_PORT" }}
+              {{- $hasPapiPort = true }}
+            {{- end }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- if not $hasPapiHost }}
+            # Auto-generate PAPI_PUBLIC_HOST if not provided
+            - name: PAPI_PUBLIC_HOST
+              value: {{ include "tssg-public-host" . | quote }}
+          {{- end }}
+          {{- if not $hasPapiPort }}
+            # Auto-generate PAPI_PUBLIC_PORT if not provided
+            - name: PAPI_PUBLIC_PORT
+              value: {{ include "tssg-public-port" . | quote }}
           {{- end }}
           envFrom:
           - configMapRef:
@@ -322,27 +351,12 @@ spec:
             - name: shared-data
               mountPath: /shared
           {{- end }}
-          {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-            - name: kafka-certs
-              mountPath: /opt/ca/certs
-              readOnly: true
-          {{- end }}
           ports:
             - containerPort: 8282
       volumes:
       {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
         - name: shared-data
           emptyDir: {}
-      {{- end }}
-      {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-        - name: kafka-certs
-          secret:
-            secretName: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-            items:
-            - key: {{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
-              path: {{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
-            - key: {{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}
-              path: {{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}
       {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:

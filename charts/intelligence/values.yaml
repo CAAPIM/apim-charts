@@ -51,10 +51,6 @@ rbac:
 # Configuration for the intelligence-server deployment
 intelligenceServer:
   replicaCount: 1
-  # Domain for constructing APIM SSG hostname (passed from parent chart)
-  domain: ""
-  # Alternatively, set the full APIM SSG hostname directly
-  apimSsgHostname: ""
   image:
     pullPolicy: IfNotPresent
   kafka:
@@ -74,8 +70,9 @@ intelligenceServer:
       passwordSecretName: ""
       passwordSecretKey: "keypass.txt"
       # Keys in the secret for TSSG cert/key (uses apim-ssl certificate with CN=tssg)
-      caCertKey: "apim-ssl.crt"
-      caKeyKey: "apim-ssl.key"
+      # These can be overridden if using custom certificates
+      caCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
+      caKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl.p8.key, can be overridden
   # Additional labels for the intelligence-server deployment
   additionalLabels: {}
   # Pod affinity, node selector, and tolerations
