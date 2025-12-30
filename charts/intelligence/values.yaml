@@ -34,25 +34,18 @@ global:
   # Additional labels to be applied to all resources
   additionalLabels: {}
 
-# Image settings for the intelligence-server
-image:
-  intelligenceServer: "intelligence-server:mr_bitnami_kafka"
-
-# Service Account for intelligence-server
-serviceAccount:
-  create: true
-  name: ""
-  automountServiceAccountToken: true
-
-# RBAC for intelligence-server
-rbac:
-  create: true
-
-# Configuration for the intelligence-server deployment
-intelligenceServer:
+# Configuration for the intelligence deployment (formerly intelligenceServer)
+intelligence:
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    intelligenceServer: "intelligence-server:mr_bitnami_kafka" # Moved from top-level image
+    pullPolicy: IfNotPresent # Moved from intelligenceServer.image
+  serviceAccount: # Moved from top-level
+    create: true
+    name: ""
+    automountServiceAccountToken: true
+  rbac: # Moved from top-level
+    create: true
   kafka:
     autoDiscovery:
       # When enabled, an initContainer is used to discover Kafka broker external addresses.
@@ -73,7 +66,7 @@ intelligenceServer:
       # These can be overridden if using custom certificates
       caCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
       caKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl.p8.key, can be overridden
-  # Additional labels for the intelligence-server deployment
+  # Additional labels for the intelligence deployment
   additionalLabels: {}
   # Pod affinity, node selector, and tolerations
   affinity: {}
@@ -92,7 +85,6 @@ intelligenceServer:
     #   memory: 1Gi
   # Service configuration
   # Kafka client TLS settings from secrets
-
 
   service:
     type: ClusterIP

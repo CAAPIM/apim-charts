@@ -10,7 +10,7 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-    {{- range $key, $val := .Values.intelligenceServer.additionalLabels }}
+    {{- range $key, $val := .Values.intelligence.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
@@ -19,7 +19,7 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  replicas: {{ .Values.intelligenceServer.replicaCount }}
+  replicas: {{ .Values.intelligence.replicaCount }}
   selector:
     matchLabels:
       app: intelligence-server
@@ -28,41 +28,41 @@ spec:
       labels:
         app: intelligence-server
         release: {{ .Release.Name }}
-      {{- if  .Values.intelligenceServer.podAnnotations }}
-      annotations: {{- toYaml .Values.intelligenceServer.podAnnotations | nindent 8 }}
-      {{- if .Values.intelligenceServer.forceRedeploy }}
+      {{- if  .Values.intelligence.podAnnotations }}
+      annotations: {{- toYaml .Values.intelligence.podAnnotations | nindent 8 }}
+      {{- if .Values.intelligence.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}
-      {{- if not .Values.intelligenceServer.podAnnotations }}
-      {{- if .Values.intelligenceServer.forceRedeploy }}
+      {{- if not .Values.intelligence.podAnnotations }}
+      {{- if .Values.intelligence.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
-      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
-      {{- if .Values.intelligenceServer.affinity }}
-      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+      automountServiceAccountToken: {{ .Values.intelligence.serviceAccount.automountServiceAccountToken }}
+      {{- if .Values.intelligence.affinity }}
+      affinity: {{- toYaml .Values.intelligence.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+      {{- if .Values.intelligence.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligence.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.tolerations }}
-      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+      {{- if .Values.intelligence.tolerations }}
+      tolerations: {{- toYaml .Values.intelligence.tolerations | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.podSecurityContext }}
-      securityContext: {{- toYaml .Values.intelligenceServer.podSecurityContext | nindent 12 }}
+      {{- if .Values.intelligence.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligence.podSecurityContext | nindent 12 }}
       {{- else if .Values.global.podSecurityContext }}
       securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+      {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
-          image: "{{ .Values.intelligenceServer.kafka.autoDiscovery.image.repository }}:{{ .Values.intelligenceServer.kafka.autoDiscovery.image.tag }}"
-          imagePullPolicy: "{{ .Values.intelligenceServer.kafka.autoDiscovery.image.pullPolicy }}"
+          image: "{{ .Values.intelligence.kafka.autoDiscovery.image.repository }}:{{ .Values.intelligence.kafka.autoDiscovery.image.tag }}"
+          imagePullPolicy: "{{ .Values.intelligence.kafka.autoDiscovery.image.pullPolicy }}"
           command:
             - /bin/sh
             - -ec
@@ -192,17 +192,17 @@ spec:
       {{- end }}
       containers:
         - name: intelligence-server
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
-          imagePullPolicy: "{{ .Values.intelligenceServer.image.pullPolicy }}"
-          {{- if .Values.intelligenceServer.containerSecurityContext }}
-          securityContext: {{- toYaml .Values.intelligenceServer.containerSecurityContext | nindent 12 }}
+          image: "{{ .Values.global.portalRepository }}{{ .Values.intelligence.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.intelligence.image.pullPolicy }}"
+          {{- if .Values.intelligence.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.intelligence.containerSecurityContext | nindent 12 }}
           {{- else if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
           command: ["/bin/bash", "-c"]
           args:
             - |
-              {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+              {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
               # Source the environment file from the init container
               if [ -f /shared/kafka.env ]; then
                 echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from init container..."
@@ -217,7 +217,7 @@ spec:
               export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
               {{- end }}
               
-              {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+              {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
               # Load TSSG certificates for intelligence server
               # Certificates are already base64 encoded in the secret, so just read them directly
               echo "Loading TSSG certificates for intelligence server..."
@@ -253,18 +253,18 @@ spec:
                   {{- end }}
           # TSSG Certificates (always use apim-ssl from internal secret)
           # Intelligence server expects certificate and key content in environment variables
-          {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+          {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
             - name: KAFKA_CA_CERTIFICATE
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
+                  name: {{ .Values.intelligence.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
                   optional: false
             - name: KAFKA_CA_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
-                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.p8.key" }}
+                  name: {{ .Values.intelligence.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.caKeyKey | default "apim-ssl.p8.key" }}
                   optional: false
           {{- else }}
             # Provide empty values when using PLAINTEXT Kafka (no SSL)
@@ -273,18 +273,18 @@ spec:
             - name: KAFKA_CA_KEY
               value: ""
           {{- end }}
-          {{- if .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
+          {{- if .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
             - name: KAFKA_CA_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
-                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  name: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
                   optional: false
             - name: TSSG_SSL_KEY_PASS
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
-                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  name: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
                   optional: false
           {{- else }}
             # Provide empty values when using PLAINTEXT Kafka (no password needed)
@@ -294,16 +294,16 @@ spec:
               value: ""
           {{- end }}
             # Kafka External Advertised Brokers (for user-facing connections)
-          {{- if not .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
-          {{- if .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
+          {{- if not .Values.intelligence.kafka.autoDiscovery.enabled }}
+          {{- if .Values.intelligence.kafka.externalAdvertisedBrokers }}
             - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
-              value: {{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers | quote }}
+              value: {{ .Values.intelligence.kafka.externalAdvertisedBrokers | quote }}
           {{- end }}
           {{- end }}
           {{- $hasPapiHost := false }}
           {{- $hasPapiPort := false }}
-          {{- if .Values.intelligenceServer.env }}
-          {{- range $key, $value := .Values.intelligenceServer.env }}
+          {{- if .Values.intelligence.env }}
+          {{- range $key, $value := .Values.intelligence.env }}
             {{- if eq $key "PAPI_PUBLIC_HOST" }}
               {{- $hasPapiHost = true }}
             {{- end }}
@@ -317,12 +317,12 @@ spec:
           {{- if not $hasPapiHost }}
             # Auto-generate PAPI_PUBLIC_HOST if not provided
             - name: PAPI_PUBLIC_HOST
-              value: {{ include "tssg-public-host-for-intelligence" . | quote }}
+              value: {{ include "tssg-public-host" .Values.portal | quote }}
           {{- end }}
           {{- if not $hasPapiPort }}
             # Auto-generate PAPI_PUBLIC_PORT if not provided
             - name: PAPI_PUBLIC_PORT
-              value: {{ include "tssg-public-port-for-intelligence" . | quote }}
+              value: {{ include "tssg-public-port" .Values.portal | quote }}
           {{- end }}
           envFrom:
           - configMapRef:
@@ -343,10 +343,10 @@ spec:
             timeoutSeconds: 1
             periodSeconds: 15
             successThreshold: 1
-          {{- if .Values.intelligenceServer.resources }}
-          resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
+          {{- if .Values.intelligence.resources }}
+          resources: {{- toYaml .Values.intelligence.resources | nindent 12 }}
           {{- end }}
-          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+          {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
           volumeMounts:
             - name: shared-data
               mountPath: /shared
@@ -354,7 +354,7 @@ spec:
           ports:
             - containerPort: 8282
       volumes:
-      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+      {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
         - name: shared-data
           emptyDir: {}
       {{- end }}
@@ -362,14 +362,14 @@ spec:
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
       {{- end }}
-      {{- if .Values.intelligenceServer.affinity }}
-      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 8 }}
+      {{- if .Values.intelligence.affinity }}
+      affinity: {{- toYaml .Values.intelligence.affinity | nindent 8 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 8 }}
+      {{- if .Values.intelligence.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligence.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.intelligenceServer.tolerations }}
-      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 8 }}
+      {{- if .Values.intelligence.tolerations }}
+      tolerations: {{- toYaml .Values.intelligence.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"

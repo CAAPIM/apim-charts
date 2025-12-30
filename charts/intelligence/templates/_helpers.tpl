@@ -104,71 +104,25 @@ Create Image Pull Secret
 
 {{- define "intelligence.validate" -}}
 {{- $messages := list -}}
-{{- $messages := append $messages (include "intelligenceServer.validateValues.autoDiscoveryRBAC" .) -}}
+{{- $messages := append $messages (include "intelligence.validateValues.autoDiscoveryRBAC" .) -}}
 {{- $message := join "\n" $messages -}}
 {{- if $message -}}
 {{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
 {{- end -}}
 {{- end -}}
 
-{{/* Validate values of intelligenceServer - RBAC should be enabled when autoDiscovery is enabled */}}
-{{- define "intelligenceServer.validateValues.autoDiscoveryRBAC" -}}
-{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
-intelligenceServer: rbac-create
-    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+{{/* Validate values of intelligence - RBAC should be enabled when autoDiscovery is enabled */}}
+{{- define "intelligence.validateValues.autoDiscoveryRBAC" -}}
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
+intelligence: rbac-create
+    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires specific RBAC resources.
 {{- end -}}
-{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
-intelligenceServer: serviceAccount-automountServiceAccountToken
-    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
+intelligence: serviceAccount-automountServiceAccountToken
+    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
 {{- end -}}
-{{- end -}}
-
-{{/*
-Generate Kafka hostname for APIM_SSG_HOSTNAME
-Uses the full hostname pattern with -kafka suffix
-Note: When deployed as a subchart, .Values.portal.* is not available
-      Use .Values.intelligence.* or .Values.global.* instead
-*/}}
-{{- define "kafka-public-host" -}}
-    {{- $domain := .Values.intelligence.domain | default .Values.global.domain | default "example.com" -}}
-    {{- $defaultTenantId := .Values.intelligence.defaultTenantId | default .Values.global.defaultTenantId | default "apim" -}}
-    {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" $defaultTenantId "kafka" $domain -}}
-    {{- else }}
-        {{- printf "%s-%s-kafka.%s" $defaultTenantId .Values.global.subdomainPrefix $domain -}}
-    {{- end }}
-{{- end -}}
-
-{{/*
-Generate TSSG (Gateway) public hostname for PAPI_PUBLIC_HOST
-Uses the same pattern as portal's tssg-public-host helper
-Note: When deployed as a subchart, .Values.portal.* is not available
-      Use .Values.intelligence.* or .Values.global.* instead
-*/}}
-{{- define "tssg-public-host-for-intelligence" -}}
-    {{- $domain := .Values.intelligence.domain | default .Values.global.domain | default "example.com" -}}
-    {{- $defaultTenantId := .Values.intelligence.defaultTenantId | default .Values.global.defaultTenantId | default "apim" -}}
-    {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
-    {{- else if .Values.global.saas }}
-         {{- printf "apim-ssg-%s.%s" .Values.global.subdomainPrefix $domain -}}
-    {{- else }}
-         {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix $domain -}}
-    {{- end }}
-{{- end -}}
-
-{{/*
-Generate TSSG (Gateway) public port for PAPI_PUBLIC_PORT
-Defaults to 443 for HTTPS
-*/}}
-{{- define "tssg-public-port-for-intelligence" -}}
-    {{- if .Values.intelligenceServer.papiPublicPort }}
-        {{- .Values.intelligenceServer.papiPublicPort -}}
-    {{- else }}
-        {{- "443" -}}
-    {{- end }}
 {{- end -}}
