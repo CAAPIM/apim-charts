@@ -47,7 +47,7 @@ portal:
   analytics:
     enabled: true
   intelligence:
-    enabled: false
+    enabled: true
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -586,7 +586,7 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    replicaCount: 1
+    replicaCount: 3
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
