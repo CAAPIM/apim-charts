@@ -130,26 +130,34 @@ intelligenceServer: serviceAccount-automountServiceAccountToken
 {{/*
 Generate Kafka hostname for APIM_SSG_HOSTNAME
 Uses the full hostname pattern with -kafka suffix
+Note: When deployed as a subchart, .Values.portal.* is not available
+      Use .Values.intelligence.* or .Values.global.* instead
 */}}
 {{- define "kafka-public-host" -}}
+    {{- $domain := .Values.intelligence.domain | default .Values.global.domain | default "example.com" -}}
+    {{- $defaultTenantId := .Values.intelligence.defaultTenantId | default .Values.global.defaultTenantId | default "apim" -}}
     {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "kafka" .Values.portal.domain -}}
+        {{- printf "%s-%s.%s" $defaultTenantId "kafka" $domain -}}
     {{- else }}
-        {{- printf "%s-%s-kafka.%s" .Values.portal.defaultTenantId .Values.global.subdomainPrefix .Values.portal.domain -}}
+        {{- printf "%s-%s-kafka.%s" $defaultTenantId .Values.global.subdomainPrefix $domain -}}
     {{- end }}
 {{- end -}}
 
 {{/*
 Generate TSSG (Gateway) public hostname for PAPI_PUBLIC_HOST
 Uses the same pattern as portal's tssg-public-host helper
+Note: When deployed as a subchart, .Values.portal.* is not available
+      Use .Values.intelligence.* or .Values.global.* instead
 */}}
 {{- define "tssg-public-host" -}}
+    {{- $domain := .Values.intelligence.domain | default .Values.global.domain | default "example.com" -}}
+    {{- $defaultTenantId := .Values.intelligence.defaultTenantId | default .Values.global.defaultTenantId | default "apim" -}}
     {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "ssg" .Values.portal.domain -}}
+        {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
     {{- else if .Values.global.saas }}
-         {{- printf "apim-ssg-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+         {{- printf "apim-ssg-%s.%s" .Values.global.subdomainPrefix $domain -}}
     {{- else }}
-         {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+         {{- printf "%s-ssg.%s" .Values.global.subdomainPrefix $domain -}}
     {{- end }}
 {{- end -}}
 

@@ -23,6 +23,10 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  # Domain and defaultTenantId are also defined under portal.* for backward compatibility
+  # These global values are used by subcharts (e.g., intelligence) that don't have access to portal.*
+  domain: example.com
+  defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   #   podSecurityContext:
