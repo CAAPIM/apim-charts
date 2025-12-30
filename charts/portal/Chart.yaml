@@ -25,12 +25,12 @@ dependencies:
   condition: rabbitmq.enabled
 - name: apim-intelligence
   version: ^1.0.0
-  condition: global.intelligenceEnabled
+  condition: portal.intelligence.enabled
   repository: "file://../intelligence"
 
 - name: kafka
   version: ^1.3.3
-  condition: portal.analytics.enabled
+  condition: "portal.analytics.enabled || portal.intelligence.enabled"
   repository: "file://../kafka"
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"
