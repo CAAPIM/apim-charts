@@ -16,6 +16,10 @@ spec:
       {{- include "kafka.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "kafka.fullname" . }}
   replicas: {{ .Values.kafka.replicaCount }}
+  {{- if .Values.kafka.ordinals }}
+  ordinals:
+    start: {{ .Values.kafka.ordinals.start }}
+  {{- end }}
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel

@@ -19,6 +19,14 @@ kafka:
   # Number of Kafka broker replicas
   replicaCount: 1
   
+  # Ordinals configuration (Kubernetes 1.27+)
+  # Set start ordinal for StatefulSet pods
+  # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+  # where old meta.properties had broker.id=1
+  ordinals:
+    # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+    start: 0
+  
   # Additional labels for Kafka pods
   additionalLabels: {}
   
@@ -98,7 +106,7 @@ kafka:
   
   # TLS/SSL Configuration
   tls:
-    # Enable TLS/SSL
+    # Enable TLS/SSL (required when external listener uses SSL protocol)
     enabled: false
     # TLS type (PEM or JKS)
     type: PEM
@@ -110,11 +118,13 @@ kafka:
     # ============================================
     # Secret containing TLS certificates
     # Should contain: keystore.key, truststore.pem
+    # When using Intelligence, set to portal-internal-secret
     secretName: ""
     # Keys in the secret
     keystoreKeyKey: "keystore.key"
     truststoreCertKey: "truststore.pem"
-    # Password secret for encrypted keys
+    # Password secret for encrypted keys (required for encrypted private keys)
+    # When using Intelligence, set to portal-internal-secret
     passwordSecretName: ""
     passwordSecretKey: "keypass.txt"
     

@@ -49,13 +49,18 @@ data:
   {{- if .Values.kafka.kraft.controllerQuorumVoters }}
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ .Values.kafka.kraft.controllerQuorumVoters | quote }}
   {{- else }}
-  # Auto-generate controller quorum voters based on replica count
+  # Auto-generate controller quorum voters based on replica count and ordinals.start
   {{- $fullName := include "kafka.fullname" . }}
   {{- $replicaCount := int .Values.kafka.replicaCount }}
   {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
+  {{- $startOrdinal := 0 }}
+  {{- if .Values.kafka.ordinals }}
+  {{- $startOrdinal = int .Values.kafka.ordinals.start }}
+  {{- end }}
   {{- $voters := list }}
   {{- range $i := until $replicaCount }}
-  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $i $fullName $i $fullName $controllerPort) }}
+  {{- $ordinal := add $i $startOrdinal }}
+  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $ordinal $fullName $ordinal $fullName $controllerPort) }}
   {{- end }}
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ join "," $voters | quote }}
   {{- end }}

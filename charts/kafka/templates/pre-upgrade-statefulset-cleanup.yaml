@@ -104,13 +104,18 @@ spec:
           # 2. Migration from broker.id (3.x) to node.id (4.0 KRaft)
           
           echo "Deleting Kafka StatefulSet to allow recreation with new spec..."
-          kubectl delete statefulset $STS_NAME -n $NAMESPACE --cascade=orphan
+          # Note: We delete without orphan flag to ensure pods are restarted with new config
+          kubectl delete statefulset $STS_NAME -n $NAMESPACE
           
           if [ $? -eq 0 ]; then
-            echo "✅ StatefulSet deleted successfully (pods preserved)"
+            echo "✅ StatefulSet and pods deleted successfully"
           else
-            echo "⚠️  Failed to delete StatefulSet, but continuing..."
+            echo "⚠️  Failed to delete StatefulSet, or it was already gone"
           fi
+          
+          # Wait for Kafka pods to be deleted to ensure PVCs are unlocked
+          echo "Waiting for Kafka pods to be deleted (timeout: 60s)..."
+          kubectl wait --for=delete pod -l app=kafka -n $NAMESPACE --timeout=60s 2>/dev/null || true
           
           echo ""
           echo "=== Cleaning up Kafka metadata for KRaft migration ==="
