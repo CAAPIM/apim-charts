@@ -4,7 +4,7 @@ metadata:
   name: intelligence-server
   labels:
     app: intelligence-server
-    chart: {{ template "intelligence.chart" . }}
+    chart: {{ template "portal.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     {{- range $key, $val := .Values.global.additionalLabels }}
