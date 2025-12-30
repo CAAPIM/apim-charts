@@ -39,10 +39,10 @@ Create chart name and version as used by the chart label.
 {{- if .Values.global.serviceAccountName }}
    {{ default "default" .Values.global.serviceAccountName }}
 {{- else }}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "intelligence.fullname" .) .Values.serviceAccount.name }}
+{{- if .Values.intelligence.serviceAccount.create -}}
+    {{ default (include "intelligence.fullname" .) .Values.intelligence.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" .Values.intelligence.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
