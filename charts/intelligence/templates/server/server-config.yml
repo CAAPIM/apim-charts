@@ -18,6 +18,6 @@ data:
   DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
   INTELLIGENCE_DATABASE_NAME: {{ include "intelligence-db-name" . | quote }}
   KAFKA_BROKERS:  {{ include "kafka-brokers" . | quote}}
-  PORTAL_DATA_HOST: {{ .Values.intelligenceServer.portalDataHost| default "portal-data:8080" | quote }}
+  PORTAL_DATA_HOST: {{ .Values.intelligence.portalDataHost| default "portal-data:8080" | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
