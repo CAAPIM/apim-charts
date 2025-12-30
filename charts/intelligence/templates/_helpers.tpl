@@ -119,7 +119,7 @@ intelligence: rbac-create
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires specific RBAC resources.
 {{- end -}}
-{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.serviceAccount.automountServiceAccountToken) }}
 intelligence: serviceAccount-automountServiceAccountToken
     By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
