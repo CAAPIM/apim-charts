@@ -104,18 +104,14 @@ spec:
           # 2. Migration from broker.id (3.x) to node.id (4.0 KRaft)
           
           echo "Deleting Kafka StatefulSet to allow recreation with new spec..."
-          # Note: We delete without orphan flag to ensure pods are restarted with new config
-          kubectl delete statefulset $STS_NAME -n $NAMESPACE
+          # Use --cascade=orphan to preserve pods and avoid data loss
+          kubectl delete statefulset $STS_NAME -n $NAMESPACE --cascade=orphan
           
           if [ $? -eq 0 ]; then
-            echo "✅ StatefulSet and pods deleted successfully"
+            echo "✅ StatefulSet deleted successfully (pods preserved)"
           else
             echo "⚠️  Failed to delete StatefulSet, or it was already gone"
           fi
-          
-          # Wait for Kafka pods to be deleted to ensure PVCs are unlocked
-          echo "Waiting for Kafka pods to be deleted (timeout: 60s)..."
-          kubectl wait --for=delete pod -l app=kafka -n $NAMESPACE --timeout=60s 2>/dev/null || true
           
           echo ""
           echo "=== Cleaning up Kafka metadata for KRaft migration ==="
@@ -197,6 +193,27 @@ spec:
             # Delete cleanup pod
             kubectl delete pod $CLEANUP_POD -n $NAMESPACE --wait=false 2>/dev/null || true
           done
+          
+          echo ""
+          echo "=== Cleaning up orphaned Kafka pods ==="
+          {{- if .Values.kafka.ordinals.start }}
+          # When ordinals.start={{ .Values.kafka.ordinals.start }}, pods below this ordinal are orphaned
+          ORDINAL_START={{ .Values.kafka.ordinals.start }}
+          echo "StatefulSet configured with ordinals.start=$ORDINAL_START"
+          echo "Deleting orphaned pods (kafka-0 to kafka-$((ORDINAL_START - 1)))..."
+          
+          for i in $(seq 0 $((ORDINAL_START - 1))); do
+            POD_NAME="kafka-${i}"
+            if kubectl get pod $POD_NAME -n $NAMESPACE >/dev/null 2>&1; then
+              echo "Deleting orphaned pod: $POD_NAME"
+              kubectl delete pod $POD_NAME -n $NAMESPACE --wait=false
+            else
+              echo "Pod $POD_NAME not found (already deleted or never existed)"
+            fi
+          done
+          {{- else }}
+          echo "No ordinals.start configured, skipping orphaned pod cleanup"
+          {{- end }}
           
           echo ""
           echo "=== Pre-upgrade cleanup completed ==="
