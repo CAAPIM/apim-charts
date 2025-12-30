@@ -149,7 +149,7 @@ Uses the same pattern as portal's tssg-public-host helper
 Note: When deployed as a subchart, .Values.portal.* is not available
       Use .Values.intelligence.* or .Values.global.* instead
 */}}
-{{- define "tssg-public-host" -}}
+{{- define "tssg-public-host-for-intelligence" -}}
     {{- $domain := .Values.intelligence.domain | default .Values.global.domain | default "example.com" -}}
     {{- $defaultTenantId := .Values.intelligence.defaultTenantId | default .Values.global.defaultTenantId | default "apim" -}}
     {{- if .Values.global.legacyHostnames }}
@@ -165,7 +165,7 @@ Note: When deployed as a subchart, .Values.portal.* is not available
 Generate TSSG (Gateway) public port for PAPI_PUBLIC_PORT
 Defaults to 443 for HTTPS
 */}}
-{{- define "tssg-public-port" -}}
+{{- define "tssg-public-port-for-intelligence" -}}
     {{- if .Values.intelligenceServer.papiPublicPort }}
         {{- .Values.intelligenceServer.papiPublicPort -}}
     {{- else }}
