@@ -113,7 +113,7 @@ Create Image Pull Secret
 
 {{/* Validate values of intelligence - RBAC should be enabled when autoDiscovery is enabled */}}
 {{- define "intelligence.validateValues.autoDiscoveryRBAC" -}}
-{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.rbac.create ) }}
 intelligence: rbac-create
     By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
