@@ -29,50 +29,50 @@ spec:
           - |
             set -ex
 
-            # Define variables
-            FULL_NAME="{{ include "kafka.fullname" . }}"
-            REPLICA_COUNT={{ .Values.kafka.replicaCount }}
-            SERVICE_TYPE="{{ .Values.externalAccess.serviceType }}"
-            EXTERNAL_PORT={{ .Values.externalAccess.port }}
-            TARGET_PORT={{ .Values.kafka.listeners.external.port }}
-            NAMESPACE="{{ .Release.Namespace }}"
-            ANNOTATIONS_JSON='{{ .Values.externalAccess.annotations | toRawJson }}'
-
             echo "=== Starting Kafka External Service Creator Job ==="
-            echo "Full Name: $FULL_NAME, Replicas: $REPLICA_COUNT, Service Type: $SERVICE_TYPE, Namespace: $NAMESPACE"
 
-            for i in $(seq 0 $((REPLICA_COUNT - 1))); do
-              SVC_NAME="${FULL_NAME}-${i}-external"
-              POD_NAME="${FULL_NAME}-${i}"
-              BROKER_ID="${i}"
+            {{- $fullName := include "kafka.fullname" . }}
+            {{- $replicaCount := int .Values.kafka.replicaCount }}
+            {{- $serviceType := .Values.externalAccess.serviceType }}
+            {{- $externalPort := .Values.externalAccess.port }}
+            {{- $targetPort := .Values.kafka.listeners.external.port }}
+            {{- $namespace := .Release.Namespace }}
+            {{- $annotations := .Values.externalAccess.annotations }}
 
-              echo "Creating/Updating service: $SVC_NAME for pod: $POD_NAME (Broker ID: $BROKER_ID)"
+            echo "Full Name: {{ $fullName }}, Replicas: {{ $replicaCount }}, Service Type: {{ $serviceType }}, Namespace: {{ $namespace }}"
 
-              cat <<EOF | kubectl apply -f -
+            {{- range $i := until $replicaCount }}
+            {{- $svcName := printf "%s-%d-external" $fullName $i }}
+            {{- $podName := printf "%s-%d" $fullName $i }}
+            {{- $brokerId := printf "%d" $i }}
+
+            echo "Applying service: {{ $svcName }} for pod: {{ $podName }} (Broker ID: {{ $brokerId }})"
+
+            cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${SVC_NAME}
-  namespace: ${NAMESPACE}
+  name: {{ $svcName }}
+  namespace: {{ $namespace }}
   labels:
-    helm.sh/chart: {{ include "kafka.chart" . }}
-    app.kubernetes.io/name: {{ include "kafka.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "kafka.chart" $ }}
+    app.kubernetes.io/name: {{ include "kafka.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
     app: kafka
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    statefulset.kubernetes.io/pod-name: ${POD_NAME}
-    kafka-broker-id: "${BROKER_ID}"
-  {{- with .Values.global.additionalLabels }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    statefulset.kubernetes.io/pod-name: {{ $podName }}
+    kafka-broker-id: "{{ $brokerId }}"
+  {{- with $.Values.global.additionalLabels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.externalAccess.annotations }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  type: ${SERVICE_TYPE}
-  {{- if eq $.Values.externalAccess.serviceType "LoadBalancer" }}
+  type: {{ $serviceType }}
+  {{- if eq $serviceType "LoadBalancer" }}
   {{- if $.Values.externalAccess.loadBalancerIPs }}
   {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $i }}
   loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
@@ -81,10 +81,10 @@ spec:
   {{- end }}
   ports:
   - name: external
-    port: ${EXTERNAL_PORT}
-    targetPort: ${TARGET_PORT}
+    port: {{ $externalPort }}
+    targetPort: {{ $targetPort }}
     protocol: TCP
-  {{- if eq $.Values.externalAccess.serviceType "NodePort" }}
+  {{- if eq $serviceType "NodePort" }}
   {{- if $.Values.externalAccess.nodePorts }}
   {{- if gt (len $.Values.externalAccess.nodePorts) $i }}
   nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
@@ -92,11 +92,10 @@ spec:
   {{- end }}
   {{- end }}
   selector:
-    app.kubernetes.io/name: {{ include "kafka.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ include "kafka.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
     app: kafka
-    statefulset.kubernetes.io/pod-name: ${POD_NAME}
+    statefulset.kubernetes.io/pod-name: {{ $podName }}
 EOF
-              echo "Service ${SVC_NAME} applied."
-            done
+            {{- end }}
             echo "=== Kafka External Service Creator Job Completed ==="
