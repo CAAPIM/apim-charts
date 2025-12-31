@@ -1,0 +1,102 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kafka.fullname" . }}-external-svc-creator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.selectorLabels" . | nindent 8 }}
+        job: kafka-external-svc-creator
+    spec:
+      serviceAccountName: {{ include "kafka.serviceAccountName" . }} # Use Kafka's SA or create a specific one
+      restartPolicy: Never
+      containers:
+      - name: create-kafka-external-services
+        image: "{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        imagePullPolicy: "{{ .Values.externalAccess.discoveryImage.pullPolicy }}"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            set -ex
+
+            # Define variables
+            FULL_NAME="{{ include "kafka.fullname" . }}"
+            REPLICA_COUNT={{ .Values.kafka.replicaCount }}
+            SERVICE_TYPE="{{ .Values.externalAccess.serviceType }}"
+            EXTERNAL_PORT={{ .Values.externalAccess.port }}
+            TARGET_PORT={{ .Values.kafka.listeners.external.port }}
+            NAMESPACE="{{ .Release.Namespace }}"
+            ANNOTATIONS_JSON='{{ .Values.externalAccess.annotations | toRawJson }}'
+
+            echo "=== Starting Kafka External Service Creator Job ==="
+            echo "Full Name: $FULL_NAME, Replicas: $REPLICA_COUNT, Service Type: $SERVICE_TYPE, Namespace: $NAMESPACE"
+
+            for i in $(seq 0 $((REPLICA_COUNT - 1))); do
+              SVC_NAME="${FULL_NAME}-${i}-external"
+              POD_NAME="${FULL_NAME}-${i}"
+              BROKER_ID="${i}"
+
+              echo "Creating/Updating service: $SVC_NAME for pod: $POD_NAME (Broker ID: $BROKER_ID)"
+
+              cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SVC_NAME}
+  namespace: ${NAMESPACE}
+  labels:
+    helm.sh/chart: {{ include "kafka.chart" . }}
+    app.kubernetes.io/name: {{ include "kafka.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: kafka
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    statefulset.kubernetes.io/pod-name: ${POD_NAME}
+    kafka-broker-id: "${BROKER_ID}"
+  {{- with .Values.global.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.externalAccess.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ${SERVICE_TYPE}
+  {{- if eq $SERVICE_TYPE "LoadBalancer" }}
+  {{- if $.Values.externalAccess.loadBalancerIPs }}
+  {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $i }}
+  loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  ports:
+  - name: external
+    port: ${EXTERNAL_PORT}
+    targetPort: ${TARGET_PORT}
+    protocol: TCP
+  {{- if eq $SERVICE_TYPE "NodePort" }}
+  {{- if $.Values.externalAccess.nodePorts }}
+  {{- if gt (len $.Values.externalAccess.nodePorts) $i }}
+  nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "kafka.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: kafka
+    statefulset.kubernetes.io/pod-name: ${POD_NAME}
+EOF
+              echo "Service ${SVC_NAME} applied."
+            done
+            echo "=== Kafka External Service Creator Job Completed ==="
