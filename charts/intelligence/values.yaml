@@ -52,7 +52,7 @@ intelligence:
       # This is useful when Kafka is deployed as part of the same release with external access enabled.
       enabled: true
       image:
-        repository: "bitnami/kubectl"
+        repository: "alpine/kubectl"
         tag: "1.31"
         pullPolicy: IfNotPresent
       # Resource requests and limits for the auto-discovery init container
