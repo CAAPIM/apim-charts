@@ -10,6 +10,8 @@ metadata:
     {{- range $key, $val := .Values.kafka.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   selector:
     matchLabels:
@@ -27,18 +29,13 @@ spec:
     metadata:
       labels:
         {{- include "kafka.selectorLabels" . | nindent 8 }}
-      {{- if  .Values.kafka.podAnnotations }}
-      annotations: {{- toYaml .Values.kafka.podAnnotations | nindent 8 }}
-      {{- if .Values.kafka.forceRedeploy }}
-        timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
-      {{- if not .Values.kafka.podAnnotations }}
-      {{- if .Values.kafka.forceRedeploy }}
       annotations:
+        {{- if .Values.kafka.forceRedeploy }}
         timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.kafka.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "kafka.serviceAccountName" . }}
       {{- if .Values.kafka.affinity }}
