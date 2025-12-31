@@ -25,7 +25,7 @@ kafka:
   # where old meta.properties had broker.id=1
   ordinals:
     # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
-    start: 0
+    start: 1
   
   # Additional labels for Kafka pods
   additionalLabels: {}
@@ -65,7 +65,7 @@ kafka:
     # Enable KRaft mode (Zookeeper-less)
     enabled: true
     # Cluster ID for KRaft (auto-generated if empty)
-    clusterId: ""
+    clusterId: "{{ if .Values.global.subdomainPrefix }}{{ .Values.global.subdomainPrefix }}-kafka{{ else }}kafka-cluster{{ end }}"
     # Node ID (will be set based on pod ordinal if empty)
     # IMPORTANT: Leave empty to use pod ordinal (0, 1, 2) for StatefulSet
     nodeId: ""
