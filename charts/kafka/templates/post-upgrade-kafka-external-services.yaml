@@ -72,25 +72,25 @@ metadata:
   {{- end }}
 spec:
   type: {{ $serviceType }}
-  {{- if eq $serviceType "LoadBalancer" }}
+{{- if eq $serviceType "LoadBalancer" }}
   {{- if $.Values.externalAccess.loadBalancerIPs }}
   {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $i }}
   loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
   {{- end }}
   {{- end }}
-  {{- end }}
+{{- end }}
   ports:
   - name: external
     port: {{ $externalPort }}
     targetPort: {{ $targetPort }}
     protocol: TCP
-  {{- if eq $serviceType "NodePort" }}
+{{- if eq $serviceType "NodePort" }}
   {{- if $.Values.externalAccess.nodePorts }}
   {{- if gt (len $.Values.externalAccess.nodePorts) $i }}
   nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
   {{- end }}
   {{- end }}
-  {{- end }}
+{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "kafka.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
