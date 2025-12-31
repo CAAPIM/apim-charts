@@ -317,12 +317,12 @@ spec:
           {{- if not $hasPapiHost }}
             # Auto-generate PAPI_PUBLIC_HOST if not provided
             - name: PAPI_PUBLIC_HOST
-              value: {{ include "tssg-public-host" .Values.portal | quote }}
+              value: {{ include "intelligence.publicHost" . | quote }}
           {{- end }}
           {{- if not $hasPapiPort }}
             # Auto-generate PAPI_PUBLIC_PORT if not provided
             - name: PAPI_PUBLIC_PORT
-              value: {{ include "tssg-public-port" .Values.portal | quote }}
+              value: {{ include "intelligence.publicPort" . | quote }}
           {{- end }}
           envFrom:
           - configMapRef:
