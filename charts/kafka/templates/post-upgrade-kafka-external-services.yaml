@@ -48,7 +48,7 @@ spec:
 
             echo "Applying service: {{ $svcName }} for pod: {{ $podName }} (Broker ID: {{ $brokerId }})"
 
-            cat <<EOF | kubectl apply -f -
+            kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Service
 metadata:
@@ -97,5 +97,6 @@ spec:
     app: kafka
     statefulset.kubernetes.io/pod-name: {{ $podName }}
 EOF
+            echo "Service {{ $svcName }} applied."
             {{- end }}
             echo "=== Kafka External Service Creator Job Completed ==="
