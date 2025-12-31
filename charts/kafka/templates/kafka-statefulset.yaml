@@ -104,6 +104,7 @@ spec:
             
             # Use POD_NAME from environment (injected via downward API)
             echo "Pod name: $POD_NAME"
+            echo "DEBUG: POD_NAME received: $POD_NAME"
             
             # Extract node ID from pod name (e.g., kafka-0 -> 0)
             # Using parameter expansion instead of rev command
