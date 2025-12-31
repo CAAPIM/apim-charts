@@ -126,3 +126,31 @@ intelligence: serviceAccount-automountServiceAccountToken
     K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
 {{- end -}}
 {{- end -}}
+
+{{/*
+Generate Intelligence public host based on global configurations
+*/}}
+{{- define "intelligence.publicHost" -}}
+    {{- $domain := default "example.com" .Values.global.domain -}}
+    {{- $subdomainPrefix := default "dev-portal" .Values.global.subdomainPrefix -}}
+    {{- $defaultTenantId := default "apim" .Values.global.defaultTenantId -}}
+    {{- if .Values.global.legacyHostnames }}
+        {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "apim-ssg-%s.%s" $subdomainPrefix $domain -}}
+    {{- else }}
+         {{- printf "%s-ssg.%s" $subdomainPrefix $domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate Intelligence public port
+Defaults to 443 for HTTPS, or from global.papiPublicPort if set
+*/}}
+{{- define "intelligence.publicPort" -}}
+    {{- if .Values.global.papiPublicPort }}
+        {{- .Values.global.papiPublicPort -}}
+    {{- else }}
+        {{- "443" -}}
+    {{- end }}
+{{- end -}}
