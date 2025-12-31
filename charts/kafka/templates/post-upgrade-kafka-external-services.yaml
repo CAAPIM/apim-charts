@@ -72,7 +72,7 @@ metadata:
   {{- end }}
 spec:
   type: ${SERVICE_TYPE}
-  {{- if eq $SERVICE_TYPE "LoadBalancer" }}
+  {{- if eq $.Values.externalAccess.serviceType "LoadBalancer" }}
   {{- if $.Values.externalAccess.loadBalancerIPs }}
   {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $i }}
   loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
@@ -84,7 +84,7 @@ spec:
     port: ${EXTERNAL_PORT}
     targetPort: ${TARGET_PORT}
     protocol: TCP
-  {{- if eq $SERVICE_TYPE "NodePort" }}
+  {{- if eq $.Values.externalAccess.serviceType "NodePort" }}
   {{- if $.Values.externalAccess.nodePorts }}
   {{- if gt (len $.Values.externalAccess.nodePorts) $i }}
   nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
