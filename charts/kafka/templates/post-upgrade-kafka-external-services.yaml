@@ -72,10 +72,10 @@ metadata:
   {{- end }}
 spec:
   type: {{ $serviceType }}
-    {{- if eq $serviceType "LoadBalancer" }}
+  {{- if eq $serviceType "LoadBalancer" }}
     {{- if $.Values.externalAccess.loadBalancerIPs }}
       {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $i }}
-    loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
+  loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $i }}
       {{- end }}
     {{- end }}
   {{- end }}
@@ -87,7 +87,7 @@ spec:
   {{- if eq $serviceType "NodePort" }}
     {{- if $.Values.externalAccess.nodePorts }}
       {{- if gt (len $.Values.externalAccess.nodePorts) $i }}
-    nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
+  nodePort: {{ index $.Values.externalAccess.nodePorts $i }}
       {{- end }}
     {{- end }}
   {{- end }}
