@@ -735,8 +735,8 @@ kafka: &kafka_config
 
   # Kafka deployment configuration
   kafka:
-    # Number of Kafka broker replicas
-    replicaCount: 1
+    # Number of Kafka broker replicas (3 recommended for Intelligence)
+    replicaCount: 3
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -802,8 +802,8 @@ kafka: &kafka_config
       enabled: false
       # TLS type (PEM or JKS)
       type: PEM
-      # Client authentication (none, requested, required)
-      clientAuth: required
+      # Client authentication (none, requested, required) - 'none' for Gateway compatibility
+      clientAuth: none
       # Secret containing TLS certificates
       secretName: ""
       # Keys in the secret
@@ -815,8 +815,8 @@ kafka: &kafka_config
 
     # SASL Authentication Configuration
     sasl:
-      # Enable SASL authentication
-      enabled: false
+      # Enable SASL authentication (required for Intelligence)
+      enabled: true
       # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
       mechanisms: PLAIN
       # Inter-broker SASL mechanism
@@ -845,7 +845,7 @@ kafka: &kafka_config
   externalAccess:
     # External access is only needed for Intelligence
     # Analytics (Druid) uses internal Kafka service
-    enabled: false
+    enabled: true
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
     # Port for external access
