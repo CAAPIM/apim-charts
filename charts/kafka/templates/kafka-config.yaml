@@ -26,9 +26,13 @@ data:
   # KRaft Mode Configuration (Kafka 4.0.0+)
   # ============================================
   
-  # KRaft cluster ID (will be auto-generated if not set)
+  # KRaft cluster ID (must be consistent across all brokers)
   {{- if .Values.kafka.kraft.clusterId }}
-  KAFKA_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
+  KAFKA_KRAFT_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
+  {{- else if .Values.global.subdomainPrefix }}
+  KAFKA_KRAFT_CLUSTER_ID: {{ printf "%s-kafka" .Values.global.subdomainPrefix | quote }}
+  {{- else }}
+  KAFKA_KRAFT_CLUSTER_ID: "kafka-cluster"
   {{- end }}
   
   # Node ID (uses pod ordinal from hostname if not explicitly set)

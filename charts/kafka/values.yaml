@@ -64,8 +64,9 @@ kafka:
   kraft:
     # Enable KRaft mode (Zookeeper-less)
     enabled: true
-    # Cluster ID for KRaft (auto-generated if empty)
-    clusterId: "{{ if .Values.global.subdomainPrefix }}{{ .Values.global.subdomainPrefix }}-kafka{{ else }}kafka-cluster{{ end }}"
+    # Cluster ID for KRaft (must be consistent across all brokers)
+    # Set to a fixed value or leave empty to auto-generate based on subdomain
+    clusterId: ""
     # Node ID (will be set based on pod ordinal if empty)
     # IMPORTANT: Leave empty to use pod ordinal (0, 1, 2) for StatefulSet
     nodeId: ""
