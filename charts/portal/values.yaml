@@ -46,6 +46,11 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Intelligence feature for advanced analytics and third-party agent integration
+  # IMPORTANT: When intelligence.enabled is true, you MUST also set:
+  #   - kafka.externalAccess.enabled: true (for external Kafka broker access)
+  #   - kafka.kafka.replicaCount: 3 (recommended for production)
+  # If you disable intelligence, set both analytics.enabled and intelligence.enabled to false
   intelligence:
     enabled: true
   # Please set analytics.replicaCount to a minimum of 2
@@ -658,9 +663,19 @@ druid:
       # memory: 2Gi
       limits: {}
       # memory: 2Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
+    # Node selector for scheduling on specific nodes
+    # For production environments with node pools, set this to match your node labels
+    # Example: nodeSelector: { pooltype: general }
+    nodeSelector: {}
+    # Tolerations for scheduling on tainted nodes
+    # For production environments with node taints, uncomment and configure:
+    # tolerations:
+    #   - key: "apptype"
+    #     operator: "Equal"
+    #     value: "general"
+    #     effect: "NoSchedule"
+    tolerations: []
+    # affinity: {}
 
   ingestion:
     forceRedeploy: false
@@ -846,6 +861,9 @@ kafka: &kafka_config
     automountServiceAccountToken: true
 
   # External access configuration for autodiscovery
+  # NOTE: External access MUST be enabled when portal.intelligence.enabled is true
+  # Intelligence requires external Kafka access for third-party agents
+  # Set this to true in your values file when using Intelligence features
   externalAccess:
     enabled: false
     # Service type for external access (LoadBalancer or NodePort)

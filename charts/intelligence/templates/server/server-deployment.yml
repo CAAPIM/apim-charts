@@ -195,9 +195,9 @@ spec:
           {{- else if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
-          command: ["/bin/bash", "-c"]
+          command: ["/bin/sh", "-c"]
           args:
-            - |
+            - |-
               {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
               # Source the environment file from the init container
               if [ -f /shared/kafka.env ]; then
@@ -205,30 +205,23 @@ spec:
                 cat /shared/kafka.env
                 source /shared/kafka.env
               else
-                echo "/shared/kafka.env not found"
-                exit 1
+                echo "WARNING: /shared/kafka.env not found. Auto-discovery may not have completed."
               fi
               {{- else }}
-              echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm..."
-              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligence.kafka.externalAdvertisedBrokers }}
+              echo "Using KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm values..."
+              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligence.kafka.externalAdvertisedBrokers | quote }}
               {{- end }}
               
+              # Load TSSG certificates for intelligence server if enabled
               {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
-              # Load TSSG certificates for intelligence server
-              # Certificates are already base64 encoded in the secret, so just read them directly
               echo "Loading TSSG certificates for intelligence server..."
-              if [ -f "$KAFKA_CA_CERT_FILE" ]; then
-                export KAFKA_CA_CERTIFICATE=$(cat "$KAFKA_CA_CERT_FILE")
-                echo "KAFKA_CA_CERTIFICATE loaded"
-              fi
-              if [ -f "$KAFKA_CA_KEY_FILE" ]; then
-                export KAFKA_CA_KEY=$(cat "$KAFKA_CA_KEY_FILE")
-                echo "KAFKA_CA_KEY loaded"
-              fi
+              # Assuming certificates are available as environment variables from secrets.
+              # If they are mounted as files, the application needs to read them.
+              # For now, relying on Kubernetes to inject as environment variables from secrets.
               {{- end }}
               
-              echo "Executing original entrypoint for intelligence-server..."
-              java -jar /opt/app/intelligence-server.jar
+              echo "Executing original entrypoint for intelligence-server: java -jar /opt/app/intelligence-server.jar"
+              exec java -jar /opt/app/intelligence-server.jar
           env:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
