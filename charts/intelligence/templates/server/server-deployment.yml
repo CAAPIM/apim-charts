@@ -61,13 +61,13 @@ spec:
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
-          image: "{{ .Values.intelligence.kafka.autoDiscovery.image.repository }}:{{ .Values.intelligence.kafka.autoDiscovery.image.tag }}"
-          imagePullPolicy: "{{ .Values.intelligence.kafka.autoDiscovery.image.pullPolicy }}"
+          image: "alpine/k8s:1.31.2"
+          imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -ec
             - |
-              # This script discovers the external addresses of Kafka brokers
+              # This script discovers the external LoadBalancer IPs of Kafka brokers
               # and writes them to a shared volume for the main container to use.
               RELEASE_NAME="{{ .Release.Name }}"
               BROKER_LIST=""
@@ -89,12 +89,6 @@ spec:
                       i=$((i + 1))
                   done
                   return $return_value
-              }
-
-              # Function to get NodePort from a service (sh-compatible)
-              k8s_svc_node_port() {
-                  node_port=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.spec.ports[0].nodePort}" 2>/dev/null || echo "")
-                  echo "$node_port"
               }
 
               # Function to get LoadBalancer IP or Hostname from a service (sh-compatible)
@@ -132,9 +126,11 @@ spec:
                       EXTERNAL_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].port}" 2>/dev/null || echo "")
                       BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
                   elif [ "$AUTODISCOVERY_SERVICE_TYPE" = "NodePort" ]; then
-                      NODE_PORT=$(k8s_svc_node_port "$SVC_NAME" "$MY_POD_NAMESPACE")
-                      NODE_IP=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.clusterIP}" 2>/dev/null || echo "")
-                      BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                      NODE_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].nodePort}" 2>/dev/null || echo "")
+                      NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
+                      if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+                        BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                      fi
                   fi
 
                   if [ -n "$BROKER_ENDPOINT" ]; then
@@ -146,7 +142,7 @@ spec:
                   fi
               }
 
-              # Discover Kafka broker nodes
+              # Discover Kafka broker nodes - Updated to use correct naming (kafka-0, kafka-1, kafka-2)
               # For custom Kafka subchart
               {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
@@ -209,12 +205,12 @@ spec:
                 cat /shared/kafka.env
                 source /shared/kafka.env
               else
-                echo "/shared/kafka.env  not found"
+                echo "/shared/kafka.env not found"
                 exit 1
               fi
               {{- else }}
               echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm..."
-              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
+              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligence.kafka.externalAdvertisedBrokers }}
               {{- end }}
               
               {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}

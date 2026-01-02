@@ -23,10 +23,6 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  # Domain and defaultTenantId are also defined under portal.* for backward compatibility
-  # These global values are used by subcharts (e.g., intelligence) that don't have access to portal.*
-  domain: example.com
-  defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   #   podSecurityContext:
@@ -479,6 +475,14 @@ druid:
       historical: 50Gi
       minio: 40Gi
       zookeeper: 10Gi
+  # Kafka configuration for druid ingestion service
+  kafka:
+    # Reference to Kafka broker service name (deployed as separate subchart)
+    brokerService: kafka
+    # Kafka broker port
+    brokerPort: 9092
+    # Kafka replication count (should match kafka.kafka.replicaCount)
+    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -590,7 +594,7 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    replicaCount: 3
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -730,13 +734,13 @@ kafka: &kafka_config
 
   # Image configuration
   image:
-    kafka: kafka:latest
+    kafka: kafka:mr_kafka4_intel
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
   kafka:
-    # Number of Kafka broker replicas (3 recommended for Intelligence)
-    replicaCount: 3
+    # Number of Kafka broker replicas
+    replicaCount: 1
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -772,7 +776,7 @@ kafka: &kafka_config
       processRoles: "broker,controller"
       # Controller quorum voters (auto-generated based on replicas if empty)
       controllerQuorumVoters: ""
-
+    
     # Listener Configuration
     listeners:
       # Internal listener for inter-broker and client communication
@@ -802,8 +806,8 @@ kafka: &kafka_config
       enabled: false
       # TLS type (PEM or JKS)
       type: PEM
-      # Client authentication (none, requested, required) - 'none' for Gateway compatibility
-      clientAuth: none
+      # Client authentication (none, requested, required)
+      clientAuth: required
       # Secret containing TLS certificates
       secretName: ""
       # Keys in the secret
@@ -815,8 +819,8 @@ kafka: &kafka_config
 
     # SASL Authentication Configuration
     sasl:
-      # Enable SASL authentication (required for Intelligence)
-      enabled: true
+      # Enable SASL authentication
+      enabled: false
       # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
       mechanisms: PLAIN
       # Inter-broker SASL mechanism
@@ -843,9 +847,7 @@ kafka: &kafka_config
 
   # External access configuration for autodiscovery
   externalAccess:
-    # External access is only needed for Intelligence
-    # Analytics (Druid) uses internal Kafka service
-    enabled: true
+    enabled: false
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
     # Port for external access
@@ -953,6 +955,67 @@ apim-intelligence:
   # subchart has the correct values for broker discovery.
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
+
+  rbac:
+    create: true
+
+  # Service Account for intelligence-server
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+    name: ""
+
+  image:
+    intelligenceServer: intelligence-server:latest
+
+  intelligenceServer:
+    # Configuration for the Intelligence Server.
+    kafka:
+      # A list of external advertised Kafka brokers.
+      # externalAdvertisedBrokers:
+      # Configuration for Kafka broker auto-discovery.
+      autoDiscovery:
+        # Enables or disables Kafka broker auto-discovery.
+        enabled: true
+        image:
+          # The repository of the auto-discovery image.
+          repository: "docker.io/bitnami/kubectl"
+          # The tag of the auto-discovery image.
+          tag: "1.33.3-debian-12-r0"
+          # The pull policy for the auto-discovery image.
+          pullPolicy: IfNotPresent
+        # Resource requests and limits for the auto-discovery init container
+        # resources: {}
+      # Configuration for the Kafka CA certificate.
+      kafkaCa:
+        # The name of the secret containing the Kafka CA certificate.
+        caSecretName: *internalSecretName
+        # The name of the secret containing the password for the Kafka CA certificate.
+        passwordSecretName: *internalSecretName
+        # The key in the password secret that contains the password.
+        passwordSecretKey: "keypass.txt"
+    forceRedeploy: false
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+    replicaCount: 1
+    image:
+      pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
+    resources:
+      requests: {}
+      # memory: 4Gi
+      limits: {}
+      # memory: 4Gi
+    # nodeSelector: {}
+    # tolerations: []
+    # affinity: {}
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:

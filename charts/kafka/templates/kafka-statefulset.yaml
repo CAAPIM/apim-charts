@@ -277,6 +277,54 @@ spec:
             fi
             {{- end }}
             
+            # Check if KAFKA_CLUSTER_ID is set and format storage if needed
+            if [ -n "$KAFKA_CLUSTER_ID" ]; then
+              echo "=== Kafka KRaft Storage Formatting ==="
+              echo "Cluster ID from ConfigMap: $KAFKA_CLUSTER_ID"
+              
+              # Check if storage is already formatted
+              if [ ! -f /opt/ca/kafka/kafka-logs/meta.properties ]; then
+                echo "No meta.properties found. Formatting Kafka storage with cluster ID: $KAFKA_CLUSTER_ID"
+                /opt/ca/kafka/bin/kafka-storage.sh format \
+                  --cluster-id "$KAFKA_CLUSTER_ID" \
+                  --config /opt/ca/kafka/config/server.properties \
+                  --ignore-formatted \
+                  --standalone
+                echo "✓ Kafka storage formatted successfully"
+              else
+                # Verify existing cluster ID matches
+                echo "Found existing meta.properties, checking cluster ID..."
+                EXISTING_CLUSTER_ID=$(grep "^cluster.id=" /opt/ca/kafka/kafka-logs/meta.properties | cut -d= -f2 2>/dev/null || echo "")
+                
+                if [ -n "$EXISTING_CLUSTER_ID" ] && [ "$EXISTING_CLUSTER_ID" != "$KAFKA_CLUSTER_ID" ]; then
+                  echo "WARNING: Cluster ID mismatch!"
+                  echo "  Expected: $KAFKA_CLUSTER_ID"
+                  echo "  Found: $EXISTING_CLUSTER_ID"
+                  echo "Removing old meta.properties and reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage reformatted with correct cluster ID"
+                elif [ -n "$EXISTING_CLUSTER_ID" ]; then
+                  echo "✓ Cluster ID matches: $EXISTING_CLUSTER_ID"
+                else
+                  echo "No cluster.id found in meta.properties, reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage formatted with cluster ID"
+                fi
+              fi
+            else
+              echo "WARNING: KAFKA_CLUSTER_ID not set in environment"
+            fi
+            
             # Start Kafka with the original entrypoint
             exec /opt/ca/start-kafka.sh
         {{- end }}

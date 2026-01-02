@@ -27,12 +27,16 @@ data:
   # ============================================
   
   # KRaft cluster ID (must be consistent across all brokers)
+  # The startup script checks for KAFKA_CLUSTER_ID (not KAFKA_KRAFT_CLUSTER_ID)
   {{- if .Values.kafka.kraft.clusterId }}
-  KAFKA_KRAFT_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
-  {{- else if .Values.global.subdomainPrefix }}
-  KAFKA_KRAFT_CLUSTER_ID: {{ printf "%s-kafka" .Values.global.subdomainPrefix | quote }}
+  KAFKA_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
   {{- else }}
-  KAFKA_KRAFT_CLUSTER_ID: "kafka-cluster"
+  # Generate a deterministic cluster ID based on subdomain or use a fixed one
+  # Using a hash of the subdomain to generate a consistent cluster ID
+  {{- $clusterName := .Values.global.subdomainPrefix | default "kafka-cluster" }}
+  {{- $hash := sha256sum $clusterName }}
+  {{- $clusterId := $hash | substr 0 22 }}
+  KAFKA_CLUSTER_ID: {{ $clusterId | quote }}
   {{- end }}
   
   # Node ID (uses pod ordinal from hostname if not explicitly set)
