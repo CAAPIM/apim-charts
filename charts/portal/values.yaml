@@ -49,10 +49,10 @@ portal:
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.externalAccess.enabled is automatically set to true (for external Kafka broker access)
-  #   - kafka.kafka.replicaCount defaults to 3 (recommended for production)
-  # If you disable intelligence, set both analytics.enabled and intelligence.enabled to false
+  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
-    enabled: true
+    enabled: false
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
