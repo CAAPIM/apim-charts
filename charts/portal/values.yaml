@@ -47,9 +47,9 @@ portal:
   analytics:
     enabled: true
   # Intelligence feature for advanced analytics and third-party agent integration
-  # IMPORTANT: When intelligence.enabled is true, you MUST also set:
-  #   - kafka.externalAccess.enabled: true (for external Kafka broker access)
-  #   - kafka.kafka.replicaCount: 3 (recommended for production)
+  # IMPORTANT: When intelligence.enabled is true:
+  #   - kafka.externalAccess.enabled is automatically set to true (for external Kafka broker access)
+  #   - kafka.kafka.replicaCount defaults to 3 (recommended for production)
   # If you disable intelligence, set both analytics.enabled and intelligence.enabled to false
   intelligence:
     enabled: true
@@ -487,7 +487,7 @@ druid:
     # Kafka broker port
     brokerPort: 9092
     # Kafka replication count (should match kafka.kafka.replicaCount)
-    replicaCount: 3
+    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -599,7 +599,7 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    replicaCount: 3
+    replicaCount: 1
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -739,6 +739,11 @@ druid:
 
 # Configuration for the custom Kafka subchart
 kafka: &kafka_config
+  # Enable/disable Kafka deployment
+  # Automatically enabled when analytics or intelligence is enabled
+  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
+  enabled: true
+  
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
 
@@ -756,7 +761,7 @@ kafka: &kafka_config
   kafka:
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
-    replicaCount: 3
+    replicaCount: 1
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations

@@ -29,7 +29,7 @@ dependencies:
   repository: "file://../intelligence"
 - name: kafka
   version: ^1.3.3
-  condition: "portal.analytics.enabled || portal.intelligence.enabled"
+  condition: kafka.enabled
   repository: "file://../kafka"
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"
