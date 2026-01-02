@@ -599,7 +599,7 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    replicaCount: 1
+    replicaCount: 3
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
