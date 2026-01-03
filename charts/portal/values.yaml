@@ -829,8 +829,9 @@ kafka: &kafka_config
       type: PEM
       # Client authentication (none, requested, required)
       clientAuth: required
-      # Secret containing TLS certificates
-      secretName: portal-internal-secret
+      # Secret containing TLS certificates (via environment variables)
+      # Leave empty to use volume-mounted certificates from internalSecretName instead
+      secretName: ""
       # Keys in the secret
       keystoreKeyKey: "keystore.key"
       truststoreCertKey: "truststore.pem"
