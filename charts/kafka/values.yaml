@@ -130,9 +130,9 @@ kafka:
     passwordSecretKey: "keypass.txt"
     
     # TSSG Certificates (use apim-ssl from internal secret by default)
-    # The internal secret name is passed from parent chart
-    # These can be overridden if using custom certificates
-    internalSecretName: "portal-internal-secret"
+    # The secret name for TSSG certificates (apim-ssl)
+    # Changed to portal-external-secret to support static certificate deployments
+    internalSecretName: "portal-external-secret"
     tssgKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl, can be overridden
     tssgCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
     passwordKey: "keypass.txt"

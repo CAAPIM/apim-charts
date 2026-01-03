@@ -64,8 +64,8 @@ intelligence:
     
     # Certificates that intelligence-server provides to third-party clients
     kafkaCa:
-      caSecretName: portal-internal-secret  # Certificates for clients
-      passwordSecretName: portal-internal-secret
+      caSecretName: portal-external-secret  # Certificates for clients (changed from portal-internal-secret)
+      passwordSecretName: portal-external-secret
       passwordSecretKey: "keypass.txt"
       # Keys in the secret for TSSG cert/key (uses apim-ssl certificate with CN=tssg)
       # These can be overridden if using custom certificates
