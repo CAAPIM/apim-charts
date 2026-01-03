@@ -823,14 +823,14 @@ kafka: &kafka_config
 
     # TLS/SSL Configuration
     tls:
-      # Enable TLS/SSL
-      enabled: false
+      # Enable TLS/SSL - enabled by default for external SSL support
+      enabled: true
       # TLS type (PEM or JKS)
       type: PEM
       # Client authentication (none, requested, required)
       clientAuth: required
       # Secret containing TLS certificates
-      secretName: ""
+      secretName: portal-internal-secret
       # Keys in the secret
       keystoreKeyKey: "keystore.key"
       truststoreCertKey: "truststore.pem"
@@ -869,9 +869,9 @@ kafka: &kafka_config
   # External access configuration for autodiscovery
   # NOTE: External access MUST be enabled when portal.intelligence.enabled is true
   # Intelligence requires external Kafka access for third-party agents
-  # Set this to true in your values file when using Intelligence features
+  # Default is true to support intelligence features
   externalAccess:
-    enabled: false
+    enabled: true
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
     # Port for external access

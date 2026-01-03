@@ -47,23 +47,30 @@ intelligence:
   rbac: # Moved from top-level
     create: true
   kafka:
+    # Internal Kafka brokers (for intelligence-server's own consumption)
+    brokers: "kafka:9092"  # Internal PLAINTEXT connection
+    
+    # Security protocol for intelligence-server's connection
+    securityProtocol: PLAINTEXT  # Intelligence connects internally without SSL
+    
+    # Auto-discovery configuration (discovers EXTERNAL IPs for third-party clients)
     autoDiscovery:
-      # When enabled, kubectl commands are run directly in the intelligence-server container
-      # to discover Kafka broker external addresses. This is useful when Kafka is deployed
-      # as part of the same release with external access enabled.
-      # NOTE: kubectl must be available in the intelligence-server image for this to work.
+      # When enabled, discovers external LoadBalancer IPs that intelligence-server provides to clients
       enabled: true
       # Resource requests and limits for the auto-discovery (no longer used)
       # resources: {}
-    externalAdvertisedBrokers: ""
+    
+    externalAdvertisedBrokers: ""  # Populated by auto-discovery
+    
+    # Certificates that intelligence-server provides to third-party clients
     kafkaCa:
-      caSecretName: ""
-      passwordSecretName: ""
+      caSecretName: portal-internal-secret  # Certificates for clients
+      passwordSecretName: portal-internal-secret
       passwordSecretKey: "keypass.txt"
       # Keys in the secret for TSSG cert/key (uses apim-ssl certificate with CN=tssg)
       # These can be overridden if using custom certificates
       caCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
-      caKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl.p8.key, can be overridden
+      caKeyKey: "apim-ssl.key"         # Use .key for intelligence, not .p8.key
   # Additional labels for the intelligence deployment
   additionalLabels: {}
   # Pod affinity, node selector, and tolerations

@@ -176,7 +176,24 @@ spec:
               {{- end }}
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
+
+              # Update ConfigMap for distroless compatibility
+              CONFIGMAP_NAME="{{ include "intelligence.fullname" . }}-kafka-discovery"
+              echo "Updating ConfigMap ${CONFIGMAP_NAME}..."
+
+              if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                  --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\"}}"
+                echo "ConfigMap ${CONFIGMAP_NAME} updated successfully"
+              else
+                kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                  --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}"
+                echo "ConfigMap ${CONFIGMAP_NAME} created successfully"
+              fi
+
+              # Keep file for backward compatibility
               echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              echo "Kafka discovery completed successfully"
           env:
             - name: MY_POD_NAMESPACE
               valueFrom:
@@ -195,33 +212,16 @@ spec:
           {{- else if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
-          command: ["/bin/sh", "-c"]
-          args:
-            - |-
-              {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
-              # Source the environment file from the init container
-              if [ -f /shared/kafka.env ]; then
-                echo "Sourcing KAFKA_EXTERNAL_ADVERTISED_BROKERS from init container..."
-                cat /shared/kafka.env
-                source /shared/kafka.env
-              else
-                echo "WARNING: /shared/kafka.env not found. Auto-discovery may not have completed."
-              fi
-              {{- else }}
-              echo "Using KAFKA_EXTERNAL_ADVERTISED_BROKERS from helm values..."
-              export KAFKA_EXTERNAL_ADVERTIZED_BROKERS={{ .Values.intelligence.kafka.externalAdvertisedBrokers | quote }}
-              {{- end }}
-              
-              # Load TSSG certificates for intelligence server if enabled
-              {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
-              echo "Loading TSSG certificates for intelligence server..."
-              # Assuming certificates are available as environment variables from secrets.
-              # If they are mounted as files, the application needs to read them.
-              # For now, relying on Kubernetes to inject as environment variables from secrets.
-              {{- end }}
-              
-              echo "Executing original entrypoint for intelligence-server: java -jar /opt/app/intelligence-server.jar"
-              exec java -jar /opt/app/intelligence-server.jar
+          # Distroless compatible: no shell, direct Java execution
+          command: ["java"]
+          args: ["-jar", "/opt/app/intelligence-server.jar"]
+          {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+          envFrom:
+            # Inject discovered Kafka broker IPs from ConfigMap
+            - configMapRef:
+                name: {{ include "intelligence.fullname" . }}-kafka-discovery
+                optional: true
+          {{- end }}
           env:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
@@ -240,8 +240,13 @@ spec:
                   {{ if eq .Values.global.databaseType "mysql" }}
                   key: mysql-password
                   {{- end }}
-          # TSSG Certificates (always use apim-ssl from internal secret)
-          # Intelligence server expects certificate and key content in environment variables
+            # Internal Kafka connection (for intelligence-server's own use)
+            - name: KAFKA_BROKERS
+              value: {{ .Values.intelligence.kafka.brokers | default "kafka:9092" | quote }}
+            
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: {{ .Values.intelligence.kafka.securityProtocol | default "PLAINTEXT" | quote }}
+          # Certificates that intelligence-server provides to third-party clients
           {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
             - name: KAFKA_CA_CERTIFICATE
               valueFrom:
@@ -253,16 +258,8 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.intelligence.kafka.kafkaCa.caSecretName }}
-                  key: {{ .Values.intelligence.kafka.kafkaCa.caKeyKey | default "apim-ssl.p8.key" }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}
                   optional: false
-          {{- else }}
-            # Provide empty values when using PLAINTEXT Kafka (no SSL)
-            - name: KAFKA_CA_CERTIFICATE
-              value: ""
-            - name: KAFKA_CA_KEY
-              value: ""
-          {{- end }}
-          {{- if .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
             - name: KAFKA_CA_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -276,7 +273,11 @@ spec:
                   key: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
                   optional: false
           {{- else }}
-            # Provide empty values when using PLAINTEXT Kafka (no password needed)
+            # No certificates provided
+            - name: KAFKA_CA_CERTIFICATE
+              value: ""
+            - name: KAFKA_CA_KEY
+              value: ""
             - name: KAFKA_CA_PASSWORD
               value: ""
             - name: TSSG_SSL_KEY_PASS
