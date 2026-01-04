@@ -215,13 +215,6 @@ spec:
           # Distroless compatible: no shell, direct Java execution
           command: ["java"]
           args: ["-jar", "/opt/app/intelligence-server.jar"]
-          {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
-          envFrom:
-            # Inject discovered Kafka broker IPs from ConfigMap
-            - configMapRef:
-                name: {{ include "intelligence.fullname" . }}-kafka-discovery
-                optional: true
-          {{- end }}
           env:
             - name: RABBITMQ_DEFAULT_PASS
               valueFrom:
@@ -315,8 +308,15 @@ spec:
               value: {{ include "intelligence.publicPort" . | quote }}
           {{- end }}
           envFrom:
+          # Always include the main intelligence-server config
           - configMapRef:
               name: intelligence-server-config
+          {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+          # Include discovered Kafka broker IPs when auto-discovery is enabled
+          - configMapRef:
+              name: {{ include "intelligence.fullname" . }}-kafka-discovery
+              optional: true
+          {{- end }}
           readinessProbe:
             httpGet:
               path: "/health/readiness"
