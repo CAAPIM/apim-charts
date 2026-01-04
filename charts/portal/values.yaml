@@ -805,9 +805,11 @@ kafka: &kafka_config
         enabled: true
         port: 9092
         protocol: PLAINTEXT
-      # External listener for clients outside the cluster
+      # External listener for clients outside the cluster (third-party agents)
+      # NOTE: Should be enabled ONLY when portal.intelligence.enabled is true
+      # Set to false when intelligence is disabled to avoid unnecessary external listeners
       external:
-        enabled: true
+        enabled: true  # Default true for intelligence support, override to false when intelligence disabled
         port: 9094
         protocol: SSL
       # Controller listener for KRaft mode
