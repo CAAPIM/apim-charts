@@ -48,7 +48,6 @@ portal:
     enabled: true
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
-  #   - kafka.externalAccess.enabled is automatically set to true (for external Kafka broker access)
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
@@ -593,32 +592,6 @@ druid:
   # tolerations: []
   # affinity: {}
 
-  kafka:
-    forceRedeploy: false
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    replicaCount: 3
-    image:
-      pullPolicy: IfNotPresent
-    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-    podSecurityContext: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-    containerSecurityContext: {}
-    resources:
-      requests: {}
-      # cpu: 100m
-      # memory: 750Mi
-      limits: {}
-      # cpu: 1000m
-      # memory: 1.5Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
-
   broker:
     forceRedeploy: false
     pdb:
@@ -869,11 +842,11 @@ kafka: &kafka_config
     automountServiceAccountToken: true
 
   # External access configuration for autodiscovery
-  # NOTE: External access MUST be enabled when portal.intelligence.enabled is true
+  # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
   # Intelligence requires external Kafka access for third-party agents
-  # Default is true to support intelligence features
+  # Default is false. Set to true manually or enable intelligence feature.
   externalAccess:
-    enabled: true
+    enabled: false
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
     # Port for external access
