@@ -92,7 +92,7 @@ data:
   {{- if .Values.kafka.listeners.internal.enabled }}
   {{- $listeners = append $listeners (printf "INTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.internal.port)) }}
   {{- end }}
-  {{- if .Values.kafka.listeners.external.enabled }}
+  {{- if .Values.externalAccess.enabled }}
   {{- $listeners = append $listeners (printf "EXTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.external.port)) }}
   {{- end }}
   {{- if .Values.kafka.listeners.controller.enabled }}
@@ -105,7 +105,7 @@ data:
   {{- if .Values.kafka.listeners.internal.enabled }}
   {{- $protocolMap = append $protocolMap (printf "INTERNAL:%s" .Values.kafka.listeners.internal.protocol) }}
   {{- end }}
-  {{- if .Values.kafka.listeners.external.enabled }}
+  {{- if .Values.externalAccess.enabled }}
   {{- $protocolMap = append $protocolMap (printf "EXTERNAL:%s" .Values.kafka.listeners.external.protocol) }}
   {{- end }}
   {{- if .Values.kafka.listeners.controller.enabled }}

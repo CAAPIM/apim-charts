@@ -379,7 +379,7 @@ spec:
         ports:
         - containerPort: {{ .Values.kafka.listeners.internal.port }}
           name: kafka
-        {{- if and .Values.kafka.listeners.external.enabled .Values.externalAccess.enabled }}
+        {{- if .Values.externalAccess.enabled }}
         - containerPort: {{ .Values.kafka.listeners.external.port }}
           name: external
         {{- end }}
