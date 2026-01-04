@@ -333,6 +333,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: INTELLIGENCE_ENABLED
+          value: {{ .Values.externalAccess.enabled | quote }}
         {{- if .Values.kafka.tls.enabled }}
         {{- if .Values.kafka.tls.secretName }}
         - name: KAFKA_CFG_SSL_KEYSTORE_KEY
