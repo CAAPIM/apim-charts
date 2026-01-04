@@ -142,11 +142,16 @@ spec:
                   fi
               }
 
-              # Discover Kafka broker nodes - Updated to use correct naming (kafka-0, kafka-1, kafka-2)
+              # Discover Kafka broker nodes - Aligned with StatefulSet ordinals
               # For custom Kafka subchart
               {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
               BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
-              for i in $(seq 0 $((BROKER_COUNT - 1))); do
+              {{- $ordinalStart := 0 }}
+              {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+              {{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+              {{- end }}
+              ORDINAL_START={{ $ordinalStart }}
+              for i in $(seq $ORDINAL_START $((ORDINAL_START + BROKER_COUNT - 1))); do
                 SVC_NAME="kafka-${i}-external"
                 discover_broker "$SVC_NAME"
               done
