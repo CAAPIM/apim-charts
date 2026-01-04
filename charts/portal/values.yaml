@@ -881,9 +881,8 @@ kafka: &kafka_config
     # Hostname/domain for external access (used in advertised listeners)
     hostname: ""
     # Annotations for external services
-    # Note: Remove Internal annotation to make LoadBalancer externally accessible
-    # for third-party clients outside the GKE VPC
-    annotations: {}
+    annotations:
+      cloud.google.com/load-balancer-type: Internal
     # LoadBalancer IPs (optional, for static IPs)
     loadBalancerIPs: []
     # NodePort values (optional, for NodePort service type)
