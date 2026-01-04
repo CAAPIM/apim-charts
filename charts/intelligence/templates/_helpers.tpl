@@ -39,10 +39,10 @@ Create chart name and version as used by the chart label.
 {{- if .Values.global.serviceAccountName }}
    {{ default "default" .Values.global.serviceAccountName }}
 {{- else }}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "intelligence.fullname" .) .Values.serviceAccount.name }}
+{{- if .Values.intelligence.serviceAccount.create -}}
+    {{ default (include "intelligence.fullname" .) .Values.intelligence.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" .Values.intelligence.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -75,15 +75,21 @@ Get "database-port" based on databaseType value
 Get "kafka" brokers
 */}}
 {{- define "kafka-brokers" -}}
+    {{- $kafkaName := "kafka" -}}
+    {{- if .Values.kafka.fullnameOverride -}}
+        {{- $kafkaName = .Values.kafka.fullnameOverride -}}
+    {{- else -}}
+        {{- $kafkaName = printf "%s-kafka" .Release.Name -}}
+    {{- end -}}
     {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
         {{- /* Custom Kafka subchart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
     {{- else if and .Values.kafka.listeners .Values.kafka.listeners.client }}
         {{- /* Bitnami Kafka chart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.listeners.client.containerPort -}}
     {{- else }}
         {{- /* Default fallback */ -}}
-        {{- printf "%s-kafka:9092" .Release.Name -}}
+        {{- printf "%s:9092" $kafkaName -}}
     {{- end }}
 {{- end -}}
 
@@ -98,37 +104,53 @@ Create Image Pull Secret
 
 {{- define "intelligence.validate" -}}
 {{- $messages := list -}}
-{{- $messages := append $messages (include "intelligenceServer.validateValues.autoDiscoveryRBAC" .) -}}
+{{- $messages := append $messages (include "intelligence.validateValues.autoDiscoveryRBAC" .) -}}
 {{- $message := join "\n" $messages -}}
 {{- if $message -}}
 {{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
 {{- end -}}
 {{- end -}}
 
-{{/* Validate values of intelligenceServer - RBAC should be enabled when autoDiscovery is enabled */}}
-{{- define "intelligenceServer.validateValues.autoDiscoveryRBAC" -}}
-{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
-intelligenceServer: rbac-create
-    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+{{/* Validate values of intelligence - RBAC should be enabled when autoDiscovery is enabled */}}
+{{- define "intelligence.validateValues.autoDiscoveryRBAC" -}}
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.rbac.create ) }}
+intelligence: rbac-create
+    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires specific RBAC resources.
 {{- end -}}
-{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
-intelligenceServer: serviceAccount-automountServiceAccountToken
-    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
+{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.serviceAccount.automountServiceAccountToken) }}
+intelligence: serviceAccount-automountServiceAccountToken
+    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
 {{- end -}}
 {{- end -}}
 
 {{/*
-Generate Kafka hostname for APIM_SSG_HOSTNAME
-Uses the full hostname pattern with -kafka suffix
+Generate Intelligence public host based on global configurations
 */}}
-{{- define "kafka-public-host" -}}
+{{- define "intelligence.publicHost" -}}
+    {{- $domain := default "example.com" .Values.global.domain -}}
+    {{- $subdomainPrefix := default "dev-portal" .Values.global.subdomainPrefix -}}
+    {{- $defaultTenantId := default "apim" .Values.global.defaultTenantId -}}
     {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "kafka" .Values.portal.domain -}}
+        {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "apim-ssg-%s.%s" $subdomainPrefix $domain -}}
     {{- else }}
-        {{- printf "%s-%s-kafka.%s" .Values.portal.defaultTenantId .Values.global.subdomainPrefix .Values.portal.domain -}}
+         {{- printf "%s-ssg.%s" $subdomainPrefix $domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate Intelligence public port
+Defaults to 443 for HTTPS, or from global.papiPublicPort if set
+*/}}
+{{- define "intelligence.publicPort" -}}
+    {{- if .Values.global.papiPublicPort }}
+        {{- .Values.global.papiPublicPort -}}
+    {{- else }}
+        {{- "443" -}}
     {{- end }}
 {{- end -}}

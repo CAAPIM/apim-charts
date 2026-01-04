@@ -10,12 +10,18 @@ metadata:
     {{- range $key, $val := .Values.kafka.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   selector:
     matchLabels:
       {{- include "kafka.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "kafka.fullname" . }}
   replicas: {{ .Values.kafka.replicaCount }}
+  {{- if .Values.kafka.ordinals }}
+  ordinals:
+    start: {{ .Values.kafka.ordinals.start }}
+  {{- end }}
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -23,18 +29,13 @@ spec:
     metadata:
       labels:
         {{- include "kafka.selectorLabels" . | nindent 8 }}
-      {{- if  .Values.kafka.podAnnotations }}
-      annotations: {{- toYaml .Values.kafka.podAnnotations | nindent 8 }}
-      {{- if .Values.kafka.forceRedeploy }}
-        timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
-      {{- if not .Values.kafka.podAnnotations }}
-      {{- if .Values.kafka.forceRedeploy }}
       annotations:
+        {{- if .Values.kafka.forceRedeploy }}
         timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.kafka.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "kafka.serviceAccountName" . }}
       {{- if .Values.kafka.affinity }}
@@ -100,6 +101,7 @@ spec:
             
             # Use POD_NAME from environment (injected via downward API)
             echo "Pod name: $POD_NAME"
+            echo "DEBUG: POD_NAME received: $POD_NAME"
             
             # Extract node ID from pod name (e.g., kafka-0 -> 0)
             # Using parameter expansion instead of rev command
@@ -256,23 +258,72 @@ spec:
             
             {{- if .Values.kafka.tls.enabled }}
             # Load TSSG certificates (apim-ssl) from mounted volume
+            # Note: Volume mount maps secret keys to apim-ssl.p8.key and apim-ssl.crt paths
             echo "=== Loading TSSG certificates for Kafka SSL ==="
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }} ]; then
-              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }})
+            if [ -f /opt/ca/certs/apim-ssl.p8.key ]; then
+              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/apim-ssl.p8.key)
               echo "Loaded TSSG keystore key (PKCS#8)"
             else
-              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }}"
+              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/apim-ssl.p8.key"
               exit 1
             fi
             
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }} ]; then
-              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }})
+            if [ -f /opt/ca/certs/apim-ssl.crt ]; then
+              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/apim-ssl.crt)
               echo "Loaded TSSG truststore certificate"
             else
-              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }}"
+              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/apim-ssl.crt"
               exit 1
             fi
             {{- end }}
+            
+            # Check if KAFKA_CLUSTER_ID is set and format storage if needed
+            if [ -n "$KAFKA_CLUSTER_ID" ]; then
+              echo "=== Kafka KRaft Storage Formatting ==="
+              echo "Cluster ID from ConfigMap: $KAFKA_CLUSTER_ID"
+              
+              # Check if storage is already formatted
+              if [ ! -f /opt/ca/kafka/kafka-logs/meta.properties ]; then
+                echo "No meta.properties found. Formatting Kafka storage with cluster ID: $KAFKA_CLUSTER_ID"
+                /opt/ca/kafka/bin/kafka-storage.sh format \
+                  --cluster-id "$KAFKA_CLUSTER_ID" \
+                  --config /opt/ca/kafka/config/server.properties \
+                  --ignore-formatted \
+                  --standalone
+                echo "✓ Kafka storage formatted successfully"
+              else
+                # Verify existing cluster ID matches
+                echo "Found existing meta.properties, checking cluster ID..."
+                EXISTING_CLUSTER_ID=$(grep "^cluster.id=" /opt/ca/kafka/kafka-logs/meta.properties | cut -d= -f2 2>/dev/null || echo "")
+                
+                if [ -n "$EXISTING_CLUSTER_ID" ] && [ "$EXISTING_CLUSTER_ID" != "$KAFKA_CLUSTER_ID" ]; then
+                  echo "WARNING: Cluster ID mismatch!"
+                  echo "  Expected: $KAFKA_CLUSTER_ID"
+                  echo "  Found: $EXISTING_CLUSTER_ID"
+                  echo "Removing old meta.properties and reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage reformatted with correct cluster ID"
+                elif [ -n "$EXISTING_CLUSTER_ID" ]; then
+                  echo "✓ Cluster ID matches: $EXISTING_CLUSTER_ID"
+                else
+                  echo "No cluster.id found in meta.properties, reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage formatted with cluster ID"
+                fi
+              fi
+            else
+              echo "WARNING: KAFKA_CLUSTER_ID not set in environment"
+            fi
             
             # Start Kafka with the original entrypoint
             exec /opt/ca/start-kafka.sh
@@ -282,6 +333,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: INTELLIGENCE_ENABLED
+          value: {{ .Values.externalAccess.enabled | quote }}
         {{- if .Values.kafka.tls.enabled }}
         {{- if .Values.kafka.tls.secretName }}
         - name: KAFKA_CFG_SSL_KEYSTORE_KEY
@@ -328,7 +381,7 @@ spec:
         ports:
         - containerPort: {{ .Values.kafka.listeners.internal.port }}
           name: kafka
-        {{- if and .Values.kafka.listeners.external.enabled .Values.externalAccess.enabled }}
+        {{- if .Values.externalAccess.enabled }}
         - containerPort: {{ .Values.kafka.listeners.external.port }}
           name: external
         {{- end }}

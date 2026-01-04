@@ -46,6 +46,11 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Intelligence feature for advanced analytics and third-party agent integration
+  # IMPORTANT: When intelligence.enabled is true:
+  #   - kafka.externalAccess.enabled is automatically set to true (for external Kafka broker access)
+  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
   # Please set analytics.replicaCount to a minimum of 2
@@ -475,6 +480,14 @@ druid:
       historical: 50Gi
       minio: 40Gi
       zookeeper: 10Gi
+  # Kafka configuration for druid ingestion service
+  kafka:
+    # Reference to Kafka broker service name (deployed as separate subchart)
+    brokerService: kafka
+    # Kafka broker port
+    brokerPort: 9092
+    # Kafka replication count (should match kafka.kafka.replicaCount)
+    replicaCount: 3
 
   minio:
     forceRedeploy: false
@@ -586,7 +599,7 @@ druid:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    replicaCount: 1
+    replicaCount: 3
     image:
       pullPolicy: IfNotPresent
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
@@ -650,9 +663,19 @@ druid:
       # memory: 2Gi
       limits: {}
       # memory: 2Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
+    # Node selector for scheduling on specific nodes
+    # For production environments with node pools, set this to match your node labels
+    # Example: nodeSelector: { pooltype: general }
+    nodeSelector: {}
+    # Tolerations for scheduling on tainted nodes
+    # For production environments with node taints, uncomment and configure:
+    # tolerations:
+    #   - key: "apptype"
+    #     operator: "Equal"
+    #     value: "general"
+    #     effect: "NoSchedule"
+    tolerations: []
+    # affinity: {}
 
   ingestion:
     forceRedeploy: false
@@ -716,6 +739,11 @@ druid:
 
 # Configuration for the custom Kafka subchart
 kafka: &kafka_config
+  # Enable/disable Kafka deployment
+  # Automatically enabled when analytics or intelligence is enabled
+  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
+  enabled: true
+  
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
 
@@ -732,7 +760,8 @@ kafka: &kafka_config
   # Kafka deployment configuration
   kafka:
     # Number of Kafka broker replicas
-    replicaCount: 1
+    # Set to 3 for production deployments with intelligence enabled
+    replicaCount: 3
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -768,7 +797,7 @@ kafka: &kafka_config
       processRoles: "broker,controller"
       # Controller quorum voters (auto-generated based on replicas if empty)
       controllerQuorumVoters: ""
-
+    
     # Listener Configuration
     listeners:
       # Internal listener for inter-broker and client communication
@@ -776,9 +805,10 @@ kafka: &kafka_config
         enabled: true
         port: 9092
         protocol: PLAINTEXT
-      # External listener for clients outside the cluster
+      # External listener for clients outside the cluster (third-party agents)
+      # NOTE: Automatically controlled by kafka.externalAccess.enabled
+      # External listener is created only when intelligence is enabled
       external:
-        enabled: true
         port: 9094
         protocol: SSL
       # Controller listener for KRaft mode
@@ -794,13 +824,14 @@ kafka: &kafka_config
 
     # TLS/SSL Configuration
     tls:
-      # Enable TLS/SSL
-      enabled: false
+      # Enable TLS/SSL - enabled by default for external SSL support
+      enabled: true
       # TLS type (PEM or JKS)
       type: PEM
       # Client authentication (none, requested, required)
       clientAuth: required
-      # Secret containing TLS certificates
+      # Secret containing TLS certificates (via environment variables)
+      # Leave empty to use volume-mounted certificates from internalSecretName instead
       secretName: ""
       # Keys in the secret
       keystoreKeyKey: "keystore.key"
@@ -838,10 +869,11 @@ kafka: &kafka_config
     automountServiceAccountToken: true
 
   # External access configuration for autodiscovery
+  # NOTE: External access MUST be enabled when portal.intelligence.enabled is true
+  # Intelligence requires external Kafka access for third-party agents
+  # Default is true to support intelligence features
   externalAccess:
-    # External access is only needed for Intelligence
-    # Analytics (Druid) uses internal Kafka service
-    enabled: false
+    enabled: true
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
     # Port for external access

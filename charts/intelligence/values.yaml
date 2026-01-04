@@ -34,49 +34,44 @@ global:
   # Additional labels to be applied to all resources
   additionalLabels: {}
 
-# Image settings for the intelligence-server
-image:
-  intelligenceServer: "intelligence-server:mr_bitnami_kafka"
-
-# Service Account for intelligence-server
-serviceAccount:
-  create: true
-  name: ""
-  automountServiceAccountToken: true
-
-# RBAC for intelligence-server
-rbac:
-  create: true
-
-# Configuration for the intelligence-server deployment
-intelligenceServer:
+# Configuration for the intelligence deployment (formerly intelligenceServer)
+intelligence:
   replicaCount: 1
-  # Domain for constructing APIM SSG hostname (passed from parent chart)
-  domain: ""
-  # Alternatively, set the full APIM SSG hostname directly
-  apimSsgHostname: ""
   image:
-    pullPolicy: IfNotPresent
+    intelligenceServer: "intelligence-server:mr_bitnami_kafka" # Moved from top-level image
+    pullPolicy: IfNotPresent # Moved from intelligenceServer.image
+  serviceAccount: # Moved from top-level
+    create: true
+    name: ""
+    automountServiceAccountToken: true
+  rbac: # Moved from top-level
+    create: true
   kafka:
+    # Internal Kafka brokers (for intelligence-server's own consumption)
+    brokers: "kafka:9092"  # Internal PLAINTEXT connection
+    
+    # Security protocol for intelligence-server's connection
+    securityProtocol: PLAINTEXT  # Intelligence connects internally without SSL
+    
+    # Auto-discovery configuration (discovers EXTERNAL IPs for third-party clients)
     autoDiscovery:
-      # When enabled, an initContainer is used to discover Kafka broker external addresses.
-      # This is useful when Kafka is deployed as part of the same release with external access enabled.
+      # When enabled, discovers external LoadBalancer IPs that intelligence-server provides to clients
       enabled: true
-      image:
-        repository: "bitnami/kubectl"
-        tag: "1.31"
-        pullPolicy: IfNotPresent
-      # Resource requests and limits for the auto-discovery init container
+      # Resource requests and limits for the auto-discovery (no longer used)
       # resources: {}
-    externalAdvertisedBrokers: ""
+    
+    externalAdvertisedBrokers: ""  # Populated by auto-discovery
+    
+    # Certificates that intelligence-server provides to third-party clients
     kafkaCa:
-      caSecretName: ""
-      passwordSecretName: ""
+      caSecretName: portal-external-secret  # Certificates for clients (changed from portal-internal-secret)
+      passwordSecretName: portal-external-secret
       passwordSecretKey: "keypass.txt"
       # Keys in the secret for TSSG cert/key (uses apim-ssl certificate with CN=tssg)
-      caCertKey: "apim-ssl.crt"
-      caKeyKey: "apim-ssl.key"
-  # Additional labels for the intelligence-server deployment
+      # These can be overridden if using custom certificates
+      caCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
+      caKeyKey: "apim-ssl.key"         # Use .key for intelligence, not .p8.key
+  # Additional labels for the intelligence deployment
   additionalLabels: {}
   # Pod affinity, node selector, and tolerations
   affinity: {}
@@ -95,7 +90,6 @@ intelligenceServer:
     #   memory: 1Gi
   # Service configuration
   # Kafka client TLS settings from secrets
-
 
   service:
     type: ClusterIP
