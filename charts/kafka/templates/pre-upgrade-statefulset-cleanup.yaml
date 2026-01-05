@@ -76,9 +76,9 @@ spec:
     spec:
       serviceAccountName: {{ include "kafka.fullname" . }}-sts-cleanup
       restartPolicy: Never
-      {{- if .Values.global.imagePullSecret.enabled }}
+      {{- if .Values.global.pullSecret }}
       imagePullSecrets:
-      - name: {{ .Values.global.imagePullSecret.name }}
+      - name: "{{ .Values.global.pullSecret }}"
       {{- end }}
       containers:
       - name: sts-cleanup
