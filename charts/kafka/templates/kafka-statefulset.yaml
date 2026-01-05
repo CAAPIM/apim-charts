@@ -127,6 +127,8 @@ spec:
             {{- end }}
             
             {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
+            # External access is enabled (typically for intelligence feature)
+            # This block discovers LoadBalancer/NodePort IPs for external clients
             echo "Building advertised listeners with external access..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
@@ -151,35 +153,90 @@ spec:
             EXTERNAL_PORT="{{ .Values.externalAccess.port }}"
             
             if [ "$SERVICE_TYPE" = "LoadBalancer" ]; then
-              echo "Waiting for LoadBalancer IP (max 60 seconds)..."
-              # Wait for LoadBalancer IP with timeout
-              for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
-                LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
-                if [ -n "$LB_IP" ]; then
+              # Configurable timeout and retry settings
+              TIMEOUT_SECONDS={{ .Values.externalAccess.discovery.timeoutSeconds | default 120 }}
+              SLEEP_TIME={{ .Values.externalAccess.discovery.retryIntervalSeconds | default 5 }}
+              RETRIES=$((TIMEOUT_SECONDS / SLEEP_TIME))
+              FAIL_ON_ERROR={{ .Values.externalAccess.discovery.failOnDiscoveryFailure | default true }}
+              
+              echo "Waiting for LoadBalancer IP (max ${TIMEOUT_SECONDS} seconds)..."
+              # Wait for LoadBalancer IP with configurable timeout and better error handling
+              
+              for i in $(seq 1 $RETRIES); do
+                # Try to get IP first, then hostname
+                LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>&1)
+                KUBECTL_EXIT_CODE=$?
+                
+                # If kubectl command failed, log the error
+                if [ $KUBECTL_EXIT_CODE -ne 0 ]; then
+                  echo "ERROR: kubectl command failed (exit code: $KUBECTL_EXIT_CODE)"
+                  echo "Error details: $LB_IP"
+                  echo "Checking RBAC permissions and ServiceAccount..."
+                  kubectl auth can-i get services --as=system:serviceaccount:{{ .Release.Namespace }}:{{ include "kafka.serviceAccountName" . }} -n {{ .Release.Namespace }} 2>&1 || echo "RBAC check failed"
+                fi
+                
+                # If IP is empty, try hostname
+                if [ -z "$LB_IP" ]; then
+                  LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>&1)
+                fi
+                
+                if [ -n "$LB_IP" ] && [ "$LB_IP" != "null" ]; then
                   EXTERNAL_ADDRESS="$LB_IP"
-                  echo "Discovered LoadBalancer IP: ${EXTERNAL_ADDRESS}"
+                  echo "✓ Successfully discovered LoadBalancer address: ${EXTERNAL_ADDRESS}"
                   break
                 fi
-                echo "Attempt $i/12: LoadBalancer IP not ready yet, waiting 5s..."
-                sleep 5
+                
+                echo "Attempt $i/$RETRIES: LoadBalancer address not ready yet, waiting ${SLEEP_TIME}s..."
+                sleep $SLEEP_TIME
               done
               
               if [ -z "$EXTERNAL_ADDRESS" ]; then
-                echo "Warning: LoadBalancer IP not available after 60s, using service name"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                echo "=========================================="
+                echo "ERROR: LoadBalancer IP not available after ${TIMEOUT_SECONDS} seconds"
+                echo "Service: $EXTERNAL_SVC"
+                echo "Namespace: {{ .Release.Namespace }}"
+                echo "=========================================="
+                echo ""
+                echo "Troubleshooting steps:"
+                echo "1. Check if LoadBalancer service is created: kubectl get svc $EXTERNAL_SVC -n {{ .Release.Namespace }}"
+                echo "2. Check LoadBalancer status: kubectl describe svc $EXTERNAL_SVC -n {{ .Release.Namespace }}"
+                echo "3. Check cloud provider LoadBalancer provisioning"
+                echo "4. Verify RBAC permissions for ServiceAccount: {{ include "kafka.serviceAccountName" . }}"
+                echo "5. Check if ServiceAccount token is mounted: ls -la /var/run/secrets/kubernetes.io/serviceaccount/"
+                echo "=========================================="
+                
+                if [ "$FAIL_ON_ERROR" = "true" ]; then
+                  echo "FATAL: failOnDiscoveryFailure is enabled. Pod will fail and Kubernetes will retry."
+                  echo "This prevents Kafka from starting with incorrect advertised listeners."
+                  exit 1
+                else
+                  echo "WARNING: Using service hostname as fallback (NOT RECOMMENDED)"
+                  echo "This may cause 'Error connecting to node' issues for external clients."
+                  EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                fi
               fi
             elif [ "$SERVICE_TYPE" = "NodePort" ]; then
               # For NodePort, try to get node IP and NodePort
-              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
-              NODE_PORT=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "")
+              echo "Discovering NodePort configuration..."
+              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>&1)
+              if [ -z "$NODE_IP" ]; then
+                NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>&1)
+              fi
+              NODE_PORT=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)
               
-              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ] && [ "$NODE_IP" != "null" ] && [ "$NODE_PORT" != "null" ]; then
                 EXTERNAL_ADDRESS="${NODE_IP}"
                 EXTERNAL_PORT="${NODE_PORT}"
-                echo "Discovered NodePort: ${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                echo "✓ Successfully discovered NodePort: ${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
               else
-                echo "Warning: Could not discover NodePort IP/Port, using service name"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                echo "=========================================="
+                echo "FATAL ERROR: Could not discover NodePort configuration"
+                echo "Service: $EXTERNAL_SVC"
+                echo "Node IP: $NODE_IP"
+                echo "Node Port: $NODE_PORT"
+                echo "=========================================="
+                echo "This is a critical error. The pod will fail and Kubernetes will retry."
+                exit 1
               fi
             else
               # Fallback to service name
@@ -195,6 +252,9 @@ spec:
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
             echo "=== Final advertised listeners: $ADVERTISED_LISTENERS ==="
             {{- else }}
+            # External access is disabled (intelligence not enabled)
+            # No LoadBalancer discovery needed - using internal listeners only
+            # Pod will start successfully without external dependencies
             echo "Building advertised listeners (internal only)..."
             INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"

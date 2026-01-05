@@ -207,6 +207,22 @@ externalAccess:
   nodePorts: []
   # Auto-generate advertised listeners based on service IPs
   autoAdvertisedListeners: true
+  
+  # Discovery configuration for LoadBalancer/NodePort IP detection
+  # NOTE: This only applies when externalAccess.enabled is true
+  # When intelligence is disabled, Kafka uses internal-only listeners and these settings are ignored
+  discovery:
+    # Maximum time to wait for LoadBalancer IP (in seconds)
+    # Default: 120 seconds (24 retries * 5 seconds)
+    timeoutSeconds: 120
+    # Retry interval (in seconds)
+    retryIntervalSeconds: 5
+    # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
+    # This prevents Kafka from starting with incorrect advertised listeners
+    # If false, falls back to service hostname (NOT RECOMMENDED - causes connection issues)
+    # IMPORTANT: Only affects behavior when externalAccess.enabled=true
+    failOnDiscoveryFailure: true
+  
   # Discovery image for LoadBalancer IP detection (kubectl)
   # Using tls-manager image instead of alpine/k8s per company policy
   # Note: This is overridden by global.portalRepository and image.tlsManager from parent chart
