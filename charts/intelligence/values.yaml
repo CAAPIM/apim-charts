@@ -8,6 +8,26 @@ fullnameOverride: ""
 # Force redeployment of statefulsets and deployments on upgrade
 forceRedeploy: false
 
+# Image configuration
+# Note: When used as a subchart, these can be overridden by parent chart values
+image:
+  tlsManager: "tls-automator:5.4"
+
+# RabbitMQ configuration
+# Note: When used as a subchart, these values are typically provided by the parent chart
+rabbitmq:
+  auth:
+    secretName: "rabbitmq"
+    username: "user"
+  service:
+    port: 5672
+
+# Kafka configuration
+# Note: When used as a subchart, kafka configuration is typically provided by the parent chart
+# This section is required for the kafka-brokers helper template
+kafka:
+  fullnameOverride: "kafka"
+
 # Global values that are typically provided by a parent chart.
 # These are included here to allow the chart to be deployed standalone.
 global:
