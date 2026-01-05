@@ -728,6 +728,7 @@ kafka: &kafka_config
   # Image configuration
   image:
     kafka: kafka:mr_kafka4_intel
+    tlsManager: tls-automator:5.4  # Overridden by parent chart's image.tlsManager value
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
@@ -978,6 +979,10 @@ apim-intelligence:
   # subchart has the correct values for broker discovery.
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
+
+  # Image configuration - tlsManager should be overridden to match parent chart's value
+  image:
+    tlsManager: tls-automator:5.4  # Overridden by Jenkins with TAG_TLS_MANAGER
 
   rbac:
     create: true

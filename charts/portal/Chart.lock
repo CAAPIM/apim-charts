@@ -13,9 +13,9 @@ dependencies:
   version: 1.0.14
 - name: kafka
   repository: file://../kafka
-  version: 1.3.8
+  version: 1.3.9
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:c518a452f2c0e66262cded1f52e4251731fc53feb0a8ff39fb93a019dd37044b
-generated: "2026-01-05T20:27:50.0341582+05:30"
+digest: sha256:5371c118916d673d82dd4fe03859f04bd504931935cb246df18f0d090da4d424
+generated: "2026-01-05T21:18:43.2944302+05:30"

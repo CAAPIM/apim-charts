@@ -224,10 +224,10 @@ externalAccess:
     failOnDiscoveryFailure: true
   
   # Discovery image for LoadBalancer IP detection (kubectl)
-  # Using tls-manager image instead of alpine/k8s per company policy
-  # Note: This is overridden by global.portalRepository and image.tlsManager from parent chart
+  # Note: When used as a subchart, image.tlsManager should be provided by parent chart
+  # When used standalone, provide these values during deployment
   discoveryImage:
     repository: "tls-automator"
-    tag: "5.4"
+    tag: "latest"  # Should be overridden with specific version
     pullPolicy: IfNotPresent
 

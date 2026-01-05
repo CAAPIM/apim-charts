@@ -119,11 +119,13 @@ spec:
             NODE_ID="${POD_NAME##*-}"
             echo "Node ID: $NODE_ID"
             
-            # Validate NODE_ID is a number
-            if ! echo "$NODE_ID" | grep -qE '^[0-9]+$'; then
-              echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
-              exit 1
-            fi
+            # Validate NODE_ID is a number (using shell pattern matching, no grep needed)
+            case "$NODE_ID" in
+              ''|*[!0-9]*)
+                echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
+                exit 1
+                ;;
+            esac
             
             # Create shared directory if it doesn't exist
             mkdir -p /shared
