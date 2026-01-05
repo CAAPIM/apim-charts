@@ -114,7 +114,7 @@ tls:
 # This will force all of the deployments that use the secrets to upgrade
 # If you don't do this, you will have to perform a manual restart of each affected container
   internalSecretName: &internalSecretName portal-internal-secret
-  externalSecretName: portal-external-secret
+  externalSecretName: &externalSecretName portal-external-secret
   kafkaCaSecretName: &kafkaCaSecretName portal-kafka-ca-secret
   kafkaSecretName: portal-kafka-tls-secret
 
@@ -1017,9 +1017,9 @@ apim-intelligence:
       # Configuration for the Kafka CA certificate.
       kafkaCa:
         # The name of the secret containing the Kafka CA certificate.
-        caSecretName: *internalSecretName
+        caSecretName: *externalSecretName
         # The name of the secret containing the password for the Kafka CA certificate.
-        passwordSecretName: *internalSecretName
+        passwordSecretName: *externalSecretName
         # The key in the password secret that contains the password.
         passwordSecretKey: "keypass.txt"
     forceRedeploy: false
