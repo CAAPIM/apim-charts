@@ -1,4 +1,4 @@
-{{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+{{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

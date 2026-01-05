@@ -39,10 +39,10 @@ Create chart name and version as used by the chart label.
 {{- if .Values.global.serviceAccountName }}
    {{ default "default" .Values.global.serviceAccountName }}
 {{- else }}
-{{- if .Values.intelligence.serviceAccount.create -}}
-    {{ default (include "intelligence.fullname" .) .Values.intelligence.serviceAccount.name }}
+{{- if .Values.intelligenceServer.serviceAccount.create -}}
+    {{ default (include "intelligence.fullname" .) .Values.intelligenceServer.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.intelligence.serviceAccount.name }}
+    {{ default "default" .Values.intelligenceServer.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -97,8 +97,8 @@ Get "kafka" brokers
 Create Image Pull Secret
 */}}
 {{- define "intelligence-imagePullSecret" }}
-{{- if and (not .Values.intelligence.useExistingPullSecret) (.Values.intelligence.imagePullSecret.enabled) }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password (printf "%s:%s" .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password | b64enc) | b64enc }}
+{{- if and (not .Values.intelligenceServer.useExistingPullSecret) (.Values.intelligenceServer.imagePullSecret.enabled) }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.intelligenceServer.imagePullSecret.username .Values.intelligenceServer.imagePullSecret.password (printf "%s:%s" .Values.intelligenceServer.imagePullSecret.username .Values.intelligenceServer.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
 
@@ -113,15 +113,15 @@ Create Image Pull Secret
 
 {{/* Validate values of intelligence - RBAC should be enabled when autoDiscovery is enabled */}}
 {{- define "intelligence.validateValues.autoDiscoveryRBAC" -}}
-{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.rbac.create ) }}
+{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.intelligenceServer.rbac.create ) }}
 intelligence: rbac-create
-    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
+    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires specific RBAC resources.
 {{- end -}}
-{{- if and .Values.intelligence.kafka.autoDiscovery.enabled (not .Values.intelligence.serviceAccount.automountServiceAccountToken) }}
+{{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.intelligenceServer.serviceAccount.automountServiceAccountToken) }}
 intelligence: serviceAccount-automountServiceAccountToken
-    By specifying ".Values.intelligence.kafka.autoDiscovery.enabled=true"
+    By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
 {{- end -}}

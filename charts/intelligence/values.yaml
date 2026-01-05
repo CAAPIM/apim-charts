@@ -34,17 +34,17 @@ global:
   # Additional labels to be applied to all resources
   additionalLabels: {}
 
-# Configuration for the intelligence deployment (formerly intelligenceServer)
-intelligence:
+# Intelligence Server configuration
+intelligenceServer:
   replicaCount: 1
   image:
-    intelligenceServer: "intelligence-server:mr_bitnami_kafka" # Moved from top-level image
-    pullPolicy: IfNotPresent # Moved from intelligenceServer.image
-  serviceAccount: # Moved from top-level
+    intelligenceServer: "intelligence-server:mr_bitnami_kafka"
+    pullPolicy: IfNotPresent
+  serviceAccount:
     create: true
     name: ""
     automountServiceAccountToken: true
-  rbac: # Moved from top-level
+  rbac:
     create: true
   kafka:
     # Internal Kafka brokers (for intelligence-server's own consumption)
@@ -89,8 +89,6 @@ intelligence:
     #   cpu: 500m
     #   memory: 1Gi
   # Service configuration
-  # Kafka client TLS settings from secrets
-
   service:
     type: ClusterIP
     port: 8282
@@ -100,6 +98,8 @@ intelligence:
     #     timeoutSeconds: 10800
     externalTrafficPolicy: ""
     internalTrafficPolicy: ""
+  # The host and port for the portal data service
+  portalDataHost: "portal-data:8080"
 
 # NOTE: When this chart is used as a subchart, it requires Kafka configuration
 # for its initContainer to discover brokers. The parent chart must provide these

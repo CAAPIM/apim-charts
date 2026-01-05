@@ -8,23 +8,23 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  type: {{ .Values.intelligence.service.type }}
+  type: {{ .Values.intelligenceServer.service.type }}
   ports:
     - name: http
-      port: {{ .Values.intelligence.service.port }}
+      port: {{ .Values.intelligenceServer.service.port }}
       targetPort: 8282
   selector:
     app: intelligence-server
     release: {{ .Release.Name }}
-  {{- if .Values.intelligence.service.sessionAffinity }}
-  sessionAffinity: {{ .Values.intelligence.service.sessionAffinity }}
+  {{- if .Values.intelligenceServer.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.intelligenceServer.service.sessionAffinity }}
   {{- end }}
-  {{- if .Values.intelligence.service.sessionAffinityConfig }}
-  sessionAffinityConfig: {{- toYaml .Values.intelligence.service.sessionAffinityConfig | nindent 4 }}
+  {{- if .Values.intelligenceServer.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.intelligenceServer.service.sessionAffinityConfig | nindent 4 }}
   {{- end }}
-  {{- if .Values.intelligence.service.externalTrafficPolicy }}
-  externalTrafficPolicy: {{ .Values.intelligence.service.externalTrafficPolicy }}
+  {{- if .Values.intelligenceServer.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.intelligenceServer.service.externalTrafficPolicy }}
   {{- end }}
-  {{- if .Values.intelligence.service.internalTrafficPolicy }}
-  internalTrafficPolicy: {{ .Values.intelligence.service.internalTrafficPolicy }}
+  {{- if .Values.intelligenceServer.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.intelligenceServer.service.internalTrafficPolicy }}
   {{- end }}
