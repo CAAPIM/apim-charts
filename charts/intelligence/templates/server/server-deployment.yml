@@ -61,8 +61,8 @@ spec:
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
-          image: "alpine/k8s:1.31.2"
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+          imagePullPolicy: {{ .Values.intelligenceServer.image.pullPolicy }}
           command:
             - /bin/sh
             - -ec

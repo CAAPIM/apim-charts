@@ -208,8 +208,10 @@ externalAccess:
   # Auto-generate advertised listeners based on service IPs
   autoAdvertisedListeners: true
   # Discovery image for LoadBalancer IP detection (kubectl)
+  # Using tls-manager image instead of alpine/k8s per company policy
+  # Note: This is overridden by global.portalRepository and image.tlsManager from parent chart
   discoveryImage:
-    repository: "alpine/k8s"
-    tag: "1.31.2"
+    repository: "tls-automator"
+    tag: "5.4"
     pullPolicy: IfNotPresent
 
