@@ -65,7 +65,18 @@ spec:
       - name: kafka-init
         {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners (not .Values.externalAccess.hostname) }}
         # Use kubectl image for service discovery
-        image: "{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- if .Values.image }}
+        {{- if .Values.image.tlsManager }}
+        # Use parent chart's tlsManager image (when kafka is a subchart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+        {{- else }}
+        # Use local discoveryImage configuration
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
+        {{- else }}
+        # Use local discoveryImage configuration (standalone kafka chart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
         imagePullPolicy: "{{ .Values.externalAccess.discoveryImage.pullPolicy }}"
         {{- else }}
         # Use Kafka image when discovery not needed

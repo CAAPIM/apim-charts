@@ -61,7 +61,11 @@ spec:
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
+          {{- if .Values.image }}
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+          {{- else }}
+          image: "{{ .Values.global.portalRepository }}tls-automator:5.4"
+          {{- end }}
           imagePullPolicy: {{ .Values.intelligenceServer.image.pullPolicy }}
           command:
             - /bin/sh
