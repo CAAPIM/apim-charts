@@ -10,7 +10,7 @@ metadata:
     {{- range $key, $val := .Values.global.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-    {{- range $key, $val := .Values.intelligence.additionalLabels }}
+    {{- range $key, $val := .Values.intelligenceServer.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
@@ -19,7 +19,7 @@ spec:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 1
-  replicas: {{ .Values.intelligence.replicaCount }}
+  replicas: {{ .Values.intelligenceServer.replicaCount }}
   selector:
     matchLabels:
       app: intelligence-server
@@ -28,14 +28,14 @@ spec:
       labels:
         app: intelligence-server
         release: {{ .Release.Name }}
-      {{- if  .Values.intelligence.podAnnotations }}
-      annotations: {{- toYaml .Values.intelligence.podAnnotations | nindent 8 }}
-      {{- if .Values.intelligence.forceRedeploy }}
+      {{- if  .Values.intelligenceServer.podAnnotations }}
+      annotations: {{- toYaml .Values.intelligenceServer.podAnnotations | nindent 8 }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
         timestamp: {{ now | quote }}
       {{- end }}
       {{- end }}
-      {{- if not .Values.intelligence.podAnnotations }}
-      {{- if .Values.intelligence.forceRedeploy }}
+      {{- if not .Values.intelligenceServer.podAnnotations }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}
@@ -46,18 +46,18 @@ spec:
       {{- if .Values.intelligenceServer.affinity }}
       affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligence.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.intelligence.nodeSelector | nindent 12 }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligence.tolerations }}
-      tolerations: {{- toYaml .Values.intelligence.tolerations | nindent 12 }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligence.podSecurityContext }}
-      securityContext: {{- toYaml .Values.intelligence.podSecurityContext | nindent 12 }}
+      {{- if .Values.intelligenceServer.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligenceServer.podSecurityContext | nindent 12 }}
       {{- else if .Values.global.podSecurityContext }}
       securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
       {{- end }}
-      {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
@@ -282,10 +282,10 @@ spec:
               value: ""
           {{- end }}
             # Kafka External Advertised Brokers (for user-facing connections)
-          {{- if not .Values.intelligence.kafka.autoDiscovery.enabled }}
-          {{- if .Values.intelligence.kafka.externalAdvertisedBrokers }}
+          {{- if not .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+          {{- if .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
             - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
-              value: {{ .Values.intelligence.kafka.externalAdvertisedBrokers | quote }}
+              value: {{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers | quote }}
           {{- end }}
           {{- end }}
           {{- $hasPapiHost := false }}
@@ -338,10 +338,10 @@ spec:
             timeoutSeconds: 1
             periodSeconds: 15
             successThreshold: 1
-          {{- if .Values.intelligence.resources }}
-          resources: {{- toYaml .Values.intelligence.resources | nindent 12 }}
+          {{- if .Values.intelligenceServer.resources }}
+          resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
           {{- end }}
-          {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
           volumeMounts:
             - name: shared-data
               mountPath: /shared
@@ -349,7 +349,7 @@ spec:
           ports:
             - containerPort: 8282
       volumes:
-      {{- if .Values.intelligence.kafka.autoDiscovery.enabled }}
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
         - name: shared-data
           emptyDir: {}
       {{- end }}
@@ -357,14 +357,14 @@ spec:
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
       {{- end }}
-      {{- if .Values.intelligence.affinity }}
-      affinity: {{- toYaml .Values.intelligence.affinity | nindent 8 }}
+      {{- if .Values.intelligenceServer.affinity }}
+      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 8 }}
       {{- end }}
-      {{- if .Values.intelligence.nodeSelector }}
-      nodeSelector: {{- toYaml .Values.intelligence.nodeSelector | nindent 8 }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 8 }}
       {{- end }}
-      {{- if .Values.intelligence.tolerations }}
-      tolerations: {{- toYaml .Values.intelligence.tolerations | nindent 8 }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.global.schedulerName }}
       schedulerName: "{{ .Values.global.schedulerName }}"
