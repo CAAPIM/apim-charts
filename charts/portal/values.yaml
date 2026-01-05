@@ -735,6 +735,15 @@ kafka: &kafka_config
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
     replicaCount: 3
+    
+    # Ordinals configuration (Kubernetes 1.27+)
+    # Set start ordinal for StatefulSet pods
+    # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+    # where old meta.properties had broker.id=1
+    ordinals:
+      # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+      start: 1
+    
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
