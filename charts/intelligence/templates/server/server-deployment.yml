@@ -188,7 +188,7 @@ spec:
 
               # Discover portal domain from portal-data ConfigMap
               PORTAL_DOMAIN=""
-              PORTAL_CONFIGMAP="{{ .Release.Name }}-portal-data"
+              PORTAL_CONFIGMAP="portal-data-config"
               if kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
                 PORTAL_DOMAIN=$(kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" -o jsonpath='{.data.PORTAL_SUBDOMAIN}' 2>/dev/null || echo "")
                 if [ -n "$PORTAL_DOMAIN" ]; then
