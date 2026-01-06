@@ -726,7 +726,7 @@ kafka: &kafka_config
   # Automatically enabled when analytics or intelligence is enabled
   # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
   enabled: true
-  
+
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
 
@@ -746,7 +746,7 @@ kafka: &kafka_config
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
     replicaCount: 3
-    
+
     # Ordinals configuration (Kubernetes 1.27+)
     # Set start ordinal for StatefulSet pods
     # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
@@ -754,7 +754,7 @@ kafka: &kafka_config
     ordinals:
       # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
       start: 1
-    
+
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -790,7 +790,7 @@ kafka: &kafka_config
       processRoles: "broker,controller"
       # Controller quorum voters (auto-generated based on replicas if empty)
       controllerQuorumVoters: ""
-    
+
     # Listener Configuration
     listeners:
       # Internal listener for inter-broker and client communication
@@ -882,7 +882,6 @@ kafka: &kafka_config
     nodePorts: []
     # Auto-generate advertised listeners based on service IPs
     autoAdvertisedListeners: true
-    
     # Discovery configuration for LoadBalancer/NodePort IP detection
     # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
     # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
