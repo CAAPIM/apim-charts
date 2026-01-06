@@ -23,6 +23,10 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  # IMPORTANT: Set domain here (not under portal.domain)
+  # This value is used by ALL components including intelligence for hostname generation
+  domain: dev.ca.com
+  defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   #   podSecurityContext:
@@ -42,7 +46,9 @@ global:
     allowInsecureImages: true
 
 portal:
-  domain: &portal_domain example.com
+  # NOTE: domain is now set in global.domain (above) for consistency across all components
+  # Keeping this for backward compatibility - it references global.domain
+  domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
@@ -75,7 +81,9 @@ portal:
     port: 443
   ssoDebug: false
   hostnameWhitelist:
-  defaultTenantId: &default_tenant_id apim
+  # NOTE: defaultTenantId is now set in global.defaultTenantId (above)
+  # Keeping this for backward compatibility
+  defaultTenantId: apim
   # Configuration to use custom registries to pull the container images with appropriate credentials.
   # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
@@ -980,10 +988,9 @@ apim-intelligence:
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
 
-  # Pass portal configuration to intelligence subchart for PAPI_PUBLIC_HOST generation
-  portal:
-    domain: *portal_domain
-    defaultTenantId: *default_tenant_id
+  # Intelligence will automatically use global.domain and global.subdomainPrefix
+  # (inherited from parent chart) to construct PAPI_PUBLIC_HOST
+  # No additional configuration needed!
 
   # Image configuration - tlsManager should be overridden to match parent chart's value
   image:

@@ -131,10 +131,10 @@ intelligence: serviceAccount-automountServiceAccountToken
 Generate Intelligence public host based on global configurations
 */}}
 {{- define "intelligence.publicHost" -}}
-    {{- /* When deployed as subchart of portal, use portal.domain and portal.defaultTenantId */ -}}
-    {{- $domain := default "example.com" (default .Values.global.domain .Values.portal.domain) -}}
+    {{- /* Use global values which are inherited from parent portal chart */ -}}
+    {{- $domain := default "dev.ca.com" .Values.global.domain -}}
     {{- $subdomainPrefix := default "dev-portal" .Values.global.subdomainPrefix -}}
-    {{- $defaultTenantId := default "apim" (default .Values.global.defaultTenantId .Values.portal.defaultTenantId) -}}
+    {{- $defaultTenantId := default "apim" .Values.global.defaultTenantId -}}
     {{- if .Values.global.legacyHostnames }}
         {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
     {{- else if .Values.global.saas }}
