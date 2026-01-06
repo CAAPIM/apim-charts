@@ -307,9 +307,17 @@ spec:
           {{- end }}
           {{- end }}
           {{- if not $hasPapiHost }}
-            # Auto-generate PAPI_PUBLIC_HOST if not provided
+            # Auto-generate PAPI_PUBLIC_HOST from global.subdomainPrefix and portal.domain (or global.domain)
+            # Format: {subdomainPrefix}-ssg.{domain}
             - name: PAPI_PUBLIC_HOST
-              value: {{ include "intelligence.publicHost" . | quote }}
+              {{- $domain := .Values.global.domain }}
+              {{- if .Values.portal }}
+              {{- if .Values.portal.domain }}
+              {{- $domain = .Values.portal.domain }}
+              {{- end }}
+              {{- end }}
+              {{- $subdomain := .Values.global.subdomainPrefix }}
+              value: {{ printf "%s-ssg.%s" $subdomain $domain | quote }}
           {{- end }}
           {{- if not $hasPapiPort }}
             # Auto-generate PAPI_PUBLIC_PORT if not provided
