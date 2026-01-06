@@ -1,4 +1,29 @@
 {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+#
+# Kafka Discovery ConfigMap
+#
+# Purpose:
+#   This ConfigMap stores dynamically discovered Kafka broker information that is
+#   populated by the kafka-broker-discovery init container at runtime.
+#
+# What it contains:
+#   - KAFKA_EXTERNAL_ADVERTIZED_BROKERS: Comma-separated list of Kafka broker IPs/hostnames
+#     discovered from LoadBalancer services (e.g., "10.252.148.75:9094,10.252.148.43:9094")
+#   - PAPI_PUBLIC_HOST: The public hostname for the API gateway, constructed from the
+#     namespace and portal domain (e.g., "mr6-ssg.gke-us-west-1-cluster-01.apim.broadcom.net")
+#
+# How it works:
+#   1. Init container discovers Kafka LoadBalancer IPs and portal domain at pod startup
+#   2. Init container creates/updates this ConfigMap with the discovered values
+#   3. Main intelligence-server container reads these values via envFrom
+#   4. Intelligence server uses these values to provide Kafka connection info to clients
+#
+# Why ConfigMap instead of files:
+#   - Works with distroless images (no shell required)
+#   - Kubernetes-native approach
+#   - Easy to inspect with kubectl
+#   - No volume mount dependencies
+#
 apiVersion: v1
 kind: ConfigMap
 metadata:

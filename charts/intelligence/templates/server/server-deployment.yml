@@ -61,17 +61,13 @@ spec:
       {{ template "intelligence.validate" .}}
       initContainers:
         - name: kafka-broker-discovery
-          {{- if .Values.image }}
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
-          {{- else }}
-          image: "{{ .Values.global.portalRepository }}tls-automator:5.4"
-          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/sh
             - -ec
             - |
-              # This script discovers the external LoadBalancer IPs of Kafka brokers
+              # This script discovers the external addresses of Kafka brokers
               # and writes them to a shared volume for the main container to use.
               RELEASE_NAME="{{ .Release.Name }}"
               BROKER_LIST=""
