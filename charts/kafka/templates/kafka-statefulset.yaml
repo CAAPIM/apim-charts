@@ -143,10 +143,10 @@ spec:
             # External access is enabled (typically for intelligence feature)
             # This block discovers LoadBalancer/NodePort IPs for external clients
             echo "Building advertised listeners with external access..."
-            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
             
-            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
             echo "Controller listener: $CONTROLLER_LISTENER"
             
             {{- if .Values.externalAccess.hostname }}
@@ -155,7 +155,7 @@ spec:
             echo "External listener (hostname): $EXTERNAL_LISTENER"
             {{- else }}
             # Discover external IP/hostname
-            EXTERNAL_SVC="{{ include "kafka.fullname" . }}-${NODE_ID}-external"
+            EXTERNAL_SVC="{{ include "kafka.statefulsetName" . }}-${NODE_ID}-external"
             echo "Discovering external address for service: $EXTERNAL_SVC"
             
             # Get the service type
@@ -269,10 +269,10 @@ spec:
             # No LoadBalancer discovery needed - using internal listeners only
             # Pod will start successfully without external dependencies
             echo "Building advertised listeners (internal only)..."
-            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
             
-            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
             echo "Controller listener: $CONTROLLER_LISTENER"
             
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER,$CONTROLLER_LISTENER" >> /shared/node-id.env

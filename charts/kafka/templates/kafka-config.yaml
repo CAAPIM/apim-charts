@@ -58,7 +58,8 @@ data:
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ .Values.kafka.kraft.controllerQuorumVoters | quote }}
   {{- else }}
   # Auto-generate controller quorum voters based on replica count and ordinals.start
-  {{- $fullName := include "kafka.fullname" . }}
+  {{- $statefulsetName := include "kafka.statefulsetName" . }}
+  {{- $serviceName := include "kafka.fullname" . }}
   {{- $replicaCount := int .Values.kafka.replicaCount }}
   {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
   {{- $startOrdinal := 0 }}
@@ -68,7 +69,7 @@ data:
   {{- $voters := list }}
   {{- range $i := until $replicaCount }}
   {{- $ordinal := add $i $startOrdinal }}
-  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $ordinal $fullName $ordinal $fullName $controllerPort) }}
+  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $ordinal $statefulsetName $ordinal $serviceName $controllerPort) }}
   {{- end }}
   KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ join "," $voters | quote }}
   {{- end }}
