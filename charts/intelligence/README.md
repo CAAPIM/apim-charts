@@ -39,14 +39,14 @@ These values are typically provided by a parent chart.
 | Parameter | Description | Default |
 | --- | --- | --- |
 
-| `intelligenceServer.image.intelligenceServer` | The image for the intelligence-server. | `intelligence-server:mr_bitnami_kafka` |
-| `intelligenceServer.image.pullPolicy` | The pull policy for the intelligence-server image. | `IfNotPresent` |
-| `intelligenceServer.serviceAccount.create` | Whether to create a service account. | `true` |
-| `intelligenceServer.serviceAccount.name` | The name of the service account to use. | `""` |
-| `intelligenceServer.serviceAccount.automountServiceAccountToken` | Whether to automount the service account token. | `true` |
-| `intelligenceServer.rbac.create` | Whether to create RBAC resources. | `true` |
+| `image.intelligenceServer` | The image for the intelligence-server. | `intelligence-server:latest` |
+| `image.pullPolicy` | The pull policy for the intelligence-server image. | `IfNotPresent` |
+| `image.autoDiscovery` | The image for auto-discovery init container (Kafka broker discovery). | `tls-automator:5.4` |
+| `serviceAccount.create` | Whether to create a service account. | `true` |
+| `serviceAccount.name` | The name of the service account to use. | `""` |
+| `serviceAccount.automountServiceAccountToken` | Whether to automount the service account token. | `true` |
+| `rbac.create` | Whether to create RBAC resources. | `true` |
 | `intelligenceServer.replicaCount` | The number of replicas for the intelligence-server. | `1` |
-| `intelligenceServer.image.pullPolicy` | The pull policy for the intelligence-server image. | `IfNotPresent` |
 | `intelligenceServer.additionalLabels` | Additional labels for the intelligence-server deployment. | `{}` |
 | `intelligenceServer.affinity` | The affinity for the intelligence-server pods. | `{}` |
 | `intelligenceServer.nodeSelector` | The node selector for the intelligence-server pods. | `{}` |

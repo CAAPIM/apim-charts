@@ -1,4 +1,29 @@
 {{- if .Values.kafka.kraft.enabled }}
+#
+# Pre-Upgrade StatefulSet Cleanup Job
+#
+# Purpose:
+#   This job runs BEFORE every Helm upgrade to safely delete and recreate the Kafka StatefulSet.
+#   This is necessary when StatefulSet immutable fields need to be changed (e.g., ordinals.start).
+#
+# Safety Considerations:
+#   1. Data Preservation: PVCs are NOT deleted - only pods and StatefulSet are removed
+#   2. Graceful Shutdown: Pods are deleted with proper termination grace period
+#   3. PVC Protection: PVCs retain their data and are reattached to new pods with same names
+#   4. Idempotent: Safe to run multiple times - checks for existence before deletion
+#   5. Hook Lifecycle: Resources are auto-deleted after successful execution (hook-delete-policy)
+#
+# Upgrade Safety:
+#   - First Upgrade: Job creates RBAC, deletes StatefulSet if exists, allows Helm to recreate
+#   - Subsequent Upgrades: Same process - StatefulSet is recreated with new configuration
+#   - Rollback: If upgrade fails, Kafka pods can be manually restarted with existing PVCs
+#   - Data Loss Risk: MINIMAL - only if PVCs are manually deleted or storage fails
+#
+# When This Runs:
+#   - Trigger: Every "helm upgrade" command
+#   - Timing: pre-upgrade hook (weight: -5, runs early)
+#   - Cleanup: Resources deleted after success (before-hook-creation for next upgrade)
+#
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -83,9 +108,9 @@ spec:
       containers:
       - name: sts-cleanup
         {{- if .Values.image }}
-        {{- if .Values.image.tlsManager }}
-        # Use parent chart's tlsManager image (when kafka is a subchart)
-        image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+        {{- if .Values.image.autoDiscovery }}
+        # Use parent chart's autoDiscovery image (when kafka is a subchart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
         {{- else }}
         # Use local discoveryImage configuration
         image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"

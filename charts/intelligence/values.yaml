@@ -11,7 +11,19 @@ forceRedeploy: false
 # Image configuration
 # Note: When used as a subchart, these can be overridden by parent chart values
 image:
-  tlsManager: "tls-automator:5.4"
+  autoDiscovery: "tls-automator:5.4"  # Image used for Kafka broker discovery init container
+  intelligenceServer: "intelligence-server:latest"
+  pullPolicy: IfNotPresent
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  name: ""
+  automountServiceAccountToken: true
+
+# RBAC configuration
+rbac:
+  create: true
 
 # RabbitMQ configuration
 # Note: When used as a subchart, these values are typically provided by the parent chart
@@ -57,15 +69,6 @@ global:
 # Intelligence Server configuration
 intelligenceServer:
   replicaCount: 1
-  image:
-    intelligenceServer: "intelligence-server:mr_bitnami_kafka"
-    pullPolicy: IfNotPresent
-  serviceAccount:
-    create: true
-    name: ""
-    automountServiceAccountToken: true
-  rbac:
-    create: true
   kafka:
     # Internal Kafka brokers (for intelligence-server's own consumption)
     brokers: "kafka:9092"  # Internal PLAINTEXT connection

@@ -23,8 +23,9 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  # IMPORTANT: Set domain here (not under portal.domain)
-  # This value is used by ALL components including intelligence for hostname generation
+  # IMPORTANT: Set domain here - it will be used by ALL components including intelligence
+  # When you set portal.domain, also set global.domain to the same value
+  # Or just set global.domain and portal.domain will use it
   domain: dev.ca.com
   defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
@@ -469,7 +470,8 @@ image:
   dbUpgrade: db-upgrade-portal:5.4
   rbacUpgrade: db-upgrade-rbac:5.4
   upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4
+  tlsManager: tls-automator:5.4  # Used for TLS certificate management jobs
+  autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery in intelligence
 
 ##
 ## Subchart Configuration
@@ -724,7 +726,7 @@ kafka: &kafka_config
   # Automatically enabled when analytics or intelligence is enabled
   # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
   enabled: true
-  
+
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
 
@@ -736,7 +738,7 @@ kafka: &kafka_config
   # Image configuration
   image:
     kafka: kafka:mr_kafka4_intel
-    tlsManager: tls-automator:5.4  # Overridden by parent chart's image.tlsManager value
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
@@ -744,7 +746,7 @@ kafka: &kafka_config
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
     replicaCount: 3
-    
+
     # Ordinals configuration (Kubernetes 1.27+)
     # Set start ordinal for StatefulSet pods
     # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
@@ -752,7 +754,7 @@ kafka: &kafka_config
     ordinals:
       # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
       start: 1
-    
+
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -788,7 +790,7 @@ kafka: &kafka_config
       processRoles: "broker,controller"
       # Controller quorum voters (auto-generated based on replicas if empty)
       controllerQuorumVoters: ""
-    
+
     # Listener Configuration
     listeners:
       # Internal listener for inter-broker and client communication
@@ -880,7 +882,6 @@ kafka: &kafka_config
     nodePorts: []
     # Auto-generate advertised listeners based on service IPs
     autoAdvertisedListeners: true
-    
     # Discovery configuration for LoadBalancer/NodePort IP detection
     # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
     # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
@@ -988,27 +989,25 @@ apim-intelligence:
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
 
-  # Pass portal.domain to intelligence subchart
-  # Intelligence will use this (if set) or fall back to global.domain
-  # This allows Jenkins to set portal.domain without duplicating to global.domain
-  portal:
-    domain: example.com  # This will be overridden by Jenkins with the actual domain
+  # NOTE: Do NOT set portal.domain here - it will override user values
+  # Intelligence will automatically use portal.domain from parent chart if available
+  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
 
-  # Image configuration - tlsManager should be overridden to match parent chart's value
+  # Image configuration
   image:
-    tlsManager: tls-automator:5.4  # Overridden by Jenkins with TAG_TLS_MANAGER
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
+    intelligenceServer: intelligence-server:latest
+    pullPolicy: IfNotPresent
 
+  # RBAC configuration
   rbac:
     create: true
 
-  # Service Account for intelligence-server
+  # Service Account configuration
   serviceAccount:
     create: true
     automountServiceAccountToken: true
     name: ""
-
-  image:
-    intelligenceServer: intelligence-server:latest
 
   intelligenceServer:
     # Configuration for the Intelligence Server.

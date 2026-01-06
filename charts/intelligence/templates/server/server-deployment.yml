@@ -42,7 +42,7 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
-      automountServiceAccountToken: {{ .Values.intelligenceServer.serviceAccount.automountServiceAccountToken }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- if .Values.intelligenceServer.affinity }}
       affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
       {{- end }}
@@ -62,11 +62,11 @@ spec:
       initContainers:
         - name: kafka-broker-discovery
           {{- if .Values.image }}
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
           {{- else }}
           image: "{{ .Values.global.portalRepository }}tls-automator:5.4"
           {{- end }}
-          imagePullPolicy: {{ .Values.intelligenceServer.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/sh
             - -ec
@@ -155,16 +155,21 @@ spec:
               {{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
               {{- end }}
               ORDINAL_START={{ $ordinalStart }}
+              # Use kafka.fullnameOverride if set, otherwise construct from release name
+              {{- $kafkaFullname := .Values.kafka.fullnameOverride | default (printf "%s-kafka" .Release.Name) }}
+              KAFKA_FULLNAME="{{ $kafkaFullname }}"
               for i in $(seq $ORDINAL_START $((ORDINAL_START + BROKER_COUNT - 1))); do
-                SVC_NAME="kafka-${i}-external"
+                SVC_NAME="${KAFKA_FULLNAME}-${i}-external"
                 discover_broker "$SVC_NAME"
               done
               {{- else if and .Values.kafka (hasKey .Values.kafka "controller") .Values.kafka.controller }}
               # For Bitnami Kafka chart (backward compatibility)
+              {{- $kafkaFullname := .Values.kafka.fullnameOverride | default (printf "%s-kafka" .Release.Name) }}
+              KAFKA_FULLNAME="{{ $kafkaFullname }}"
               {{- if and .Values.kafka.controller.replicaCount (not .Values.kafka.controller.controllerOnly) }}
               CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
               for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
-                SVC_NAME="kafka-controller-${i}-external"
+                SVC_NAME="${KAFKA_FULLNAME}-controller-${i}-external"
                 discover_broker "$SVC_NAME"
               done
               {{- end }}
@@ -174,7 +179,7 @@ spec:
               BROKER_COUNT={{ .Values.kafka.broker.replicaCount }}
               if [ "$BROKER_COUNT" -gt 0 ]; then
                 for i in $(seq 0 $((BROKER_COUNT - 1))); do
-                  SVC_NAME="kafka-broker-${i}-external"
+                  SVC_NAME="${KAFKA_FULLNAME}-broker-${i}-external"
                   discover_broker "$SVC_NAME"
                 done
               fi
@@ -186,22 +191,65 @@ spec:
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
 
+              # Discover portal domain from portal-data ConfigMap
+              PORTAL_DOMAIN=""
+              PORTAL_CONFIGMAP="portal-data-config"
+              if kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                PORTAL_DOMAIN=$(kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" -o jsonpath='{.data.PORTAL_SUBDOMAIN}' 2>/dev/null || echo "")
+                if [ -n "$PORTAL_DOMAIN" ]; then
+                  echo "Discovered portal domain: ${PORTAL_DOMAIN}"
+                else
+                  echo "Warning: PORTAL_SUBDOMAIN not found in ${PORTAL_CONFIGMAP}, using default"
+                fi
+              else
+                echo "Warning: ConfigMap ${PORTAL_CONFIGMAP} not found, PAPI_PUBLIC_HOST may not be set correctly"
+              fi
+
+              # Construct PAPI_PUBLIC_HOST from namespace and discovered domain
+              # Format: {namespace}-ssg.{domain}
+              if [ -n "$PORTAL_DOMAIN" ]; then
+                PAPI_PUBLIC_HOST="${MY_POD_NAMESPACE}-ssg.${PORTAL_DOMAIN}"
+                echo "PAPI_PUBLIC_HOST will be set to: ${PAPI_PUBLIC_HOST}"
+              else
+                echo "ERROR: Could not discover portal domain from ${PORTAL_CONFIGMAP}"
+                echo "PAPI_PUBLIC_HOST will not be set"
+                PAPI_PUBLIC_HOST=""
+              fi
+
               # Update ConfigMap for distroless compatibility
               CONFIGMAP_NAME="{{ include "intelligence.fullname" . }}-kafka-discovery"
               echo "Updating ConfigMap ${CONFIGMAP_NAME}..."
 
-              if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
-                kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
-                  --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\"}}"
-                echo "ConfigMap ${CONFIGMAP_NAME} updated successfully"
+              if [ -n "$PAPI_PUBLIC_HOST" ]; then
+                # Both Kafka brokers and PAPI_PUBLIC_HOST discovered
+                if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                  kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\",\"PAPI_PUBLIC_HOST\":\"${PAPI_PUBLIC_HOST}\"}}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} updated successfully"
+                else
+                  kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" \
+                    --from-literal="PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} created successfully"
+                fi
               else
-                kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
-                  --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}"
-                echo "ConfigMap ${CONFIGMAP_NAME} created successfully"
+                # Only Kafka brokers discovered (PAPI_PUBLIC_HOST discovery failed)
+                if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                  kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\"}}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} updated (without PAPI_PUBLIC_HOST)"
+                else
+                  kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} created (without PAPI_PUBLIC_HOST)"
+                fi
               fi
 
               # Keep file for backward compatibility
               echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              if [ -n "$PAPI_PUBLIC_HOST" ]; then
+                echo "export PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}" >> /shared/kafka.env
+              fi
               echo "Kafka discovery completed successfully"
           env:
             - name: MY_POD_NAMESPACE
@@ -214,8 +262,8 @@ spec:
       {{- end }}
       containers:
         - name: intelligence-server
-          image: "{{ .Values.global.portalRepository }}{{ .Values.intelligenceServer.image.intelligenceServer }}"
-          imagePullPolicy: "{{ .Values.intelligenceServer.image.pullPolicy }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
           {{- if .Values.intelligenceServer.containerSecurityContext }}
           securityContext: {{- toYaml .Values.intelligenceServer.containerSecurityContext | nindent 12 }}
           {{- else if .Values.global.containerSecurityContext }}
@@ -292,35 +340,21 @@ spec:
               value: {{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers | quote }}
           {{- end }}
           {{- end }}
-          {{- $hasPapiHost := false }}
-          {{- $hasPapiPort := false }}
           {{- if .Values.intelligenceServer.env }}
           {{- range $key, $value := .Values.intelligenceServer.env }}
-            {{- if eq $key "PAPI_PUBLIC_HOST" }}
-              {{- $hasPapiHost = true }}
-            {{- end }}
-            {{- if eq $key "PAPI_PUBLIC_PORT" }}
-              {{- $hasPapiPort = true }}
-            {{- end }}
             - name: {{ $key }}
               value: {{ $value | quote }}
           {{- end }}
           {{- end }}
-          {{- if not $hasPapiHost }}
-            # Auto-generate PAPI_PUBLIC_HOST from global.subdomainPrefix and portal.domain (or global.domain)
-            # Format: {subdomainPrefix}-ssg.{domain}
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+            # Read PAPI_PUBLIC_HOST from ConfigMap populated by kafka-broker-discovery init container
+            # The init container discovers the portal domain from portal-data ConfigMap at runtime
+            # Format: {namespace}-ssg.{domain}
             - name: PAPI_PUBLIC_HOST
-              {{- $domain := .Values.global.domain }}
-              {{- if .Values.portal }}
-              {{- if .Values.portal.domain }}
-              {{- $domain = .Values.portal.domain }}
-              {{- end }}
-              {{- end }}
-              {{- $subdomain := .Values.global.subdomainPrefix }}
-              value: {{ printf "%s-ssg.%s" $subdomain $domain | quote }}
-          {{- end }}
-          {{- if not $hasPapiPort }}
-            # Auto-generate PAPI_PUBLIC_PORT if not provided
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "intelligence.fullname" . }}-kafka-discovery
+                  key: PAPI_PUBLIC_HOST
             - name: PAPI_PUBLIC_PORT
               value: {{ include "intelligence.publicPort" . | quote }}
           {{- end }}
