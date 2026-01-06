@@ -496,7 +496,7 @@ druid:
     # Kafka broker port
     brokerPort: 9092
     # Kafka replication count (should match kafka.kafka.replicaCount)
-    replicaCount: 3
+    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -745,7 +745,7 @@ kafka: &kafka_config
   kafka:
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
-    replicaCount: 3
+    replicaCount: 1
 
     # Ordinals configuration (Kubernetes 1.27+)
     # Set start ordinal for StatefulSet pods
