@@ -131,8 +131,21 @@ intelligence: serviceAccount-automountServiceAccountToken
 Generate Intelligence public host based on global configurations
 */}}
 {{- define "intelligence.publicHost" -}}
-    {{- /* Use global values which are inherited from parent portal chart */ -}}
-    {{- $domain := default "dev.ca.com" .Values.global.domain -}}
+    {{- /* When deployed as subchart, check if portal.domain is set and use it */ -}}
+    {{- /* This allows Jenkins to set portal.domain without also setting global.domain */ -}}
+    {{- $domain := "dev.ca.com" -}}
+    {{- if .Values.portal -}}
+        {{- if .Values.portal.domain -}}
+            {{- /* Subchart: use portal.domain if explicitly set */ -}}
+            {{- $domain = .Values.portal.domain -}}
+        {{- else -}}
+            {{- /* Fallback to global.domain */ -}}
+            {{- $domain = default "dev.ca.com" .Values.global.domain -}}
+        {{- end -}}
+    {{- else -}}
+        {{- /* Standalone: use global.domain */ -}}
+        {{- $domain = default "dev.ca.com" .Values.global.domain -}}
+    {{- end -}}
     {{- $subdomainPrefix := default "dev-portal" .Values.global.subdomainPrefix -}}
     {{- $defaultTenantId := default "apim" .Values.global.defaultTenantId -}}
     {{- if .Values.global.legacyHostnames }}

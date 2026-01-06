@@ -988,9 +988,11 @@ apim-intelligence:
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
 
-  # Intelligence will automatically use global.domain and global.subdomainPrefix
-  # (inherited from parent chart) to construct PAPI_PUBLIC_HOST
-  # No additional configuration needed!
+  # Pass portal.domain to intelligence subchart
+  # Intelligence will use this (if set) or fall back to global.domain
+  # This allows Jenkins to set portal.domain without duplicating to global.domain
+  portal:
+    domain: example.com  # This will be overridden by Jenkins with the actual domain
 
   # Image configuration - tlsManager should be overridden to match parent chart's value
   image:
