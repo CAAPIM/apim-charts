@@ -993,21 +993,21 @@ apim-intelligence:
   # Intelligence will automatically use portal.domain from parent chart if available
   # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
 
-  # Image configuration - tlsManager should be overridden to match parent chart's value
+  # Image configuration
   image:
     tlsManager: tls-automator:5.4  # Overridden by Jenkins with TAG_TLS_MANAGER
+    intelligenceServer: intelligence-server:latest
+    pullPolicy: IfNotPresent
 
+  # RBAC configuration
   rbac:
     create: true
 
-  # Service Account for intelligence-server
+  # Service Account configuration
   serviceAccount:
     create: true
     automountServiceAccountToken: true
     name: ""
-
-  image:
-    intelligenceServer: intelligence-server:latest
 
   intelligenceServer:
     # Configuration for the Intelligence Server.
