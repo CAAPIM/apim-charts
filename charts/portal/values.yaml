@@ -42,7 +42,7 @@ global:
     allowInsecureImages: true
 
 portal:
-  domain: example.com
+  domain: &portal_domain example.com
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
@@ -75,7 +75,7 @@ portal:
     port: 443
   ssoDebug: false
   hostnameWhitelist:
-  defaultTenantId: apim
+  defaultTenantId: &default_tenant_id apim
   # Configuration to use custom registries to pull the container images with appropriate credentials.
   # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
@@ -979,6 +979,11 @@ apim-intelligence:
   # subchart has the correct values for broker discovery.
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
+
+  # Pass portal configuration to intelligence subchart for PAPI_PUBLIC_HOST generation
+  portal:
+    domain: *portal_domain
+    defaultTenantId: *default_tenant_id
 
   # Image configuration - tlsManager should be overridden to match parent chart's value
   image:
