@@ -33,16 +33,16 @@ Create chart name and version as used by the chart label.
 
 
 {{/*
- Set the service account name for the Portal Stack
+ Set the service account name for the Intelligence Server
  */}}
 {{- define "intelligence.serviceAccountName" -}}
 {{- if .Values.global.serviceAccountName }}
    {{ default "default" .Values.global.serviceAccountName }}
 {{- else }}
-{{- if .Values.intelligenceServer.serviceAccount.create -}}
-    {{ default (include "intelligence.fullname" .) .Values.intelligenceServer.serviceAccount.name }}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "intelligence.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
-    {{ default "default" .Values.intelligenceServer.serviceAccount.name }}
+    {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
