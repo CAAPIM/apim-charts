@@ -470,7 +470,8 @@ image:
   dbUpgrade: db-upgrade-portal:5.4
   rbacUpgrade: db-upgrade-rbac:5.4
   upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4
+  tlsManager: tls-automator:5.4  # Used for TLS certificate management jobs
+  autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery in intelligence
 
 ##
 ## Subchart Configuration
@@ -737,7 +738,7 @@ kafka: &kafka_config
   # Image configuration
   image:
     kafka: kafka:mr_kafka4_intel
-    tlsManager: tls-automator:5.4  # Overridden by parent chart's image.tlsManager value
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
@@ -995,7 +996,7 @@ apim-intelligence:
 
   # Image configuration
   image:
-    tlsManager: tls-automator:5.4  # Overridden by Jenkins with TAG_TLS_MANAGER
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
     intelligenceServer: intelligence-server:latest
     pullPolicy: IfNotPresent
 

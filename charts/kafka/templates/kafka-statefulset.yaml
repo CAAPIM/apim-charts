@@ -66,9 +66,9 @@ spec:
         {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners (not .Values.externalAccess.hostname) }}
         # Use kubectl image for service discovery
         {{- if .Values.image }}
-        {{- if .Values.image.tlsManager }}
-        # Use parent chart's tlsManager image (when kafka is a subchart)
-        image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+        {{- if .Values.image.autoDiscovery }}
+        # Use parent chart's autoDiscovery image (when kafka is a subchart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
         {{- else }}
         # Use local discoveryImage configuration
         image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"

@@ -224,7 +224,7 @@ externalAccess:
     failOnDiscoveryFailure: true
   
   # Discovery image for LoadBalancer IP detection (kubectl)
-  # Note: When used as a subchart, image.tlsManager should be provided by parent chart
+  # Note: When used as a subchart, image.autoDiscovery should be provided by parent chart
   # When used standalone, provide these values during deployment
   discoveryImage:
     repository: "tls-automator"

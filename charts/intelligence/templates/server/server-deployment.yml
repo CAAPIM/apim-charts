@@ -62,7 +62,7 @@ spec:
       initContainers:
         - name: kafka-broker-discovery
           {{- if .Values.image }}
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.tlsManager }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
           {{- else }}
           image: "{{ .Values.global.portalRepository }}tls-automator:5.4"
           {{- end }}
