@@ -23,8 +23,9 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
-  # IMPORTANT: Set domain here (not under portal.domain)
-  # This value is used by ALL components including intelligence for hostname generation
+  # IMPORTANT: Set domain here - it will be used by ALL components including intelligence
+  # When you set portal.domain, also set global.domain to the same value
+  # Or just set global.domain and portal.domain will use it
   domain: dev.ca.com
   defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod

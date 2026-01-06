@@ -307,15 +307,11 @@ spec:
           {{- end }}
           {{- end }}
           {{- if not $hasPapiHost }}
-            # Auto-generate PAPI_PUBLIC_HOST from global.subdomainPrefix and portal.domain (or global.domain)
+            # Auto-generate PAPI_PUBLIC_HOST from global.subdomainPrefix and global.domain
             # Format: {subdomainPrefix}-ssg.{domain}
+            # Both values are inherited from parent portal chart's global section
             - name: PAPI_PUBLIC_HOST
               {{- $domain := .Values.global.domain }}
-              {{- if .Values.portal }}
-              {{- if .Values.portal.domain }}
-              {{- $domain = .Values.portal.domain }}
-              {{- end }}
-              {{- end }}
               {{- $subdomain := .Values.global.subdomainPrefix }}
               value: {{ printf "%s-ssg.%s" $subdomain $domain | quote }}
           {{- end }}
