@@ -988,11 +988,9 @@ apim-intelligence:
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
 
-  # Pass portal.domain to intelligence subchart
-  # Intelligence will use this (if set) or fall back to global.domain
-  # This allows Jenkins to set portal.domain without duplicating to global.domain
-  portal:
-    domain: example.com  # This will be overridden by Jenkins with the actual domain
+  # NOTE: Do NOT set portal.domain here - it will override user values
+  # Intelligence will automatically use portal.domain from parent chart if available
+  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
 
   # Image configuration - tlsManager should be overridden to match parent chart's value
   image:
