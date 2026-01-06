@@ -186,22 +186,48 @@ spec:
 
               echo "Discovered Kafka brokers: ${BROKER_LIST}"
 
+              # Discover portal domain from portal-data ConfigMap
+              PORTAL_DOMAIN=""
+              PORTAL_CONFIGMAP="{{ .Release.Name }}-portal-data"
+              if kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                PORTAL_DOMAIN=$(kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" -o jsonpath='{.data.PORTAL_SUBDOMAIN}' 2>/dev/null || echo "")
+                if [ -n "$PORTAL_DOMAIN" ]; then
+                  echo "Discovered portal domain: ${PORTAL_DOMAIN}"
+                else
+                  echo "Warning: PORTAL_SUBDOMAIN not found in ${PORTAL_CONFIGMAP}, using default"
+                fi
+              else
+                echo "Warning: ConfigMap ${PORTAL_CONFIGMAP} not found, PAPI_PUBLIC_HOST may not be set correctly"
+              fi
+
+              # Construct PAPI_PUBLIC_HOST
+              SUBDOMAIN_PREFIX="{{ .Values.global.subdomainPrefix }}"
+              if [ -n "$PORTAL_DOMAIN" ]; then
+                PAPI_PUBLIC_HOST="${SUBDOMAIN_PREFIX}-ssg.${PORTAL_DOMAIN}"
+              else
+                # Fallback to global.domain if portal domain not discovered
+                PAPI_PUBLIC_HOST="${SUBDOMAIN_PREFIX}-ssg.{{ .Values.global.domain }}"
+              fi
+              echo "PAPI_PUBLIC_HOST will be set to: ${PAPI_PUBLIC_HOST}"
+
               # Update ConfigMap for distroless compatibility
               CONFIGMAP_NAME="{{ include "intelligence.fullname" . }}-kafka-discovery"
               echo "Updating ConfigMap ${CONFIGMAP_NAME}..."
 
               if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
                 kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
-                  --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\"}}"
+                  --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\",\"PAPI_PUBLIC_HOST\":\"${PAPI_PUBLIC_HOST}\"}}"
                 echo "ConfigMap ${CONFIGMAP_NAME} updated successfully"
               else
                 kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
-                  --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}"
+                  --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" \
+                  --from-literal="PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}"
                 echo "ConfigMap ${CONFIGMAP_NAME} created successfully"
               fi
 
               # Keep file for backward compatibility
               echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              echo "export PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}" >> /shared/kafka.env
               echo "Kafka discovery completed successfully"
           env:
             - name: MY_POD_NAMESPACE
@@ -307,13 +333,19 @@ spec:
           {{- end }}
           {{- end }}
           {{- if not $hasPapiHost }}
-            # Auto-generate PAPI_PUBLIC_HOST from global.subdomainPrefix and global.domain
-            # Format: {subdomainPrefix}-ssg.{domain}
-            # Both values are inherited from parent portal chart's global section
+            {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+            # Read PAPI_PUBLIC_HOST from ConfigMap populated by kafka-broker-discovery init container
+            # The init container discovers the portal domain from portal-data ConfigMap at runtime
             - name: PAPI_PUBLIC_HOST
-              {{- $domain := .Values.global.domain }}
-              {{- $subdomain := .Values.global.subdomainPrefix }}
-              value: {{ printf "%s-ssg.%s" $subdomain $domain | quote }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "intelligence.fullname" . }}-kafka-discovery
+                  key: PAPI_PUBLIC_HOST
+            {{- else }}
+            # Auto-generate PAPI_PUBLIC_HOST from global values when auto-discovery is disabled
+            - name: PAPI_PUBLIC_HOST
+              value: {{ printf "%s-ssg.%s" .Values.global.subdomainPrefix .Values.global.domain | quote }}
+            {{- end }}
           {{- end }}
           {{- if not $hasPapiPort }}
             # Auto-generate PAPI_PUBLIC_PORT if not provided
