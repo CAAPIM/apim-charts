@@ -65,27 +65,27 @@ spec:
           {{- end }}
           env:
           {{- if (eq .Values.global.deepStorage.seaweedfs true) }} 
-            - name: MINIO_ACCESS_KEY
+            - name: S3_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.deepStorage.auth.secretName }}
                   key: admin_access_key_id
-            - name: MINIO_SECRET_KEY
+            - name: S3_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.deepStorage.auth.secretName }}
                   key: admin_secret_access_key
           {{- else }}
-            - name: MINIO_ACCESS_KEY
+            - name: S3_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{  .Values.minio.auth.secretName }}
-                  key: MINIO_ACCESS_KEY
-            - name: MINIO_SECRET_KEY
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{  .Values.minio.auth.secretName }}
-                  key: MINIO_SECRET_KEY
+                  key: S3_SECRET_KEY
           {{- end }}
           envFrom:
           - configMapRef:

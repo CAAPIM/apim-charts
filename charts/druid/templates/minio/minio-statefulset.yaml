@@ -81,12 +81,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: {{  .Values.minio.auth.secretName }}
-                key: MINIO_ACCESS_KEY
+                key: S3_ACCESS_KEY
           - name: MINIO_SECRET_KEY
             valueFrom:
               secretKeyRef:
                 name: {{  .Values.minio.auth.secretName }}
-                key: MINIO_SECRET_KEY
+                key: S3_SECRET_KEY
         envFrom:
         - configMapRef:
             name: minio-config
