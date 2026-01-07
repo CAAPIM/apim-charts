@@ -95,12 +95,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{  .Values.minio.auth.secretName }}
-                  key: S3_ACCESS_KEY
+                  key: MINIO_ACCESS_KEY
             - name: MINIO_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.minio.auth.secretName }}
-                  key: S3_SECRET_KEY
+                  key: MINIO_SECRET_KEY
             {{- if .Values.minio.gcsgateway.enabled }}
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: "/etc/credentials/gcs_key.json"

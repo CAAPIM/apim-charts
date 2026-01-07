@@ -176,9 +176,9 @@ This is the standard supported option, the production-values.yaml you started fr
 
 1. Get your minio credentials from Kubernetes
 ```
-export ACCESS_KEY=$(kubectl get secret minio-secret -n <namespace> -o 'go-template={{index .data "S3_ACCESS_KEY" | base64decode }}')
+export ACCESS_KEY=$(kubectl get secret minio-secret -n <namespace> -o 'go-template={{index .data "MINIO_ACCESS_KEY" | base64decode }}')
 
-export SECRET_KEY=$(kubectl get secret minio-secret -n <namespace> -o 'go-template={{index .data "S3_SECRET_KEY" | base64decode }}')
+export SECRET_KEY=$(kubectl get secret minio-secret -n <namespace> -o 'go-template={{index .data "MINIO_SECRET_KEY" | base64decode }}')
 
 export BUCKET_NAME=api-metrics ***If using a Cloud Storage Provider, see Using Cloud Storage and update the bucket name to reflect what you have created.***
 

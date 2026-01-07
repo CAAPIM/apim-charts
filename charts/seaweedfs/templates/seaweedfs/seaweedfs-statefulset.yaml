@@ -160,12 +160,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: minio-secret
-                  key: S3_ACCESS_KEY
+                  key: MINIO_ACCESS_KEY
             - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: minio-secret
-                  key: S3_SECRET_KEY
+                  key: MINIO_SECRET_KEY
             - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
               value: s3
             - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
