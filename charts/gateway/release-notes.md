@@ -7,8 +7,11 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
-## 3.0.42 General Updates
+## 3.0.43 General Updates
 For Redis data provider, config.redis.tls.redisCrt is no longer required when config.redis.tls.verifyPeer is false
+
+## 3.0.42 General Updates
+Images for mysql, redis and grafana have been temporarily switched to caapim to avoid disruption during future changes to the bitnami legacy repository.
 
 ## 3.0.41 General Updates
 For Specific compatibility changes related to OTK, please refer to [here](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/README.md#otk-compatibility-with-gateway-112) to have continuous support

@@ -35,7 +35,7 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
-  # required by bitnamilegacy/mysql
+  # required by caapim/mysql
   security:
     allowInsecureImages: true
 
@@ -997,8 +997,8 @@ jobs:
 # MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
 mysql:
   image:
-    tag: "8.4.4-debian-12-r0"
-    repository: bitnamilegacy/mysql
+    tag: "8.4.5-debian-12-r0"
+    repository: caapim/mysql
   auth:
     username: portal
     existingSecret: database-secret
