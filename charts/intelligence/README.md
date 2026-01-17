@@ -34,32 +34,19 @@ These values are typically provided by a parent chart.
 | `fullnameOverride` | A string to override the full name of the chart. | `""` |
 | `forceRedeploy` | Whether to force redeployment of statefulsets and deployments on upgrade. | `false` |
 
-### Image settings
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `image.intelligenceServer` | The image for the intelligence-server. | `intelligence-server:latest` |
-
-### Service Account settings
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `serviceAccount.create` | Whether to create a service account. | `true` |
-| `serviceAccount.name` | The name of the service account to use. | `""` |
-| `serviceAccount.automountServiceAccountToken` | Whether to automount the service account token. | `true` |
-
-### RBAC settings
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `rbac.create` | Whether to create RBAC resources. | `true` |
-
 ### Intelligence Server settings
 
 | Parameter | Description | Default |
 | --- | --- | --- |
+
+| `image.intelligenceServer` | The image for the intelligence-server. | `intelligence-server:latest` |
+| `image.pullPolicy` | The pull policy for the intelligence-server image. | `IfNotPresent` |
+| `image.autoDiscovery` | The image for auto-discovery init container (Kafka broker discovery). | `tls-automator:5.4` |
+| `serviceAccount.create` | Whether to create a service account. | `true` |
+| `serviceAccount.name` | The name of the service account to use. | `""` |
+| `serviceAccount.automountServiceAccountToken` | Whether to automount the service account token. | `true` |
+| `rbac.create` | Whether to create RBAC resources. | `true` |
 | `intelligenceServer.replicaCount` | The number of replicas for the intelligence-server. | `1` |
-| `intelligenceServer.image.pullPolicy` | The pull policy for the intelligence-server image. | `IfNotPresent` |
 | `intelligenceServer.additionalLabels` | Additional labels for the intelligence-server deployment. | `{}` |
 | `intelligenceServer.affinity` | The affinity for the intelligence-server pods. | `{}` |
 | `intelligenceServer.nodeSelector` | The node selector for the intelligence-server pods. | `{}` |
@@ -72,6 +59,7 @@ These values are typically provided by a parent chart.
 | `intelligenceServer.service.sessionAffinity` | The session affinity for the intelligence-server service. | `None` |
 | `intelligenceServer.service.externalTrafficPolicy` | The external traffic policy for the intelligence-server service. | `""` |
 | `intelligenceServer.service.internalTrafficPolicy` | The internal traffic policy for the intelligence-server service. | `""` |
+| `intelligenceServer.portalDataHost` | The host and port for the portal data service. | `"portal-data:8080"` |
 
 ### Kafka settings
 

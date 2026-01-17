@@ -18,4 +18,16 @@ rules:
       - get
       - list
       - watch
+  {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - patch
+  {{- end }}
 {{- end }}

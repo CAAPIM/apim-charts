@@ -23,6 +23,11 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  # IMPORTANT: Set domain here - it will be used by ALL components including intelligence
+  # When you set portal.domain, also set global.domain to the same value
+  # Or just set global.domain and portal.domain will use it
+  domain: dev.ca.com
+  defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   #   podSecurityContext:
@@ -42,10 +47,16 @@ global:
     allowInsecureImages: true
 
 portal:
+  # NOTE: domain is now set in global.domain (above) for consistency across all components
+  # Keeping this for backward compatibility - it references global.domain
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Intelligence feature for advanced analytics and third-party agent integration
+  # IMPORTANT: When intelligence.enabled is true:
+  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
   # Please set analytics.replicaCount to a minimum of 2
@@ -71,6 +82,8 @@ portal:
     port: 443
   ssoDebug: false
   hostnameWhitelist:
+  # NOTE: defaultTenantId is now set in global.defaultTenantId (above)
+  # Keeping this for backward compatibility
   defaultTenantId: apim
   # Configuration to use custom registries to pull the container images with appropriate credentials.
   # This refers to the dockerconfigjson that contains the information about the registry and its creds.
@@ -110,7 +123,7 @@ tls:
 # This will force all of the deployments that use the secrets to upgrade
 # If you don't do this, you will have to perform a manual restart of each affected container
   internalSecretName: &internalSecretName portal-internal-secret
-  externalSecretName: portal-external-secret
+  externalSecretName: &externalSecretName portal-external-secret
   kafkaCaSecretName: &kafkaCaSecretName portal-kafka-ca-secret
   kafkaSecretName: portal-kafka-tls-secret
 
@@ -457,7 +470,8 @@ image:
   dbUpgrade: db-upgrade-portal:5.4
   rbacUpgrade: db-upgrade-rbac:5.4
   upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4
+  tlsManager: tls-automator:5.4  # Used for TLS certificate management jobs
+  autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery in intelligence
 
 ##
 ## Subchart Configuration
@@ -475,6 +489,14 @@ druid:
       historical: 50Gi
       minio: 40Gi
       zookeeper: 10Gi
+  # Kafka configuration for druid ingestion service
+  kafka:
+    # Reference to Kafka broker service name (deployed as separate subchart)
+    brokerService: kafka
+    # Kafka broker port
+    brokerPort: 9092
+    # Kafka replication count (should match kafka.kafka.replicaCount)
+    replicaCount: 1
 
   minio:
     forceRedeploy: false
@@ -580,32 +602,6 @@ druid:
   # tolerations: []
   # affinity: {}
 
-  kafka:
-    forceRedeploy: false
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    replicaCount: 1
-    image:
-      pullPolicy: IfNotPresent
-    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-    podSecurityContext: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-    containerSecurityContext: {}
-    resources:
-      requests: {}
-      # cpu: 100m
-      # memory: 750Mi
-      limits: {}
-      # cpu: 1000m
-      # memory: 1.5Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
-
   broker:
     forceRedeploy: false
     pdb:
@@ -650,9 +646,19 @@ druid:
       # memory: 2Gi
       limits: {}
       # memory: 2Gi
-  # nodeSelector: {}
-  # tolerations: []
-  # affinity: {}
+    # Node selector for scheduling on specific nodes
+    # For production environments with node pools, set this to match your node labels
+    # Example: nodeSelector: { pooltype: general }
+    nodeSelector: {}
+    # Tolerations for scheduling on tainted nodes
+    # For production environments with node taints, uncomment and configure:
+    # tolerations:
+    #   - key: "apptype"
+    #     operator: "Equal"
+    #     value: "general"
+    #     effect: "NoSchedule"
+    tolerations: []
+    # affinity: {}
 
   ingestion:
     forceRedeploy: false
@@ -716,6 +722,11 @@ druid:
 
 # Configuration for the custom Kafka subchart
 kafka: &kafka_config
+  # Enable/disable Kafka deployment
+  # Automatically enabled when analytics or intelligence is enabled
+  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
+  enabled: true
+
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
   fullnameOverride: kafka
 
@@ -727,12 +738,23 @@ kafka: &kafka_config
   # Image configuration
   image:
     kafka: kafka:mr_kafka4_intel
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
   kafka:
     # Number of Kafka broker replicas
+    # Set to 3 for production deployments with intelligence enabled
     replicaCount: 1
+
+    # Ordinals configuration (Kubernetes 1.27+)
+    # Set start ordinal for StatefulSet pods
+    # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+    # where old meta.properties had broker.id=1
+    ordinals:
+      # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+      start: 1
+
     # Additional labels for Kafka pods
     additionalLabels: {}
     # Pod annotations
@@ -776,9 +798,10 @@ kafka: &kafka_config
         enabled: true
         port: 9092
         protocol: PLAINTEXT
-      # External listener for clients outside the cluster
+      # External listener for clients outside the cluster (third-party agents)
+      # NOTE: Automatically controlled by kafka.externalAccess.enabled
+      # External listener is created only when intelligence is enabled
       external:
-        enabled: true
         port: 9094
         protocol: SSL
       # Controller listener for KRaft mode
@@ -794,13 +817,14 @@ kafka: &kafka_config
 
     # TLS/SSL Configuration
     tls:
-      # Enable TLS/SSL
-      enabled: false
+      # Enable TLS/SSL - enabled by default for external SSL support
+      enabled: true
       # TLS type (PEM or JKS)
       type: PEM
       # Client authentication (none, requested, required)
       clientAuth: required
-      # Secret containing TLS certificates
+      # Secret containing TLS certificates (via environment variables)
+      # Leave empty to use volume-mounted certificates from internalSecretName instead
       secretName: ""
       # Keys in the secret
       keystoreKeyKey: "keystore.key"
@@ -838,9 +862,10 @@ kafka: &kafka_config
     automountServiceAccountToken: true
 
   # External access configuration for autodiscovery
+  # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
+  # Intelligence requires external Kafka access for third-party agents
+  # Default is false. Set to true manually or enable intelligence feature.
   externalAccess:
-    # External access is only needed for Intelligence
-    # Analytics (Druid) uses internal Kafka service
     enabled: false
     # Service type for external access (LoadBalancer or NodePort)
     serviceType: LoadBalancer
@@ -857,6 +882,20 @@ kafka: &kafka_config
     nodePorts: []
     # Auto-generate advertised listeners based on service IPs
     autoAdvertisedListeners: true
+    # Discovery configuration for LoadBalancer/NodePort IP detection
+    # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
+    # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
+    discovery:
+      # Maximum time to wait for LoadBalancer IP (in seconds)
+      # Increase this if your cloud provider takes longer to provision LoadBalancers
+      timeoutSeconds: 120
+      # Retry interval (in seconds)
+      retryIntervalSeconds: 5
+      # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
+      # This prevents Kafka from starting with incorrect advertised listeners
+      # IMPORTANT: Only affects behavior when intelligence is enabled
+      # Recommended: true (prevents connection issues for external clients)
+      failOnDiscoveryFailure: true
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq: &rabbitmq_config
@@ -950,17 +989,25 @@ apim-intelligence:
   kafka: *kafka_config
   rabbitmq: *rabbitmq_config
 
+  # NOTE: Do NOT set portal.domain here - it will override user values
+  # Intelligence will automatically use portal.domain from parent chart if available
+  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
+
+  # Image configuration
+  image:
+    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
+    intelligenceServer: intelligence-server:latest
+    pullPolicy: IfNotPresent
+
+  # RBAC configuration
   rbac:
     create: true
 
-  # Service Account for intelligence-server
+  # Service Account configuration
   serviceAccount:
     create: true
     automountServiceAccountToken: true
     name: ""
-
-  image:
-    intelligenceServer: intelligence-server:latest
 
   intelligenceServer:
     # Configuration for the Intelligence Server.
@@ -983,9 +1030,9 @@ apim-intelligence:
       # Configuration for the Kafka CA certificate.
       kafkaCa:
         # The name of the secret containing the Kafka CA certificate.
-        caSecretName: *internalSecretName
+        caSecretName: *externalSecretName
         # The name of the secret containing the password for the Kafka CA certificate.
-        passwordSecretName: *internalSecretName
+        passwordSecretName: *externalSecretName
         # The key in the password secret that contains the password.
         passwordSecretKey: "keypass.txt"
     forceRedeploy: false

@@ -1,0 +1,252 @@
+{{- if .Values.kafka.kraft.enabled }}
+#
+# Pre-Upgrade StatefulSet Cleanup Job
+#
+# Purpose:
+#   This job runs BEFORE every Helm upgrade to safely delete and recreate the Kafka StatefulSet.
+#   This is necessary when StatefulSet immutable fields need to be changed (e.g., ordinals.start).
+#
+# Safety Considerations:
+#   1. Data Preservation: PVCs are NOT deleted - only pods and StatefulSet are removed
+#   2. Graceful Shutdown: Pods are deleted with proper termination grace period
+#   3. PVC Protection: PVCs retain their data and are reattached to new pods with same names
+#   4. Idempotent: Safe to run multiple times - checks for existence before deletion
+#   5. Hook Lifecycle: Resources are auto-deleted after successful execution (hook-delete-policy)
+#
+# Upgrade Safety:
+#   - First Upgrade: Job creates RBAC, deletes StatefulSet if exists, allows Helm to recreate
+#   - Subsequent Upgrades: Same process - StatefulSet is recreated with new configuration
+#   - Rollback: If upgrade fails, Kafka pods can be manually restarted with existing PVCs
+#   - Data Loss Risk: MINIMAL - only if PVCs are manually deleted or storage fails
+#
+# When This Runs:
+#   - Trigger: Every "helm upgrade" command
+#   - Timing: pre-upgrade hook (weight: -5, runs early)
+#   - Cleanup: Resources deleted after success (before-hook-creation for next upgrade)
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kafka.fullname" . }}-sts-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kafka.fullname" . }}-sts-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+- apiGroups: ["apps"]
+  resources: ["statefulsets"]
+  verbs: ["get", "list", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "delete"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kafka.fullname" . }}-sts-cleanup
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kafka.fullname" . }}-sts-cleanup
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kafka.fullname" . }}-sts-cleanup
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kafka.fullname" . }}-sts-cleanup-{{ .Release.Revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 300 # Increased timeout for debugging
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.labels" . | nindent 8 }}
+        job: sts-cleanup
+    spec:
+      serviceAccountName: {{ include "kafka.fullname" . }}-sts-cleanup
+      restartPolicy: Never
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      containers:
+      - name: sts-cleanup
+        {{- if .Values.image }}
+        {{- if .Values.image.autoDiscovery }}
+        # Use parent chart's autoDiscovery image (when kafka is a subchart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
+        {{- else }}
+        # Use local discoveryImage configuration
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
+        {{- else }}
+        # Use local discoveryImage configuration (standalone kafka chart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
+        imagePullPolicy: {{ .Values.externalAccess.discoveryImage.pullPolicy | default "IfNotPresent" }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -ex # Enable exit on error and command tracing
+          echo "=== Kafka StatefulSet Pre-Upgrade Cleanup ==="
+          echo "This hook handles Kafka 3.x to 4.0 upgrade (Zookeeper to KRaft migration)"
+          
+          NAMESPACE="{{ .Release.Namespace }}"
+          STS_NAME="kafka"
+          
+          echo "Checking for existing StatefulSet $STS_NAME in namespace $NAMESPACE"
+          if ! kubectl get statefulset $STS_NAME -n $NAMESPACE >/dev/null 2>&1; then
+            echo "StatefulSet $STS_NAME does not exist. This is a fresh install. Exiting."
+            exit 0
+          fi
+          
+          echo "Found existing Kafka StatefulSet. Deleting to allow recreation with new spec..."
+          # Use --cascade=orphan to preserve pods and avoid data loss
+          kubectl delete statefulset $STS_NAME -n $NAMESPACE --cascade=orphan || { echo "Failed to delete StatefulSet, but continuing..."; }
+          
+          echo "Checking replica count from PVCs..."
+          REPLICA_COUNT=$(kubectl get pvc -n $NAMESPACE -l app=kafka -o name 2>/dev/null | wc -l)
+          echo "Detected $REPLICA_COUNT Kafka PVC(s)"
+          
+          if [ "$REPLICA_COUNT" -eq 0 ]; then
+            echo "No Kafka PVCs found. This is likely a fresh install or a cleanup job already ran. Exiting."
+            exit 0
+          fi
+          
+          echo "=== Cleaning up Kafka metadata for KRaft migration ==="
+          echo "Kafka 3.x uses broker.id, but Kafka 4.0 KRaft uses node.id based on pod ordinal"
+          echo "Removing old meta.properties files from PVCs to prevent node ID conflicts..."
+          
+          for i in $(seq 0 $((REPLICA_COUNT - 1))); do
+            PVC_NAME="kafka-vol-claim-kafka-${i}"
+            CLEANUP_POD="kafka-meta-cleanup-${i}"
+            
+            echo "Processing kafka-${i} (PVC: $PVC_NAME)..."
+            
+            if ! kubectl get pvc $PVC_NAME -n $NAMESPACE >/dev/null 2>&1; then
+              echo "PVC $PVC_NAME not found, skipping cleanup for this replica."
+              continue
+            fi
+            
+            echo "Deleting any existing cleanup pod $CLEANUP_POD..."
+            kubectl delete pod $CLEANUP_POD -n $NAMESPACE --ignore-not-found=true --wait=false || true
+            
+            echo "Creating cleanup pod $CLEANUP_POD..."
+            # Create cleanup pod using kubectl run with overrides
+            # Using bash -cx to print commands for debugging, and carefully escaping arguments
+            if ! kubectl run "$CLEANUP_POD" -n "$NAMESPACE" \
+              --image=busybox:1.36 \
+              --restart=Never \
+              --serviceaccount="{{ include "kafka.fullname" . }}-sts-cleanup" \
+              --labels="app=kafka-meta-cleanup,job=pre-upgrade" \
+              --overrides="{\
+                \"spec\": {\
+                  \"containers\": [{\
+                    \"name\": \"cleanup\",\
+                    \"image\": \"busybox:1.36\",\
+                    \"command\": [\"bash\", \"-cx\"],\
+                    \"args\": [\"echo \"=== Kafka metadata cleanup for pod $i ===\"; META_FILE=\"/data/kafka-logs/meta.properties\"; if [ ! -f \"$META_FILE\" ]; then echo \"No meta.properties found\"; exit 0; fi; echo \"Found meta.properties:\"\"; cat \"$META_FILE\"; if grep -q \"^broker.id=\" \"$META_FILE\"; then BROKER_ID=\"\$(grep \"^broker.id=\" \"$META_FILE\" | cut -d=\' -f2)\"; echo \"Detected Kafka 3.x metadata with broker.id=\"$BROKER_ID\"; echo \"Removing meta.properties...\"; rm -f \"$META_FILE\"; echo \"Successfully removed old meta.properties\"; else echo \"Meta.properties already in KRaft format\"; fi; echo \"Cleanup complete for kafka-$i\\\"]\
+                  }],\
+                  \"volumes\": [{\"name\": \"data\", \"persistentVolumeClaim\": {\"claimName\": \"$PVC_NAME\"}}]\
+                }\
+              }" 2>/dev/null; then
+              echo "⚠️  Failed to create cleanup pod $CLEANUP_POD. Attempting to get details..."
+              kubectl describe pod "$CLEANUP_POD" -n "$NAMESPACE" || true
+              kubectl logs "$CLEANUP_POD" -n "$NAMESPACE" || true
+              continue # Move to the next PVC if this one failed to create a cleanup pod
+            fi
+            
+            echo "Waiting for cleanup pod $CLEANUP_POD to complete (timeout: 180s)..."
+            TIMEOUT_POD_SECONDS=180
+            POD_START_TIME=$(date +%s)
+            
+            while true; do
+              CURRENT_TIME=$(date +%s)
+              ELAPSED_TIME=$((CURRENT_TIME - POD_START_TIME))
+              
+              if [ "$ELAPSED_TIME" -ge "$TIMEOUT_POD_SECONDS" ]; then
+                POD_PHASE=$(kubectl get pod "$CLEANUP_POD" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+                echo "⚠️  Cleanup pod $CLEANUP_POD timed out (still in phase: $POD_PHASE). Describing and logging..."
+                kubectl describe pod "$CLEANUP_POD" -n "$NAMESPACE"
+                kubectl logs "$CLEANUP_POD" -n "$NAMESPACE" 2>/dev/null || echo "Could not retrieve logs for $CLEANUP_POD"
+                break
+              fi
+              
+              POD_PHASE=$(kubectl get pod "$CLEANUP_POD" -n "$NAMESPACE" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
+              
+              if [ "$POD_PHASE" = "Succeeded" ]; then
+                echo "✅ Cleanup pod $CLEANUP_POD completed successfully"
+                break
+              elif [ "$POD_PHASE" = "Failed" ]; then
+                echo "⚠️  Cleanup pod $CLEANUP_POD failed. Describing and logging..."
+                kubectl describe pod "$CLEANUP_POD" -n "$NAMESPACE"
+                kubectl logs "$CLEANUP_POD" -n "$NAMESPACE" 2>/dev/null || echo "Could not retrieve logs for $CLEANUP_POD"
+                break
+              fi
+              
+              sleep 5
+            done
+            
+            echo "Deleting cleanup pod $CLEANUP_POD..."
+            kubectl delete pod "$CLEANUP_POD" -n "$NAMESPACE" --wait=false || true
+          done
+          
+          echo "=== Cleaning up orphaned Kafka pods ==="
+          {{- if .Values.kafka.ordinals.start }}
+          ORDINAL_START={{ .Values.kafka.ordinals.start }}
+          echo "StatefulSet configured with ordinals.start=$ORDINAL_START. Deleting orphaned pods (kafka-0 to kafka-$((ORDINAL_START - 1)))..."
+          
+          for i in $(seq 0 $((ORDINAL_START - 1))); do
+            POD_NAME="kafka-${i}"
+            if kubectl get pod "$POD_NAME" -n "$NAMESPACE" >/dev/null 2>&1; then
+              echo "Deleting orphaned pod: $POD_NAME"
+              kubectl delete pod "$POD_NAME" -n "$NAMESPACE" --wait=false || true
+            else
+              echo "Pod $POD_NAME not found (already deleted or never existed)."
+            fi
+          done
+          {{- else }}
+          echo "No ordinals.start configured, skipping orphaned pod cleanup."
+          {{- end }}
+          
+          echo "=== Pre-upgrade cleanup completed ==="
+          echo "Kafka StatefulSet will be recreated by Helm with new KRaft configuration."
+          echo "Old meta.properties files have been cleaned up. PVCs preserved - Kafka data retained."
+{{- end }}

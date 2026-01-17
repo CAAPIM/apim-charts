@@ -22,6 +22,19 @@ Create a default fully qualified app name.
 {{- end }}
 
 {{/*
+StatefulSet name - always includes release name for proper identification
+This is used for StatefulSet and external services to ensure unique naming across releases
+*/}}
+{{- define "kafka.statefulsetName" -}}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "kafka.chart" -}}
