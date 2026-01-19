@@ -19,6 +19,14 @@ kafka:
   # Number of Kafka broker replicas
   replicaCount: 1
   
+  # Ordinals configuration (Kubernetes 1.27+)
+  # Set start ordinal for StatefulSet pods
+  # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+  # where old meta.properties had broker.id=1
+  ordinals:
+    # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+    start: 1
+  
   # Additional labels for Kafka pods
   additionalLabels: {}
   
@@ -56,9 +64,11 @@ kafka:
   kraft:
     # Enable KRaft mode (Zookeeper-less)
     enabled: true
-    # Cluster ID for KRaft (auto-generated if empty)
+    # Cluster ID for KRaft (must be consistent across all brokers)
+    # Set to a fixed value or leave empty to auto-generate based on subdomain
     clusterId: ""
     # Node ID (will be set based on pod ordinal if empty)
+    # IMPORTANT: Leave empty to use pod ordinal (0, 1, 2) for StatefulSet
     nodeId: ""
     # Process roles (broker, controller, or both)
     processRoles: "broker,controller"
@@ -97,7 +107,7 @@ kafka:
   
   # TLS/SSL Configuration
   tls:
-    # Enable TLS/SSL
+    # Enable TLS/SSL (required when external listener uses SSL protocol)
     enabled: false
     # TLS type (PEM or JKS)
     type: PEM
@@ -109,19 +119,22 @@ kafka:
     # ============================================
     # Secret containing TLS certificates
     # Should contain: keystore.key, truststore.pem
+    # When using Intelligence, set to portal-internal-secret
     secretName: ""
     # Keys in the secret
     keystoreKeyKey: "keystore.key"
     truststoreCertKey: "truststore.pem"
-    # Password secret for encrypted keys
+    # Password secret for encrypted keys (required for encrypted private keys)
+    # When using Intelligence, set to portal-internal-secret
     passwordSecretName: ""
     passwordSecretKey: "keypass.txt"
     
-    # TSSG Certificates (always use apim-ssl from internal secret)
-    # The internal secret name is passed from parent chart
-    internalSecretName: "portal-internal-secret"
-    tssgKeyKey: "apim-ssl.p8.key"
-    tssgCertKey: "apim-ssl.crt"
+    # TSSG Certificates (use apim-ssl from internal secret by default)
+    # The secret name for TSSG certificates (apim-ssl)
+    # Changed to portal-external-secret to support static certificate deployments
+    internalSecretName: "portal-external-secret"
+    tssgKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl, can be overridden
+    tssgCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
     passwordKey: "keypass.txt"
     
     # ============================================
@@ -194,9 +207,27 @@ externalAccess:
   nodePorts: []
   # Auto-generate advertised listeners based on service IPs
   autoAdvertisedListeners: true
+  
+  # Discovery configuration for LoadBalancer/NodePort IP detection
+  # NOTE: This only applies when externalAccess.enabled is true
+  # When intelligence is disabled, Kafka uses internal-only listeners and these settings are ignored
+  discovery:
+    # Maximum time to wait for LoadBalancer IP (in seconds)
+    # Default: 120 seconds (24 retries * 5 seconds)
+    timeoutSeconds: 120
+    # Retry interval (in seconds)
+    retryIntervalSeconds: 5
+    # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
+    # This prevents Kafka from starting with incorrect advertised listeners
+    # If false, falls back to service hostname (NOT RECOMMENDED - causes connection issues)
+    # IMPORTANT: Only affects behavior when externalAccess.enabled=true
+    failOnDiscoveryFailure: true
+  
   # Discovery image for LoadBalancer IP detection (kubectl)
+  # Note: When used as a subchart, image.autoDiscovery should be provided by parent chart
+  # When used standalone, provide these values during deployment
   discoveryImage:
-    repository: "alpine/k8s"
-    tag: "1.31.2"
+    repository: "tls-automator"
+    tag: "latest"  # Should be overridden with specific version
     pullPolicy: IfNotPresent
 

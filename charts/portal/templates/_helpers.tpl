@@ -253,6 +253,18 @@ Generate Ingress SSG endpoint based on configurations
 {{- end -}}
 
 {{/*
+Generate TSSG (Gateway) public port for PAPI_PUBLIC_PORT
+Defaults to 443 for HTTPS
+*/}}
+{{- define "tssg-public-port" -}}
+    {{- if .Values.portal.papiPublicPort }}
+        {{- .Values.portal.papiPublicPort -}}
+    {{- else }}
+        {{- "443" -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
 Generate Rabbit MQ endpoint based on configurations
 */}}
 {{- define "broker-host" -}}

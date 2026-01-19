@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "kafka.fullname" . }}
+  name: {{ include "kafka.statefulsetName" . }}
   labels:
     {{- include "kafka.labels" . | nindent 4 }}
     {{- range $key, $val := .Values.global.additionalLabels }}
@@ -10,12 +10,18 @@ metadata:
     {{- range $key, $val := .Values.kafka.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   selector:
     matchLabels:
       {{- include "kafka.selectorLabels" . | nindent 6 }}
   serviceName: {{ include "kafka.fullname" . }}
   replicas: {{ .Values.kafka.replicaCount }}
+  {{- if .Values.kafka.ordinals }}
+  ordinals:
+    start: {{ .Values.kafka.ordinals.start }}
+  {{- end }}
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -23,18 +29,13 @@ spec:
     metadata:
       labels:
         {{- include "kafka.selectorLabels" . | nindent 8 }}
-      {{- if  .Values.kafka.podAnnotations }}
-      annotations: {{- toYaml .Values.kafka.podAnnotations | nindent 8 }}
-      {{- if .Values.kafka.forceRedeploy }}
-        timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
-      {{- if not .Values.kafka.podAnnotations }}
-      {{- if .Values.kafka.forceRedeploy }}
       annotations:
+        {{- if .Values.kafka.forceRedeploy }}
         timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.kafka.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "kafka.serviceAccountName" . }}
       {{- if .Values.kafka.affinity }}
@@ -64,7 +65,18 @@ spec:
       - name: kafka-init
         {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners (not .Values.externalAccess.hostname) }}
         # Use kubectl image for service discovery
-        image: "{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- if .Values.image }}
+        {{- if .Values.image.autoDiscovery }}
+        # Use parent chart's autoDiscovery image (when kafka is a subchart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
+        {{- else }}
+        # Use local discoveryImage configuration
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
+        {{- else }}
+        # Use local discoveryImage configuration (standalone kafka chart)
+        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        {{- end }}
         imagePullPolicy: "{{ .Values.externalAccess.discoveryImage.pullPolicy }}"
         {{- else }}
         # Use Kafka image when discovery not needed
@@ -100,17 +112,20 @@ spec:
             
             # Use POD_NAME from environment (injected via downward API)
             echo "Pod name: $POD_NAME"
+            echo "DEBUG: POD_NAME received: $POD_NAME"
             
             # Extract node ID from pod name (e.g., kafka-0 -> 0)
             # Using parameter expansion instead of rev command
             NODE_ID="${POD_NAME##*-}"
             echo "Node ID: $NODE_ID"
             
-            # Validate NODE_ID is a number
-            if ! echo "$NODE_ID" | grep -qE '^[0-9]+$'; then
-              echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
-              exit 1
-            fi
+            # Validate NODE_ID is a number (using shell pattern matching, no grep needed)
+            case "$NODE_ID" in
+              ''|*[!0-9]*)
+                echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
+                exit 1
+                ;;
+            esac
             
             # Create shared directory if it doesn't exist
             mkdir -p /shared
@@ -125,11 +140,13 @@ spec:
             {{- end }}
             
             {{- if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
+            # External access is enabled (typically for intelligence feature)
+            # This block discovers LoadBalancer/NodePort IPs for external clients
             echo "Building advertised listeners with external access..."
-            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
             
-            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
             echo "Controller listener: $CONTROLLER_LISTENER"
             
             {{- if .Values.externalAccess.hostname }}
@@ -138,7 +155,7 @@ spec:
             echo "External listener (hostname): $EXTERNAL_LISTENER"
             {{- else }}
             # Discover external IP/hostname
-            EXTERNAL_SVC="{{ include "kafka.fullname" . }}-${NODE_ID}-external"
+            EXTERNAL_SVC="{{ include "kafka.statefulsetName" . }}-${NODE_ID}-external"
             echo "Discovering external address for service: $EXTERNAL_SVC"
             
             # Get the service type
@@ -149,35 +166,90 @@ spec:
             EXTERNAL_PORT="{{ .Values.externalAccess.port }}"
             
             if [ "$SERVICE_TYPE" = "LoadBalancer" ]; then
-              echo "Waiting for LoadBalancer IP (max 60 seconds)..."
-              # Wait for LoadBalancer IP with timeout
-              for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
-                LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
-                if [ -n "$LB_IP" ]; then
+              # Configurable timeout and retry settings
+              TIMEOUT_SECONDS={{ .Values.externalAccess.discovery.timeoutSeconds | default 120 }}
+              SLEEP_TIME={{ .Values.externalAccess.discovery.retryIntervalSeconds | default 5 }}
+              RETRIES=$((TIMEOUT_SECONDS / SLEEP_TIME))
+              FAIL_ON_ERROR={{ .Values.externalAccess.discovery.failOnDiscoveryFailure | default true }}
+              
+              echo "Waiting for LoadBalancer IP (max ${TIMEOUT_SECONDS} seconds)..."
+              # Wait for LoadBalancer IP with configurable timeout and better error handling
+              
+              for i in $(seq 1 $RETRIES); do
+                # Try to get IP first, then hostname
+                LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>&1)
+                KUBECTL_EXIT_CODE=$?
+                
+                # If kubectl command failed, log the error
+                if [ $KUBECTL_EXIT_CODE -ne 0 ]; then
+                  echo "ERROR: kubectl command failed (exit code: $KUBECTL_EXIT_CODE)"
+                  echo "Error details: $LB_IP"
+                  echo "Checking RBAC permissions and ServiceAccount..."
+                  kubectl auth can-i get services --as=system:serviceaccount:{{ .Release.Namespace }}:{{ include "kafka.serviceAccountName" . }} -n {{ .Release.Namespace }} 2>&1 || echo "RBAC check failed"
+                fi
+                
+                # If IP is empty, try hostname
+                if [ -z "$LB_IP" ]; then
+                  LB_IP=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>&1)
+                fi
+                
+                if [ -n "$LB_IP" ] && [ "$LB_IP" != "null" ]; then
                   EXTERNAL_ADDRESS="$LB_IP"
-                  echo "Discovered LoadBalancer IP: ${EXTERNAL_ADDRESS}"
+                  echo "✓ Successfully discovered LoadBalancer address: ${EXTERNAL_ADDRESS}"
                   break
                 fi
-                echo "Attempt $i/12: LoadBalancer IP not ready yet, waiting 5s..."
-                sleep 5
+                
+                echo "Attempt $i/$RETRIES: LoadBalancer address not ready yet, waiting ${SLEEP_TIME}s..."
+                sleep $SLEEP_TIME
               done
               
               if [ -z "$EXTERNAL_ADDRESS" ]; then
-                echo "Warning: LoadBalancer IP not available after 60s, using service name"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                echo "=========================================="
+                echo "ERROR: LoadBalancer IP not available after ${TIMEOUT_SECONDS} seconds"
+                echo "Service: $EXTERNAL_SVC"
+                echo "Namespace: {{ .Release.Namespace }}"
+                echo "=========================================="
+                echo ""
+                echo "Troubleshooting steps:"
+                echo "1. Check if LoadBalancer service is created: kubectl get svc $EXTERNAL_SVC -n {{ .Release.Namespace }}"
+                echo "2. Check LoadBalancer status: kubectl describe svc $EXTERNAL_SVC -n {{ .Release.Namespace }}"
+                echo "3. Check cloud provider LoadBalancer provisioning"
+                echo "4. Verify RBAC permissions for ServiceAccount: {{ include "kafka.serviceAccountName" . }}"
+                echo "5. Check if ServiceAccount token is mounted: ls -la /var/run/secrets/kubernetes.io/serviceaccount/"
+                echo "=========================================="
+                
+                if [ "$FAIL_ON_ERROR" = "true" ]; then
+                  echo "FATAL: failOnDiscoveryFailure is enabled. Pod will fail and Kubernetes will retry."
+                  echo "This prevents Kafka from starting with incorrect advertised listeners."
+                  exit 1
+                else
+                  echo "WARNING: Using service hostname as fallback (NOT RECOMMENDED)"
+                  echo "This may cause 'Error connecting to node' issues for external clients."
+                  EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                fi
               fi
             elif [ "$SERVICE_TYPE" = "NodePort" ]; then
               # For NodePort, try to get node IP and NodePort
-              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
-              NODE_PORT=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || echo "")
+              echo "Discovering NodePort configuration..."
+              NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>&1)
+              if [ -z "$NODE_IP" ]; then
+                NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>&1)
+              fi
+              NODE_PORT=$(kubectl get svc "$EXTERNAL_SVC" -n "{{ .Release.Namespace }}" -o jsonpath='{.spec.ports[0].nodePort}' 2>&1)
               
-              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+              if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ] && [ "$NODE_IP" != "null" ] && [ "$NODE_PORT" != "null" ]; then
                 EXTERNAL_ADDRESS="${NODE_IP}"
                 EXTERNAL_PORT="${NODE_PORT}"
-                echo "Discovered NodePort: ${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                echo "✓ Successfully discovered NodePort: ${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
               else
-                echo "Warning: Could not discover NodePort IP/Port, using service name"
-                EXTERNAL_ADDRESS="${EXTERNAL_SVC}"
+                echo "=========================================="
+                echo "FATAL ERROR: Could not discover NodePort configuration"
+                echo "Service: $EXTERNAL_SVC"
+                echo "Node IP: $NODE_IP"
+                echo "Node Port: $NODE_PORT"
+                echo "=========================================="
+                echo "This is a critical error. The pod will fail and Kubernetes will retry."
+                exit 1
               fi
             else
               # Fallback to service name
@@ -193,11 +265,14 @@ spec:
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$ADVERTISED_LISTENERS" >> /shared/node-id.env
             echo "=== Final advertised listeners: $ADVERTISED_LISTENERS ==="
             {{- else }}
+            # External access is disabled (intelligence not enabled)
+            # No LoadBalancer discovery needed - using internal listeners only
+            # Pod will start successfully without external dependencies
             echo "Building advertised listeners (internal only)..."
-            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
             echo "Internal listener: $INTERNAL_LISTENER"
             
-            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.fullname" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
             echo "Controller listener: $CONTROLLER_LISTENER"
             
             echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER,$CONTROLLER_LISTENER" >> /shared/node-id.env
@@ -256,23 +331,72 @@ spec:
             
             {{- if .Values.kafka.tls.enabled }}
             # Load TSSG certificates (apim-ssl) from mounted volume
+            # Note: Volume mount maps secret keys to apim-ssl.p8.key and apim-ssl.crt paths
             echo "=== Loading TSSG certificates for Kafka SSL ==="
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }} ]; then
-              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }})
+            if [ -f /opt/ca/certs/apim-ssl.p8.key ]; then
+              export KAFKA_CFG_SSL_KEYSTORE_KEY=$(cat /opt/ca/certs/apim-ssl.p8.key)
               echo "Loaded TSSG keystore key (PKCS#8)"
             else
-              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgKeyKey }}"
+              echo "ERROR: TSSG keystore key not found at /opt/ca/certs/apim-ssl.p8.key"
               exit 1
             fi
             
-            if [ -f /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }} ]; then
-              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }})
+            if [ -f /opt/ca/certs/apim-ssl.crt ]; then
+              export KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES=$(cat /opt/ca/certs/apim-ssl.crt)
               echo "Loaded TSSG truststore certificate"
             else
-              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/{{ .Values.kafka.tls.tssgCertKey }}"
+              echo "ERROR: TSSG truststore certificate not found at /opt/ca/certs/apim-ssl.crt"
               exit 1
             fi
             {{- end }}
+            
+            # Check if KAFKA_CLUSTER_ID is set and format storage if needed
+            if [ -n "$KAFKA_CLUSTER_ID" ]; then
+              echo "=== Kafka KRaft Storage Formatting ==="
+              echo "Cluster ID from ConfigMap: $KAFKA_CLUSTER_ID"
+              
+              # Check if storage is already formatted
+              if [ ! -f /opt/ca/kafka/kafka-logs/meta.properties ]; then
+                echo "No meta.properties found. Formatting Kafka storage with cluster ID: $KAFKA_CLUSTER_ID"
+                /opt/ca/kafka/bin/kafka-storage.sh format \
+                  --cluster-id "$KAFKA_CLUSTER_ID" \
+                  --config /opt/ca/kafka/config/server.properties \
+                  --ignore-formatted \
+                  --standalone
+                echo "✓ Kafka storage formatted successfully"
+              else
+                # Verify existing cluster ID matches
+                echo "Found existing meta.properties, checking cluster ID..."
+                EXISTING_CLUSTER_ID=$(grep "^cluster.id=" /opt/ca/kafka/kafka-logs/meta.properties | cut -d= -f2 2>/dev/null || echo "")
+                
+                if [ -n "$EXISTING_CLUSTER_ID" ] && [ "$EXISTING_CLUSTER_ID" != "$KAFKA_CLUSTER_ID" ]; then
+                  echo "WARNING: Cluster ID mismatch!"
+                  echo "  Expected: $KAFKA_CLUSTER_ID"
+                  echo "  Found: $EXISTING_CLUSTER_ID"
+                  echo "Removing old meta.properties and reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage reformatted with correct cluster ID"
+                elif [ -n "$EXISTING_CLUSTER_ID" ]; then
+                  echo "✓ Cluster ID matches: $EXISTING_CLUSTER_ID"
+                else
+                  echo "No cluster.id found in meta.properties, reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage formatted with cluster ID"
+                fi
+              fi
+            else
+              echo "WARNING: KAFKA_CLUSTER_ID not set in environment"
+            fi
             
             # Start Kafka with the original entrypoint
             exec /opt/ca/start-kafka.sh
@@ -282,6 +406,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: INTELLIGENCE_ENABLED
+          value: {{ .Values.externalAccess.enabled | quote }}
         {{- if .Values.kafka.tls.enabled }}
         {{- if .Values.kafka.tls.secretName }}
         - name: KAFKA_CFG_SSL_KEYSTORE_KEY
@@ -328,7 +454,7 @@ spec:
         ports:
         - containerPort: {{ .Values.kafka.listeners.internal.port }}
           name: kafka
-        {{- if and .Values.kafka.listeners.external.enabled .Values.externalAccess.enabled }}
+        {{- if .Values.externalAccess.enabled }}
         - containerPort: {{ .Values.kafka.listeners.external.port }}
           name: external
         {{- end }}

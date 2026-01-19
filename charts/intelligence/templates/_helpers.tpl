@@ -33,7 +33,7 @@ Create chart name and version as used by the chart label.
 
 
 {{/*
- Set the service account name for the Portal Stack
+ Set the service account name for the Intelligence Server
  */}}
 {{- define "intelligence.serviceAccountName" -}}
 {{- if .Values.global.serviceAccountName }}
@@ -75,15 +75,21 @@ Get "database-port" based on databaseType value
 Get "kafka" brokers
 */}}
 {{- define "kafka-brokers" -}}
+    {{- $kafkaName := "kafka" -}}
+    {{- if .Values.kafka.fullnameOverride -}}
+        {{- $kafkaName = .Values.kafka.fullnameOverride -}}
+    {{- else -}}
+        {{- $kafkaName = printf "%s-kafka" .Release.Name -}}
+    {{- end -}}
     {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
         {{- /* Custom Kafka subchart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.kafka.listeners.internal.port -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
     {{- else if and .Values.kafka.listeners .Values.kafka.listeners.client }}
         {{- /* Bitnami Kafka chart */ -}}
-        {{- printf "%s-kafka:%g" .Release.Name .Values.kafka.listeners.client.containerPort -}}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.listeners.client.containerPort -}}
     {{- else }}
         {{- /* Default fallback */ -}}
-        {{- printf "%s-kafka:9092" .Release.Name -}}
+        {{- printf "%s:9092" $kafkaName -}}
     {{- end }}
 {{- end -}}
 
@@ -91,30 +97,30 @@ Get "kafka" brokers
 Create Image Pull Secret
 */}}
 {{- define "intelligence-imagePullSecret" }}
-{{- if and (not .Values.intelligence.useExistingPullSecret) (.Values.intelligence.imagePullSecret.enabled) }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password (printf "%s:%s" .Values.intelligence.imagePullSecret.username .Values.intelligence.imagePullSecret.password | b64enc) | b64enc }}
+{{- if and (not .Values.useExistingPullSecret) (.Values.imagePullSecret.enabled) }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.imagePullSecret.username .Values.imagePullSecret.password (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
 
 {{- define "intelligence.validate" -}}
 {{- $messages := list -}}
-{{- $messages := append $messages (include "intelligenceServer.validateValues.autoDiscoveryRBAC" .) -}}
+{{- $messages := append $messages (include "intelligence.validateValues.autoDiscoveryRBAC" .) -}}
 {{- $message := join "\n" $messages -}}
 {{- if $message -}}
 {{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
 {{- end -}}
 {{- end -}}
 
-{{/* Validate values of intelligenceServer - RBAC should be enabled when autoDiscovery is enabled */}}
-{{- define "intelligenceServer.validateValues.autoDiscoveryRBAC" -}}
+{{/* Validate values of intelligence - RBAC should be enabled when autoDiscovery is enabled */}}
+{{- define "intelligence.validateValues.autoDiscoveryRBAC" -}}
 {{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.rbac.create ) }}
-intelligenceServer: rbac-create
+intelligence: rbac-create
     By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires specific RBAC resources.
 {{- end -}}
 {{- if and .Values.intelligenceServer.kafka.autoDiscovery.enabled (not .Values.serviceAccount.automountServiceAccountToken) }}
-intelligenceServer: serviceAccount-automountServiceAccountToken
+intelligence: serviceAccount-automountServiceAccountToken
     By specifying ".Values.intelligenceServer.kafka.autoDiscovery.enabled=true"
     an initContainer will be used to auto-detect the external IPs/ports by querying the
     K8s API. Please note this initContainer requires the service account token. Please set serviceAccount.automountServiceAccountToken=true
@@ -122,13 +128,43 @@ intelligenceServer: serviceAccount-automountServiceAccountToken
 {{- end -}}
 
 {{/*
-Generate Kafka hostname for APIM_SSG_HOSTNAME
-Uses the full hostname pattern with -kafka suffix
+Generate Intelligence public host based on global configurations
 */}}
-{{- define "kafka-public-host" -}}
+{{- define "intelligence.publicHost" -}}
+    {{- /* When deployed as subchart, check if portal.domain is set and use it */ -}}
+    {{- /* This allows Jenkins to set portal.domain without also setting global.domain */ -}}
+    {{- $domain := "dev.ca.com" -}}
+    {{- if .Values.portal -}}
+        {{- if .Values.portal.domain -}}
+            {{- /* Subchart: use portal.domain if explicitly set */ -}}
+            {{- $domain = .Values.portal.domain -}}
+        {{- else -}}
+            {{- /* Fallback to global.domain */ -}}
+            {{- $domain = default "dev.ca.com" .Values.global.domain -}}
+        {{- end -}}
+    {{- else -}}
+        {{- /* Standalone: use global.domain */ -}}
+        {{- $domain = default "dev.ca.com" .Values.global.domain -}}
+    {{- end -}}
+    {{- $subdomainPrefix := default "dev-portal" .Values.global.subdomainPrefix -}}
+    {{- $defaultTenantId := default "apim" .Values.global.defaultTenantId -}}
     {{- if .Values.global.legacyHostnames }}
-        {{- printf "%s-%s.%s" .Values.portal.defaultTenantId "kafka" .Values.portal.domain -}}
+        {{- printf "%s-%s.%s" $defaultTenantId "ssg" $domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "apim-ssg-%s.%s" $subdomainPrefix $domain -}}
     {{- else }}
-        {{- printf "%s-%s-kafka.%s" .Values.portal.defaultTenantId .Values.global.subdomainPrefix .Values.portal.domain -}}
+         {{- printf "%s-ssg.%s" $subdomainPrefix $domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate Intelligence public port
+Defaults to 443 for HTTPS, or from global.papiPublicPort if set
+*/}}
+{{- define "intelligence.publicPort" -}}
+    {{- if .Values.global.papiPublicPort }}
+        {{- .Values.global.papiPublicPort -}}
+    {{- else }}
+        {{- "443" -}}
     {{- end }}
 {{- end -}}
