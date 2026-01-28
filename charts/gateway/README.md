@@ -707,6 +707,8 @@ OpenTelemetry is configured on the Gateway in two places, system properties and 
 
 These can be configured in values.yaml. See the section below to view examples of how and where to configure this.
 
+The Gateway from v11.2.2, trace can use otel.serviceLevelTraceConfig as more granular per-service configuration . It takes precedence over otel.traceConfig when present. Please see Techdocs for more details about this integration.
+
 - config.otel
 ```
 config:
@@ -740,6 +742,20 @@ otel.enabled=true
 otel.serviceMetricEnabled=true
 otel.traceEnabled=true (if tracing is required)
 otel.traceConfig=(default {})
+otel.serviceLevelTraceConfig=(default {})   //GW 11.2.2  
+```
+example otel.serviceLevelTraceConfig
+```
+{
+  "services" : [ {
+    "resolutionPath" : "/*"
+  }, {
+    "resolutionPath" : ".*test_otel_service.*",
+    "assertions" : {
+      "exclude" : [ "Decode MTOM Message" ]
+    }
+  } ]
+}
 ```
 example otel.traceConfig
 ```

@@ -270,6 +270,18 @@ config:
       #         ]
       #       }
       #     }
+      # - name: otel.serviceLevelTraceConfig
+      #   value: |
+      #  {
+      #    "services": [ {
+      #      "resolutionPath": "/*"
+      #    }, {
+      #      "resolutionPath": ".*test_otel_service.*",
+      #      "assertions": {
+      #        "exclude": [ "Decode MTOM Message" ]
+      #      }
+      #    } ]
+      #  }
   systemProperties: |-
     # Default Gateway system properties
     # Configuration properties for shared state extensions.
