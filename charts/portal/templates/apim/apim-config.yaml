@@ -33,8 +33,7 @@ data:
   INTELLIGENCE_ENABLED: "true"
   # S3 Configuration (SeaweedFS) - Only when Intelligence is enabled
   S3_URL: {{ .Values.apim.s3.url | default "http://seaweedfs-s3:8333" | quote }}
-  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.analytics.bucketName | default "api-metrics" | quote }}
-  S3_PATH_STYLE_ACCESS: {{ .Values.apim.s3.pathStyleAccess | default "true" | quote }}
+  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intellignece.bucketName | default "apim-patches" | quote }}
 {{- else }}
   # Intelligence Feature Flag
   INTELLIGENCE_ENABLED: "false"

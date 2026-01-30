@@ -69,8 +69,8 @@ global:
   deepStorage:
     auth:
       secretName: "seaweedfs-s3-secret"
-    analytics:
-      bucketName: "api-metrics"
+    intelligence:
+      bucketName: apim-patches
 
 # Intelligence Server configuration
 intelligenceServer:

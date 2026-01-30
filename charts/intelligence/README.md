@@ -61,6 +61,19 @@ These values are typically provided by a parent chart.
 | `intelligenceServer.service.internalTrafficPolicy` | The internal traffic policy for the intelligence-server service. | `""` |
 | `intelligenceServer.portalDataHost` | The host and port for the portal data service. | `"portal-data:8080"` |
 
+### S3 Storage settings
+
+The Intelligence Server **requires** S3-compatible storage (SeaweedFS) for data persistence. When deployed as part of the Portal chart, SeaweedFS is automatically deployed when intelligence is enabled.
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `intelligenceServer.s3.url` | S3 URL (endpoint) | `http://seaweedfs-s3:8333` |
+| `intelligenceServer.s3.pathStyleAccess` | Use path-style access for S3 | `true` |
+| `intelligenceServer.s3.accessKeyKey` | Secret key for S3 access key | `admin_access_key_id` |
+| `intelligenceServer.s3.secretKeyKey` | Secret key for S3 secret key | `admin_secret_access_key` |
+| `global.deepStorage.auth.secretName` | Secret containing S3 credentials | `seaweedfs-s3-secret` |
+| `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
+
 ### Kafka settings
 
 The Intelligence Server requires a connection to a Kafka cluster. The following settings are used to configure the connection.

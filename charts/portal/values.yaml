@@ -49,7 +49,7 @@ global:
   deepStorage:
     # Enable SeaweedFS for deep storage (S3-compatible)
     # IMPORTANT: This is automatically enabled when portal.intelligence.enabled is true
-    # Intelligence service requires S3 storage for data persistence
+    # Intelligence uses S3 storage as apim patches store
     seaweedfs: true
     # Set to true to create a data migration Job from Minio to SeaweedFS
     # The Job runs independently and will not block helm operations
@@ -63,6 +63,8 @@ global:
       secretName: seaweedfs-s3-secret
     analytics:
       bucketName: api-metrics
+    intelligence:
+      bucketName: apim-patches
 
 portal:
   # NOTE: domain is now set in global.domain (above) for consistency across all components
