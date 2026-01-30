@@ -139,6 +139,7 @@ intelligenceServer:
     # Secret keys for accessing S3 credentials
     accessKeyKey: "admin_access_key_id"
     secretKeyKey: "admin_secret_access_key"
+    maxConcurrentPatchUploads: 5
 
 # NOTE: When this chart is used as a subchart, it requires Kafka configuration
 # for its initContainer to discover brokers. The parent chart must provide these

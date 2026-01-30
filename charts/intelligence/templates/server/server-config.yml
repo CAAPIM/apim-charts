@@ -25,3 +25,4 @@ data:
   S3_URL: {{ .Values.intelligenceServer.s3.url | default "http://seaweedfs-s3:8333" | quote }}
   S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | default "api-metrics" | quote }}
   S3_PATH_STYLE_ACCESS: {{ .Values.intelligenceServer.s3.pathStyleAccess | default "true" | quote }}
+  MAX_CONCURRENT_PATCH_UPLOADS: {{ .Values.intelligenceServer.s3.maxConcurrentPatchUploads | default 5 | quote }}
