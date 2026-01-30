@@ -28,6 +28,17 @@ data:
   TENANT_ID: {{ include "default-tenant-id" . | quote }}
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   TSSG_PUBLIC_PORT: {{ .Values.portal.otk.port | quote }}
+{{- if .Values.portal.intelligence.enabled }}
+  # Intelligence Feature Flag
+  INTELLIGENCE_ENABLED: "true"
+  # S3 Configuration (SeaweedFS) - Only when Intelligence is enabled
+  S3_URL: {{ .Values.apim.s3.url | default "http://seaweedfs-s3:8333" | quote }}
+  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.analytics.bucketName | default "api-metrics" | quote }}
+  S3_PATH_STYLE_ACCESS: {{ .Values.apim.s3.pathStyleAccess | default "true" | quote }}
+{{- else }}
+  # Intelligence Feature Flag
+  INTELLIGENCE_ENABLED: "false"
+{{- end }}
 {{ if .Values.apim.additionalEnv }}
 {{- range $key, $val := .Values.apim.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
