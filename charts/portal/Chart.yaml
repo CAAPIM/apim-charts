@@ -16,7 +16,7 @@ dependencies:
   repository: "file://../druid"
 - name: seaweedfs
   version: ^1.0.0
-  condition: global.deepStorage.seaweedfs
+  condition: portal.analytics.enabled, portal.intelligence.enabled
   repository: "file://../seaweedfs"
 - name: mysql
   version: 12.3.5
