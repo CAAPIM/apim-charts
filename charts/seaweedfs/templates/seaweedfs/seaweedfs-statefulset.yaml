@@ -78,7 +78,7 @@ spec:
       {{- end }}
       containers:
         - name: seaweedfs
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.imagePullPolicy }}
           env:
             - name: POD_IP

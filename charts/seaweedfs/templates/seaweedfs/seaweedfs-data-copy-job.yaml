@@ -42,7 +42,7 @@ spec:
       {{- end }}
       initContainers:
         - name: wait-for-services
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
             - /bin/bash
             - -c
@@ -162,7 +162,7 @@ spec:
           emptyDir: {}
       containers:
         - name: data-copier
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
             - rclone
             - --stats-one-line
