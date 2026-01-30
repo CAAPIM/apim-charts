@@ -3,6 +3,7 @@
 ### Create a new tenant on your API Developer Portal
 * [Create a New Tenant ](#create-a-new-tenant)
 * [Migrate from Docker Swarm or Helm 2 Chart (v4.4 and above)](portal-migration/README.md)
+* [Minio to SeaweedFS Data Migration (v5.4 and above)](MINIO-TO-SEAWEEDFS-MIGRATION.md)
 
 ## Create a New Tenant
 ### create-tenant.sh

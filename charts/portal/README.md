@@ -6,13 +6,46 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.3.20 General Updates
-- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
-
 ## 2.3.19 General Updates
+- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
 - This new version of the chart supports API Portal 5.4
 - DB container(for testing) upgraded to support 8.4.5 MySQL version.
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
+- Added seaweedfs as s3 storage for analytics data
+  - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
+  - This is not ***enabled by default***.
+    - This only gets added when you install the Chart.
+    - If you wish to enable this and use seaweedfs as deep storage, set global.deepStorage.seaweedfs to true
+    ```
+    global:
+      deepStorage:
+        seaweedfs: false
+        bucketName: api-metrics
+        ...
+        auth:
+          secretName: seaweedfs-s3-secret
+        ...
+    ```
+    - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
+      - A Helm install will ***NOT*** data migration.
+      - A Helm upgrade will run the data migration and bucket name can be customized.
+      - Make Sure that the value seaweedfs.minio.bucketName is same as the druid.minio.bucketName.
+      - The migrated data will be stored in the new bucket global.deepStorage.bucketName which the druid stack starts using is seaweedfs is enabled.
+    ```
+    global:
+      deepStorage:
+        seaweedfs: false
+        enableDataMigration: true
+        bucketName: api-metrics
+        ...
+        auth:
+          secretName: seaweedfs-s3-secret
+        ...
+    seaweedfs:
+      ...
+      minio:
+        bucketName: api-metrics
+    ```
 
 ## 2.3.18 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
