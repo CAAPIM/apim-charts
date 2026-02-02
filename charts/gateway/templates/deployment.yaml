@@ -601,13 +601,21 @@ spec:
     {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.gemfire.tls.enabled) }}
         - name: {{ $.Release.Name }}-ext-gemfire-keystore
           secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
             items:
             - key: keystore.p12
               path: keystore.p12
         - name: {{ $.Release.Name }}-ext-gemfire-truststore
           secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
             secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
             items:
             - key: truststore.p12
               path: truststore.p12
