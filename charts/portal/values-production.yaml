@@ -9,8 +9,8 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
-  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  # Set this to true if there is already an existing database secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, the database-secret will be created automatically with values from global.databaseUsername, global.databasePassword, and global.demoDatabaseRootPassword.
   useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
@@ -59,7 +59,7 @@ portal:
     secretName: ssg-secret
   # username: admin
   # password: M2NlY2RhZTMyZDZkNWMyZGI3
-# Internal password for the Portal API - auto-generated on install
+  # Internal password for the Portal API - auto-generated on install
   papi:
     secretName: papi-secret
   # password: 7layer
@@ -68,12 +68,12 @@ portal:
   ssoDebug: false
   hostnameWhitelist:
   defaultTenantId: apim
-  #Configuration to use custom registries to pull the container images with appropriate credentials.
-  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  # Configuration to use custom registries to pull the container images with appropriate credentials.
+  # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
-  #Set this to true if there is already an existing pull secret available.
+  # Set this to true if there is already an existing pull secret available.
   useExistingPullSecret: false
-  #Set this if you would like to add an image pull secret directly to the Portal deployment.
+  # Set this if you would like to add an image pull secret directly to the Portal deployment.
   imagePullSecret:
     enabled: false
     username:
@@ -86,7 +86,7 @@ tls:
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
 # then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
-# The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
+# The job will still run, but will not update anything.
 # During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
 # If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates.
 # Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
@@ -127,23 +127,23 @@ tls:
 
 # Kubernetes Ingress
 ingress:
+# Use a kubernetes/openshift ingress
   class:
     name: nginx
     enabled: true
-  # Use a kubernetes/openshift ingress
   type:
     kubernetes: true
     openshift: false
-  # existingSecret:
+# existingSecret:
   secretName: dispatcher-tls
-  ## To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
-  ## Using other ingress controllers will work as long as they support SSL Passthrough.
+  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
+  ## Using other ingress controllers will work as long as they support SSL Passthrough
   create: false
 # Configure additional ingress controller specific annotations
   annotations:
     # kubernetes.io/ingress.class: nginx
-     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
@@ -970,8 +970,8 @@ jobs:
   # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: {}
   labels: {}
-# nodeSelector: {}
-# tolerations: []
+  # nodeSelector: {}
+  # tolerations: []
   # set default imagePullPolicy for db-upgrade-portal, db-upgrade-rbac and cert-upgrade jobs
   image:
     pullPolicy: IfNotPresent
@@ -993,64 +993,146 @@ jobs:
       # memory: 1000Mi
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
-# in any production environment.
-# MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+# MySQL Configuration for Portal Chart
+# This configuration enables the standalone MySQL StatefulSet
+# instead of using the Bitnami MySQL subchart
 mysql:
+  # Image configuration
   image:
-    tag: "8.4.5-debian-12-r0"
-    repository: caapim/mysql
-  auth:
-    username: portal
-    existingSecret: database-secret
-  # primary:
-  #   podSecurityContext:
-  #     enabled: true
-  #     fsGroup: 100
-  #   containerSecurityContext:
-  #     enabled: true
-  #     runAsUser: 1001
+    repository: docker.io/mysql
+    tag: "8.4.5"
+    pullPolicy: IfNotPresent
+
+  # Service configuration
+  service:
+    port: 3306
+    sessionAffinity: ""
+    sessionAffinityConfig: {}
+    nodePort: ""
+    extraPorts: []
+    externalTrafficPolicy: ""
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+    subPath: ""
+    existingClaim: ""
+    selector: {}
+    annotations: {}
+
+  # Pod configuration
+  podManagementPolicy: "OrderedReady"
+  revisionHistoryLimit: 10
+  podAnnotations: {}
+  podLabels: {}
+  schedulerName: ""
+  priorityClassName: ""
+  terminationGracePeriodSeconds: 30
+
+  # Security contexts
+  podSecurityContext: {}
+  #   fsGroup: 999
+  #   runAsUser: 999
+  #   runAsNonRoot: true
+
+
+  containerSecurityContext:
+    runAsUser: 1001
+    runAsGroup: 1001
+
+  # Resource limits
+  resources: {}
+  #   requests:
+  #     cpu: 250m
+  #     memory: 1Gi
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
+
+  # Affinity, node selector, and tolerations
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  topologySpreadConstraints: []
+
+  # Probes configuration
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 30
+
+  # MySQL configuration file (my.cnf)
+  # Leave empty to use the default configuration
+  configuration: ""
+  # Example custom configuration:
+  # configuration: |-
+  #   [client]
+  #   port=3306
+  #   socket=/var/lib/mysql/mysql.sock
+  #   default-character-set=UTF8MB4
+  #   [mysqld]
+  #   port=3306
+  #   bind-address=0.0.0.0
+  #   character-set-server=UTF8MB4
+  #   max_allowed_packet=20M
+
+  # Init scripts
+  # Scripts to run when MySQL starts for the first time
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
-  primary:
-    configuration: |-
-      [client]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=utf8mb4
-      plugin_dir=/opt/bitnami/mysql/plugin
-      [mysqld]
-      mysql_native_password=ON
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/plugin
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8mb4
-      character-set-server=utf8mb4_0900_ai_ci
-      innodb_log_buffer_size=32M
-      innodb_log_file_size=80M
-      max_allowed_packet=8M
-      group_concat_max_len=512000
-      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-      bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-10"
+
+
+  # Use an existing ConfigMap for init scripts
+  initdbScriptsConfigMap: ""
+
+  # Extra environment variables
+  extraEnvVars: []
+  # Example:
+  # extraEnvVars:
+  #   - name: TZ
+  #     value: "America/New_York"
+
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+
+  # Extra volumes and volume mounts
+  extraVolumes: []
+  extraVolumeMounts: []
+
+  # Sidecar containers
+  sidecars: []
+
+  # Init containers
+  initContainers: []
+
+  # Additional labels for all MySQL resources
+  additionalLabels: {}
+
+  # Common annotations for all MySQL resources
   commonAnnotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-weight: "-10"
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-10"

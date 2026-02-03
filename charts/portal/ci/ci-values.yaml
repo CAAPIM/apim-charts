@@ -2,6 +2,6 @@ global:
   portalRepository: caapim/
   pullSecret: broadcom-apim
   # these default to mysql settings above, change if connecting to an external database.
-  setupDemoDatabase: false
+  setupDemoDatabase: true
 portal:
   registryCredentials: supersecret

@@ -1,0 +1,58 @@
+{{- if .Values.database.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "gateway.fullname" . }}-mysql
+  labels:
+    app: {{ template "gateway.name" . }}-mysql
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  {{- end }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  {{- if .Values.mysql.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.mysql.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.mysql.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.mysql.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  ports:
+  - name: mysql
+    port: {{ .Values.mysql.service.port | default 3306 }}
+    targetPort: mysql
+    protocol: TCP
+    {{- if .Values.mysql.service.nodePort }}
+    nodePort: {{ .Values.mysql.service.nodePort }}
+    {{- end }}
+  {{- if .Values.mysql.service.extraPorts }}
+  {{- toYaml .Values.mysql.service.extraPorts | nindent 2 }}
+  {{- end }}
+  {{- if .Values.mysql.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.mysql.service.externalTrafficPolicy }}
+  {{- end }}
+  selector:
+    app: {{ template "gateway.fullname" . }}-mysql
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: mysql
+{{- end }}
+

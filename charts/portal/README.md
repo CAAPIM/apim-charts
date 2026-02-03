@@ -6,6 +6,13 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.22 General Updates
+- Removal of bitnami
+  - mysql has been replaced with a simple statefulset. This is for trying out the Portal Chart only and does not represent production configuration, an external MySQL database should always be used in production.
+  - The Bitnami RabbitMQ Chart has been placed in the charts folder temporarily
+- Upgrading to the latest version of the Chart will not remove the Bitnami MySQL statefulset or persistent volume claim (PVC)
+  - These will need to be removed manually if you are using this in a development environment
+
 ## 2.3.21 General Updates
 - Temporary switch of bitnamilegacy/mysql to caapim/mysql.
 
@@ -910,24 +917,65 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.statefulsetLabels` | RabbitMQ statefulset labels. Evaluated as a template | `{}` |
 
 ## MySQL
-The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+
+### MySQL StatefulSet
+The Portal chart includes a standalone MySQL StatefulSet for demo/development purposes. This can be enabled by setting `global.setupDemoDatabase: true`.
 
 **_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.4.4-debian-12-r0` |
-| `mysql.auth.username`           | MySQL Username   | `admin` |
-| `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
-| `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
-| `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
-| `mysql.primary.pdb.create`      | Create PodDisruptionBudget (PDB) object   | `false` |
-| `mysql.primary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
-| `mysql.primary.pdb.minAvailable` | Minimum number of available pods | `1` |
-| `mysql.secondary.pdb.create`    | Create PodDisruptionBudget (PDB) object   | `false` |
-| `mysql.secondary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
-| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `not set` |
+| `mysql.image.repository`         | MySQL Image repository   | `docker.io/mysql` |
+| `mysql.image.tag`                | MySQL Image tag   | `8.4.5` |
+| `mysql.image.pullPolicy`         | Image pull policy   | `IfNotPresent` |
+| `mysql.service.port`             | MySQL service port   | `3306` |
+| `mysql.service.sessionAffinity`  | Session affinity for MySQL service   | `""` |
+| `mysql.service.nodePort`         | NodePort for MySQL service   | `""` |
+| `mysql.service.extraPorts`       | Extra ports for MySQL service   | `[]` |
+| `mysql.persistence.enabled`      | Enable persistence using PVC   | `true` |
+| `mysql.persistence.storageClass` | PVC Storage Class   | `""` |
+| `mysql.persistence.accessModes`  | PVC Access Modes   | `["ReadWriteOnce"]` |
+| `mysql.persistence.size`         | PVC Storage Size   | `8Gi` |
+| `mysql.persistence.existingClaim`| Use existing PVC   | `""` |
+| `mysql.persistence.annotations`  | Annotations for PVC   | `{}` |
+| `mysql.podManagementPolicy`      | StatefulSet pod management policy   | `OrderedReady` |
+| `mysql.revisionHistoryLimit`     | Number of revisions to retain   | `10` |
+| `mysql.podAnnotations`           | Annotations for MySQL pods   | `{}` |
+| `mysql.podLabels`                | Labels for MySQL pods   | `{}` |
+| `mysql.podSecurityContext`       | Security context for MySQL pods   | `{}` |
+| `mysql.containerSecurityContext` | Security context for MySQL container   | `{}` |
+| `mysql.resources`                | CPU/Memory resource requests/limits   | `{}` |
+| `mysql.livenessProbe.enabled`    | Enable liveness probe   | `true` |
+| `mysql.livenessProbe.initialDelaySeconds` | Initial delay for liveness probe   | `30` |
+| `mysql.livenessProbe.periodSeconds` | Period for liveness probe   | `10` |
+| `mysql.livenessProbe.timeoutSeconds` | Timeout for liveness probe   | `5` |
+| `mysql.livenessProbe.failureThreshold` | Failure threshold for liveness probe   | `3` |
+| `mysql.readinessProbe.enabled`   | Enable readiness probe   | `true` |
+| `mysql.readinessProbe.initialDelaySeconds` | Initial delay for readiness probe   | `5` |
+| `mysql.readinessProbe.periodSeconds` | Period for readiness probe   | `5` |
+| `mysql.readinessProbe.timeoutSeconds` | Timeout for readiness probe   | `1` |
+| `mysql.readinessProbe.failureThreshold` | Failure threshold for readiness probe   | `3` |
+| `mysql.startupProbe.enabled`     | Enable startup probe   | `false` |
+| `mysql.configuration`            | MySQL configuration (my.cnf)   | `""` (uses default) |
+| `mysql.initdbScripts`            | Dictionary of initdb scripts   | `{}` |
+| `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts   | `""` |
+| `mysql.extraEnvVars`             | Extra environment variables   | `[]` |
+| `mysql.extraVolumes`             | Extra volumes   | `[]` |
+| `mysql.extraVolumeMounts`        | Extra volume mounts   | `[]` |
+| `mysql.affinity`                 | Affinity for pod assignment   | `{}` |
+| `mysql.nodeSelector`             | Node labels for pod assignment   | `{}` |
+| `mysql.tolerations`              | Tolerations for pod assignment   | `[]` |
+| `mysql.additionalLabels`         | Additional labels for MySQL resources   | `{}` |
+| `mysql.commonAnnotations`        | Common annotations for MySQL resources (supports helm hooks)   | `{}` |
 
+**Authentication Configuration:**
+MySQL authentication is configured via global values:
+- `global.useExistingDatabaseSecret`: use an existing database secret (default: `false`)
+- `global.databaseSecret`: Secret name (default: `database-secret`)
+- `global.databaseUsername`: MySQL username (default: `portal`)
+- `global.databasePassword`: MySQL password (auto-generated if not set)
+- `global.demoDatabaseRootPassword`: MySQL root password (auto-generated if not set)
+- `global.databaseName`: Database name (default: `portal`)
 
 ## Ingress-Nginx
 
