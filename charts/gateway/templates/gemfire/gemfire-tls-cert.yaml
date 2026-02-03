@@ -1,4 +1,5 @@
-{{- if and (.Values.config.gemfire.external.enabled) (.Values.config.gemfire.tls.enabled) (not .Values.config.gemfire.tls.existingSecret) }}
+{{- if or (.Values.config.gemfire.embedded.enabled) (.Values.config.gemfire.external.enabled) }}
+{{- if and (.Values.config.gemfire.tls.enabled) (not .Values.config.gemfire.tls.existingSecret) }}
 {{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -20,10 +21,15 @@ spec:
     - server auth
     - client auth
   dnsNames:
-    - {{ $.Release.Name }}-gemfire-client
+    - {{ $.Release.Name }}-gemfire-gateway
   issuerRef:
+    {{- if .Values.config.gemfire.embedded.enabled }}
+    kind: Issuer
+    name: {{ $.Release.Name }}-local-issuer
+    {{- else if .Values.config.gemfire.external.enabled }}
     kind: ClusterIssuer
     name: gemfire-ca-issuer
+    {{- end }}
     group: cert-manager.io
   secretName: {{ $.Release.Name }}-gemfire-tls-cert
   secretTemplate:
@@ -49,5 +55,6 @@ spec:
       passwordSecretRef:
         key: password
         name: {{ $.Release.Name }}-gemfire-tls-cert
+{{- end }}
 {{- end }}
 {{- end }}
