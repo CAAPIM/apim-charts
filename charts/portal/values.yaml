@@ -375,6 +375,21 @@ dispatcher:
   additionalSecret:
 #    key1: value
 
+# Custom URLs configuration for Dispatcher
+  customUrls:
+    enabled: false
+    domains:
+#      - tenant: "tenant1"
+#        domain: "example.com"
+#        cert: |
+#          -----BEGIN CERTIFICATE-----
+#          ...
+#          -----END CERTIFICATE-----
+#        key: |
+#          -----BEGIN PRIVATE KEY-----
+#          ...
+#          -----END PRIVATE KEY-----
+
 portalData:
   forceRedeploy: false
   replicaCount: 1

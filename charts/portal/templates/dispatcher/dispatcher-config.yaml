@@ -13,6 +13,19 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   USE_PROXY_PROTOCOL: "false"
+{{- if .Values.dispatcher.customUrls.enabled }}
+  CUSTOM_URLS_ENABLED: "true"
+{{- range .Values.dispatcher.customUrls.domains }}
+{{- $tenantUpper := .tenant | upper | replace "." "_" | replace "-" "_" }}
+{{- $domainUpper := .domain | upper | replace "." "_" | replace "-" "_" }}
+{{- $certBase64 := .cert | b64enc }}
+{{- $keyBase64 := .key | b64enc }}
+  CUSTOM_DOMAIN_{{ $tenantUpper }}_{{ $domainUpper }}_CERT: {{ $certBase64 | quote }}
+  CUSTOM_DOMAIN_{{ $tenantUpper }}_{{ $domainUpper }}_KEY: {{ $keyBase64 | quote }}
+{{- end }}
+{{- else }}
+  CUSTOM_URLS_ENABLED: "false"
+{{- end }}
 {{ if .Values.dispatcher.additionalEnv }}
 {{- range $key, $val := .Values.dispatcher.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
