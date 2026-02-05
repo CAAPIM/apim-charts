@@ -17,11 +17,11 @@ data:
   CUSTOM_URLS_ENABLED: "true"
 {{- range .Values.dispatcher.customUrls.domains }}
 {{- $tenantUpper := .tenant | upper | replace "." "_" | replace "-" "_" }}
-{{- $domainUpper := .domain | upper | replace "." "_" | replace "-" "_" }}
+{{- $domainUpper := .domain | upper | replace "." "_" | replace "-" "__" }}
 {{- $certBase64 := .cert | b64enc }}
 {{- $keyBase64 := .key | b64enc }}
-  CUSTOM_DOMAIN_{{ $tenantUpper }}_{{ $domainUpper }}_CERT: {{ $certBase64 | quote }}
-  CUSTOM_DOMAIN_{{ $tenantUpper }}_{{ $domainUpper }}_KEY: {{ $keyBase64 | quote }}
+  CD_{{ $tenantUpper }}_ZZ_{{ $domainUpper }}_CERT: {{ $certBase64 | quote }}
+  CD_{{ $tenantUpper }}_ZZ_{{ $domainUpper }}_KEY: {{ $keyBase64 | quote }}
 {{- end }}
 {{- else }}
   CUSTOM_URLS_ENABLED: "false"
