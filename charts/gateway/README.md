@@ -968,8 +968,10 @@ redis:
 
 ### GemFire Configuration (11.1.3)
 Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
-When TLS is enabled, cert-manager can automatically generate the keystore and truststore for the connection.
-Comment out the following
+Prerequisites:
+ClusterIssuer in cert-manager is required to generate TLS secret automatically when TLS is enabled but secret is not provided.
+
+To configure gemfire as data provider comment out existing system properties
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
 # com.l7tech.server.extension.sharedCounterProvider=ssgdb
@@ -989,6 +991,8 @@ Set the following system properties as needed
 | `config.gemfire.auth.username`                              | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.                                           | `default`              |
 | `config.gemfire.auth.password`                              | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.                                            | ''                     |
 | `config.gemfire.tls.enabled`                                | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                                                             | `false`                |
+| `config.gemfire.tls.certificate.issuerRef.kind`             | Specifies cert-manager issuer type: Issuer or ClusterIssuer.Required if existingSecret is not provided                                          | `ClusterIssuer`                |
+| `config.gemfire.tls.certificate.issuerRef.name`             | The exact name of the Issuer or ClusterIssuer object to use. Required if existingSecret is not provided                                         | `myClusterIssuer`                |
 | `config.gemfire.tls.existingSecret`                         | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12 if provided. Comment out when cert-manager is enabled. | ``                     |
 | `config.gemfire.tls.password`                               | Pasword for truststore.12 and keystore.p12, can be plaintext or openssl encrypted. If not provided, default to clusterPassword                  | clusterPassword        |
 | `config.gemfire.tls.additionalProperties`                   | Additional tls related properties.                                                                                                              | ``                     |

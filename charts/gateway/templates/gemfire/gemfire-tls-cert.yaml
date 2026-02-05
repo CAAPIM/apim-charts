@@ -23,13 +23,8 @@ spec:
   dnsNames:
     - {{ $.Release.Name }}-gemfire-gateway
   issuerRef:
-    {{- if .Values.config.gemfire.embedded.enabled }}
-    kind: Issuer
-    name: {{ $.Release.Name }}-local-issuer
-    {{- else if .Values.config.gemfire.external.enabled }}
-    kind: ClusterIssuer
-    name: gemfire-ca-issuer
-    {{- end }}
+    kind: {{ .Values.config.gemfire.tls.certificate.issuerRef.kind }}
+    name: {{ .Values.config.gemfire.tls.certificate.issuerRef.name }}
     group: cert-manager.io
   secretName: {{ $.Release.Name }}-gemfire-tls-cert
   secretTemplate:
