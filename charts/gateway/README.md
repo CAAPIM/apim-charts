@@ -969,7 +969,7 @@ redis:
 ### GemFire Configuration (11.1.3)
 Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
 Prerequisites:
-ClusterIssuer in cert-manager is required to generate TLS secret automatically when TLS is enabled but secret is not provided.
+ClusterIssuer/Issuer in cert-manager is required to generate TLS secret automatically when TLS is enabled but secret is not provided.
 
 To configure gemfire as data provider comment out existing system properties
 ```
