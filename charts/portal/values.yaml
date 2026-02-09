@@ -376,19 +376,19 @@ dispatcher:
 #    key1: value
 
 # Custom URLs configuration for Dispatcher
+# Certificates and keys should be provided via --set-file on Helm command line
+# Example:
+#   helm install portal ./charts/portal \
+#     --set dispatcher.customUrls.enabled=true \
+#     --set-file dispatcher.customUrls.domains[0].certFile=/path/to/cert.pem \
+#     --set-file dispatcher.customUrls.domains[0].keyFile=/path/to/key.pem
   customUrls:
     enabled: false
     domains:
 #      - tenant: "tenant1"
 #        domain: "example.com"
-#        cert: |
-#          -----BEGIN CERTIFICATE-----
-#          ...
-#          -----END CERTIFICATE-----
-#        key: |
-#          -----BEGIN PRIVATE KEY-----
-#          ...
-#          -----END PRIVATE KEY-----
+#        certFile: ""  # Set via --set-file dispatcher.customUrls.domains[0].certFile=/path/to/cert.pem
+#        keyFile: ""   # Set via --set-file dispatcher.customUrls.domains[0].keyFile=/path/to/key.pem
 
 portalData:
   forceRedeploy: false
