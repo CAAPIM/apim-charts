@@ -760,59 +760,6 @@ Portal Analytics
 ## Subcharts
 For Production, use an external MySQL Server.
 
-## Intelligence (APIM Intelligence)
-The Intelligence subchart provides advanced analytics and third-party agent integration capabilities.
-
-**Important Dependencies:**
-- When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
-  - **SeaweedFS**: Required for S3-compatible storage (data persistence)
-  - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
-- APIM service automatically receives S3 configuration environment variables when intelligence is enabled
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `portal.intelligence.enabled` | Enable Intelligence service | `false` |
-| `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
-| `apim-intelligence.intelligenceServer.s3.endpoint` | S3 endpoint URL (SeaweedFS) | `http://seaweedfs-s3:8333` |
-| `apim-intelligence.intelligenceServer.s3.region` | S3 region | `us-east-1` |
-| `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
-
-For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
-
-## SeaweedFS
-The SeaweedFS subchart provides S3-compatible object storage for analytics data and intelligence services.
-
-**Automatic Deployment:**
-- Deployed when `global.deepStorage.seaweedfs: true` OR `portal.intelligence.enabled: true`
-- Required for Intelligence service data persistence
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `global.deepStorage.seaweedfs` | Enable SeaweedFS for deep storage | `true` |
-| `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
-| `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
-| `seaweedfs.replicaCount` | Number of SeaweedFS replicas | `1` |
-| `seaweedfs.persistence.storage.seaweedfs` | SeaweedFS PVC Size | `50Gi` |
-
-For detailed SeaweedFS configuration and migration guide, see [Minio to SeaweedFS Migration Guide](../../utils/MINIO-TO-SEAWEEDFS-MIGRATION.md).
-
-## Kafka
-The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) for message streaming.
-
-**Automatic Deployment:**
-- Deployed when `kafka.enabled: true`
-- Required for Intelligence service
-
-| Parameter | Description | Default |
-| --- | --- | --- |
-| `kafka.enabled` | Enable Kafka subchart | `false` |
-| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
-| `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
-| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
-| `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
-
-For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
-
 ## Druid
 The following table lists the configured parameters of the Druid Subchart:
 
