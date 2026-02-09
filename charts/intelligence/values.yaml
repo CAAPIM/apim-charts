@@ -65,6 +65,12 @@ global:
   schedulerName: ""
   # Additional labels to be applied to all resources
   additionalLabels: {}
+  # Deep storage configuration (S3/SeaweedFS) - Required for Intelligence
+  deepStorage:
+    auth:
+      secretName: "seaweedfs-s3-secret"
+    intelligence:
+      bucketName: apim-patches
 
 # Intelligence Server configuration
 intelligenceServer:
@@ -123,6 +129,17 @@ intelligenceServer:
     internalTrafficPolicy: ""
   # The host and port for the portal data service
   portalDataHost: "portal-data:8080"
+  
+  # S3 Configuration (for SeaweedFS or other S3-compatible storage)
+  s3:
+    # S3 URL (endpoint)
+    url: "http://seaweedfs-s3:8333"
+    # Use path-style access (required for SeaweedFS)
+    pathStyleAccess: true
+    # Secret keys for accessing S3 credentials
+    accessKeyKey: "admin_access_key_id"
+    secretKeyKey: "admin_secret_access_key"
+    maxConcurrentPatchUploads: 5
 
 # NOTE: When this chart is used as a subchart, it requires Kafka configuration
 # for its initContainer to discover brokers. The parent chart must provide these
