@@ -59,7 +59,7 @@ spec:
               local waitForS3InSeconds=$2
               local max_attempts=$(($waitForS3InSeconds/5))  # 10 minutes total (5s * 120)
               local attempt=1
-              
+
               echo "Waiting for service at seaweedfs-s3/$port... for $waitForS3InSeconds seconds"
               while [ $attempt -le $max_attempts ]; do
                 if timeout 5 bash -c ">/dev/tcp/seaweedfs-s3/$port" 2>/dev/null; then
@@ -87,7 +87,7 @@ spec:
                 --actions Read \
                 --apply true" |\
                 /usr//bin/weed shell
-          {{- end }}  
+          {{- end }}
           {{- end }}
         {{- if .Values.filer.s3.enableAuth }}
         volumeMounts:

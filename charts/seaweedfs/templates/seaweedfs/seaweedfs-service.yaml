@@ -26,7 +26,7 @@ spec:
     port: {{ .Values.master.grpcPort }}
     targetPort: {{ .Values.master.grpcPort }}
     protocol: TCP
-  
+
   # Volume ports
   - name: "swfs-volume"
     port: {{ .Values.volume.port }}
@@ -36,7 +36,7 @@ spec:
     port: {{ .Values.volume.grpcPort }}
     targetPort: {{ .Values.volume.grpcPort }}
     protocol: TCP
-  
+
   # Filer ports
   - name: "swfs-filer"
     port: {{ .Values.filer.port }}
@@ -46,7 +46,7 @@ spec:
     port: {{ .Values.filer.grpcPort }}
     targetPort: {{ .Values.filer.grpcPort }}
     protocol: TCP
-  
+
   # S3 ports (if enabled)
   {{- if .Values.s3.enabled }}
   - name: "swfs-s3"
@@ -60,7 +60,7 @@ spec:
     protocol: TCP
   {{- end }}
   {{- end }}
-  
+
   # SFTP ports (if enabled)
   {{- if .Values.sftp.enabled }}
   - name: "swfs-sftp"
@@ -68,7 +68,7 @@ spec:
     targetPort: {{ .Values.sftp.port }}
     protocol: TCP
   {{- end }}
-  
+
   # Server metrics port (single metrics endpoint for all services)
   {{- if .Values.metricsPort }}
   - name: "server-metrics"
@@ -76,6 +76,6 @@ spec:
     targetPort: {{ .Values.metricsPort }}
     protocol: TCP
   {{- end }}
-  
+
   selector:
     app: seaweedfs-s3
