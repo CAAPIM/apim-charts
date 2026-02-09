@@ -59,6 +59,8 @@ global:
       secretName: seaweedfs-s3-secret
     analytics:
       bucketName: api-metrics
+    intelligence:
+      bucketName: apim-patches
 
 portal:
   # NOTE: domain is now set in global.domain (above) for consistency across all components
@@ -282,6 +284,10 @@ apim:
 # tolerations: []
 # affinity: {}
   additionalEnv:
+# S3 Configuration (SeaweedFS) - Used when intelligence is enabled
+  s3:
+    url: "http://seaweedfs-s3:8333"
+    pathStyleAccess: "true"
 
 authenticator:
   forceRedeploy: false
