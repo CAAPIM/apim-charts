@@ -1339,7 +1339,8 @@ mysql:
   # schedulerName: ""
   # priorityClassName: ""
   # terminationGracePeriodSeconds: ""
-  podSecurityContext: {}
+  podSecurityContext:
+    fsGroup: 1001
   containerSecurityContext:
     runAsUser: 1001
     runAsGroup: 1001

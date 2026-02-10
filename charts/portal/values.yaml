@@ -897,9 +897,9 @@ mysql:
 
   # Security contexts
   podSecurityContext: {}
-  #   fsGroup: 999
-  #   runAsUser: 999
-  #   runAsNonRoot: true
+    fsGroup: 1001
+  # runAsUser: 1001
+  # runAsNonRoot: true
 
 
   containerSecurityContext:
