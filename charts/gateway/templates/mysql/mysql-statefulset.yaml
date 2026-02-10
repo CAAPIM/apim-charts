@@ -205,7 +205,7 @@ spec:
       - name: custom-init-scripts
         configMap:
           {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
-          name: otk-db-scripts-cm
+          name: {{ .Values.mysql.initdbScriptsConfigMap | default "otk-db-scripts-cm" }}
           {{- else }}
           name: {{ .Values.mysql.initdbScriptsConfigMap | default (printf "%s-mysql-init-scripts" (include "gateway.fullname" .)) }}
           {{- end }}
