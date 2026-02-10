@@ -1005,12 +1005,19 @@ mysql:
 
   # Service configuration
   service:
+    type: ClusterIP
     port: 3306
+    annotations: {}
     sessionAffinity: ""
     sessionAffinityConfig: {}
     nodePort: ""
     extraPorts: []
     externalTrafficPolicy: ""
+
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
   # Persistence configuration
   persistence:

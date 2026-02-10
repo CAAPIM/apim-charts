@@ -16,16 +16,19 @@ metadata:
   annotations:
     meta.helm.sh/release-name: {{ .Release.Name }}
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
-  {{- if or .Values.additionalAnnotations .Values.redis.commonAnnotations }}
+  {{- if or .Values.additionalAnnotations .Values.redis.commonAnnotations .Values.redis.service.annotations }}
   {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- range $key, $val := .Values.redis.commonAnnotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
+  {{- range $key, $val := .Values.redis.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
   {{- end }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.redis.service.type | default "ClusterIP" }}
   ports:
   - name: redis
     port: {{ .Values.redis.service.port | default 6379 }}

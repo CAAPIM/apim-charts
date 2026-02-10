@@ -999,7 +999,12 @@ The Redis StatefulSet provides standalone Redis functionality with optional auth
 | `redis.auth.username`            | Redis username (optional, for ACL-based auth) | ``  |
 | `redis.auth.password`            | Redis password | `mypassword`  |
 | `redis.auth.existingSecret`      | Use existing secret for credentials | ``  |
+| `redis.service.type`             | Redis service type | `ClusterIP`  |
 | `redis.service.port`             | Redis service port | `6379`  |
+| `redis.service.annotations`      | Annotations for the Redis service | `{}`  |
+| `redis.pdb.create`               | Create PodDisruptionBudget for Redis | `false`  |
+| `redis.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
+| `redis.pdb.minAvailable`         | Minimum available pods | ``  |
 | `redis.persistence.enabled`      | Enable persistence using PVC | `false`  |
 | `redis.persistence.storageClass` | Storage class for PVC | ``  |
 | `redis.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |
@@ -1323,7 +1328,12 @@ In order the create the database on the remote server, the provided user in the 
 | `mysql.auth.username`            | MySQL user (optional) | `gateway`  |
 | `mysql.auth.password`            | MySQL user password | `mypassword`  |
 | `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
+| `mysql.service.type`             | MySQL service type | `ClusterIP`  |
 | `mysql.service.port`             | MySQL service port | `3306`  |
+| `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
+| `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL | `false`  |
+| `mysql.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
+| `mysql.pdb.minAvailable`         | Minimum available pods | ``  |
 | `mysql.persistence.enabled`      | Enable persistence using PVC | `true`  |
 | `mysql.persistence.storageClass` | Storage class for PVC | ``  |
 | `mysql.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |

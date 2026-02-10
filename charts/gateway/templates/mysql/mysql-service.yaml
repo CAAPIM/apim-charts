@@ -16,11 +16,14 @@ metadata:
   annotations:
     meta.helm.sh/release-name: {{ .Release.Name }}
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
-  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations .Values.mysql.service.annotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
   {{- range $key, $val := .Values.additionalAnnotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.service.annotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
@@ -29,7 +32,7 @@ metadata:
   {{- end }}
   {{- end }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.mysql.service.type | default "ClusterIP" }}
   {{- if .Values.mysql.service.sessionAffinity }}
   sessionAffinity: {{ .Values.mysql.service.sessionAffinity }}
   {{- end }}

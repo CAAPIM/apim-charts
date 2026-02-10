@@ -928,10 +928,15 @@ The Portal chart includes a standalone MySQL StatefulSet for demo/development pu
 | `mysql.image.repository`         | MySQL Image repository   | `docker.io/mysql` |
 | `mysql.image.tag`                | MySQL Image tag   | `8.4.5` |
 | `mysql.image.pullPolicy`         | Image pull policy   | `IfNotPresent` |
+| `mysql.service.type`             | MySQL service type   | `ClusterIP` |
 | `mysql.service.port`             | MySQL service port   | `3306` |
+| `mysql.service.annotations`      | Annotations for the MySQL service   | `{}` |
 | `mysql.service.sessionAffinity`  | Session affinity for MySQL service   | `""` |
 | `mysql.service.nodePort`         | NodePort for MySQL service   | `""` |
 | `mysql.service.extraPorts`       | Extra ports for MySQL service   | `[]` |
+| `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL   | `false` |
+| `mysql.pdb.maxUnavailable`       | Maximum unavailable pods   | `""` |
+| `mysql.pdb.minAvailable`         | Minimum available pods   | `""` |
 | `mysql.persistence.enabled`      | Enable persistence using PVC   | `true` |
 | `mysql.persistence.storageClass` | PVC Storage Class   | `""` |
 | `mysql.persistence.accessModes`  | PVC Access Modes   | `["ReadWriteOnce"]` |

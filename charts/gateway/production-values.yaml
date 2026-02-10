@@ -1287,7 +1287,9 @@ mysql:
     password: mypassword
     # existingSecret: ""
   service:
+    type: ClusterIP
     port: 3306
+    annotations: {}
     # sessionAffinity: ""
     # sessionAffinityConfig: {}
     # nodePort: ""
@@ -1362,7 +1364,10 @@ mysql:
   # extraVolumeMounts: []
   # initContainers: []
   # sidecars: []
-
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
 ####################################################################################
 # Redis Configuration (Standalone - Development/Testing Only)
@@ -1381,7 +1386,9 @@ redis:
     password: mypassword
     # existingSecret: ""
   service:
+    type: ClusterIP
     port: 6379
+    annotations: {}
   persistence:
     enabled: false
     size: 8Gi
@@ -1426,6 +1433,10 @@ redis:
   # extraEnvVars: []
   # extraVolumes: []
   # extraVolumeMounts: []
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
 ##
 ## Subchart Configuration

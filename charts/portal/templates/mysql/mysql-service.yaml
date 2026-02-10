@@ -5,9 +5,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "portal.fullname" . }}-mysql-headless
-  {{- if .Values.mysql.commonAnnotations }}
+  {{- if or .Values.mysql.commonAnnotations .Values.mysql.service.annotations }}
   annotations:
   {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.service.annotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- end }}
@@ -41,9 +44,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ template "portal.fullname" . }}-mysql
-  {{- if .Values.mysql.commonAnnotations }}
+  {{- if or .Values.mysql.commonAnnotations .Values.mysql.service.annotations }}
   annotations:
   {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.service.annotations }}
     {{ $key }}: "{{ $val }}"
   {{- end }}
   {{- end }}
@@ -59,7 +65,7 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.mysql.service.type | default "ClusterIP" }}
   {{- if .Values.mysql.service.sessionAffinity }}
   sessionAffinity: {{ .Values.mysql.service.sessionAffinity }}
   {{- end }}
