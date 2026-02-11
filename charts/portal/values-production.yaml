@@ -1041,7 +1041,7 @@ mysql:
   terminationGracePeriodSeconds: 30
 
   # Security contexts
-  podSecurityContext: {}
+  podSecurityContext:
     fsGroup: 1001
   # runAsUser: 1001
   # runAsNonRoot: true
