@@ -40,6 +40,11 @@ global:
     allowInsecureImages: true
 
   deepStorage:
+    # Enable SeaweedFS for deep storage
+    # Set to true to use SeaweedFS (default when analytics or intelligence is enabled)
+    # Set to false to disable SeaweedFS (will use Minio if configured)
+    # Note: This should be true when either portal.analytics.enabled or portal.intelligence.enabled is true
+    seaweedfs: true
     # Set to true to create a data migration Job from Minio to SeaweedFS
     # The Job runs independently and will not block helm operations
     # Rclone will automatically retry if services are not ready

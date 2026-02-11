@@ -14,10 +14,6 @@ dependencies:
   version: ^1.0.0
   condition: portal.analytics.enabled
   repository: "file://../druid"
-- name: seaweedfs
-  version: ^1.0.0
-  condition: portal.analytics.enabled, portal.intelligence.enabled
-  repository: "file://../seaweedfs"
 - name: mysql
   version: 12.3.5
   repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
@@ -30,6 +26,10 @@ dependencies:
   version: ^1.0.0
   condition: portal.intelligence.enabled
   repository: "file://../intelligence"
+- name: seaweedfs
+  version: ^1.0.0
+  condition: global.deepStorage.seaweedfs
+  repository: "file://../seaweedfs"
 - name: kafka
   version: ^1.3.3
   condition: kafka.enabled

@@ -376,3 +376,29 @@ Create Image Pull Secret
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password (printf "%s:%s" .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
+
+{{/*
+Validate SeaweedFS configuration
+Ensures that SeaweedFS is enabled when analytics or intelligence features are enabled
+Also ensures SeaweedFS is disabled when both analytics and intelligence are disabled
+*/}}
+{{- define "validate-seaweedfs-config" -}}
+{{- $analyticsEnabled := .Values.portal.analytics.enabled -}}
+{{- $intelligenceEnabled := .Values.portal.intelligence.enabled -}}
+{{- $seaweedfsEnabled := .Values.global.deepStorage.seaweedfs -}}
+{{- $minioEnabled := .Values.global.deepStorage.minio -}}
+
+{{- /* Check if analytics or intelligence is enabled but no deep storage is configured */ -}}
+{{- if or $analyticsEnabled $intelligenceEnabled -}}
+  {{- if not (or $seaweedfsEnabled $minioEnabled) -}}
+    {{- fail "ERROR: Analytics or Intelligence is enabled but no deep storage is configured!\nPlease set either:\n  - global.deepStorage.seaweedfs: true (recommended)\n  - global.deepStorage.minio: true (alternative)" -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Check if both analytics and intelligence are disabled but SeaweedFS is enabled */ -}}
+{{- if and (not $analyticsEnabled) (not $intelligenceEnabled) -}}
+  {{- if $seaweedfsEnabled -}}
+    {{- fail "WARNING: SeaweedFS is enabled but both Analytics and Intelligence are disabled!\nSeaweedFS is not needed in this configuration.\nPlease set:\n  - global.deepStorage.seaweedfs: false\nOr enable at least one feature:\n  - portal.analytics.enabled: true\n  - portal.intelligence.enabled: true" -}}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
