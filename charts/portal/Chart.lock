@@ -2,9 +2,6 @@ dependencies:
 - name: druid
   repository: file://../druid
   version: 1.0.19
-- name: seaweedfs
-  repository: file://../seaweedfs
-  version: 1.0.1
 - name: mysql
   repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
   version: 12.3.5
@@ -14,11 +11,14 @@ dependencies:
 - name: apim-intelligence
   repository: file://../intelligence
   version: 1.0.21
+- name: seaweedfs
+  repository: file://../seaweedfs
+  version: 1.0.1
 - name: kafka
   repository: file://../kafka
   version: 1.3.14
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:48399566a733296a100bb3872a1a9136e565980026c998415f69775317f66d92
-generated: "2026-01-19T12:30:59.159506+05:30"
+digest: sha256:5f10a0a7869d2f852be82d3ee52fa96d27a811be08870ca3b5e56a782eeceb83
+generated: "2026-02-11T18:45:29.6907591+05:30"
