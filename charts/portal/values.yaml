@@ -398,7 +398,7 @@ dispatcher:
     enabled: false
     domains:
 #      - tenant: "tenant1"
-#        domain: "example.com"
+#        domain: "api.dev.ca.com"
 #        certFile: ""  # Set via --set-file dispatcher.customUrls.domains[0].certFile=/path/to/cert.pem
 #        keyFile: ""   # Set via --set-file dispatcher.customUrls.domains[0].keyFile=/path/to/key.pem
 
