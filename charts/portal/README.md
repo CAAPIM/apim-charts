@@ -16,18 +16,12 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
 - Added seaweedfs as s3 storage for analytics data
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
-  - This is not ***enabled by default***.
-    - This only gets added when you install the Chart.
-    - If you wish to enable this and use seaweedfs as deep storage, set global.deepStorage.seaweedfs to true
+  - This is ***enabled by default*** via `global.deepStorage.seaweedfs: true`.
+    - This is automatically deployed when you install the Chart.
     ```
     global:
       deepStorage:
         seaweedfs: false
-        bucketName: api-metrics
-        ...
-        auth:
-          secretName: seaweedfs-s3-secret
-        ...
     ```
     - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
       - A Helm install will ***NOT*** data migration.
@@ -762,6 +756,68 @@ Portal Analytics
 
 ## Subcharts
 For Production, use an external MySQL Server.
+
+## Intelligence (APIM Intelligence)
+The Intelligence subchart provides advanced analytics and third-party agent integration capabilities.
+
+**Important Dependencies:**
+- When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
+  - **SeaweedFS**: Required for S3-compatible storage (data persistence)
+  - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
+- APIM service automatically receives S3 configuration environment variables when intelligence is enabled
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.intelligence.enabled` | Enable Intelligence service | `false` |
+| `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
+| `apim-intelligence.intelligenceServer.s3.endpoint` | S3 endpoint URL (SeaweedFS) | `http://seaweedfs-s3:8333` |
+| `apim-intelligence.intelligenceServer.s3.region` | S3 region | `us-east-1` |
+| `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
+
+For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
+
+## SeaweedFS
+The SeaweedFS subchart provides S3-compatible object storage for analytics data and intelligence services.
+
+**Automatic Deployment:**
+- Deployed when `global.deepStorage.seaweedfs: true`
+- By default, `global.deepStorage.seaweedfs: true`
+- Should be set to `true` when either analytics or intelligence is enabled
+- Can be explicitly set to `false` to disable SeaweedFS
+- **Bidirectional Validation**: Helm will fail if:
+  - Analytics or intelligence is enabled WITHOUT deep storage configured (SeaweedFS or Minio)
+  - SeaweedFS is enabled but BOTH analytics AND intelligence are disabled
+```
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `global.deepStorage.seaweedfs` | Enable SeaweedFS subchart deployment | `true` |
+| `global.deepStorage.minio` | Use Minio instead of SeaweedFS for deep storage | `false` |
+| `portal.analytics.enabled` | Enable analytics features (requires SeaweedFS) | `true` |
+| `portal.intelligence.enabled` | Enable intelligence features (requires SeaweedFS) | `false` |
+| `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
+| `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
+| `seaweedfs.replicaCount` | Number of SeaweedFS replicas | `1` |
+| `seaweedfs.persistence.storage.seaweedfs` | SeaweedFS PVC Size | `50Gi` |
+
+For detailed SeaweedFS configuration and migration guide, see [Minio to SeaweedFS Migration Guide](../../utils/MINIO-TO-SEAWEEDFS-MIGRATION.md).
+
+## Kafka
+The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) for message streaming.
+
+**Automatic Deployment:**
+- Deployed when `kafka.enabled: true`
+- Required for Intelligence service
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `kafka.enabled` | Enable Kafka subchart | `false` |
+| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
+| `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
+| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
+| `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
+
+For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
 
 ## Druid
 The following table lists the configured parameters of the Druid Subchart:

@@ -21,3 +21,8 @@ data:
   PORTAL_DATA_HOST: {{ .Values.intelligenceServer.portalDataHost| default "portal-data:8080" | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  # S3 Configuration (SeaweedFS) - Required for Intelligence
+  S3_URL: {{ .Values.intelligenceServer.s3.url | default "http://seaweedfs-s3:8333" | quote }}
+  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | default "api-metrics" | quote }}
+  S3_PATH_STYLE_ACCESS: {{ .Values.intelligenceServer.s3.pathStyleAccess | default "true" | quote }}
+  MAX_CONCURRENT_PATCH_UPLOADS: {{ .Values.intelligenceServer.s3.maxConcurrentPatchUploads | default 5 | quote }}

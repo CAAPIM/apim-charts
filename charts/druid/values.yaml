@@ -19,6 +19,9 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
 # databasePassword: 7layer
+  deepStorage:
+    analytics:
+      bucketName: api-metrics
 
 image:
   zookeeper: zookeeper:5.4

@@ -78,7 +78,7 @@ spec:
       {{- end }}
       containers:
         - name: seaweedfs
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           imagePullPolicy: {{ default "IfNotPresent" .Values.imagePullPolicy }}
           env:
             - name: POD_IP
@@ -156,16 +156,6 @@ spec:
               value: Minio
             - name: RCLONE_CONFIG_MINIO_ENDPOINT
               value: http://minio:9000
-            - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: minio-secret
-                  key: MINIO_ACCESS_KEY
-            - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: minio-secret
-                  key: MINIO_SECRET_KEY
             - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
               value: s3
             - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER

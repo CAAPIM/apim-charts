@@ -47,6 +47,10 @@ global:
     allowInsecureImages: true
 
   deepStorage:
+    # Enable SeaweedFS for deep storage
+    # Set to true to use SeaweedFS (default when analytics or intelligence is enabled)
+    # Set to false to disable SeaweedFS (will use Minio if configured)
+    # Note: This should be true when either portal.analytics.enabled or portal.intelligence.enabled is true
     seaweedfs: true
     # Set to true to create a data migration Job from Minio to SeaweedFS
     # The Job runs independently and will not block helm operations
@@ -60,6 +64,8 @@ global:
       secretName: seaweedfs-s3-secret
     analytics:
       bucketName: api-metrics
+    intelligence:
+      bucketName: apim-patches
 
 portal:
   # NOTE: domain is now set in global.domain (above) for consistency across all components
@@ -71,6 +77,8 @@ portal:
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  #   - seaweedfs subchart will be automatically deployed (required for S3 storage)
+  #   - APIM will receive S3 configuration environment variables
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
@@ -281,6 +289,10 @@ apim:
 # tolerations: []
 # affinity: {}
   additionalEnv:
+# S3 Configuration (SeaweedFS) - Used when intelligence is enabled
+  s3:
+    url: "http://seaweedfs-s3:8333"
+    pathStyleAccess: "true"
 
 authenticator:
   forceRedeploy: false
@@ -488,6 +500,10 @@ tenantProvisioner:
 # tolerations: []
 # affinity: {}
   additionalEnv:
+  # S3 Configuration (SeaweedFS) - Used when intelligence is enabled
+  s3:
+    url: "http://seaweedfs-s3:8333"
+    pathStyleAccess: "true"
 
 image:
   dispatcher: dispatcher:5.4
@@ -507,9 +523,7 @@ image:
 ## Subchart Configuration
 ##
 seaweedfs:
-  image:
-    seaweedfs: seaweedfs:5.4
-    migrationUtility: seaweedfs:5.4
+  image: seaweedfs:5.4
   persistence:
     storage:
       seaweedfs: 50Gi
@@ -1287,6 +1301,12 @@ apim-intelligence:
     # nodeSelector: {}
     # tolerations: []
     # affinity: {}
+    # S3 Configuration (SeaweedFS)
+    s3:
+      url: "http://seaweedfs-s3:8333"
+      pathStyleAccess: true
+      accessKeyKey: "admin_access_key_id"
+      secretKeyKey: "admin_secret_access_key"
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:

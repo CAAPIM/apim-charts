@@ -1,6 +1,6 @@
 {{- if (eq .Values.global.deepStorage.enableDataMigration true) }}
 # Data Migration Job for Minio to SeaweedFS
-# 
+#
 # This is a regular Kubernetes Job (not a Helm hook), so:
 # - Helm upgrade completes immediately without waiting
 # - Job is created/deleted based on enableDataMigration flag
@@ -42,26 +42,26 @@ spec:
       {{- end }}
       initContainers:
         - name: wait-for-services
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
             - /bin/bash
             - -c
             - |
               echo "Checking Minio and SeaweedFS readiness..."
-              
+
               MAX_WAIT={{ .Values.global.deepStorage.migrationInitialDelaySeconds }}
               RETRY_INTERVAL=10
               ELAPSED=0
-              
+
               # Function to check S3 endpoint
               check_s3_endpoint() {
                 local endpoint=$1
                 local access_key=$2
                 local secret_key=$3
                 local service_name=$4
-                
+
                 echo "Checking ${service_name} at ${endpoint}..."
-                
+
                 # Use rclone to test connectivity
                 if rclone lsd "${service_name}:" --config=/dev/null \
                   --s3-provider="${service_name}" \
@@ -76,12 +76,12 @@ spec:
                   return 1
                 fi
               }
-              
+
               # Wait for both services
               while [ $ELAPSED -lt $MAX_WAIT ]; do
                 MINIO_READY=false
                 SEAWEEDFS_READY=false
-                
+
                 # Check Minio
                 if check_s3_endpoint \
                   "http://minio:9000" \
@@ -90,7 +90,7 @@ spec:
                   "Minio"; then
                   MINIO_READY=true
                 fi
-                
+
                 # Check SeaweedFS
                 if check_s3_endpoint \
                   "http://seaweedfs-s3:8333" \
@@ -99,20 +99,20 @@ spec:
                   "SeaweedFS"; then
                   SEAWEEDFS_READY=true
                 fi
-                
+
                 # Both ready?
                 if [ "$MINIO_READY" = true ] && [ "$SEAWEEDFS_READY" = true ]; then
                   echo ""
                   echo "✓✓ All services are ready! Starting data migration..."
                   exit 0
                 fi
-                
+
                 # Wait and retry
                 echo "Waiting ${RETRY_INTERVAL}s before retry... (elapsed: ${ELAPSED}s / max: ${MAX_WAIT}s)"
                 sleep $RETRY_INTERVAL
                 ELAPSED=$((ELAPSED + RETRY_INTERVAL))
               done
-              
+
               echo ""
               echo "ERROR: Services did not become ready within ${MAX_WAIT} seconds"
               exit 1
@@ -162,7 +162,7 @@ spec:
           emptyDir: {}
       containers:
         - name: data-copier
-          image: "{{ .Values.global.portalRepository }}{{ .Values.image.seaweedfs }}"
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
             - rclone
             - --stats-one-line
