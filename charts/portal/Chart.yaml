@@ -28,7 +28,7 @@ dependencies:
   repository: "file://../intelligence"
 - name: seaweedfs
   version: ^1.0.0
-  condition: global.deepStorage.seaweedfs
+  condition: portal.analytics.enabled
   repository: "file://../seaweedfs"
 - name: kafka
   version: ^1.3.3
