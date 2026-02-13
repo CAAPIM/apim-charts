@@ -65,18 +65,7 @@ spec:
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
           env:
-          {{- if (eq .Values.global.deepStorage.seaweedfs true) }} 
-            - name: S3_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName }}
-                  key: admin_access_key_id
-            - name: S3_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName }}
-                  key: admin_secret_access_key
-          {{- else }}
+          {{- if .Values.global.deepStorage.minio }} 
             - name: S3_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
@@ -87,6 +76,17 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.minio.auth.secretName }}
                   key: MINIO_SECRET_KEY
+          {{- else }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_access_key_id
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_secret_access_key
           {{- end }}
             - name: DATABASE_PASSWORD
               valueFrom:

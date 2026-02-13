@@ -11,13 +11,13 @@ data:
   SERVICE_NAME: middleManager
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
-{{- if .Values.global.deepStorage.seaweedfs }}
-  S3_URL: http://seaweedfs-s3:8333
-  S3_HEALTH_URL: http://seaweedfs-s3:8333/status
-  S3_BUCKET: {{ .Values.minio.bucketName }}
-{{ else }}
+{{- if .Values.global.deepStorage.minio }}
   S3_URL: http://minio:9000
   S3_BUCKET: {{ .Values.minio.bucketName }}
+{{ else }}
+  S3_URL: http://seaweedfs-s3:8333
+  S3_HEALTH_URL: http://seaweedfs-s3:8333/status
+  S3_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
 {{ end }}
   CONTAINER_LOG_LEVEL: {{ .Values.middlemanager.loglevel }}
   runtime.properties: |-
@@ -43,8 +43,8 @@ data:
     # Hadoop indexing
     druid.indexer.task.hadoopWorkingPath=var/druid/hadoop-tmp
     
-{{- if (eq .Values.global.deepStorage.seaweedfs true) }}
-    druid.storage.bucket={{ .Values.global.deepStorage.analytics.bucketName }}
-{{- else }}
+{{- if .Values.global.deepStorage.minio }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
+{{- else }}
+    druid.storage.bucket={{ .Values.global.deepStorage.analytics.bucketName }}
 {{- end }}
