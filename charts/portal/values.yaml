@@ -136,6 +136,8 @@ ingress:
   type:
     kubernetes: true
     openshift: false
+  # enable/disable tls on ingress rule
+  tls: true
 # existingSecret:
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
