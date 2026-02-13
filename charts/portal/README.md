@@ -16,12 +16,14 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
 - Added seaweedfs as s3 storage for analytics data
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
-  - This is ***enabled by default*** via `global.deepStorage.seaweedfs: true`.
-    - This is automatically deployed when you install the Chart.
+  - This is ***enabled by default*** when analytics is enabled (`portal.analytics.enabled: true`)
+    - This is automatically deployed when you install the Chart with analytics enabled
+    - SeaweedFS is ONLY required for analytics, not for intelligence
+    - To disable SeaweedFS, disable analytics:
     ```
-    global:
-      deepStorage:
-        seaweedfs: false
+    portal:
+      analytics:
+        enabled: false
     ```
     - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
       - A Helm install will ***NOT*** data migration.
@@ -783,24 +785,19 @@ The Intelligence subchart provides advanced analytics and third-party agent inte
 For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
 
 ## SeaweedFS
-The SeaweedFS subchart provides S3-compatible object storage for analytics data and intelligence services.
+The SeaweedFS subchart provides S3-compatible object storage for analytics data.
 
 **Automatic Deployment:**
-- Deployed when `global.deepStorage.seaweedfs: true`
-- By default, `global.deepStorage.seaweedfs: true`
-- Should be set to `true` when either analytics or intelligence is enabled
-- Can be explicitly set to `false` to disable SeaweedFS
-- **Bidirectional Validation**: Helm will fail if:
-  - Analytics or intelligence is enabled WITHOUT deep storage configured (SeaweedFS or Minio)
-  - SeaweedFS is enabled but BOTH analytics AND intelligence are disabled
-```
+- Deployed when `portal.analytics.enabled: true`
+- By default, `portal.analytics.enabled: true` in values.yaml, so SeaweedFS is deployed automatically
+- SeaweedFS is ONLY deployed for analytics features
+- Intelligence features do NOT require SeaweedFS (PMS requirement postponed)
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `global.deepStorage.seaweedfs` | Enable SeaweedFS subchart deployment | `true` |
+| `portal.analytics.enabled` | Enable analytics features (automatically deploys SeaweedFS) | `true` |
+| `portal.intelligence.enabled` | Enable intelligence features (does not require SeaweedFS) | `false` |
 | `global.deepStorage.minio` | Use Minio instead of SeaweedFS for deep storage | `false` |
-| `portal.analytics.enabled` | Enable analytics features (requires SeaweedFS) | `true` |
-| `portal.intelligence.enabled` | Enable intelligence features (requires SeaweedFS) | `false` |
 | `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
 | `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
 | `seaweedfs.replicaCount` | Number of SeaweedFS replicas | `1` |
