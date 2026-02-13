@@ -1,4 +1,5 @@
-{{if not .Values.ingress.existingSecret}}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{if and .Values.ingress.tls (not .Values.ingress.existingSecret) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17,5 +18,3 @@ data:
   tls.key: {{ include "dispatcher-ssl-key" . | b64enc | quote }}
 {{ end }}
 {{ end }}
-
-  
