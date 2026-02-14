@@ -6,6 +6,12 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.21 General Updates
+- Temporary switch of bitnamilegacy/mysql to caapim/mysql.
+
+## 2.3.20 General Updates
+- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
+
 ## 2.3.19 General Updates
 - Custom Domain and VanityUrl Changes.
 

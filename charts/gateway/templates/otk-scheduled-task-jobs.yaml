@@ -32,7 +32,7 @@ spec:
       template:
         metadata:
           labels:
-            app: {{ template "gateway.fullname" $}}
+            app: {{ template "gateway.fullname" $}}-dbmaintenance-{{ .name }}
             release: {{ $.Release.Name }}
         {{- if  $.Values.otk.job.podLabels }}
             {{- toYaml $.Values.otk.job.podLabels | nindent 12}}

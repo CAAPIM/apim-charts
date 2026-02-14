@@ -511,8 +511,7 @@ image:
   dbUpgrade: db-upgrade-portal:5.4
   rbacUpgrade: db-upgrade-rbac:5.4
   upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4  # Used for TLS certificate management jobs
-  autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery in intelligence
+  tlsManager: tls-automator:5.4
 
 ##
 ## Subchart Configuration
@@ -957,184 +956,8 @@ druid:
     middlemanager: druid:5.4
     minio: minio:5.4
     historical: druid:5.4
+    kafka: kafka:5.4
     ingestion: ingestion-server:5.4
-
-# Configuration for the custom Kafka subchart
-kafka: &kafka_config
-  # Enable/disable Kafka deployment
-  # Automatically enabled when analytics or intelligence is enabled
-  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
-  enabled: true
-
-  # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
-  fullnameOverride: kafka
-
-  # Global configuration passed to Kafka subchart
-  global:
-    # Set to your portal subdomain for advertised listeners
-    subdomainPrefix: ""
-
-  # Image configuration
-  image:
-    kafka: kafka:mr_kafka4_intel
-    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
-    pullPolicy: IfNotPresent
-
-  # Kafka deployment configuration
-  kafka:
-    # Number of Kafka broker replicas
-    # Set to 3 for production deployments with intelligence enabled
-    replicaCount: 1
-
-    # Ordinals configuration (Kubernetes 1.27+)
-    # Set start ordinal for StatefulSet pods
-    # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
-    # where old meta.properties had broker.id=1
-    ordinals:
-      # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
-      start: 1
-
-    # Additional labels for Kafka pods
-    additionalLabels: {}
-    # Pod annotations
-    podAnnotations: {}
-    # Force redeploy by adding timestamp annotation
-    forceRedeploy: false
-    # Pod affinity rules
-    affinity: {}
-    # Node selector
-    nodeSelector: {}
-    # Tolerations
-    tolerations: []
-    # Pod security context
-    podSecurityContext: {}
-    # Container security context
-    containerSecurityContext: {}
-    # Resource requests and limits
-    resources: {}
-      # requests:
-      #   cpu: 100m
-      #   memory: 750Mi
-      # limits:
-      #   cpu: 1000m
-      #   memory: 1.5Gi
-
-    # KRaft Mode Configuration (Kafka 4.0.0+)
-    kraft:
-      # Enable KRaft mode (Zookeeper-less)
-      enabled: true
-      # Cluster ID for KRaft (auto-generated if empty)
-      clusterId: ""
-      # Process roles (broker, controller, or both)
-      processRoles: "broker,controller"
-      # Controller quorum voters (auto-generated based on replicas if empty)
-      controllerQuorumVoters: ""
-
-    # Listener Configuration
-    listeners:
-      # Internal listener for inter-broker and client communication
-      internal:
-        enabled: true
-        port: 9092
-        protocol: PLAINTEXT
-      # External listener for clients outside the cluster (third-party agents)
-      # NOTE: Automatically controlled by kafka.externalAccess.enabled
-      # External listener is created only when intelligence is enabled
-      external:
-        port: 9094
-        protocol: SSL
-      # Controller listener for KRaft mode
-      controller:
-        enabled: true
-        port: 9093
-        protocol: PLAINTEXT
-      # Inter-broker listener name
-      interBrokerListenerName: INTERNAL
-
-    # Log retention configuration
-    logRetentionHours: 6
-
-    # TLS/SSL Configuration
-    tls:
-      # Enable TLS/SSL - enabled by default for external SSL support
-      enabled: true
-      # TLS type (PEM or JKS)
-      type: PEM
-      # Client authentication (none, requested, required)
-      clientAuth: required
-      # Secret containing TLS certificates (via environment variables)
-      # Leave empty to use volume-mounted certificates from internalSecretName instead
-      secretName: ""
-      # Keys in the secret
-      keystoreKeyKey: "keystore.key"
-      truststoreCertKey: "truststore.pem"
-      # Password secret for encrypted keys
-      passwordSecretName: ""
-      passwordSecretKey: "keypass.txt"
-
-    # SASL Authentication Configuration
-    sasl:
-      # Enable SASL authentication
-      enabled: false
-      # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
-      mechanisms: PLAIN
-      # Inter-broker SASL mechanism
-      interBrokerProtocol: PLAIN
-      # JAAS configuration file path
-      jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
-
-  # Zookeeper configuration (not used in KRaft mode, kept for compatibility)
-  zookeeper:
-    hostname: zookeeper
-    port: 2181
-
-  # Persistence configuration
-  persistence:
-    storage:
-      kafka: 10Gi
-
-  # Service Account
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-    automountServiceAccountToken: true
-
-  # External access configuration for autodiscovery
-  # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
-  # Intelligence requires external Kafka access for third-party agents
-  # Default is false. Set to true manually or enable intelligence feature.
-  externalAccess:
-    enabled: false
-    # Service type for external access (LoadBalancer or NodePort)
-    serviceType: LoadBalancer
-    # Port for external access
-    port: 9094
-    # Hostname/domain for external access (used in advertised listeners)
-    hostname: ""
-    # Annotations for external services
-    annotations:
-      cloud.google.com/load-balancer-type: Internal
-    # LoadBalancer IPs (optional, for static IPs)
-    loadBalancerIPs: []
-    # NodePort values (optional, for NodePort service type)
-    nodePorts: []
-    # Auto-generate advertised listeners based on service IPs
-    autoAdvertisedListeners: true
-    # Discovery configuration for LoadBalancer/NodePort IP detection
-    # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
-    # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
-    discovery:
-      # Maximum time to wait for LoadBalancer IP (in seconds)
-      # Increase this if your cloud provider takes longer to provision LoadBalancers
-      timeoutSeconds: 120
-      # Retry interval (in seconds)
-      retryIntervalSeconds: 5
-      # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
-      # This prevents Kafka from starting with incorrect advertised listeners
-      # IMPORTANT: Only affects behavior when intelligence is enabled
-      # Recommended: true (prevents connection issues for external clients)
-      failOnDiscoveryFailure: true
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq: &rabbitmq_config
@@ -1361,7 +1184,7 @@ jobs:
 mysql:
   image:
     tag: "8.4.5-debian-12-r0"
-    repository: bitnamilegacy/mysql
+    repository: caapim/mysql
   auth:
     username: portal
     existingSecret: database-secret
