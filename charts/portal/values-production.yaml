@@ -545,17 +545,17 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4
-  apim: ingress:5.4
-  enterprise: portal-enterprise:5.4
-  data: portal-data:5.4
-  tps: tenant-provisioning-service:5.4
-  analytics: analytics-server:5.4
-  authenticator: authenticator:5.4
-  dbUpgrade: db-upgrade-portal:5.4
-  rbacUpgrade: db-upgrade-rbac:5.4
-  upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4
+  dispatcher: dispatcher:5.4.1
+  apim: ingress:5.4.1
+  enterprise: portal-enterprise:5.4.1
+  data: portal-data:5.4.1
+  tps: tenant-provisioning-service:5.4.1
+  analytics: analytics-server:5.4.1
+  authenticator: authenticator:5.4.1
+  dbUpgrade: db-upgrade-portal:5.4.1
+  rbacUpgrade: db-upgrade-rbac:5.4.1
+  upgradeVerify: upgrade-verify:5.4.1
+  tlsManager: tls-automator:5.4.1
 
 ##
 ## Subchart Configuration
@@ -879,14 +879,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.4
-    broker: druid:5.4
-    coordinator: druid:5.4
-    middlemanager: druid:5.4
-    minio: minio:5.4
-    historical: druid:5.4
-    kafka: kafka:5.4
-    ingestion: ingestion-server:5.4
+    zookeeper: zookeeper:5.4.1
+    broker: druid:5.4.1
+    coordinator: druid:5.4.1
+    middlemanager: druid:5.4.1
+    minio: minio:5.4.1
+    historical: druid:5.4.1
+    kafka: kafka:5.4.1
+    ingestion: ingestion-server:5.4.1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -896,7 +896,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.4"
+    tag: "5.4.1"
     pullSecrets:
       - broadcom-apim
   pdb:
@@ -986,8 +986,8 @@ rabbitmq:
 apim-intelligence:
   # Image configuration
   image:
-    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery init container
-    intelligenceServer: intelligence-server:latest
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container
+    intelligenceServer: intelligence-server:5.4.1
     pullPolicy: IfNotPresent
 
   # RBAC configuration
