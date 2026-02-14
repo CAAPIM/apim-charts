@@ -11,7 +11,7 @@ forceRedeploy: false
 # Image configuration
 # Note: When used as a subchart, these can be overridden by parent chart values
 image:
-  autoDiscovery: "tls-automator:5.4"  # Image used for Kafka broker discovery init container
+  autoDiscovery: "tls-automator:latest"  # Image used for Kafka broker discovery init container
   intelligenceServer: "intelligence-server:latest"
   pullPolicy: IfNotPresent
 
