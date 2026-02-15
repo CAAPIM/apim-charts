@@ -770,16 +770,12 @@ The Intelligence subchart provides advanced analytics and third-party agent inte
 
 **Important Dependencies:**
 - When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
-  - **SeaweedFS**: Required for S3-compatible storage (data persistence)
   - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
-- APIM service automatically receives S3 configuration environment variables when intelligence is enabled
 
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `portal.intelligence.enabled` | Enable Intelligence service | `false` |
 | `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
-| `apim-intelligence.intelligenceServer.s3.endpoint` | S3 endpoint URL (SeaweedFS) | `http://seaweedfs-s3:8333` |
-| `apim-intelligence.intelligenceServer.s3.region` | S3 region | `us-east-1` |
 | `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
 
 For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
