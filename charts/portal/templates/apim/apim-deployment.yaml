@@ -153,21 +153,6 @@ spec:
                   name: {{ .Values.tls.externalSecretName }}
                   key: keypass.txt
                   optional: false
-          {{- if .Values.portal.intelligence.enabled }}
-            # S3 Credentials (SeaweedFS) - Only when Intelligence is enabled
-            - name: S3_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName | default "seaweedfs-s3-secret" }}
-                  key: admin_access_key_id
-                  optional: false
-            - name: S3_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName | default "seaweedfs-s3-secret" }}
-                  key: admin_secret_access_key
-                  optional: false
-          {{- end }}
           envFrom:
           - configMapRef:
               name: apim-config
