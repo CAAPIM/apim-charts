@@ -771,7 +771,6 @@ The Intelligence subchart provides advanced analytics and third-party agent inte
 **Important Dependencies:**
 - When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
   - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
-- Intelligence does NOT require SeaweedFS or S3 storage
 
 | Parameter | Description | Default |
 | --- | --- | --- |
