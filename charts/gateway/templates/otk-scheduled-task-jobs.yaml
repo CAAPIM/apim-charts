@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{ if and (.Values.otk.enabled) (not .Values.database.enabled) (ne .Values.otk.database.type "cassandra") (ne .Values.otk.type "DMZ") (.Values.otk.job.scheduledTasks)}}
 {{- range $name, $schedule := .Values.otk.job.scheduledTasks }}
 apiVersion: batch/v1
@@ -32,7 +33,7 @@ spec:
       template:
         metadata:
           labels:
-            app: {{ template "gateway.fullname" $}}
+            app: {{ template "gateway.fullname" $}}-dbmaintenance-{{ .name }}
             release: {{ $.Release.Name }}
         {{- if  $.Values.otk.job.podLabels }}
             {{- toYaml $.Values.otk.job.podLabels | nindent 12}}
