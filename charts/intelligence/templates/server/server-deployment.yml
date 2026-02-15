@@ -354,19 +354,6 @@ spec:
             - name: PAPI_PUBLIC_PORT
               value: {{ include "intelligence.publicPort" . | quote }}
           {{- end }}
-            # S3 Credentials (SeaweedFS) - Required for Intelligence
-            - name: S3_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName | default "seaweedfs-s3-secret" }}
-                  key: {{ .Values.intelligenceServer.s3.accessKeyKey | default "admin_access_key_id" }}
-                  optional: false
-            - name: S3_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.deepStorage.auth.secretName | default "seaweedfs-s3-secret" }}
-                  key: {{ .Values.intelligenceServer.s3.secretKeyKey | default "admin_secret_access_key" }}
-                  optional: false
           envFrom:
           # Always include the main intelligence-server config
           - configMapRef:

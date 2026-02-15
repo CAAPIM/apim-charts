@@ -63,8 +63,6 @@ portal:
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
-  #   - seaweedfs subchart will be automatically deployed (required for S3 storage)
-  #   - APIM will receive S3 configuration environment variables
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
@@ -288,10 +286,6 @@ apim:
 #           - apim
 #       topologyKey: "kubernetes.io/hostname"
   additionalEnv:
-  # S3 Configuration (SeaweedFS) - Used when intelligence is enabled
-  s3:
-    url: "http://seaweedfs-s3:8333"
-    pathStyleAccess: "true"
 
 authenticator:
   forceRedeploy: false
@@ -1014,13 +1008,6 @@ apim-intelligence:
       create: false
       maxUnavailable: ""
       minAvailable: ""
-    # S3 Configuration (SeaweedFS)
-    s3:
-      url: "http://seaweedfs-s3:8333"
-      pathStyleAccess: true
-      accessKeyKey: "admin_access_key_id"
-      secretKeyKey: "admin_secret_access_key"
-      patchBucketName: "apim-patches"
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:
