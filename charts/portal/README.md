@@ -6,7 +6,6 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-
 ## 2.3.22 General Updates
 - Custom Domain and VanityUrl Changes.
 - Added seaweedfs as s3 storage for analytics data
@@ -51,6 +50,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - This new version of the chart supports API Portal 5.4
 - DB container(for testing) upgraded to support 8.4.5 MySQL version.
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
+- Custom Domain and VanityUrl Changes.
 
 
 ## 2.3.18 General Updates
