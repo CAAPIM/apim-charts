@@ -7,6 +7,15 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.0.44 General Updates
+This patch resolves conflicting labels/selectors for the OTK install, upgrade and scheduled task jobs. 
+
+## 3.0.43 General Updates
+For Redis data provider, config.redis.tls.redisCrt is no longer required when config.redis.tls.verifyPeer is false
+
+## 3.0.42 General Updates
+Images for mysql, redis and grafana have been temporarily switched to caapim to avoid disruption during future changes to the bitnami legacy repository.
+
 ## 3.0.41 General Updates
 For Specific compatibility changes related to OTK, please refer to [here](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/README.md#otk-compatibility-with-gateway-112) to have continuous support
 
@@ -16,23 +25,6 @@ For Specific compatibility changes related to OTK, please refer to [here](https:
 ## 3.0.39 General Updates
 - Add using initContainer to mount secret
 - Update GemFire version to 10.2.0 and GemFire management console version to 1.4.1
-
-## 3.0.38 General Updates
-- Remove extra gateway container env config
-
-## 3.0.37 General Updates
-- Added support for Dual Stack Network in Gateway
-- Added GemFire configuration
-- Updated pm-tagger image (docker.io/caapim/pm-tagger:1.0.3)
-
-## 3.0.36 General Updates
-Images for mysql, redis and grafana have been temporarily switched to [bitnamilegacy](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon) to avoid disruption during the bitnami secure switch.
-
-## 3.0.35 General Updates
-This is a minor patch to update pm-tagger, fix the readme format and add optional loadBalancerClass for services.
-- PM-Tagger image updated (docker.io/caapim/pm-tagger:1.0.2)
-- Readme format fix
-- Added loadBalancerClass for services (optional)
 
 ## 3.0.38 General Updates
 - Remove extra gateway container env config
