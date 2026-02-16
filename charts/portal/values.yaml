@@ -967,8 +967,8 @@ kafka: &kafka_config
 
   # Image configuration
   image:
-    kafka: kafka:mr_kafka4_intel
-    autoDiscovery: tls-automator:5.4  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
+    kafka: kafka:5.4.1
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
