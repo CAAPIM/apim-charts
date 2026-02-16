@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{ if and (.Values.otk.database.dbUpgrade) (.Values.otk.enabled) (ne .Values.otk.type "DMZ") (ne .Values.otk.database.type "cassandra")}}
 apiVersion: batch/v1
 kind: Job

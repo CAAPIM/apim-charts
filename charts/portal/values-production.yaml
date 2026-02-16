@@ -35,10 +35,6 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
-  # required by bitnamilegacy/mysql
-  security:
-    allowInsecureImages: true
-
   deepStorage:
     # Set to true to create a data migration Job from Minio to SeaweedFS
     # The Job runs independently and will not block helm operations
@@ -54,6 +50,9 @@ global:
       bucketName: api-metrics
     intelligence:
       bucketName: apim-patches
+  # required by caapim/mysql
+  security:
+    allowInsecureImages: true
 
 portal:
   domain: example.com

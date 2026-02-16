@@ -42,9 +42,6 @@ global:
 # schedulerName:
 # The saas flag should be left as is unless otherwise specified by support.
 # saas: false
-  # required by bitnamilegacy/mysql
-  security:
-    allowInsecureImages: true
 
   deepStorage:
     # Set to true to create a data migration Job from Minio to SeaweedFS
@@ -61,6 +58,9 @@ global:
       bucketName: api-metrics
     intelligence:
       bucketName: apim-patches
+  # required by caapim/mysql
+  security:
+    allowInsecureImages: true
 
 portal:
   # NOTE: domain is now set in global.domain (above) for consistency across all components

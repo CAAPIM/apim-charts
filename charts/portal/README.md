@@ -6,20 +6,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.3.21 General Updates
-- Temporary switch of bitnamilegacy/mysql to caapim/mysql.
-
-## 2.3.20 General Updates
-- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
-
-## 2.3.19 General Updates
+## 2.3.22 General Updates
 - Custom Domain and VanityUrl Changes.
-
-## 2.3.19 General Updates
-- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
-- This new version of the chart supports API Portal 5.4
-- DB container(for testing) upgraded to support 8.4.5 MySQL version.
-- Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
 - Added seaweedfs as s3 storage for analytics data
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
   - This is ***enabled by default*** when analytics is enabled (`portal.analytics.enabled: true`)
@@ -51,6 +39,19 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
       minio:
         bucketName: api-metrics
     ```
+
+## 2.3.21 General Updates
+- Temporary switch of bitnamilegacy/mysql to caapim/mysql.
+
+## 2.3.20 General Updates
+- This new version of the chart makes Portal db-upgrade-portal/rbac resource configurable per customer request.
+
+## 2.3.19 General Updates
+- This new version of the chart supports API Portal 5.4
+- DB container(for testing) upgraded to support 8.4.5 MySQL version.
+- Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
+- Custom Domain and VanityUrl Changes.
+
 
 ## 2.3.18 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
