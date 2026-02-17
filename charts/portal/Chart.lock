@@ -10,7 +10,7 @@ dependencies:
   version: 12.0.3
 - name: apim-intelligence
   repository: file://../intelligence
-  version: 1.0.21
+  version: 1.0.22
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 1.0.1
@@ -20,5 +20,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:7e2f807ee151460a0e8c32053aec52d17a59959bfafcb5b880d999733c994318
-generated: "2026-02-13T13:51:14.3888131+05:30"
+digest: sha256:7f95583b65a1753d95dc358318adbbf8ead726ef43c920656991ff86f8c5a9c9
+generated: "2026-02-17T19:53:08.8578801+05:30"
