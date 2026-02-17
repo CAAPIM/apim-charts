@@ -287,8 +287,8 @@ spec:
                   key: mysql-password
                   {{- end }}
             # Internal Kafka connection (for intelligence-server's own use)
-            # KAFKA_BROKERS is set via ConfigMap (intelligence-server-config) loaded by envFrom below
-            # Do not set it here as explicit env vars override envFrom values
+            - name: KAFKA_BROKERS
+              value: {{ .Values.intelligenceServer.kafka.brokers | default "kafka:9092" | quote }}
             
             - name: KAFKA_SECURITY_PROTOCOL
               value: {{ .Values.intelligenceServer.kafka.securityProtocol | default "PLAINTEXT" | quote }}
