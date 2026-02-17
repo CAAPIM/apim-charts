@@ -71,7 +71,7 @@ intelligenceServer:
   replicaCount: 1
   kafka:
     # Internal Kafka brokers (for intelligence-server's own consumption)
-    brokers: "kafka:9092"  # Internal PLAINTEXT connection
+    brokers: ""  # Internal PLAINTEXT connection
     
     # Security protocol for intelligence-server's connection
     securityProtocol: PLAINTEXT  # Intelligence connects internally without SSL
