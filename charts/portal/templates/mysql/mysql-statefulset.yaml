@@ -123,7 +123,7 @@ spec:
             command:
             - sh
             - -c
-            - mysqladmin ping -u admin -p${MYSQL_ROOT_PASSWORD}
+            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
           initialDelaySeconds: {{ .Values.mysql.livenessProbe.initialDelaySeconds | default 30 }}
           periodSeconds: {{ .Values.mysql.livenessProbe.periodSeconds | default 10 }}
           timeoutSeconds: {{ .Values.mysql.livenessProbe.timeoutSeconds | default 5 }}
@@ -136,7 +136,7 @@ spec:
             command:
             - sh
             - -c
-            - mysqladmin ping -u admin -p${MYSQL_ROOT_PASSWORD}
+            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
           initialDelaySeconds: {{ .Values.mysql.readinessProbe.initialDelaySeconds | default 5 }}
           periodSeconds: {{ .Values.mysql.readinessProbe.periodSeconds | default 5 }}
           timeoutSeconds: {{ .Values.mysql.readinessProbe.timeoutSeconds | default 1 }}
@@ -170,7 +170,7 @@ spec:
         - name: config
           mountPath: /etc/my.cnf
           subPath: my.cnf
-        {{- if or .Values.mysql.initdbScriptsConfigMap .Values.mysql.initdbScripts }}
+        {{- if or .Values.mysql.initdbScriptsConfigMap .Values.global.setupDemoDatabase }}
         - name: custom-init-scripts
           mountPath: /docker-entrypoint-initdb.d
         {{- end }}
@@ -188,7 +188,7 @@ spec:
       - name: config
         configMap:
           name: {{ include "portal.fullname" . }}-mysql-config
-      {{- if or .Values.mysql.initdbScriptsConfigMap .Values.mysql.initdbScripts }}
+      {{- if or .Values.mysql.initdbScriptsConfigMap .Values.global.setupDemoDatabase }}
       - name: custom-init-scripts
         configMap:
           name: {{ .Values.mysql.initdbScriptsConfigMap | default (printf "%s-mysql-init-scripts" (include "portal.fullname" .)) }}

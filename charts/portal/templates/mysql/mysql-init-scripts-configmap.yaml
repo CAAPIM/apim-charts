@@ -1,4 +1,4 @@
-{{- if and .Values.global.setupDemoDatabase .Values.mysql.initdbScripts (not .Values.mysql.initdbScriptsConfigMap) }}
+{{- if and .Values.global.setupDemoDatabase (not .Values.mysql.initdbScriptsConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,8 +21,15 @@ metadata:
     {{ $key }}: "{{ $val }}"
     {{- end }}
 data:
+{{- if .Values.mysql.initdbScripts }}
 {{- range $key, $value := .Values.mysql.initdbScripts }}
   {{ $key }}: |
 {{ $value | indent 4 }}
+{{- end }}
+{{- else }}
+  elevate-admin.sql: |
+    -- Grant all privileges to the application user
+    GRANT ALL PRIVILEGES ON *.* TO '{{ .Values.global.databaseUsername | default "portal" }}'@'%';
+    FLUSH PRIVILEGES;
 {{- end }}
 {{- end }}

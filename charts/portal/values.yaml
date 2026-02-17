@@ -1457,9 +1457,9 @@ mysql:
 
   # Init scripts
   # Scripts to run when MySQL starts for the first time
-  initdbScripts:
-    elevate-admin.sql: |
-      GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
+  # NOTE: This is templated in the ConfigMap, not here
+  # The actual SQL is rendered with the correct username value
+  initdbScripts: {}
 
 
   # Use an existing ConfigMap for init scripts
