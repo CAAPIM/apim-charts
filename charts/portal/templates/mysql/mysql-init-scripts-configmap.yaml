@@ -1,0 +1,35 @@
+{{- if and .Values.global.setupDemoDatabase (not .Values.mysql.initdbScriptsConfigMap) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "portal.fullname" . }}-mysql-init-scripts
+  {{- if .Values.mysql.commonAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+  labels:
+    app: {{ template "portal.name" . }}-mysql
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.mysql.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+data:
+{{- if .Values.mysql.initdbScripts }}
+{{- range $key, $value := .Values.mysql.initdbScripts }}
+  {{ $key }}: |
+{{ $value | indent 4 }}
+{{- end }}
+{{- else }}
+  elevate-admin.sql: |
+    -- Grant all privileges to the application user
+    GRANT ALL PRIVILEGES ON *.* TO '{{ .Values.global.databaseUsername | default "portal" }}'@'%';
+    FLUSH PRIVILEGES;
+{{- end }}
+{{- end }}

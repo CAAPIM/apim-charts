@@ -1,0 +1,59 @@
+{{- if .Values.global.setupDemoDatabase }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "portal.fullname" . }}-mysql-config
+  {{- if .Values.mysql.commonAnnotations }}
+  annotations:
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+  labels:
+    app: {{ template "portal.name" . }}-mysql
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.mysql.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+data:
+  my.cnf: |
+    {{- if .Values.mysql.configuration }}
+{{ .Values.mysql.configuration | indent 4 }}
+    {{- else }}
+    # For advice on how to change settings please see
+    # http://dev.mysql.com/doc/refman/8.4/en/server-configuration-defaults.html
+    [client]
+    port=3306
+    socket=/var/lib/mysql/mysql.sock
+    default-character-set=UTF8MB4
+    [mysqld]
+    # Core settings from Oracle MySQL Community Server defaults
+    host-cache-size=0
+    skip-name-resolve
+    datadir=/var/lib/mysql
+    socket=/var/lib/mysql/mysql.sock
+    secure-file-priv=/var/lib/mysql-files
+    user=mysql
+    pid-file=/var/run/mysqld/mysqld.pid
+    port=3306    
+    # Portal-specific settings
+    log-bin-trust-function-creators=1
+    bind-address=0.0.0.0
+    # Character set
+    character-set-server=UTF8MB4
+    collation-server=utf8mb4_general_ci
+    # InnoDB settings
+    innodb_log_buffer_size=64M
+    innodb_log_file_size=80M
+    # General settings
+    max_allowed_packet=20M
+    mysql_native_password=ON
+    explicit_defaults_for_timestamp
+    sql_mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+    {{- end }}
+{{- end }}
