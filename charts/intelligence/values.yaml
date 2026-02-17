@@ -38,7 +38,7 @@ rabbitmq:
 # Note: When used as a subchart, kafka configuration is typically provided by the parent chart
 # This section is required for the kafka-brokers helper template
 kafka:
-  fullnameOverride: "kafka"
+  fullnameOverride: ""
 
 # Global values that are typically provided by a parent chart.
 # These are included here to allow the chart to be deployed standalone.
