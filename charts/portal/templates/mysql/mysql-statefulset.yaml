@@ -123,7 +123,7 @@ spec:
             command:
             - sh
             - -c
-            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+            - mysqladmin ping -u admin -p${MYSQL_ROOT_PASSWORD}
           initialDelaySeconds: {{ .Values.mysql.livenessProbe.initialDelaySeconds | default 30 }}
           periodSeconds: {{ .Values.mysql.livenessProbe.periodSeconds | default 10 }}
           timeoutSeconds: {{ .Values.mysql.livenessProbe.timeoutSeconds | default 5 }}
@@ -136,7 +136,7 @@ spec:
             command:
             - sh
             - -c
-            - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+            - mysqladmin ping -u admin -p${MYSQL_ROOT_PASSWORD}
           initialDelaySeconds: {{ .Values.mysql.readinessProbe.initialDelaySeconds | default 5 }}
           periodSeconds: {{ .Values.mysql.readinessProbe.periodSeconds | default 5 }}
           timeoutSeconds: {{ .Values.mysql.readinessProbe.timeoutSeconds | default 1 }}
