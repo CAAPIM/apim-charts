@@ -958,7 +958,7 @@ kafka: &kafka_config
   enabled: true
 
   # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
-  fullnameOverride: kafka
+  #fullnameOverride: kafka
 
   # Global configuration passed to Kafka subchart
   global:
