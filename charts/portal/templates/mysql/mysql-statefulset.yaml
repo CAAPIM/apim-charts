@@ -91,16 +91,6 @@ spec:
               key: mysql-root-password
         - name: MYSQL_DATABASE
           value: {{ .Values.global.databaseName | default "portal" | quote }}
-        - name: MYSQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.global.databaseSecret }}
-              key: mysql-user
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.global.databaseSecret }}
-              key: mysql-password
         {{- if .Values.mysql.extraEnvVars }}
         {{- toYaml .Values.mysql.extraEnvVars | nindent 8 }}
         {{- end }}
