@@ -127,3 +127,20 @@ Return the Master Server peers
 {{- end -}}
 {{- print (join "," $peers) -}}
 {{- end -}}
+
+{{/*
+Construct the Kafka broker service name for internal connections
+*/}}
+{{- define "druid.kafka-brokers" -}}
+    {{- $kafkaName := "" -}}
+    {{- if .Values.kafka.brokerService -}}
+        {{- if ne .Values.kafka.brokerService "kafka" -}}
+            {{- $kafkaName = .Values.kafka.brokerService -}}
+        {{- else -}}
+            {{- $kafkaName = printf "%s-kafka" .Release.Name -}}
+        {{- end -}}
+    {{- else -}}
+        {{- $kafkaName = printf "%s-kafka" .Release.Name -}}
+    {{- end -}}
+    {{- printf "%s:%s" $kafkaName (.Values.kafka.brokerPort | toString) -}}
+{{- end -}}

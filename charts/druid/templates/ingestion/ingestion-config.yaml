@@ -9,7 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   SERVICE_NAME: ingestion-server
-  KAFKA_BROKERS: {{ .Values.kafka.brokerService }}:{{ .Values.kafka.brokerPort }}
+  KAFKA_BROKERS: {{ include "druid.kafka-brokers" . | quote }}
   BROKER_PORT: "8082"
   OVERLORD_HOST: {{ .Values.coordinator.hostname }}
   OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
