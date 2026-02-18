@@ -957,9 +957,6 @@ kafka: &kafka_config
   # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
   enabled: true
 
-  # Override the full name to make Kafka accessible as 'kafka' instead of '<release>-portal-kafka'
-  fullnameOverride: kafka
-
   # Global configuration passed to Kafka subchart
   global:
     # Set to your portal subdomain for advertised listeners

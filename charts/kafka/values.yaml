@@ -18,7 +18,7 @@ image:
 kafka:
   # Number of Kafka broker replicas
   replicaCount: 1
-  
+  fullnameOverride: kafka
   # Ordinals configuration (Kubernetes 1.27+)
   # Set start ordinal for StatefulSet pods
   # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
