@@ -1,0 +1,37 @@
+{{- if and .Values.database.create .Values.mysql.initdbScripts (not .Values.mysql.initdbScriptsConfigMap) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-mysql-init-scripts
+  labels:
+    app: {{ template "gateway.name" . }}-mysql
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  {{- end }}
+  {{- end }}
+data:
+{{- range $key, $value := .Values.mysql.initdbScripts }}
+  {{ $key }}: |
+{{ $value | indent 4 }}
+{{- end }}
+{{- end }}
+
