@@ -541,6 +541,10 @@ config:
     # SSL configuration for embedded GemFire.
     tls:
       enabled: false
+      certificate:
+        issuerRef:
+          kind: ClusterIssuer
+          name: myClusterIssuer
     # existingSecret:
     # password:
       # Additional SSL properties for embedded GemFire.
