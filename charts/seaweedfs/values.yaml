@@ -23,8 +23,7 @@ global:
     auth:
       secretName: seaweedfs-s3-secret
 
-image:
-    seaweedfs: seaweedfs:5.3.3
+image: seaweedfs:5.4.1
 persistence:
     storage:
       seaweedfs: 50Gi
