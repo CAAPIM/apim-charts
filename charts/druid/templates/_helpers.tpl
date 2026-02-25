@@ -110,20 +110,3 @@ Portal Docops page
 {{- end -}}
 {{- end -}}
 {{- end -}}
-
-
-{{/*
-Return the Master Server peers
-*/}}
-{{- define "seaweedfs.master.servers" -}}
-{{- $peers := list -}}
-{{- $masterFullname := "seaweedfs-s3"  -}}
-{{- $masterHeadlessSvcName := printf "seaweedfs-s3"  -}}
-{{- $clusterDomain := .Values.seaweedfs.clusterDomain -}}
-{{- $masterPort := int .Values.seaweedfs.master.port -}}
-{{- $namespace := .Release.Namespace -}}
-{{- range $i := until (int .Values.seaweedfs.replicaCount) }}
-    {{- $peers = append $peers (printf "%s-%d.%s.%s.svc.%s:%d" $masterFullname $i $masterHeadlessSvcName $namespace $clusterDomain $masterPort) -}}
-{{- end -}}
-{{- print (join "," $peers) -}}
-{{- end -}}

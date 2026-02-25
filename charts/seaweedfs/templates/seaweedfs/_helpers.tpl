@@ -44,3 +44,20 @@ Expand the name of the chart.
 {{- define "seaweedfs.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+
+{{/*
+Return the Master Server peers
+*/}}
+{{- define "seaweedfs.master.servers" -}}
+{{- $peers := list -}}
+{{- $masterFullname := "seaweedfs-s3"  -}}
+{{- $masterHeadlessSvcName := printf "seaweedfs-s3"  -}}
+{{- $clusterDomain := .Values.clusterDomain -}}
+{{- $masterPort := int .Values.master.port -}}
+{{- $namespace := .Release.Namespace -}}
+{{- range $i := until (int .Values.replicaCount) }}
+    {{- $peers = append $peers (printf "%s-%d.%s.%s.svc.%s:%d" $masterFullname $i $masterHeadlessSvcName $namespace $clusterDomain $masterPort) -}}
+{{- end -}}
+{{- print (join "," $peers) -}}
+{{- end -}}
