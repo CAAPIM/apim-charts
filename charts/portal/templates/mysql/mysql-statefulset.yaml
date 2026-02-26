@@ -1,8 +1,9 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.global.setupDemoDatabase }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ template "portal.fullname" . }}-mysql
+  name: {{ .Release.Name }}-mysql
   {{- if .Values.mysql.commonAnnotations }}
   annotations:
   {{- range $key, $val := .Values.mysql.commonAnnotations }}
@@ -22,12 +23,12 @@ metadata:
     {{- end }}
 spec:
   replicas: 1
-  serviceName: {{ template "portal.fullname" . }}-mysql-headless
+  serviceName: {{ .Release.Name }}-mysql-headless
   podManagementPolicy: {{ .Values.mysql.podManagementPolicy | default "OrderedReady" | quote }}
   revisionHistoryLimit: {{ .Values.mysql.revisionHistoryLimit | default 10 }}
   selector:
     matchLabels:
-      app: {{ template "portal.fullname" . }}-mysql
+      app: {{ .Release.Name }}-mysql
       release: {{ .Release.Name }}
       app.kubernetes.io/component: mysql
   updateStrategy:
@@ -41,7 +42,7 @@ spec:
         {{- toYaml .Values.mysql.podAnnotations | nindent 8 }}
         {{- end }}
       labels:
-        app: {{ template "portal.fullname" . }}-mysql
+        app: {{ .Release.Name }}-mysql
         chart: {{ template "portal.chart" . }}
         release: {{ .Release.Name }}
         app.kubernetes.io/component: mysql
@@ -187,11 +188,11 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: {{ include "portal.fullname" . }}-mysql-config
+          name: {{ .Release.Name }}-mysql-config
       {{- if or .Values.mysql.initdbScriptsConfigMap .Values.global.setupDemoDatabase }}
       - name: custom-init-scripts
         configMap:
-          name: {{ .Values.mysql.initdbScriptsConfigMap | default (printf "%s-mysql-init-scripts" (include "portal.fullname" .)) }}
+          name: {{ .Values.mysql.initdbScriptsConfigMap | default (printf "%s-mysql-init-scripts" .Release.Name) }}
       {{- end }}
       {{- if not .Values.mysql.persistence.enabled }}
       - name: data
@@ -205,7 +206,7 @@ spec:
   - metadata:
       name: data
       labels:
-        app: {{ template "portal.fullname" . }}-mysql
+        app: {{ .Release.Name }}-mysql
         chart: {{ template "portal.chart" . }}
         release: {{ .Release.Name }}
         app.kubernetes.io/component: mysql

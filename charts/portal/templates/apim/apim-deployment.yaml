@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -187,24 +187,34 @@ spec:
             - containerPort: 9449
             - containerPort: 1885
             - containerPort: 9448
-          {{ if contains "4.5" .Chart.AppVersion }}
+          {{- if or (contains "4.5" .Chart.AppVersion) .Values.apim.volumeMounts }}
           volumeMounts:
+            {{- if contains "4.5" .Chart.AppVersion }}
             - name: {{.Values.portal.license.secretName}}
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
               subPath: license.xml
-          {{ end }}
+            {{- end }}
+            {{- if .Values.apim.volumeMounts }}
+            {{- toYaml .Values.apim.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
       {{- end }}
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
-      {{ if contains "4.5" .Chart.AppVersion }}
+      {{- if or (contains "4.5" .Chart.AppVersion) .Values.apim.volumes }}
       volumes:
+        {{- if contains "4.5" .Chart.AppVersion }}
         - name: {{.Values.portal.license.secretName}}
           secret:
             secretName: {{.Values.portal.license.secretName}}
             items:
               - key: license
                 path: license.xml
-      {{ end }}
+        {{- end }}
+        {{- if .Values.apim.volumes }}
+        {{- toYaml .Values.apim.volumes | nindent 8 }}
+        {{- end }}
+      {{- end }}

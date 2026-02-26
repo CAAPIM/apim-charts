@@ -1,8 +1,9 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.global.setupDemoDatabase }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "portal.fullname" . }}-mysql-config
+  name: {{ .Release.Name }}-mysql-config
   {{- if .Values.mysql.commonAnnotations }}
   annotations:
   {{- range $key, $val := .Values.mysql.commonAnnotations }}
