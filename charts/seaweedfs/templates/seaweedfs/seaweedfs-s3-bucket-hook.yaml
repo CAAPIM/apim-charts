@@ -5,8 +5,8 @@ kind: Job
 metadata:
   name: "{{ $.Release.Name }}-bucket-hook"
   labels:
-    app: {{ template "portal.name" . }}
-    chart: {{ template "portal.chart" . }}
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
