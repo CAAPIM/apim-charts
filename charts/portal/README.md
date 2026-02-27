@@ -364,6 +364,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
+| `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
