@@ -49,6 +49,9 @@ def main():
     druid_url = data["entries"]["druid"][0]["urls"][0]
     gateway_url = data["entries"]["gateway"][0]["urls"][0]
     portal_url = data["entries"]["portal"][0]["urls"][0]
+    apim_intelligence_url = data["entries"]["apim-intelligence"][0]["urls"][0]
+    seaweedfs_url = data["entries"]["seaweedfs"][0]["urls"][0]
+    kafka_url = data["entries"]["kafka"][0]["urls"][0]
 
     print(f"working on druid: {druid_url}")
     druid_chart = download_chart(druid_url)
@@ -60,6 +63,15 @@ def main():
     portal_chart = download_chart(portal_url)
     subprocess.run(['helm', 'push', portal_chart, f"oci://{helm_repo}"], check=True, text=True)
 
+    apim_intelligence_chart = download_chart(apim_intelligence_url)
+    subprocess.run(['helm', 'push', apim_intelligence_chart, f"oci://{helm_repo}"], check=True, text=True)
+
+    seaweedfs_chart = download_chart(seaweedfs_url)
+    subprocess.run(['helm', 'push', seaweedfs_chart, f"oci://{helm_repo}"], check=True, text=True)
+
+    kafka_chart = download_chart(kafka_url)
+    subprocess.run(['helm', 'push', kafka_chart, f"oci://{helm_repo}"], check=True, text=True)
+    
     subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
 
 if __name__ == "__main__":
