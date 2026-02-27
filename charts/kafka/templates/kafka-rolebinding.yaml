@@ -1,0 +1,23 @@
+{{- if .Values.serviceAccount.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kafka.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kafka.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kafka.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+
+
+
+
+
+

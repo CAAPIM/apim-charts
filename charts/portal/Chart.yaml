@@ -1,8 +1,8 @@
 apiVersion: v2
-appVersion: "5.4"
+appVersion: "5.4.1"
 description: CA API Developer Portal
 name: portal
-version: 2.3.21
+version: 2.3.22
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
@@ -14,14 +14,21 @@ dependencies:
   version: ^1.0.0
   condition: portal.analytics.enabled
   repository: "file://../druid"
-- name: mysql
-  version: 12.3.5
-  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
-  condition: global.setupDemoDatabase
 - name: rabbitmq
   version: 12.0.3
-  repository: "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami"
   condition: rabbitmq.enabled
+- name: apim-intelligence
+  version: ^1.0.0
+  condition: portal.intelligence.enabled
+  repository: "file://../intelligence"
+- name: seaweedfs
+  version: ^1.0.0
+  condition: portal.analytics.enabled
+  repository: "file://../seaweedfs"
+- name: kafka
+  version: ^1.0.0
+  condition: kafka.enabled
+  repository: "file://../kafka"
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"
   version: 4.12.1

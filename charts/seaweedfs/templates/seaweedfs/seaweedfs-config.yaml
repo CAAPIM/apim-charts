@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seaweedfs-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs-s3
+    chart: {{ template "seaweedfs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.master.annotations }}
+  annotations:
+    {{- toYaml .Values.master.annotations | nindent 4 }}
+{{- end }}
+data:
+  master.toml: |-
+    {{ .Values.master.config | nindent 4 }}
+  filer.toml: |-
+    [filer.options]
+    recursive_delete = false
+
+    [mysql]
+    enabled = true

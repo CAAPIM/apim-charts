@@ -2,6 +2,9 @@ debug: true
 charts:
   - charts/portal
   - charts/gateway
+  - charts/seaweedfs
+  - charts/kafka
+  - charts/intelligence
 chart-repos:
   - bitnami=https://charts.bitnami.com/bitnami
   - bitnami-full=https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami

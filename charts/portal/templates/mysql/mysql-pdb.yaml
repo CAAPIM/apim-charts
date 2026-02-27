@@ -1,0 +1,18 @@
+{{- if and .Values.global.setupDemoDatabase .Values.mysql.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ .Release.Name }}-mysql
+  name: {{ .Release.Name }}-mysql-pdb
+spec:
+  {{- if .Values.mysql.pdb.minAvailable }}
+  minAvailable: {{ .Values.mysql.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.mysql.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.mysql.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-mysql
+{{- end }}

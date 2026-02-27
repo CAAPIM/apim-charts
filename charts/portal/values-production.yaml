@@ -9,8 +9,8 @@ global:
   # By default a user called admin will be created and given admin rights
   databaseType: mysql
   databaseSecret: database-secret
-  # Set this to true if there is already an existing pull secret that contains the key 'mysql-password'.
-  # If **global.setupDemoDatabase** is true, ensure **mysql.auth.existingSecret** uses the same secret that contain the keys `mysql-root-password`, `mysql-replication-password`.
+  # Set this to true if there is already an existing database secret that contains the key 'mysql-password'.
+  # If **global.setupDemoDatabase** is true, the database-secret will be created automatically with values from global.databaseUsername, global.databasePassword, and global.demoDatabaseRootPassword.
   useExistingDatabaseSecret: false
   databaseUsername: portal
 # databasePassword: 7layer
@@ -35,6 +35,21 @@ global:
   helpPage: https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/
 # storageClass: "_"
 # schedulerName:
+  deepStorage:
+    # Set to true to create a data migration Job from Minio to SeaweedFS
+    # The Job runs independently and will not block helm operations
+    # Rclone will automatically retry if services are not ready
+    # Set to false to remove the Job resource
+    enableDataMigration: true
+    # Maximum time in seconds to wait for services to become ready (default: 600 = 10 minutes)
+    # The Job will check service accessibility every 10 seconds until ready or timeout
+    migrationInitialDelaySeconds: 600
+    auth:
+      secretName: seaweedfs-s3-secret
+    analytics:
+      bucketName: api-metrics
+    intelligence:
+      bucketName: apim-patches
   # required by caapim/mysql
   security:
     allowInsecureImages: true
@@ -44,6 +59,12 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Intelligence feature for advanced analytics and third-party agent integration
+  # IMPORTANT: When intelligence.enabled is true:
+  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  # Intelligence is disabled by default. Enable it for third-party agent integration.
+  intelligence:
+    enabled: false
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: true
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -86,7 +107,7 @@ tls:
 # The rest are managed automatically.
 # If you're migrating from a docker swarm environment and wish to keep your old internal certificates
 # then follow the instructions here to load your certificates into secrets manually ####  https://github.com/CAAPIM/apim-charts/blob/stable/utils/portal-migration/README.md
-# The value should only be false if you intend not to run the job at all - tls.job.rotate determines upgrades.
+# The job will still run, but will not update anything.
 # During helm upgrade, ensure to set this enabled value to 'false' which prevents from recreating the certificates depending on rotate.
 # If the certificates are expired, during helm upgrade set this value to 'true' to create new certificates.
 # Behaviour of tls.job.enabled and tls.job.rotate during 'Upgrade' :
@@ -127,17 +148,19 @@ tls:
 
 # Kubernetes Ingress
 ingress:
+# Use a kubernetes/openshift ingress
   class:
     name: nginx
     enabled: true
-  # Use a kubernetes/openshift ingress
   type:
     kubernetes: true
     openshift: false
+  # enable/disable tls on ingress rule
+  tls: true
   # existingSecret:
   secretName: dispatcher-tls
-  ## To install ingress-nginx controller during Portal deployment set to true and see Subcharts section for configuration options
-  ## Using other ingress controllers will work as long as they support SSL Passthrough.
+  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
+  ## Using other ingress controllers will work as long as they support SSL Passthrough
   create: false
 # Configure additional ingress controller specific annotations
   annotations:
@@ -346,8 +369,8 @@ dispatcher:
 #           values:
 #           - dispatcher
 #       topologyKey: "kubernetes.io/hostname"
-# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update. 
-# If none specified, default HTTP GET request is used for both readiness and liveness probe 
+# If you want to specify Probe - readiness and/or liveness probe, uncomment below sections and update.
+# If none specified, default HTTP GET request is used for both readiness and liveness probe
   # readinessProbe:
   #   exec:
   #     command: [sh, /opt/diagnostic/health_check.sh]
@@ -365,6 +388,20 @@ dispatcher:
   #   periodSeconds: 15
   #   successThreshold: 1
   #   failureThreshold: 20
+# Custom URLs configuration for Dispatcher
+# Certificates and keys should be provided via --set-file on Helm command line
+# Example:
+#   helm install portal ./charts/portal \
+#     --set dispatcher.customUrls.enabled=true \
+#     --set-file dispatcher.customUrls.domains[0].certFile=/path/to/cert.pem \
+#     --set-file dispatcher.customUrls.domains[0].keyFile=/path/to/key.pem
+  customUrls:
+    enabled: false
+    domains:
+#      - tenant: "tenant1"
+#        domain: "devportal.example.com"
+#        certFile: ""  # Set via --set-file dispatcher.customUrls.domains[0].certFile=/path/to/cert.pem
+#        keyFile: ""   # Set via --set-file dispatcher.customUrls.domains[0].keyFile=/path/to/key.pem
 
 # Additional Environment variables to be added to the Dispatcher Configmap
   additionalEnv:
@@ -503,17 +540,219 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4
-  apim: ingress:5.4
-  enterprise: portal-enterprise:5.4
-  data: portal-data:5.4
-  tps: tenant-provisioning-service:5.4
-  analytics: analytics-server:5.4
-  authenticator: authenticator:5.4
-  dbUpgrade: db-upgrade-portal:5.4
-  rbacUpgrade: db-upgrade-rbac:5.4
-  upgradeVerify: upgrade-verify:5.4
-  tlsManager: tls-automator:5.4
+  dispatcher: dispatcher:5.4.1
+  apim: ingress:5.4.1
+  enterprise: portal-enterprise:5.4.1
+  data: portal-data:5.4.1
+  tps: tenant-provisioning-service:5.4.1
+  analytics: analytics-server:5.4.1
+  authenticator: authenticator:5.4.1
+  dbUpgrade: db-upgrade-portal:5.4.1
+  rbacUpgrade: db-upgrade-rbac:5.4.1
+  upgradeVerify: upgrade-verify:5.4.1
+  tlsManager: tls-automator:5.4.1
+
+##
+## Subchart Configuration
+##
+seaweedfs:
+  image: seaweedfs:5.4.1
+  persistence:
+    storage:
+      seaweedfs: 50Gi
+  replicaCount: 1
+  bucketName: api-metrics
+  minio:
+    bucketName: api-metrics
+  restartPolicy: Always
+  imagePullPolicy: Always
+  loggingLevel: 1
+  imageOverride: null
+  clusterDomain: cluster.local
+
+  forceRedeploy: true
+
+   # Core configuration
+  idleTimeout: 30  # Connection idle seconds
+  dataCenter: ""  # Current volume server's data center name
+  rack: ""  # Current volume server's rack name
+  whiteList: ""  # Comma separated IP addresses having write permission
+  disableHttp: false  # Disable HTTP requests, only gRPC operations are allowed
+  metricsPort: 9324  # Prometheus metrics listen port
+  metricsIp: ""  # Metrics listen IP. If empty, defaults to bindAddress
+  loggingOverrideLevel: null  # Override logging level
+
+  auth:
+    secretName: seaweedfs-s3-secret
+  # Leave access_key and secret_key empty to auto-generate values.
+  # access_key:
+  # secret_key:
+
+   # Service configuration
+  s3:
+    enabled: true  # Whether to enable S3 gateway
+    port: 8333
+    enableAuth: true
+    existingConfigSecret: seaweedfs-s3-secret
+  sftp:
+    enabled: false  # Whether to enable SFTP server
+
+  filer:
+    port: 8888
+    grpcPort: 18888
+    defaultReplicaPlacement: "000"
+    dirListLimit: 100000
+    s3:
+      enableAuth: true
+      createBuckets:
+        - name: api-metrics
+          anonymousRead: false
+        - name: file-storage
+          anonymousRead: false
+    config: |
+      [leveldb2]
+      enabled = false
+
+  volume:
+    port: 8080
+    grpcPort: 18080
+    compactionMBps: 50
+    minFreeSpacePercent: 7
+    dataDirs:
+      - name: data-0
+        type: "persistentVolumeClaim"
+        size: "50Gi"
+        maxVolumes: 50
+
+  master:
+    port: 9333
+    grpcPort: 19333
+    config: ""
+    volumeSizeLimitMB: 1024
+
+   # Service settings
+  service:
+    annotations: {}  # Annotations for the service
+    type: ClusterIP  # Service type (ClusterIP, NodePort, LoadBalancer)
+
+   # Storage configuration
+  data:
+    type: "emptyDir"  # Options: "hostPath", "persistentVolumeClaim", "emptyDir"
+    hostPathPrefix: /mnt/data  # Path prefix for hostPath volumes
+    claimName: seaweedfs-data-pvc  # Name of the PVC to use
+    size: ""  # Size of the PVC
+    storageClass: ""  # Storage class for the PVC
+
+   # Health checks
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: /cluster/status
+      port: 9333
+    scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    successThreshold: 1
+    failureThreshold: 6
+    timeoutSeconds: 40
+
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: /cluster/status
+      port: 9333
+    scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 40
+    successThreshold: 1
+    failureThreshold: 6
+    timeoutSeconds: 40
+
+   # Enable if replica count > 1
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: /cluster/status
+      port: 9333
+    scheme: HTTP
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    successThreshold: 1
+    failureThreshold: 15
+    timeoutSeconds: 40
+
+   # Additional resources
+  extraEnvironmentVars: {}  # Additional environment variables
+  extraVolumeMounts: ""  # Additional volume mounts
+  extraVolumes: ""  # Additional volumes
+  initContainers: ""  # Init containers
+  sidecars: ""  # Sidecar containers
+  annotations: {}  # Annotations for the deployment
+  podAnnotations: {}  # Annotations for the pods
+  podLabels: {}  # Labels for the pods
+
+   # Scheduling configuration
+  # Affinity Settings
+  # Commenting out or setting as empty the affinity variable, will allow
+  # deployment to single node services such as Minikube
+  # affinity: |
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchLabels:
+  #             app.kubernetes.io/name: seaweedfs"
+  #             app.kubernetes.io/instance: {{ .Release.Name }}
+  #             app.kubernetes.io/component: master
+  #         topologyKey: kubernetes.io/hostname
+
+   # Topology Spread Constraints Settings
+  # This should map directly to the value of the topologySpreadConstraints
+  # for a PodSpec. By Default no constraints are set.
+  topologySpreadConstraints: ""
+
+   # Toleration Settings for master pods
+  # This should be a multi-line string matching the Toleration array
+  # in a PodSpec.
+  tolerations: ""
+
+   # nodeSelector labels for master pod assignment, formatted as a muli-line string.
+  # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+  nodeSelector: {}
+
+   # Used to assign priority to master pods
+  # ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+  priorityClassName: ""
+
+   # Used to assign a service account.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+  serviceAccountName: ""
+
+   # Configure security context for Pod
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # Example:
+  # podSecurityContext:
+  #   runAsUser: 1000
+  #   runAsGroup: 3000
+  #   fsGroup: 2000
+  podSecurityContext: {}
+
+   # Configure security context for Container
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # Example:
+  # containerSecurityContext:
+  #   enabled: true
+  #   runAsUser: 2000
+  #   allowPrivilegeEscalation: false
+  containerSecurityContext: {}
+
+   # Resource management
+  resources:
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
 
 ##
 ## Subchart Configuration
@@ -837,14 +1076,14 @@ druid:
   #         topologyKey: kubernetes.io/hostname
 
   image:
-    zookeeper: zookeeper:5.4
-    broker: druid:5.4
-    coordinator: druid:5.4
-    middlemanager: druid:5.4
-    minio: minio:5.4
-    historical: druid:5.4
-    kafka: kafka:5.4
-    ingestion: ingestion-server:5.4
+    zookeeper: zookeeper:5.4.1
+    broker: druid:5.4.1
+    coordinator: druid:5.4.1
+    middlemanager: druid:5.4.1
+    minio: minio:5.4.1
+    historical: druid:5.4.1
+    kafka: kafka:5.4.1
+    ingestion: ingestion-server:5.4.1
 
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
 rabbitmq:
@@ -854,7 +1093,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.4"
+    tag: "5.4.1"
     pullSecrets:
       - broadcom-apim
   pdb:
@@ -940,6 +1179,39 @@ rabbitmq:
         - -ec
         - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/local-alarms
 
+# Settings for the intelligence subchart
+apim-intelligence:
+  # Image configuration
+  image:
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container
+    intelligenceServer: intelligence-server:5.4.1
+    pullPolicy: IfNotPresent
+
+  # RBAC configuration
+  rbac:
+    create: true
+
+  # Service Account configuration
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+    name: ""
+
+  intelligenceServer:
+    # Configuration for the Intelligence Server.
+    kafka:
+      # Configuration for Kafka broker auto-discovery.
+      autoDiscovery:
+        # Enables or disables Kafka broker auto-discovery.
+        enabled: true
+        image:
+          pullPolicy: IfNotPresent
+    forceRedeploy: false
+    pdb:
+      create: false
+      maxUnavailable: ""
+      minAvailable: ""
+
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:
   podSecurityPolicy:
@@ -993,64 +1265,153 @@ jobs:
       # memory: 1000Mi
 
 # We recommend that MySQL is externalised, the default implementation here is for reference only and is NOT suitable for use
-# in any production environment.
-# MySQL Stable Chart values - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+# MySQL Configuration for Portal Chart
+# This configuration enables the standalone MySQL StatefulSet
+# instead of using the Bitnami MySQL subchart
 mysql:
+  # Image configuration
   image:
-    tag: "8.4.5-debian-12-r0"
-    repository: caapim/mysql
-  auth:
-    username: portal
-    existingSecret: database-secret
-  # primary:
-  #   podSecurityContext:
-  #     enabled: true
-  #     fsGroup: 100
-  #   containerSecurityContext:
-  #     enabled: true
-  #     runAsUser: 1001
+    repository: docker.io/mysql
+    tag: "8.4.5"
+    pullPolicy: IfNotPresent
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 3306
+    annotations: {}
+    sessionAffinity: ""
+    sessionAffinityConfig: {}
+    nodePort: ""
+    extraPorts: []
+    externalTrafficPolicy: ""
+
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+    subPath: ""
+    existingClaim: ""
+    selector: {}
+    annotations: {}
+
+  # Pod configuration
+  podManagementPolicy: "OrderedReady"
+  revisionHistoryLimit: 10
+  podAnnotations: {}
+  podLabels: {}
+  schedulerName: ""
+  priorityClassName: ""
+  terminationGracePeriodSeconds: 30
+
+  # Security contexts
+  podSecurityContext:
+    fsGroup: 1001
+  # runAsUser: 1001
+  # runAsNonRoot: true
+
+
+  containerSecurityContext:
+    runAsUser: 1001
+    runAsGroup: 1001
+
+  # Resource limits
+  resources: {}
+  #   requests:
+  #     cpu: 250m
+  #     memory: 1Gi
+  #   limits:
+  #     cpu: 1000m
+  #     memory: 2Gi
+
+  # Affinity, node selector, and tolerations
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  topologySpreadConstraints: []
+
+  # Probes configuration
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+  startupProbe:
+    enabled: false
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 30
+
+  # MySQL configuration file (my.cnf)
+  # Leave empty to use the default configuration
+  configuration: ""
+  # Example custom configuration:
+  # configuration: |-
+  #   [client]
+  #   port=3306
+  #   socket=/var/lib/mysql/mysql.sock
+  #   default-character-set=UTF8MB4
+  #   [mysqld]
+  #   port=3306
+  #   bind-address=0.0.0.0
+  #   character-set-server=UTF8MB4
+  #   max_allowed_packet=20M
+
+  # Init scripts
+  # Scripts to run when MySQL starts for the first time
   initdbScripts:
     elevate-admin.sql: |
       GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
-  primary:
-    configuration: |-
-      [client]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=utf8mb4
-      plugin_dir=/opt/bitnami/mysql/plugin
-      [mysqld]
-      mysql_native_password=ON
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/plugin
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8mb4
-      character-set-server=utf8mb4_0900_ai_ci
-      innodb_log_buffer_size=32M
-      innodb_log_file_size=80M
-      max_allowed_packet=8M
-      group_concat_max_len=512000
-      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-      bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install
-        helm.sh/hook-weight: "-10"
+
+
+  # Use an existing ConfigMap for init scripts
+  initdbScriptsConfigMap: ""
+
+  # Extra environment variables
+  extraEnvVars: []
+  # Example:
+  # extraEnvVars:
+  #   - name: TZ
+  #     value: "America/New_York"
+
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+
+  # Extra volumes and volume mounts
+  extraVolumes: []
+  extraVolumeMounts: []
+
+  # Sidecar containers
+  sidecars: []
+
+  # Init containers
+  initContainers: []
+
+  # Additional labels for all MySQL resources
+  additionalLabels: {}
+
+  # Common annotations for all MySQL resources
   commonAnnotations:
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-10"

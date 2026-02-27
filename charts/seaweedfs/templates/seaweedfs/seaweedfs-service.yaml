@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-s3
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs-s3
+    chart: {{ template "seaweedfs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  # internalTrafficPolicy: {{ .Values.service.internalTrafficPolicy | default "Cluster" }}
+  clusterIP: None
+  sessionAffinity: ClientIP
+  ports:
+  # Master ports
+  - name: "swfs-master"
+    port: {{ .Values.master.port }}
+    targetPort: {{ .Values.master.port }}
+    protocol: TCP
+  - name: "swfs-master-grpc"
+    port: {{ .Values.master.grpcPort }}
+    targetPort: {{ .Values.master.grpcPort }}
+    protocol: TCP
+
+  # Volume ports
+  - name: "swfs-volume"
+    port: {{ .Values.volume.port }}
+    targetPort: {{ .Values.volume.port }}
+    protocol: TCP
+  - name: "swfs-volume-grpc"
+    port: {{ .Values.volume.grpcPort }}
+    targetPort: {{ .Values.volume.grpcPort }}
+    protocol: TCP
+
+  # Filer ports
+  - name: "swfs-filer"
+    port: {{ .Values.filer.port }}
+    targetPort: {{ .Values.filer.port }}
+    protocol: TCP
+  - name: "swfs-filer-grpc"
+    port: {{ .Values.filer.grpcPort }}
+    targetPort: {{ .Values.filer.grpcPort }}
+    protocol: TCP
+
+  # S3 ports (if enabled)
+  {{- if .Values.s3.enabled }}
+  - name: "swfs-s3"
+    port: {{ if .Values.s3.enabled }}{{ .Values.s3.port }}{{ else }}{{ .Values.filer.s3.port }}{{ end }}
+    targetPort: {{ if .Values.s3.enabled }}{{ .Values.s3.port }}{{ else }}{{ .Values.filer.s3.port }}{{ end }}
+    protocol: TCP
+  {{- if and .Values.s3.enabled .Values.s3.httpsPort }}
+  - name: "swfs-s3-tls"
+    port: {{ .Values.s3.httpsPort }}
+    targetPort: {{ .Values.s3.httpsPort }}
+    protocol: TCP
+  {{- end }}
+  {{- end }}
+
+  # SFTP ports (if enabled)
+  {{- if .Values.sftp.enabled }}
+  - name: "swfs-sftp"
+    port: {{ .Values.sftp.port }}
+    targetPort: {{ .Values.sftp.port }}
+    protocol: TCP
+  {{- end }}
+
+  # Server metrics port (single metrics endpoint for all services)
+  {{- if .Values.metricsPort }}
+  - name: "server-metrics"
+    port: {{ .Values.metricsPort }}
+    targetPort: {{ .Values.metricsPort }}
+    protocol: TCP
+  {{- end }}
+
+  selector:
+    app: seaweedfs-s3

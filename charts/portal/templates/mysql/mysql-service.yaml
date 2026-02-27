@@ -1,0 +1,93 @@
+{{- if .Values.global.setupDemoDatabase }}
+---
+# Headless Service for StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql-headless
+  {{- if or .Values.mysql.commonAnnotations .Values.mysql.service.annotations }}
+  annotations:
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+  labels:
+    app: {{ template "portal.name" . }}-mysql
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.mysql.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+  - name: mysql
+    port: {{ .Values.mysql.service.port | default 3306 }}
+    targetPort: mysql
+    protocol: TCP
+  selector:
+    app: {{ .Release.Name }}-mysql
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: mysql
+---
+# Regular Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-mysql
+  {{- if or .Values.mysql.commonAnnotations .Values.mysql.service.annotations }}
+  annotations:
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.service.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- end }}
+  labels:
+    app: {{ template "portal.name" . }}-mysql
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.mysql.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  type: {{ .Values.mysql.service.type | default "ClusterIP" }}
+  {{- if .Values.mysql.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.mysql.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.mysql.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.mysql.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  ports:
+  - name: mysql
+    port: {{ .Values.mysql.service.port | default 3306 }}
+    targetPort: mysql
+    protocol: TCP
+    {{- if .Values.mysql.service.nodePort }}
+    nodePort: {{ .Values.mysql.service.nodePort }}
+    {{- end }}
+  {{- if .Values.mysql.service.extraPorts }}
+  {{- toYaml .Values.mysql.service.extraPorts | nindent 2 }}
+  {{- end }}
+  {{- if .Values.mysql.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.mysql.service.externalTrafficPolicy }}
+  {{- end }}
+  selector:
+    app: {{ .Release.Name }}-mysql
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: mysql
+{{- end }}
