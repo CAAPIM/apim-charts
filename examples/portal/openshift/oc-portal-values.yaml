@@ -24,6 +24,17 @@ portal:
     enabled: true
   domain: trial-openshift.com #replace it with correct openshift domain name.
 
+apim:
+  # OpenShift requires a writable /tmp directory for the APIM container.
+  # The default container filesystem is read-only under restricted SCCs.
+  # An emptyDir volume is mounted at /tmp to satisfy this requirement.
+  volumes:
+  - name: tmp-dir
+    emptyDir: {}
+  volumeMounts:
+  - name: tmp-dir
+    mountPath: /tmp
+
 rabbitmq:
   serviceAccount:
     create: false
@@ -35,6 +46,16 @@ serviceAccount:
   name: portal-sa
 rbac:
   create: false
+
+seaweedfs:
+  serviceAccount:
+    create: false
+    name: portal-sa
+
+kafka:
+  serviceAccount:
+    create: false
+    name: portal-sa
 
 druid:
   serviceAccount:

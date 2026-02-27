@@ -10,12 +10,12 @@ dependencies:
   version: 1.0.21
 - name: seaweedfs
   repository: file://../seaweedfs
-  version: 1.0.3
+  version: 1.0.4
 - name: kafka
   repository: file://../kafka
   version: 1.3.16
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:902006cebc8c3362b83b4506c0e80846bb5b9dc3e10b68947930a8f055956bc0
-generated: "2026-02-25T20:28:35.0716488+05:30"
+digest: sha256:2f676eaf6a7edc54e7b7951466728e71c343bc4f4e9385aa61479ab52a3b948d
+generated: "2026-02-26T19:28:33.8271255+05:30"
