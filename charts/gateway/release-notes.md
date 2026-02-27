@@ -2,10 +2,29 @@
 
 Back to [Readme](./README.md#release-notes)
 
-# Java 17
-The Layer7 API Gateway is now running with Java 17 with the release of v11.1.00.
+# Java 21
+The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
-If you use Policy Manager, you will need to update to v11.1.00.
+If you use Policy Manager, you will need to update to v11.2.0.
+
+## 3.0.44 General Updates
+This patch resolves conflicting labels/selectors for the OTK install, upgrade and scheduled task jobs. 
+
+## 3.0.43 General Updates
+For Redis data provider, config.redis.tls.redisCrt is no longer required when config.redis.tls.verifyPeer is false
+
+## 3.0.42 General Updates
+Images for mysql, redis and grafana have been temporarily switched to caapim to avoid disruption during future changes to the bitnami legacy repository.
+
+## 3.0.41 General Updates
+For Specific compatibility changes related to OTK, please refer to [here](https://github.com/CAAPIM/apim-charts/blob/stable/charts/gateway/README.md#otk-compatibility-with-gateway-112) to have continuous support
+
+## 3.0.40 General Updates 
+- Gemfire property statistic-sampling-enabled=false is added to disable Statistic sampling which is not supported for embedded gemfire on container gateway  
+
+## 3.0.39 General Updates
+- Add using initContainer to mount secret
+- Update GemFire version to 10.2.0 and GemFire management console version to 1.4.1
 
 ## 3.0.38 General Updates
 - Remove extra gateway container env config

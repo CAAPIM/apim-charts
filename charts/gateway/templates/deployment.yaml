@@ -195,10 +195,16 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
-{{- if not .Values.disklessConfig.enabled }}
+{{- if (not .Values.disklessConfig.enabled) }}
+      {{- if (not .Values.disklessConfig.setSecretByInitContainer)}}
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
+      {{- else }}
+            - name: shared-secret
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+      {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
@@ -247,7 +253,7 @@ spec:
 {{- end }}
 {{- if .Values.config.redis  }}
         {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
-        {{- if .Values.config.redis.tls.enabled }}
+        {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
               subPath: redis.crt
@@ -534,7 +540,7 @@ spec:
             items:
             - key: license
               path: license.xml
-  {{- if not .Values.disklessConfig.enabled }}
+  {{- if and (not .Values.disklessConfig.enabled) (not .Values.disklessConfig.setSecretByInitContainer) }}
         - name: {{ template "gateway.fullname" . }}-node-properties
           {{- if .Values.disklessConfig.existingSecret.csi }}
           csi: {{ toYaml .Values.disklessConfig.existingSecret.csi | nindent 12 }}
@@ -571,7 +577,7 @@ spec:
 {{- end }}
 {{- if .Values.config.redis }}
        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
-       {{- if .Values.config.redis.tls.enabled }}
+       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
