@@ -7,43 +7,17 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.3.22 General Updates
+- This new version of the chart supports API Portal 5.4.1
+- Upgrade to 2.3.22 requires chart version 2.3.16 (per Portal compatibility requirements).
 - Removal of bitnami
-  - mysql has been replaced with a simple statefulset. This is for trying out the Portal Chart only and does not represent production configuration, an external MySQL database should always be used in production.
+  - MySQL has been replaced with a simple statefulset. This is for trying out the Portal Chart only and does not represent production configuration, an external MySQL database should always be used in production.
   - The Bitnami RabbitMQ Chart has been placed in the charts folder temporarily
 - Upgrading to the latest version of the Chart will not remove the Bitnami MySQL statefulset or persistent volume claim (PVC)
   - These will need to be removed manually if you are using this in a development environment
-- Custom Domain and VanityUrl Changes.
-- Added seaweedfs as s3 storage for analytics data
-  - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
-  - This is ***enabled by default*** when analytics is enabled (`portal.analytics.enabled: true`)
-    - This is automatically deployed when you install the Chart with analytics enabled
-    - SeaweedFS is ONLY required for analytics, not for intelligence
-    - To disable SeaweedFS, disable analytics:
-    ```
-    portal:
-      analytics:
-        enabled: false
-    ```
-    - If you are upgrading from previous version and want to copy analytics data from minio to seaweedfs, set seaweedfs.migrateData to true.
-      - A Helm install will ***NOT*** data migration.
-      - A Helm upgrade will run the data migration and bucket name can be customized.
-      - Make Sure that the value seaweedfs.minio.bucketName is same as the druid.minio.bucketName.
-      - The migrated data will be stored in the new bucket global.deepStorage.bucketName which the druid stack starts using is seaweedfs is enabled.
-    ```
-    global:
-      deepStorage:
-        seaweedfs: false
-        enableDataMigration: true
-        bucketName: api-metrics
-        ...
-        auth:
-          secretName: seaweedfs-s3-secret
-        ...
-    seaweedfs:
-      ...
-      minio:
-        bucketName: api-metrics
-    ```
+- Minio replaced with SeaweedFS for analytics storage
+- This is enabled by default when analytics is enabled (portal.analytics.enabled: true)
+- Data will be migrated from minio by default when upgrading.
+- Updated OpenShift example values (examples/portal/openshift) to support portal 5.4.1.
 
 ## 2.3.21 General Updates
 - Temporary switch of bitnamilegacy/mysql to caapim/mysql.
@@ -364,6 +338,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
+| `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |

@@ -19,10 +19,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "portal.fullname" . }}-seaweedfs-data-copy-job
+  name: {{ template "seaweedfs.fullname" . }}-seaweedfs-data-copy-job
   labels:
-    app: {{ template "portal.name" . }}
-    chart: {{ template "portal.chart" . }}
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: data-migration
