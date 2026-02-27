@@ -1,6 +1,37 @@
 apiVersion: v1
 entries:
+  apim-intelligence:
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-02-27T21:11:22.891985267Z"
+    description: APIM Intelligence
+    digest: aa71d0c812c48f5b140ac643b78859e6398a1d5e6f6cc16abdff2f997b23a8fc
+    home: https://github.com/CAAPIM/apim-chart
+    maintainers:
+    - name: Layer7
+    name: apim-intelligence
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/apim-intelligence-1.0.21/apim-intelligence-1.0.21.tgz
+    version: 1.0.21
   druid:
+  - apiVersion: v2
+    appVersion: "31.0"
+    created: "2026-02-27T21:11:23.04713197Z"
+    description: Broadcom APIM Portal Analytics Chart
+    digest: 0a1a6784feb74ba9c06dea447b636a70232088fbc6470c07c4313dfa0fe00203
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: druid
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.20/druid-1.0.20.tgz
+    version: 1.0.20
   - apiVersion: v2
     appVersion: "31"
     created: "2025-06-19T10:28:52.274537731Z"
@@ -2417,7 +2448,63 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/gateway-otk-0.0.1/gateway-otk-0.0.1.tgz
     version: 0.0.1
+  kafka:
+  - apiVersion: v2
+    appVersion: 4.0.0
+    created: "2026-02-27T21:11:23.225724857Z"
+    description: Apache Kafka Chart for Broadcom APIM
+    digest: c2402abd5b5f2bb8a1a6a8ec8c576b9adcf9587a89ba125349deec0f3b13d4f6
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: kafka
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/kafka-1.0.0/kafka-1.0.0.tgz
+    version: 1.0.0
   portal:
+  - apiVersion: v2
+    appVersion: 5.4.1
+    created: "2026-02-27T21:11:23.622667315Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: ""
+      version: 12.0.3
+    - condition: portal.intelligence.enabled
+      name: apim-intelligence
+      repository: file://../intelligence
+      version: ^1.0.0
+    - condition: portal.analytics.enabled
+      name: seaweedfs
+      repository: file://../seaweedfs
+      version: ^1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: file://../kafka
+      version: ^1.0.0
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.12.1
+    description: CA API Developer Portal
+    digest: 361244ce516bb346546d58d5776d723faade39eaf05550b9dd30a55319a39069
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.22/portal-2.3.22.tgz
+    version: 2.3.22
   - apiVersion: v2
     appVersion: "5.4"
     created: "2026-01-15T16:24:50.039853108Z"
@@ -3730,4 +3817,20 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.0.0/portal-2.0.0.tgz
     version: 2.0.0
-generated: "2026-02-27T20:58:48.841908782Z"
+  seaweedfs:
+  - apiVersion: v2
+    appVersion: "41.0"
+    created: "2026-02-27T21:11:23.758040197Z"
+    description: Broadcom APIM Portal SeaweedFS Chart
+    digest: 1473fb3c8216a79fd3d8c8d6ada2eac7bd0b2fc7ed0d9a22cf233dda82fa3a16
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: seaweedfs
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.4/seaweedfs-1.0.4.tgz
+    version: 1.0.4
+generated: "2026-02-27T21:11:23.75856655Z"
