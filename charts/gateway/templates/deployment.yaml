@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -253,7 +254,7 @@ spec:
 {{- end }}
 {{- if .Values.config.redis  }}
         {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
-        {{- if .Values.config.redis.tls.enabled }}
+        {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
               subPath: redis.crt
@@ -577,7 +578,7 @@ spec:
 {{- end }}
 {{- if .Values.config.redis }}
        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
-       {{- if .Values.config.redis.tls.enabled }}
+       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
