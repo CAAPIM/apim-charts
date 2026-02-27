@@ -1249,7 +1249,7 @@ apim-intelligence:
         enabled: true
         image:
           # The repository of the auto-discovery image.
-          repository: "docker.io/bitnami/kubectl"
+          repository: "docker.io/caapim/kubectl"
           # The tag of the auto-discovery image.
           tag: "1.33.3-debian-12-r0"
           # The pull policy for the auto-discovery image.
