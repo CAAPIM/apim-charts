@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.0.45 General Updates
+Update chart to generate default TLS secret for external GemFire deployed by GemFire operator.
+
 ## 3.0.44 General Updates
 This patch resolves conflicting labels/selectors for the OTK install, upgrade and scheduled task jobs. 
 
