@@ -1,4 +1,3 @@
-# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and .Values.global.setupDemoDatabase .Values.mysql.pdb.create }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
