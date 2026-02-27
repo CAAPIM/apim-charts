@@ -6,6 +6,19 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.22 General Updates
+- This new version of the chart supports API Portal 5.4.1
+- Upgrade to 2.3.22 requires chart version 2.3.16 (per Portal compatibility requirements).
+- Removal of bitnami
+  - MySQL has been replaced with a simple statefulset. This is for trying out the Portal Chart only and does not represent production configuration, an external MySQL database should always be used in production.
+  - The Bitnami RabbitMQ Chart has been placed in the charts folder temporarily
+- Upgrading to the latest version of the Chart will not remove the Bitnami MySQL statefulset or persistent volume claim (PVC)
+  - These will need to be removed manually if you are using this in a development environment
+- Minio replaced with SeaweedFS for analytics storage
+- This is enabled by default when analytics is enabled (portal.analytics.enabled: true)
+- Data will be migrated from minio by default when upgrading.
+- Updated OpenShift example values (examples/portal/openshift) to support portal 5.4.1.
+
 ## 2.3.21 General Updates
 - Temporary switch of bitnamilegacy/mysql to caapim/mysql.
 
@@ -16,6 +29,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - This new version of the chart supports API Portal 5.4
 - DB container(for testing) upgraded to support 8.4.5 MySQL version.
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
+- Custom Domain and VanityUrl Changes.
+
 
 ## 2.3.18 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
@@ -323,6 +338,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
+| `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
@@ -427,6 +443,12 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `dispatcher.additionalEnv.CONFIG_HTTPS_CIPHER_SUITE`           | Enabled HTTPS Cipher Suites                                                                                                  | `If not specfied, Portal Cipher Suites defaults are enabled` see [Portal Cipher Suites Defaults](#portal-cipher-suites-defaults)                                                   |
 | `dispatcher.additionalEnv.CONFIG_HOST_ALLOWED_DOMAINS`         | Use &#124; to separate allowed domains. e.g. mydomain1.com &#124; mydomain2.com                                              | `not set`                                                   |
 | `dispatcher.additionalEnv.CONFIG_MAX_REQ_PER_MIN_HEALTH_CHECK` | allowed rate limit per minute to the Portal health check endpoint                                                            | 	`6`                                                   |
+| `dispatcher.customUrls.enabled`                                | Enable/disable custom domain URLs feature for Dispatcher                                                                     | `false`                                                      |
+| `dispatcher.customUrls.domains`                                | Array of custom domain configurations. Each domain requires tenant, domain, certFile, and keyFile                            | `[]`                                                         |
+| `dispatcher.customUrls.domains[].tenant`                       | Tenant identifier for the custom domain                                                                                      | `required`                                                   |
+| `dispatcher.customUrls.domains[].domain`                       | Custom domain name (e.g., "devportal.example.com")                                                                           | `required`                                                   |
+| `dispatcher.customUrls.domains[].certFile`                     | Path to certificate file. Should be provided via `--set-file` on Helm command line                                           | `required`                                                   |
+| `dispatcher.customUrls.domains[].keyFile`                      | Path to private key file. Should be provided via `--set-file` on Helm command line                                           | `required`                                                   |
 | `portalData.forceRedeploy`                                     | Force redeployment during helm upgrade whether there is a change or not                                                      | `false`                                                      |
 | `portalData.replicaCount`                                      | Number of portal data nodes                                                                                                  | `1`                                                          |
 | `portalData.javaOptions`                                       | Java Options to pass in                                                                                                      | `-Xms2g -Xmx2g`                                              |
@@ -730,6 +752,59 @@ Portal Analytics
 ## Subcharts
 For Production, use an external MySQL Server.
 
+## Intelligence (APIM Intelligence)
+The Intelligence subchart provides advanced analytics and third-party agent integration capabilities.
+
+**Important Dependencies:**
+- When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
+  - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.intelligence.enabled` | Enable Intelligence service | `false` |
+| `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
+| `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
+
+For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
+
+## SeaweedFS
+The SeaweedFS subchart provides S3-compatible object storage for analytics data.
+
+**Automatic Deployment:**
+- Deployed when `portal.analytics.enabled: true`
+- By default, `portal.analytics.enabled: true` in values.yaml, so SeaweedFS is deployed automatically
+- SeaweedFS is ONLY deployed for analytics features
+- Intelligence features do NOT require SeaweedFS (PMS requirement postponed)
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.analytics.enabled` | Enable analytics features (automatically deploys SeaweedFS) | `true` |
+| `portal.intelligence.enabled` | Enable intelligence features (does not require SeaweedFS) | `false` |
+| `global.deepStorage.minio` | Use Minio instead of SeaweedFS for deep storage | `false` |
+| `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
+| `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
+| `seaweedfs.replicaCount` | Number of SeaweedFS replicas | `1` |
+| `seaweedfs.persistence.storage.seaweedfs` | SeaweedFS PVC Size | `50Gi` |
+
+For detailed SeaweedFS configuration and migration guide, see [Minio to SeaweedFS Migration Guide](../../utils/MINIO-TO-SEAWEEDFS-MIGRATION.md).
+
+## Kafka
+The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) for message streaming.
+
+**Automatic Deployment:**
+- Deployed when `kafka.enabled: true`
+- Required for Intelligence service
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `kafka.enabled` | Enable Kafka subchart | `false` |
+| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
+| `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
+| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
+| `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
+
+For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
+
 ## Druid
 The following table lists the configured parameters of the Druid Subchart:
 
@@ -910,23 +985,70 @@ The following table lists the configured parameters of the Bitnami RabbitMQ Subc
 | `rabbitmq.statefulsetLabels` | RabbitMQ statefulset labels. Evaluated as a template | `{}` |
 
 ## MySQL
-The following table lists the configured parameters of the MySQL Subchart - https://github.com/bitnami/charts/tree/master/bitnami/mysql
+
+### MySQL StatefulSet
+The Portal chart includes a standalone MySQL StatefulSet for demo/development purposes. This can be enabled by setting `global.setupDemoDatabase: true`.
 
 **_NOTE:- From chart version 2.3.12 dont include 'mysql' string in release-name of `helm install <release-name>` command._**
 
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8.4.4-debian-12-r0` |
-| `mysql.auth.username`           | MySQL Username   | `admin` |
-| `mysql.auth.existingSecret`     | Secret where credentials are stored, see global.databaseSecret   | `database-secret` |
-| `mysql.initdbScripts`           | Dictionary of initdb scripts | `see values.yaml` |
-| `mysql.primary.configuration`   | MySQL Primary configuration to be injected as ConfigMap	   | `see values.yaml` |
-| `mysql.primary.pdb.create`      | Create PodDisruptionBudget (PDB) object   | `false` |
-| `mysql.primary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
-| `mysql.primary.pdb.minAvailable` | Minimum number of available pods | `1` |
-| `mysql.secondary.pdb.create`    | Create PodDisruptionBudget (PDB) object   | `false` |
-| `mysql.secondary.pdb.maxUnavailable` | Maximum number of simultaneous unavailable pods | `not set` |
-| `mysql.secondary.pdb.minAvailable` | Minimum number of available pods | `not set` |
+| `mysql.image.repository`         | MySQL Image repository   | `docker.io/mysql` |
+| `mysql.image.tag`                | MySQL Image tag   | `8.4.5` |
+| `mysql.image.pullPolicy`         | Image pull policy   | `IfNotPresent` |
+| `mysql.service.type`             | MySQL service type   | `ClusterIP` |
+| `mysql.service.port`             | MySQL service port   | `3306` |
+| `mysql.service.annotations`      | Annotations for the MySQL service   | `{}` |
+| `mysql.service.sessionAffinity`  | Session affinity for MySQL service   | `""` |
+| `mysql.service.nodePort`         | NodePort for MySQL service   | `""` |
+| `mysql.service.extraPorts`       | Extra ports for MySQL service   | `[]` |
+| `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL   | `false` |
+| `mysql.pdb.maxUnavailable`       | Maximum unavailable pods   | `""` |
+| `mysql.pdb.minAvailable`         | Minimum available pods   | `""` |
+| `mysql.persistence.enabled`      | Enable persistence using PVC   | `true` |
+| `mysql.persistence.storageClass` | PVC Storage Class   | `""` |
+| `mysql.persistence.accessModes`  | PVC Access Modes   | `["ReadWriteOnce"]` |
+| `mysql.persistence.size`         | PVC Storage Size   | `8Gi` |
+| `mysql.persistence.existingClaim`| Use existing PVC   | `""` |
+| `mysql.persistence.annotations`  | Annotations for PVC   | `{}` |
+| `mysql.podManagementPolicy`      | StatefulSet pod management policy   | `OrderedReady` |
+| `mysql.revisionHistoryLimit`     | Number of revisions to retain   | `10` |
+| `mysql.podAnnotations`           | Annotations for MySQL pods   | `{}` |
+| `mysql.podLabels`                | Labels for MySQL pods   | `{}` |
+| `mysql.podSecurityContext`       | Security context for MySQL pods   | `{}` |
+| `mysql.containerSecurityContext` | Security context for MySQL container   | `{}` |
+| `mysql.resources`                | CPU/Memory resource requests/limits   | `{}` |
+| `mysql.livenessProbe.enabled`    | Enable liveness probe   | `true` |
+| `mysql.livenessProbe.initialDelaySeconds` | Initial delay for liveness probe   | `30` |
+| `mysql.livenessProbe.periodSeconds` | Period for liveness probe   | `10` |
+| `mysql.livenessProbe.timeoutSeconds` | Timeout for liveness probe   | `5` |
+| `mysql.livenessProbe.failureThreshold` | Failure threshold for liveness probe   | `3` |
+| `mysql.readinessProbe.enabled`   | Enable readiness probe   | `true` |
+| `mysql.readinessProbe.initialDelaySeconds` | Initial delay for readiness probe   | `5` |
+| `mysql.readinessProbe.periodSeconds` | Period for readiness probe   | `5` |
+| `mysql.readinessProbe.timeoutSeconds` | Timeout for readiness probe   | `1` |
+| `mysql.readinessProbe.failureThreshold` | Failure threshold for readiness probe   | `3` |
+| `mysql.startupProbe.enabled`     | Enable startup probe   | `false` |
+| `mysql.configuration`            | MySQL configuration (my.cnf)   | `""` (uses default) |
+| `mysql.initdbScripts`            | Dictionary of initdb scripts   | `{}` |
+| `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts   | `""` |
+| `mysql.extraEnvVars`             | Extra environment variables   | `[]` |
+| `mysql.extraVolumes`             | Extra volumes   | `[]` |
+| `mysql.extraVolumeMounts`        | Extra volume mounts   | `[]` |
+| `mysql.affinity`                 | Affinity for pod assignment   | `{}` |
+| `mysql.nodeSelector`             | Node labels for pod assignment   | `{}` |
+| `mysql.tolerations`              | Tolerations for pod assignment   | `[]` |
+| `mysql.additionalLabels`         | Additional labels for MySQL resources   | `{}` |
+| `mysql.commonAnnotations`        | Common annotations for MySQL resources (supports helm hooks)   | `{}` |
+
+**Authentication Configuration:**
+MySQL authentication is configured via global values:
+- `global.useExistingDatabaseSecret`: use an existing database secret (default: `false`)
+- `global.databaseSecret`: Secret name (default: `database-secret`)
+- `global.databaseUsername`: MySQL username (default: `portal`)
+- `global.databasePassword`: MySQL password (auto-generated if not set)
+- `global.demoDatabaseRootPassword`: MySQL root password (auto-generated if not set)
+- `global.databaseName`: Database name (default: `portal`)
 
 
 ## Ingress-Nginx

@@ -9,14 +9,21 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   SERVICE_NAME: ingestion-server
-  KAFKA_BROKERS: kafka:9092
+  KAFKA_BROKERS: {{ .Values.kafka.brokerService }}:{{ .Values.kafka.brokerPort }}
   BROKER_PORT: "8082"
   OVERLORD_HOST: {{ .Values.coordinator.hostname }}
   OVERLORD_PORT: {{ .Values.coordinator.port | quote }}
   COORDINATOR_HOST: {{ .Values.coordinator.hostname }}
   COORDINATOR_PORT: {{ .Values.coordinator.port | quote }}
-  MINIO_URL: http://minio:9000
-  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+{{- if .Values.global.deepStorage.minio }}
+  S3_URL: http://minio:9000
+  S3_HEALTH_URL: http://minio:9000/health/live
+  S3_BUCKET: {{ .Values.minio.bucketName }}
+{{ else }}
+  S3_URL: http://seaweedfs-s3:8333
+  S3_HEALTH_URL: http://seaweedfs-s3:8333/status
+  S3_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
+{{ end }}
   PARTITION_COUNT: "{{ .Values.ingestion.config.partitionCount }}"
   REPLICATION_COUNT: "{{ .Values.kafka.replicaCount }}"
 {{ if .Values.global.setupDemoDatabase}}

@@ -1,0 +1,54 @@
+{{- if .Values.externalAccess.enabled }}
+{{- $statefulsetName := include "kafka.statefulsetName" . -}}
+{{- $replicaCount := int .Values.kafka.replicaCount }}
+{{- $serviceType := .Values.externalAccess.serviceType }}
+{{- $port := int .Values.externalAccess.port }}
+{{- $targetPort := int .Values.kafka.listeners.external.port }}
+{{- $ordinalStart := 0 }}
+{{- if .Values.kafka.ordinals }}
+{{- $ordinalStart = int .Values.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $podIndex := add $ordinalStart $i }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $statefulsetName }}-{{ $podIndex }}-external
+  labels:
+    {{- include "kafka.labels" $ | nindent 4 }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    statefulset.kubernetes.io/pod-name: {{ $statefulsetName }}-{{ $podIndex }}
+    kafka-broker-id: "{{ $podIndex }}"
+  {{- with $.Values.externalAccess.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ $serviceType }}
+  {{- if eq $serviceType "LoadBalancer" }}
+  {{- if $.Values.externalAccess.loadBalancerIPs }}
+  {{- if gt (len $.Values.externalAccess.loadBalancerIPs) $podIndex }}
+  loadBalancerIP: {{ index $.Values.externalAccess.loadBalancerIPs $podIndex }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  ports:
+  - name: external
+    port: {{ $port }}
+    targetPort: {{ $targetPort }}
+    protocol: TCP
+    {{- if eq $serviceType "NodePort" }}
+    {{- if $.Values.externalAccess.nodePorts }}
+    {{- if gt (len $.Values.externalAccess.nodePorts) $podIndex }}
+    nodePort: {{ index $.Values.externalAccess.nodePorts $podIndex }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "kafka.selectorLabels" $ | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: {{ $statefulsetName }}-{{ $podIndex }}
+{{- end }}
+{{- end }}

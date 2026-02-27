@@ -19,22 +19,23 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
 # databasePassword: 7layer
+  deepStorage:
+    analytics:
+      bucketName: api-metrics
 
 image:
-  zookeeper: zookeeper:5.0
-  broker: druid:5.0
-  coordinator: druid:5.0
-  middlemanager: druid:5.0
-  minio: minio:5.0
-  historical: druid:5.0
-  kafka: kafka:5.0
-  ingestion: ingestion-server:5.0
+  zookeeper: zookeeper:5.4
+  broker: druid:5.4
+  coordinator: druid:5.4
+  middlemanager: druid:5.4
+  minio: minio:5.4
+  historical: druid:5.4
+  ingestion: ingestion-server:5.4
 
 persistence:
   storage:
     historical: 50Gi
     minio: 40Gi
-    kafka: 10Gi
     zookeeper: 10Gi
 
 # Service Account for Druid services
@@ -178,16 +179,11 @@ ingestion:
 # nodeSelector: {}
 # affinity:
 
+# Kafka configuration (provided by parent chart when Kafka is deployed separately)
 kafka:
+  # Kafka broker service name
+  brokerService: kafka
+  # Kafka broker port
+  brokerPort: 9092
+  # Kafka replication count
   replicaCount: 1
-  image:
-    pullPolicy: IfNotPresent
-  resources:
-    requests: {}
-    # cpu: 100m
-    # memory: 750Mi
-    limits: {}
-    # cpu: 1000m
-    # memory: 1.5Gi
-# nodeSelector: {}
-# affinity:
