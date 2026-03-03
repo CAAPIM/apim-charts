@@ -7,6 +7,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.3.19 General Updates
+- update db-upgrade-portal docker image to 5.4.0.1
+
 - This new version of the chart supports API Portal 5.4
 - DB container(for testing) upgraded to support 8.4.5 MySQL version.
 - Upgrade to 2.3.19 is only supported from 2.3.12 chart version in compliance with the Portal version compatibility requirements.
@@ -714,7 +716,7 @@ Portal Analytics
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.4` |
 | `image.analytics` | Analytics image | `analytics-server:5.4`            |
 | `image.authenticator` | Authenticator image | `authenticator:5.4`               |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.4`           |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.4.1`           |
 | `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.4`             |
 | `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.4`              |
 | `image.tlsManager` | TLS manager image | `tls-automator:5.4`               |
