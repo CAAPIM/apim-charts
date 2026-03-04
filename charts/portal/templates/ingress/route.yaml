@@ -5,7 +5,20 @@ kind: Route
 metadata:
   name: apim-route
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "default-tenant-host" . | quote }}
   port:
@@ -23,7 +36,20 @@ kind: Route
 metadata:
   name: pssg-enroll
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "pssg-enroll-host" . | quote }}
   port:
@@ -41,7 +67,20 @@ kind: Route
 metadata:
   name: pssg-sync
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "pssg-sync-host" . | quote }}
   port:
@@ -59,7 +98,20 @@ kind: Route
 metadata:
   name: apim-route-broker
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "broker-host" . | quote }}
   port:
@@ -77,7 +129,20 @@ kind: Route
 metadata:
   name: apim-route-sso
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "pssg-sso-host" . | quote }}
   port:
@@ -95,7 +160,20 @@ kind: Route
 metadata:
   name: apim-route-tssg
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "tssg-public-host" . | quote }}
   port:
@@ -113,7 +191,20 @@ kind: Route
 metadata:
   name: datalake-analytics
   labels:
-    router: default
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := .Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
 spec:
   host: {{ include "analytics-host" . | quote }}
   port:
@@ -125,4 +216,70 @@ spec:
     name: apim
     weight: 100
   wildcardPolicy: None
+{{- range .Values.ingress.customRoutes }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .subdomain }}-route
+  labels:
+    app: {{ template "portal.name" $ }}
+    chart: {{ template "portal.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := $.Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+spec:
+  host: "{{ .subdomain }}.{{ $.Values.portal.domain }}"
+  port:
+    targetPort: {{ .service.port }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: {{ .service.name }}
+    weight: 100
+  wildcardPolicy: None
+{{- end }}
+{{- range .Values.ingress.tenantIds }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ . }}-route
+  labels:
+    app: {{ template "portal.name" $ }}
+    chart: {{ template "portal.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+  {{- range $key, $val := $.Values.ingress.annotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+spec:
+  host: "{{ . }}.{{ $.Values.portal.domain }}"
+  port:
+    targetPort: portal-https
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: dispatcher
+    weight: 100
+  wildcardPolicy: None
+{{- end }}
 {{- end }}
