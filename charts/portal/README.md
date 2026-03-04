@@ -6,6 +6,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.23 General Updates
+- Create dynamic routes in Open-shift environment.
+
 ## 2.3.22 General Updates
 - This new version of the chart supports API Portal 5.4.1
 - Upgrade to 2.3.22 requires chart version 2.3.16 (per Portal compatibility requirements).
