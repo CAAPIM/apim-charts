@@ -1143,42 +1143,6 @@ Set the following system properties as needed
 # com.l7tech.server.extension.sharedSortedSetProvider=embeddedgemfire/externalgemfire
 # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
 ```
-<<<<<<< HEAD
-| Parameter                                                   | Description                                                                                                             | Default                                                                 |
-|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
-| `config.gemfire.acceptTerms`                                | Accepting the terms of use for VMware Tanzu GemFire.                                                                    | `true`                                                                  |
-| `config.gemfire.auth.enabled`                               | Enable security athentication.                                                                                          | `false`                                                                 |
-| `config.gemfire.auth.username`                              | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.                   | `default`                                                               |
-| `config.gemfire.auth.password`                              | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.                    | ''                                                                      |
-| `config.gemfire.tls.enabled`                                | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                                     | `false`                                                                 |
-| `config.gemfire.tls.existingSecret`                         | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12                                | ``                                                                      |
-| `config.gemfire.tls.password`                               | Pasword for truststore.12 and keystore.p12, can be plaintext or openssl encrypted.                                      | `` for externl GemFire and .Values.clusterPassword for embedded GemFire |
-| `config.gemfire.tls.additionalProperties`                   | Additional tls related properties.                                                                                      | ``                                                                      |
-| `config.gemfire.useExistingLocators`                        | A list of existing locators to be used by gateway.                                                                      | `[]`                                                                    |
-| `config.gemfire.embedded.enabled`                           | Enable embedded GemFire.                                                                                                | `false`                                                                 |
-| `config.gemfire.embedded.caches.additionalProperties`       | Additional properties for embedded GemFire caches.                                                                      | ``                                                                      |
-| `config.gemfire.embedded.externalLocators.replicas`         | Number of GemFire locator replicas to deploy.                                                                           | `2`                                                                     |
-| `config.gemfire.embedded.externalLocators.image.registry`   | Image Registry                                                                                                          | `docker.io`                                                             |
-| `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
-| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                               | `10.2.0-jdk21`                                                          |
-| `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
-| `config.gemfire.embedded.externalLocators.resources`        | Locator pod resources                                                                                                   | {}                                                                      |
-| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                    | `2Gi`                                                                   |
-| `config.gemfire.external.enabled`                           | Enable external GemFire.                                                                                                | `false`                                                                 |
-| `config.gemfire.external.testOnStart`                       | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start. | `false`                                                                 |
-| `config.gemfire.external.gwCounterRegionName`               | GemFire data region name for gateway counter provider.                                                                  | `layer7gw_counter`                                                      |
-| `config.gemfire.external.gwRateLimiterRegionName`           | GemFire data region name for gateway rate limiter provider.                                                             | `layer7gw_ratelimiter`                                                  |
-| `config.gemfire.external.gwKeyValueRegionName`              | GemFire data region name for gateway key value store provider.                                                          | `layer7gw_keyvalue`                                                     |
-| `config.gemfire.external.gwSortedSetRegionName`             | GemFire data region name for gateway sotred set provider.                                                               | `layer7gw_sortedset`                                                    |
-| `config.gemfire.external.dynamicProperties`                 | Additional GemFire properties from gemfire.properties or gfsecurity.properties.                                         | ``                                                                      |
-| `config.gemfire.managementConsole.enabled`                  | Enable GemFire management console.                                                                                      | `false`                                                                 |
-| `config.gemfire.managementConsole.service.port`             | GemFire management console service port.                                                                                | `8080`                                                                  |
-| `config.gemfire.managementConsole.service.annotations`      | GemFire management console service annotations.                                                                         | `{}`                                                                    |
-| `config.gemfire.managementConsole.image.registry`           | Image Registry                                                                                                          | `docker.io`                                                             |
-| `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
-| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                               | `1.4.1`                                                                 |
-| `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
-=======
 | Parameter                                                   | Description                                                                                                                                                                                | Default                |
 |-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
 | `config.gemfire.acceptTerms`                                | Accepting the terms of use for VMware Tanzu GemFire.                                                                                                                                       | `true`                 |
@@ -1215,7 +1179,6 @@ Set the following system properties as needed
 | `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                                                                                           | `gemfire/gemfire`      |
 | `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                                                                                                  | `1.4.1`                |
 | `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                                                                                          | `IfNotPresent`         |
->>>>>>> develop/gateway
 
 #### Creating your own Configuration
 Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-a-gemfire-datastore.html) for more context on the available configuration options
@@ -1235,6 +1198,32 @@ config:
 #### External GemFire
 Gateway as client connect to external gemfire cluster. Shared State Provider Config is used to configure gemfire.
 
+External gemfire is deployed by GemFire Kubernetes Operator, override-values.yaml:
+```
+config:
+  gemfire:
+    auth:
+      enabled: true
+      username: admin
+      password: "U2FsdGVkX18cMQyYp9nFTlj+efwsBMQJGn5eCDstlEcoTubmZdWC5w=="
+    # SSL configuration for external GemFire deployed by Operator.
+    tls:
+      enabled: true
+      certificate:
+        issuerRef:
+          kind: ClusterIssuer
+          name: gemfire-ca-issuer
+    useExistingLocators:
+      - host: gemfire-operator-deployed-locator-0
+        port: 10334
+      - host: gemfire-operator-deployed-locator-1
+        port: 10334
+    external:
+      enabled: true
+      testOnStart: true
+  sharedStateClient:
+    enabled: true
+```
 External gemfire, override-values.yaml:
 ```
 config:

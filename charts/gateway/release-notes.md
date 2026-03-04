@@ -28,6 +28,7 @@ If you use Policy Manager, you will need to update to v11.2.0.
   - using the [OTel integration](./README.md#opentelemetry-configuration) is a much better alternative
 - installSolutionKits has been removed
   - if you were using this functionality in previous versions of the Gateway we recommend configuring a kubernetes job instead
+- Update chart to generate default TLS secret for external GemFire deployed by GemFire operator.
 
 ## 3.0.44 General Updates
 This patch resolves conflicting labels/selectors for the OTK install, upgrade and scheduled task jobs. 
