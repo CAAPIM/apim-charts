@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CHART_DIRS=(gateway portal)
+CHART_DIRS=(gateway portal seaweedfs kafka intelligence)
 KUBECONFORM_VERSION="v0.6.4"
 
 
