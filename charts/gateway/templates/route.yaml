@@ -16,9 +16,12 @@ metadata:
     {{- range $key, $val := $.Values.additionalLabels }}
     {{ $key }}: "{{ $val }}"
     {{- end }}
-{{- if $.Values.ingress.annotations }}
+{{- if or $.Values.ingress.annotations .annotations }}
   annotations:
 {{- range $key, $val := $.Values.ingress.annotations }}
+   {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- range $key, $val := .annotations }}
    {{ $key }}: "{{ $val }}"
 {{- end }}
 {{- end }}

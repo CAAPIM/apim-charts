@@ -110,8 +110,10 @@ Redis config secret name
 Redis TLS secret name
 */}}
 {{- define "redisTlsSecretName" }}
-{{- if not .Values.config.redis.tls.existingSecret }}
-{{- printf "%s-%s" .Release.Name "redis-crt" -}}
+{{- if .Values.config.redis.subChart.enabled }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-tls" -}}
+{{- else if not .Values.config.redis.tls.existingSecret }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-crt" -}}
 {{- else }}
 {{- .Values.config.redis.tls.existingSecret }}
 {{- end }}
@@ -338,4 +340,122 @@ Define OTK Image Pull Secret Name
 {{- else -}}
 {{- join "," .Values.config.gemfire.useExistingLocators -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+  Kubernetes Gateway API Helpers
+*/}}
+
+{{/*
+  Resolve the Gateway name.
+  - If gateway.create is true, use the auto-generated name.
+  - If gateway.existingRef.name is set, use that.
+*/}}
+{{- define "kubernetesGateway.gatewayName" -}}
+{{- if .Values.kubernetesGateway.gateway.create -}}
+  {{- printf "%s-gateway" (include "gateway.fullname" .) -}}
+{{- else -}}
+  {{- required "kubernetesGateway.gateway.existingRef.name is required when kubernetesGateway.gateway.create is false" .Values.kubernetesGateway.gateway.existingRef.name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway namespace for parentRefs.
+  - If gateway.create is true, use the release namespace.
+  - If gateway.existingRef.namespace is set, use that.
+  - Otherwise, use the release namespace.
+*/}}
+{{- define "kubernetesGateway.gatewayNamespace" -}}
+{{- if .Values.kubernetesGateway.gateway.create -}}
+  {{- .Release.Namespace -}}
+{{- else if .Values.kubernetesGateway.gateway.existingRef.namespace -}}
+  {{- .Values.kubernetesGateway.gateway.existingRef.namespace -}}
+{{- else -}}
+  {{- .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway listener TLS secret name.
+  Priority: existingSecretName > secretName > auto-generated name.
+*/}}
+{{- define "kubernetesGateway.tlsSecretName" -}}
+{{- if .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+  {{- .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+{{- else if .Values.kubernetesGateway.gateway.tls.secretName -}}
+  {{- .Values.kubernetesGateway.gateway.tls.secretName -}}
+{{- else -}}
+  {{- printf "%s-gateway-tls" (include "gateway.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the backend TLS secret name (Layer7 Gateway pod certificate).
+  Priority: existingSecretName > secretName > auto-generated name.
+*/}}
+{{- define "kubernetesGateway.backendTlsSecretName" -}}
+{{- if .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
+  {{- .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
+{{- else if .Values.kubernetesGateway.backendTLSPolicy.tls.secretName -}}
+  {{- .Values.kubernetesGateway.backendTLSPolicy.tls.secretName -}}
+{{- else -}}
+  {{- printf "%s-backend-tls" (include "gateway.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Determine if the chart should create the Gateway listener TLS secret.
+  True when: no existingSecretName AND (crt/key provided OR both are empty for auto-generation).
+*/}}
+{{- define "kubernetesGateway.createListenerTlsSecret" -}}
+{{- if not .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+  true
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Determine if the chart should create the backend TLS secret.
+  True when: backendTLSPolicy is enabled, no existingSecretName is set,
+  and not in CA-only mode (caCrt or existingCACertConfigMapName set without crt/key).
+*/}}
+{{- define "kubernetesGateway.createBackendTlsSecret" -}}
+{{- if and .Values.kubernetesGateway.backendTLSPolicy.enabled
+          (not .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName)
+          (not (and (or .Values.kubernetesGateway.backendTLSPolicy.caCrt .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName)
+                    (not .Values.kubernetesGateway.backendTLSPolicy.tls.crt)
+                    (not .Values.kubernetesGateway.backendTLSPolicy.tls.key))) -}}
+  true
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the BackendTLSPolicy CA ConfigMap name.
+  Priority: existingCACertConfigMapName > auto-generated name.
+*/}}
+{{- define "kubernetesGateway.caCertConfigMapName" -}}
+{{- if .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName -}}
+  {{- .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName -}}
+{{- else -}}
+  {{- printf "%s-gateway-ca-cert" (include "gateway.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Generate auto parentRefs for routes when none are provided.
+  Produces a list with a single parentRef pointing to the chart's Gateway.
+*/}}
+{{- define "kubernetesGateway.defaultParentRefs" -}}
+- name: {{ include "kubernetesGateway.gatewayName" . }}
+  namespace: {{ include "kubernetesGateway.gatewayNamespace" . }}
+{{- end -}}
+
+{{/*
+  Generate auto backendRefs pointing to the chart's own service.
+  Default uses the first port from service.ports.
+*/}}
+{{- define "kubernetesGateway.defaultBackendRefs" -}}
+{{- $fullname := include "gateway.fullname" . -}}
+{{- $firstPort := index .Values.service.ports 0 -}}
+- name: {{ $fullname }}
+  port: {{ $firstPort.external }}
 {{- end -}}

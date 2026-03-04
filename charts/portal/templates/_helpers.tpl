@@ -376,3 +376,47 @@ Create Image Pull Secret
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password (printf "%s:%s" .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
+
+{{/*
+  ============================================================
+  Kubernetes Gateway API Helpers
+  ============================================================
+*/}}
+
+{{/*
+  Resolve the Gateway name.
+  - If gatewayAPI.create is true, generate a name from the chart fullname.
+  - Otherwise, use the existingRef.name.
+*/}}
+{{- define "portal.gatewayAPI.gatewayName" -}}
+{{- if .Values.ingress.gatewayAPI.create -}}
+  {{- printf "%s-gateway" (include "portal.fullname" .) -}}
+{{- else -}}
+  {{- required "ingress.gatewayAPI.existingRef.name is required when ingress.type.gatewayAPI is true and ingress.gatewayAPI.create is false" .Values.ingress.gatewayAPI.existingRef.name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway namespace for parentRefs.
+  - If gatewayAPI.create is true, use the release namespace.
+  - If gatewayAPI.existingRef.namespace is set, use that.
+  - Otherwise, use the release namespace.
+*/}}
+{{- define "portal.gatewayAPI.gatewayNamespace" -}}
+{{- if .Values.ingress.gatewayAPI.create -}}
+  {{- .Release.Namespace -}}
+{{- else if .Values.ingress.gatewayAPI.existingRef.namespace -}}
+  {{- .Values.ingress.gatewayAPI.existingRef.namespace -}}
+{{- else -}}
+  {{- .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Generate default parentRefs for routes when none are provided.
+  Produces a list with a single parentRef pointing to the chart's Gateway.
+*/}}
+{{- define "portal.gatewayAPI.defaultParentRefs" -}}
+- name: {{ include "portal.gatewayAPI.gatewayName" . }}
+  namespace: {{ include "portal.gatewayAPI.gatewayNamespace" . }}
+{{- end -}}

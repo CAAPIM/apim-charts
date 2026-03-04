@@ -1,0 +1,72 @@
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: {{ template "gateway.fullname" . }}-backendtlspolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.backendTLSPolicy.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.backendTLSPolicy.annotations) }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  {{- /* Resolve targetRefs */}}
+  targetRefs:
+  {{- if .Values.kubernetesGateway.backendTLSPolicy.targetRefs }}
+    {{- toYaml .Values.kubernetesGateway.backendTLSPolicy.targetRefs | nindent 4 }}
+  {{- else }}
+    {{- $fullname := include "gateway.fullname" . -}}
+    {{- $firstPort := index .Values.service.ports 0 }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}
+      sectionName: {{ $firstPort.name }}
+    {{- /* Auto-add management service if any route rule targets it */}}
+    {{- $hasMgmtRoute := false }}
+    {{- range .Values.kubernetesGateway.httpRoute.rules }}
+      {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
+    {{- end }}
+    {{- range .Values.kubernetesGateway.tlsRoute.rules }}
+      {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
+    {{- end }}
+    {{- if $hasMgmtRoute }}
+    {{- $mgmtPort := index .Values.management.service.ports 0 }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}-management
+      sectionName: {{ $mgmtPort.name }}
+    {{- end }}
+  {{- end }}
+  validation:
+  {{- if .Values.kubernetesGateway.backendTLSPolicy.validation }}
+    {{- /* User-provided validation block takes full precedence */}}
+    {{- toYaml .Values.kubernetesGateway.backendTLSPolicy.validation | nindent 4 }}
+  {{- else }}
+    {{- /* Auto-configured: hostname from service FQDN, CA ConfigMap from auto-generated or user-provided CA */}}
+    hostname: {{ include "gateway.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+    caCertificateRefs:
+      - name: {{ include "kubernetesGateway.caCertConfigMapName" . }}
+        group: ""
+        kind: ConfigMap
+  {{- end }}
+{{- else }}
+{{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling kubernetesGateway.backendTLSPolicy." }}
+{{- end }}
+{{- end }}

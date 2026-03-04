@@ -2,8 +2,6 @@ nameOverride: ""
 fullnameOverride: ""
 global:
   schedulerName:
-  security:
-    allowInsecureImages: true
 
 # Use set file to place a Gateway license here
 license:
@@ -473,7 +471,7 @@ config:
     # this is for testing only and is not supported in
     # production environments
     sentinel:
-      enabled: true
+      enabled: false
       masterSet: mymaster
       # If the subChart is not enabled sentinel nodes need to be set
       nodes:
@@ -495,12 +493,11 @@ config:
       #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
       #   ....
       #   -----END CERTIFICATE-----
-    # Enable subChart to have Helm optionally deploy Redis Sentinel/Standalone with your gateways.
+    # Enable subChart to have Helm optionally deploy Redis Standalone with your gateways.
     subChart:
-      # If the subChart is enabled, configuration from redis in the subCharts section
-      # will need to match the auth and tls settings here. This is true by default so no
-      # changes will be required
-      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
+      # This naming convention has remained the same for continuity with previous versions of the chart.
+      # The Redis subChart has been replaced with a simple Redis StatefulSet implementation included in the Gateway Chart.
+      # Using the provided Redis StatefulSet is a test/development only example. DO NOT use in production!! You will need your own Redis server for this integration.
       enabled: false
     additionalProviders: []
     # - name: myRegionalRedisInstance1
@@ -793,7 +790,7 @@ otk:
   # Restman host and port (optional). Valid only for db backed gateways
   # Default - gateway service
   # restmanHost:
-  # Default -  installSolutionKits.restmanPort
+  # Default -  8443
   # restmanPort:
 
   # Specify internal gateway host and port for DMZ OTK type
@@ -1057,6 +1054,9 @@ ingress:
       port:
         name: https
       # number:
+    # Per-rule annotations (OpenShift Routes only). Merged with ingress.annotations.
+    # annotations:
+    #   haproxy.router.openshift.io/timeout: 5m
   # - host: dev1.ca.com
   #   path: "/"
   #   service:
@@ -1070,6 +1070,254 @@ ingress:
   #     port:
   #       name: management
         # number:
+
+# Kubernetes Gateway API Configuration
+# ref: https://gateway-api.sigs.k8s.io/
+# NOTE: Gateway API support is EXPERIMENTAL. Support depends on your Gateway controller.
+# Contour and EnvoyGateway examples are provided in the examples/ingress directory.
+# ref: https://gateway-api.sigs.k8s.io/implementations/
+kubernetesGateway:
+  # -- Enable Kubernetes Gateway API resources.
+  # When enabled with defaults, the chart auto-generates an HTTPRoute with backendRefs
+  # pointing to the chart's own service. Customize each sub-section as needed.
+  enabled: false
+
+  # --- Gateway Resource (gateway.networking.k8s.io/v1) ---
+  # Controls the Kubernetes Gateway resource.
+  # Set gateway.create: true to create a new Gateway, or leave as false
+  # and provide existingRef to attach routes to an existing Gateway.
+  gateway:
+    # -- Create a new Gateway resource managed by this chart
+    create: false
+    # -- GatewayClass name (e.g. contour, eg). Required when create: true.
+    gatewayClassName: ""
+    # -- Optional addresses requested for the Gateway (e.g. static IPs).
+    # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
+    addresses: []
+    # - type: IPAddress
+    #   value: "1.2.3.4"
+    # - type: Hostname
+    #   value: "my-gateway.example.com"
+    # -- Reference to an existing Gateway resource. Used when create: false.
+    # Routes will use this as their parentRef.
+    existingRef:
+      name: ""
+      namespace: ""
+    # -- Gateway listeners. If empty and create: true, a default HTTPS listener
+    # on port 443 is auto-generated using the TLS secret configured below.
+    listeners: []
+    # - name: https
+    #   protocol: HTTPS
+    #   port: 443
+    #   hostname: "*.ca.com"
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - name: my-tls-secret
+    #         kind: Secret
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
+    # - name: https-management
+    #   protocol: HTTPS
+    #   port: 443
+    #   hostname: "dev-pm.ca.com"
+    #   tls:
+    #     mode: Terminate
+    #     certificateRefs:
+    #       - name: my-tls-secret
+    #         kind: Secret
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
+
+    # -- TLS configuration for the Gateway listener(s).
+    # Part of the Gateway spec (spec.listeners[].tls).
+    # The listener TLS secret is the certificate presented to clients (frontend).
+    # Three modes:
+    #   1. Reference an existing secret: set existingSecretName
+    #   2. Provide cert/key: set crt and key (PEM-encoded)
+    #   3. Auto-generate: leave crt, key, and existingSecretName empty
+    #      A self-signed certificate is generated using Helm built-in functions.
+    tls:
+      # -- Reference an existing kubernetes.io/tls Secret.
+      # When set, no TLS secret is created by this chart.
+      existingSecretName: ""
+      # -- Override the auto-generated secret name.
+      # If empty, auto-generated as <fullname>-gateway-tls
+      secretName: ""
+      # -- PEM-encoded TLS certificate (used when existingSecretName is empty)
+      crt: ""
+      # -- PEM-encoded TLS private key (used when existingSecretName is empty)
+      key: ""
+
+    # -- Additional labels for the Gateway resource
+    labels: {}
+    # -- Additional annotations for the Gateway resource
+    annotations: {}
+
+  # --- HTTPRoute (gateway.networking.k8s.io/v1) ---
+  # Used for TLS termination at the Gateway with re-encryption to the backend.
+  # backendRefs service name is auto-populated from the chart's service.
+  # parentRefs are auto-resolved from gateway.create or gateway.existingRef.
+  httpRoute:
+    # -- Enable HTTPRoute resource
+    enabled: true
+    # -- Gateway API parentRefs. If empty and gateway.create is true,
+    # auto-populated from the chart-created Gateway.
+    # Must reference an existing Gateway when gateway.create is false.
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
+    #   sectionName: https
+    # -- Hostnames for the HTTPRoute (used for rules without a hostname).
+    # Prefer setting hostname on individual rules for per-host routing.
+    hostnames: []
+    # -- HTTPRoute rules. backendRefs service name is auto-populated from the chart.
+    # Rules are grouped by hostname - rules with the same hostname become one HTTPRoute.
+    # Set hostname on a rule to create a dedicated HTTPRoute for that host.
+    # Set backend: management to route to the management service.
+    rules:
+    # Example: per-hostname routing with management service
+      - hostname: dev.ca.com
+        matches:
+        - path:
+            type: PathPrefix
+            value: /
+      - hostname: dev-pm.ca.com
+        backend: management
+        matches:
+        - path:
+            type: PathPrefix
+            value: /
+    # -- Additional labels for the HTTPRoute resource
+    labels: {}
+    # -- Additional annotations for the HTTPRoute resource
+    annotations: {}
+
+  # --- BackendTLSPolicy (gateway.networking.k8s.io/v1) ---
+  # Configures TLS from the Gateway to the backend (Layer7 Gateway) pod.
+  # Required when using httpRoute since the backend speaks HTTPS and the
+  # Gateway API does not support tlsSkipVerify.
+  backendTLSPolicy:
+    # -- Enable BackendTLSPolicy resource
+    enabled: false
+    # -- Force the backend TLS key bootstrap on helm upgrade.
+    # By default, the bootstrap script only loads the SSL key on initial install or
+    # when the gateway is ephemeral (database.enabled: false). On a database-backed
+    # gateway, the key may have been rotated externally (e.g. via Policy Manager or
+    # a CI/CD pipeline), and bootstrapping would overwrite it.
+    # Set to true to force bootstrap on every helm install/upgrade.
+    forceBootstrap: false
+    # -- Target references. If empty, auto-populated to target the chart's Service.
+    targetRefs: []
+    # - group: ""
+    #   kind: Service
+    #   name: my-gateway-service
+    #   sectionName: https
+    # -- TLS validation configuration for the backend connection.
+    # When empty, auto-configured with:
+    #   - hostname: <fullname>.<namespace>.svc.cluster.local
+    #   - caCertificateRefs pointing to the auto-generated CA ConfigMap
+    # Provide a custom validation block to override (e.g. for wellKnownCACertificates).
+    validation: {}
+    # hostname: my-gateway-service.default.svc.cluster.local
+    # caCertificateRefs:
+    #   - name: gateway-ca-cert
+    #     group: ""
+    #     kind: ConfigMap
+    # wellKnownCACertificates: System
+
+    # -- Backend TLS certificate configuration.
+    # This is the certificate that the Layer7 Gateway pod serves to the
+    # Kubernetes Gateway controller. This is separate from the listener TLS
+    # (kubernetesGateway.gateway.tls) which is presented to clients.
+    # Four modes:
+    #   1. Reference an existing secret: set existingSecretName
+    #   2. Provide cert/key: set crt and key (PEM-encoded)
+    #   3. Auto-generate: leave crt, key, and existingSecretName empty
+    #      A self-signed certificate is generated using Helm built-in functions.
+    #   4. CA-only: set backendTLSPolicy.caCrt or existingCACertConfigMapName
+    #      (no crt/key/existingSecretName). Use when the Gateway pod manages
+    #      its own SSL keys externally. No backend TLS secret is created and
+    #      no bootstrap script is mounted.
+
+
+   # -- PEM-encoded CA certificate for backend TLS validation.
+    # When tls.crt/key are provided manually, set this to the CA that signed them.
+    # A ConfigMap is automatically created from this value.
+    # When tls is auto-generated, this is ignored (the CA is auto-generated too).
+    caCrt: ""
+    # -- Reference an existing ConfigMap containing the CA certificate (key: ca.crt).
+    # When set, no CA ConfigMap is created -- the BackendTLSPolicy references this directly.
+    existingCACertConfigMapName: ""
+
+    tls:
+      # -- Reference an existing kubernetes.io/tls Secret for the backend certificate.
+      existingSecretName: ""
+      # -- Override the auto-generated secret name.
+      # If empty, auto-generated as <fullname>-backend-tls
+      secretName: ""
+      # -- PEM-encoded TLS certificate for the backend
+      crt: ""
+      # -- PEM-encoded TLS private key for the backend
+      key: ""
+
+    # -- Additional labels for the BackendTLSPolicy resource
+    labels: {}
+    # -- Additional annotations for the BackendTLSPolicy resource
+    annotations: {}
+
+  # --- TLSRoute (gateway.networking.k8s.io/v1alpha2) ---
+  # Used for TLS passthrough (SNI-based routing, no termination at Gateway).
+  # This is an alternative to httpRoute -- typically only one is enabled.
+  # NOTE: TLSRoute is in the Experimental channel and requires experimental CRDs.
+  tlsRoute:
+    # -- Enable TLSRoute resource
+    enabled: false
+    # -- Gateway API parentRefs. Same behavior as httpRoute.parentRefs.
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
+    #   sectionName: tls-passthrough
+    # -- Hostnames for SNI-based routing (used for rules without a hostname).
+    # Prefer setting hostname on individual rules for per-host routing.
+    hostnames: []
+    # -- TLSRoute rules. backendRefs are auto-populated from the chart's service.
+    # Same hostname grouping as httpRoute - rules with the same hostname become one TLSRoute.
+    rules:
+      - hostname: dev.ca.com
+      - hostname: dev-pm.ca.com
+        backend: management
+    # Example: per-hostname SNI routing with management service
+    # - hostname: app.example.com
+    # - hostname: pm.example.com
+    #   backend: management
+    # Example: custom backendRefs
+    # - hostname: custom.example.com
+    #   backendRefs:
+    #     - name: my-custom-service
+    #       port: 8443
+    #       weight: 1
+    # Example: per-hostname SNI routing with management service
+    # - hostname: app.example.com
+    # - hostname: pm.example.com
+    #   backend: management
+    # Example: custom backendRefs
+    # - hostname: custom.example.com
+    #   backendRefs:
+    #     - name: my-custom-service
+    #       port: 8443
+    #       weight: 1
+    # -- Additional labels for the TLSRoute resource
+    labels: {}
+    # -- Additional annotations for the TLSRoute resource
+    annotations: {}
+
+  # -- Labels applied to all Gateway API resources created by this chart
+  labels: {}
+  # -- Annotations applied to all Gateway API resources created by this chart
+  annotations: {}
 
 # Additional Environment variables to be added to the Gateway Configmap
 additionalEnv: {}
@@ -1273,155 +1521,180 @@ customHosts:
   #   - "example.ca.com"
   #   ip: "0.0.0.0"
 
-## Demo - enable/disable the background metrics processing task
-## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
-## Disabling on upgrade will have no effect on the deployed policy
-## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
-## InfluxDbUrl and tags are Cluster-Wide-Properties.
-serviceMetrics:
-  enabled: false
-  ## By default influxdb is not deployed with this Chart.
-  ## Set influxdb.enabled in the subchart section to true to deploy it.
-  external: false
-  influxDbUrl: http://influxdb:8086
-  influxDbDatabase: serviceMetricsDb
-  tags: env=dev
+####################################################################################
+# UPDATED MySQL Configuration (Native StatefulSet - Development/Testing Only)
+# This replaces the MySQL subchart with a simple StatefulSet implementation
+# DO NOT USE IN PRODUCTION!! For production, use an external MySQL database.
+# See the README for full configuration options and examples.
+# Note: MySQL StatefulSet is enabled via database.create=true
+####################################################################################
+mysql:
+  image:
+    repository: docker.io/mysql
+    tag: 8.4.5
+    pullPolicy: IfNotPresent
+  auth:
+    rootPassword: mypassword
+    database: ssg
+    username: gateway
+    password: mypassword
+    # existingSecret: ""
+  service:
+    type: ClusterIP
+    port: 3306
+    annotations: {}
+    # sessionAffinity: ""
+    # sessionAffinityConfig: {}
+    # nodePort: ""
+    # extraPorts: []
+    # externalTrafficPolicy: ""
+  # If otk.database.useDemoDb is true, the following will be set automatically:
+  initdbScriptsConfigMap: otk-db-scripts-cm
+  # commonAnnotations:
+  #   helm.sh/hook: pre-install,post-upgrade
+  #   helm.sh/hook-weight: "-10"
+  startupProbe:
+    enabled: false
+    # initialDelaySeconds: 0
+    # periodSeconds: 10
+    # timeoutSeconds: 5
+    # successThreshold: 1
+    # failureThreshold: 30
+  readinessProbe:
+    enabled: true
+    # initialDelaySeconds: 5
+    # periodSeconds: 5
+    # timeoutSeconds: 1
+    # successThreshold: 1
+    # failureThreshold: 3
+  livenessProbe:
+    enabled: true
+    # initialDelaySeconds: 30
+    # periodSeconds: 10
+    # timeoutSeconds: 5
+    # successThreshold: 1
+    # failureThreshold: 3
+  persistence:
+    enabled: true
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    # storageClass: ""
+    # existingClaim: ""
+    # subPath: ""
+    # selector: {}
+    # If otk.database.useDemoDb is true, annotations will be set automatically:
+    # annotations:
+    #   helm.sh/hook: pre-install,post-upgrade
+    #   helm.sh/hook-weight: "-10"
+  # podManagementPolicy: OrderedReady
+  # revisionHistoryLimit: 10
+  # schedulerName: ""
+  # priorityClassName: ""
+  # terminationGracePeriodSeconds: ""
+  podSecurityContext:
+    fsGroup: 1001
+  containerSecurityContext:
+    runAsUser: 1001
+    runAsGroup: 1001
+  podAnnotations: {}
+  podLabels: {}
+  # podManagementPolicy: OrderedReady
+  # revisionHistoryLimit: 10
+  # affinity: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # topologySpreadConstraints: []
+  # configuration: ""
+  # existingConfigmap: ""
+  # initdbScripts: {}
+  # initdbScriptsConfigMap: ""
+  # commonAnnotations: {}
+  # resources: {}
+  # extraEnvVars: []
+  # extraEnvVarsCM: ""
+  # extraEnvVarsSecret: ""
+  # extraVolumes: []
+  # extraVolumeMounts: []
+  # initContainers: []
+  # sidecars: []
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
-# Install Gateway solution kit(s) using restman.
-#   Prerequisites:
-#     1) restman is enabled
-#     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
-#   Description of solution kit(s):
-#     1) OAuth Solution Kit: https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
-installSolutionKits:
-  enabled: false
-  restmanPort: 8443
-  restmanReadyWait: 150s
-  solutionKits:
+####################################################################################
+# Redis Configuration (Standalone - Development/Testing Only)
+# This is a simple Redis StatefulSet implementation
+# DO NOT USE IN PRODUCTION!! For production, use an external Redis or Redis cluster.
+# Enable via config.redis.subChart.enabled
+####################################################################################
+redis:
+  image:
+    repository: redis
+    tag: 7.4-alpine
+    pullPolicy: IfNotPresent
+  auth:
+    enabled: false
+    username: ""
+    password: mypassword
+    # existingSecret: ""
+  service:
+    type: ClusterIP
+    port: 6379
+    annotations: {}
+  persistence:
+    enabled: false
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    # storageClass: ""
+    # existingClaim: ""
+    # subPath: ""
+    # selector: {}
+    # annotations: {}
+  # maxmemory: 256mb
+  # maxmemoryPolicy: allkeys-lru
+  # appendonly: false
+  tls:
+    enabled: true
+    autoGenerated: true
+    # certificatesSecret: ""
+    # certFilename: ""
+    # certKeyFilename: ""
+    # certCAFilename: ""
+    # authClients: no
+  startupProbe:
+    enabled: false
+  readinessProbe:
+    enabled: true
+  livenessProbe:
+    enabled: true
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  podAnnotations: {}
+  podLabels: {}
+  # configuration: ""
+  # commonAnnotations: {}
+  # resources: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # affinity: {}
+  # updateStrategy: {}
+  # schedulerName: ""
+  # priorityClassName: ""
+  # terminationGracePeriodSeconds: ""
+  # extraEnvVars: []
+  # extraVolumes: []
+  # extraVolumeMounts: []
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
 ##
 ## Subchart Configuration
 ##
-
-# Settings for Redis - https://github.com/bitnami/charts/tree/master/bitnami/redis
-redis:
-  auth:
-    # The Gateway supports Redis master auth in sentinel mode only, set this value to true to enable auth.
-    enabled: false
-    # Sentinel auth which enables password authentication on sentinels too is not supported by the Gateway and should remain false
-    sentinel: false
-    password: "mypassword"
-  tls:
-    enabled: true
-    authClients: false
-    # this only applies if redis.subChart.enabled is true
-    autoGenerated: true
-  image:
-    registry: docker.io
-    repository: caapim/redis
-    tag: 7.2.1-debian-11-r0
-    pullPolicy: IfNotPresent
-  # replication or standalone
-  architecture: replication
-  master:
-    count: 1
-    configuration: ""
-    disableCommands:
-      - FLUSHDB
-      - FLUSHALL
-    persistence:
-      enabled: false
-      size: 20Gi
-    service:
-      type: LoadBalancer
-  replica:
-    replicaCount: 3
-    containerPorts:
-      redis: 6379
-    resources:
-      limits: {}
-      requests: {}
-    persistence:
-      enabled: false
-      sizeLimit: ""
-      accessModes:
-        - ReadWriteOnce
-      size: 20Gi
-  # service:
-    # type: LoadBalancer
-    # externalTrafficPolicy: Local
-  sentinel:
-    enabled: true
-  # service:
-    # type: LoadBalancer
-    # externalTrafficPolicy: Local
-    image:
-      registry: docker.io
-      repository: caapim/redis-sentinel
-      tag: 7.2.1-debian-11-r0
-      digest: ""
-      pullPolicy: IfNotPresent
-    masterSet: mymaster
-    quorum: 2
-    resources:
-      limits: {}
-      requests: {}
-
-# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
-mysql:
-  image:
-    registry: docker.io
-    repository: caapim/mysql
-    tag: 8.4.3-debian-12-r5
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    # - myRegistryKeySecretName
-  auth:
-    username: gateway
-    password: mypassword
-    database: ssg
-    rootPassword: mypassword
-  initdbScriptsConfigMap: otk-db-scripts-cm
-  primary:
-    # persistence:
-    #   enabled: true
-    #   size: 8Gi
-    configuration: |-
-      [client]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8
-      plugin_dir=/opt/bitnami/mysql/plugin
-      [mysqld]
-      log-bin-trust-function-creators=1
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/plugin
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8_general_ci
-      character-set-server=UTF8
-      innodb_log_buffer_size=64M
-      innodb_log_file_size=80M
-      max_allowed_packet=20M
-      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-      bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install,post-upgrade
-        helm.sh/hook-weight: "-10"
-  commonAnnotations:
-    helm.sh/hook: pre-install,post-upgrade
-    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
@@ -1457,47 +1730,3 @@ hazelcast:
               service-name: ${serviceName}
               namespace: ${namespace}
               resolve-not-ready-addresses: true
-
-# Settings for InfluxDB - https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-# This is not a production implementation!
-influxdb:
-  enabled: false
-  image:
-    repository: "influxdb"
-    tag: "1.8.10-alpine"
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    #   - registry-secret
-  service:
-    port: 8086
-  persistence:
-    enabled: true
-   # storageClass:
-    size: 8Gi
-  env:
-    - name: INFLUXDB_DB
-      value: "serviceMetricsDb"
-
-# Settings for Grafana - https://github.com/bitnami/charts/tree/master/bitnami/grafana
-grafana:
-  enabled: false
-  image:
-    registry: docker.io
-    repository: caapim/grafana
-    tag: 9.0.7-debian-11-r0
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    # - myRegistryKeySecretName
-  # Change this to update the UI Password
-  admin:
-    user: admin
-    password: password
-  dashboardsProvider:
-    enabled: true
-  customDashboard:
-    value:
-  dashboardsConfigMaps:
-    - configMapName: grafana-configmap
-      fileName: gateway-service-metrics.json
-  datasources:
-    secretName: grafana-secret
