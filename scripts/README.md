@@ -6,7 +6,7 @@ Scripts for API Portal Helm charts, including image manifest generation and pull
 
 | Script | Purpose |
 |--------|---------|
-| **generate-portal-image-manifest.sh** | Given a Portal version (e.g. `5.4`), resolves the Helm chart version from the repo, pulls that chart, and extracts the image list from its `values.yaml`. Writes a manifest file (image refs only, one per line) for use with `pull-portal-images.sh`. |
+| **generate-portal-image-manifest.sh** | Given a Portal version (e.g. `5.4`), resolves the Helm chart version from the repo, pulls that chart, and extracts the image list from its `values.yaml`. Writes a manifest file whose first line identifies Portal appVersion and Helm chart version (comment), followed by image refs (one per line) for use with `pull-portal-images.sh`. |
 | **pull-portal-images.sh** | Reads a manifest file and pulls each image. Supports simple refs (`name:tag`) or full refs (`registry/repo/name:tag`). Optionally pushes to an internal registry. |
 | **extract-portal-images.sh** | Used by the generator: reads a chart `values.yaml` and prints one full image reference per line (portal core, RabbitMQ, Druid; excludes MySQL). No Python or pip required. If `druid.enabled` is false in your values, ignore the druid lines in the list. |
 | **extract-portal-images.py** | Optional Python alternative to the shell extractor; same output format. Requires PyYAML (`pip install pyyaml`). |

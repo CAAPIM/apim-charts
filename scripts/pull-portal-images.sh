@@ -98,7 +98,10 @@ echo "PUSH_INTERNAL=${PUSH_INTERNAL} INTERNAL_REGISTRY=${INTERNAL_REGISTRY}"
 echo "---"
 
 while IFS= read -r line || [[ -n "$line" ]]; do
-  [[ -z "$(echo "$line" | tr -d '\r')" ]] && continue
+  line=$(echo "$line" | tr -d '\r')
+  [[ -z "$line" ]] && continue
+  # Skip comment lines (e.g. "# Portal appVersion: 5.4 | Helm chart version: 2.3.21")
+  [[ "$line" == \#* ]] && continue
   pull_one "$line"
 done < "$MANIFEST_FILE"
 

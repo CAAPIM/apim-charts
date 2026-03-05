@@ -2,8 +2,9 @@
 #
 # Generate an image manifest for a given Portal version by resolving the
 # chart version (appVersion match), pulling that chart, and extracting
-# image refs from its values.yaml. Writes only image lines to a file
-# (one full image reference per line) for use with pull-portal-images.sh.
+# image refs from its values.yaml. Writes a manifest file: first line is a
+# comment with Portal appVersion and Helm chart version; remaining lines are
+# image refs (one per line) for use with pull-portal-images.sh.
 #
 # Prerequisites: Helm 3.
 #
@@ -14,7 +15,8 @@
 #   MANIFEST_OUTPUT=/path/to/my-manifest.txt ./scripts/generate-portal-image-manifest.sh 5.4
 #
 # Output: manifest file (default manifest-<version>.txt in current directory).
-# All progress messages go to stderr so the file contains only image refs.
+# First line: "# Portal appVersion: X.Y | Helm chart version: A.B.C". Rest: image refs.
+# All progress messages go to stderr.
 #
 
 set -e
@@ -27,7 +29,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 usage() {
   echo "Usage: $0 <portal-version> | PORTAL_VERSION=<version> $0" >&2
   echo "  Example: $0 5.4" >&2
-  echo "  Writes manifest to manifest-<version>.txt (or MANIFEST_OUTPUT). Only image refs in file." >&2
+  echo "  Writes manifest to manifest-<version>.txt (or MANIFEST_OUTPUT); first line = version comment, rest = image refs." >&2
   exit 1
 }
 
@@ -81,7 +83,10 @@ if [[ ! -f "$values_file" ]]; then
   exit 1
 fi
 
-# Write only image refs (one per line) to manifest file
+# Write manifest: first line identifies Portal and Helm chart version, then image refs (one per line)
 echo "Extracting image list from values.yaml..." >&2
-"${SCRIPT_DIR}/extract-portal-images.sh" "$values_file" > "$MANIFEST_OUTPUT"
-echo "Manifest written to ${MANIFEST_OUTPUT}" >&2
+{
+  echo "# Portal appVersion: ${PORTAL_VERSION} | Helm chart version: ${chart_version}"
+  "${SCRIPT_DIR}/extract-portal-images.sh" "$values_file"
+} > "$MANIFEST_OUTPUT"
+echo "Manifest written to ${MANIFEST_OUTPUT} (Portal ${PORTAL_VERSION}, chart ${chart_version})" >&2
