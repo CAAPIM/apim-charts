@@ -5,7 +5,7 @@
 # image refs from its values.yaml. Writes only image lines to a file
 # (one full image reference per line) for use with pull-portal-images.sh.
 #
-# Prerequisites: Helm 3, Python 3, PyYAML (pip install pyyaml).
+# Prerequisites: Helm 3.
 #
 # Usage:
 #   ./scripts/generate-portal-image-manifest.sh 5.4
@@ -81,17 +81,7 @@ if [[ ! -f "$values_file" ]]; then
   exit 1
 fi
 
-# Require Python + PyYAML for extractor
-if ! command -v python3 &>/dev/null; then
-  echo "Error: python3 not found. Required for image extraction." >&2
-  exit 1
-fi
-if ! python3 -c "import yaml" 2>/dev/null; then
-  echo "Error: PyYAML required. Install with: pip install pyyaml" >&2
-  exit 1
-fi
-
 # Write only image refs (one per line) to manifest file
 echo "Extracting image list from values.yaml..." >&2
-"${SCRIPT_DIR}/extract-portal-images.py" "$values_file" > "$MANIFEST_OUTPUT"
+"${SCRIPT_DIR}/extract-portal-images.sh" "$values_file" > "$MANIFEST_OUTPUT"
 echo "Manifest written to ${MANIFEST_OUTPUT}" >&2
