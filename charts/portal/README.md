@@ -717,7 +717,7 @@ Portal Analytics
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.4` |
 | `image.analytics` | Analytics image | `analytics-server:5.4`            |
 | `image.authenticator` | Authenticator image | `authenticator:5.4`               |
-| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.4.1`           |
+| `image.dbUpgrade` | db upgrade image | `db-upgrade-portal:5.4.0.1`           |
 | `image.rbacUpgrade` | Analytics image, per Portal version | `db-upgrade-rbac:5.4`             |
 | `image.upgradeVerify` | Upgrade verification image | `upgrade-verify:5.4`              |
 | `image.tlsManager` | TLS manager image | `tls-automator:5.4`               |

@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     branches:
-      - stable
+      - 5.4.0.1
 jobs:
   release-charts:
     runs-on: ubuntu-latest
