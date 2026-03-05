@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Copyright © 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+#
+# AI assistance has been used to generate some or all contents of this file.
+# That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 #
 # Generate an image manifest for a given Portal version by resolving the
 # chart version (appVersion match), pulling that chart, and extracting
