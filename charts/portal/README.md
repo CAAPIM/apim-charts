@@ -6,7 +6,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.3.19+1 General Updates
+## 2.3.19-patch.1 General Updates
 - update db-upgrade-portal docker image tag to 5.4.0.1
 
 ## 2.3.19 General Updates
