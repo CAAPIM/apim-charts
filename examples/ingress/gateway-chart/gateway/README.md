@@ -74,7 +74,7 @@ This means existing deployments are not affected. You opt in to the Gateway API 
 
 ## Example 2: Contour as a Gateway Controller (HTTPRoute)
 
-This is the recommended configuration for Contour with TLS termination and re-encryption. The chart auto-generates the Gateway, listeners, backend certificate, and CA certificate.
+This example uses Contour with TLS termination and re-encryption. The chart auto-generates the Gateway, listeners, backend certificate, and CA certificate.
 
 ```
  Client                  K8s Gateway (Contour)      L7 Gateway Pod
