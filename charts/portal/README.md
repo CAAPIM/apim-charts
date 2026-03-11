@@ -366,14 +366,14 @@ When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific
 You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
 
 ### Kubernetes Gateway API Configuration
-When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` (v1alpha2) resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
+When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
 
 All ingress types (`ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI`) can coexist, allowing a gradual migration between approaches without a hard DNS cutover. Each enabled type creates its own independent resources and load balancer endpoint.
 
 > **Note:** Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type, changing the ingress class is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
 
 **Requirements:**
-- Gateway API CRDs must be installed: `gateway.networking.k8s.io/v1` (Gateway) and `gateway.networking.k8s.io/v1alpha2` (TLSRoute)
+- Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
 - A `GatewayClass` must be available on the cluster. This is typically installed by a Gateway controller (e.g. Contour, Envoy Gateway). See [examples/ingress](../../examples/ingress) for controller installation instructions.
 
 **Gateway Resource:**
@@ -404,6 +404,7 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 | Parameter | Description | Default |
 |---|---|---|
 | `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `false` |
+| `ingress.gatewayAPI.tlsRouteApiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
 | `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `false` |
 | `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `""` |
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |

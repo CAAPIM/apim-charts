@@ -11,7 +11,7 @@
     {{- fail (printf "kubernetesGateway.tlsRoute.rules[%d] (hostname: %s) is missing a port. Set port to the Layer7 Gateway service port (e.g. 8443)." $i $rule.hostname) }}
   {{- end }}
 {{- end }}
-{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1alpha2" }}
+{{- if $.Capabilities.APIVersions.Has .Values.kubernetesGateway.tlsRoute.apiVersion }}
 {{- $fullname := include "gateway.fullname" . -}}
 {{- $root := . -}}
 {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.tlsRoute.annotations) -}}
@@ -22,7 +22,7 @@
 {{- end }}
 {{- range $hostname, $rules := $hostnameGroups }}
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "kubernetesGateway.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: {{ $fullname }}-tlsroute-{{ $hostname | replace "." "-" | replace "*" "wildcard" | lower | trunc 48 }}
@@ -64,6 +64,6 @@ spec:
   {{- end }}
 {{- end }}
 {{- else }}
-{{- fail "Gateway API TLSRoute CRDs (gateway.networking.k8s.io/v1alpha2) are not available on this cluster. Install experimental Gateway API CRDs before enabling kubernetesGateway.tlsRoute." }}
+{{- fail (printf "TLSRoute CRDs (%s) are not available on this cluster. Install the correct Gateway API CRDs or adjust kubernetesGateway.tlsRoute.apiVersion." .Values.kubernetesGateway.tlsRoute.apiVersion) }}
 {{- end }}
 {{- end }}

@@ -198,6 +198,10 @@ ingress:
   # (fixed routes and dynamic tenantIds/customRoutes). All routes use TLS passthrough
   # since portal backends terminate TLS themselves.
   gatewayAPI:
+    # -- TLSRoute API version. TLSRoute is GA (v1) as of Gateway API 1.5.0.
+    # Set to gateway.networking.k8s.io/v1 when your Gateway API CRDs include
+    # TLSRoute at v1.
+    tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
     # -- Create a new Gateway resource managed by this chart
     create: false
     # -- GatewayClass name (e.g. contour, eg). Required when create: true.

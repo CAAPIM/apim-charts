@@ -48,7 +48,7 @@ TLSRoute Mode (passthrough)
 
 ## Prerequisites
 
-1. **Gateway API CRDs** must be installed on the cluster
+1. **Gateway API CRDs** must be installed on the cluster. These are typically installed by your Gateway controller. If you need to install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
 2. A **GatewayClass** must be available (see [GatewayClass](../../readme.md#gatewayclass))
 3. A **Gateway controller** must be running (any controller implementing the Gateway API specification works -- Contour and Envoy Gateway are the examples used here)
 
@@ -221,7 +221,7 @@ kubernetesGateway:
 - No backend certificate or BackendTLSPolicy is needed
 - Separate **TLSRoute** resources are created per hostname
 
-> **Note:** TLSRoute uses the `gateway.networking.k8s.io/v1alpha2` API. Ensure your cluster has the experimental Gateway API CRDs installed.
+> **Note:** TLSRoute is GA as of Gateway API v1.5.0 (`gateway.networking.k8s.io/v1`). The chart defaults to `v1alpha2`. Set `kubernetesGateway.tlsRoute.apiVersion: gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1.
 
 ---
 

@@ -428,6 +428,13 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
+  Resolve TLSRoute apiVersion from values.
+*/}}
+{{- define "kubernetesGateway.tlsRouteApiVersion" -}}
+{{- .Values.kubernetesGateway.tlsRoute.apiVersion -}}
+{{- end -}}
+
+{{/*
   Generate auto parentRefs for routes when none are provided.
   Produces a list with a single parentRef pointing to the chart's Gateway.
 */}}

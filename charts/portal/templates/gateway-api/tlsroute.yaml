@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.ingress.type.gatewayAPI }}
-{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1alpha2" }}
+{{- if $.Capabilities.APIVersions.Has .Values.ingress.gatewayAPI.tlsRouteApiVersion }}
 {{- $root := . -}}
 {{- $annotations := default (dict) .Values.ingress.gatewayAPI.annotations -}}
 {{/*
@@ -9,7 +9,7 @@
   ============================================================
 */}}
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-default-tenant
@@ -41,7 +41,7 @@ spec:
         - name: dispatcher
           port: 443
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-tssg-public
@@ -73,7 +73,7 @@ spec:
         - name: apim
           port: 8443
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-analytics
@@ -105,7 +105,7 @@ spec:
         - name: apim
           port: 9449
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-pssg-enroll
@@ -137,7 +137,7 @@ spec:
         - name: apim
           port: 9446
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-pssg-sync
@@ -169,7 +169,7 @@ spec:
         - name: apim
           port: 9446
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-pssg-sso
@@ -201,7 +201,7 @@ spec:
         - name: apim
           port: 9448
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-broker
@@ -239,7 +239,7 @@ spec:
 */}}
 {{- range $i, $tenantId := .Values.ingress.tenantIds }}
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-tenant-{{ $tenantId }}
@@ -278,7 +278,7 @@ spec:
 */}}
 {{- range $i, $customRoute := .Values.ingress.customRoutes }}
 ---
-apiVersion: gateway.networking.k8s.io/v1alpha2
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
 metadata:
   name: portal-tlsroute-custom-{{ $customRoute.subdomain | replace "." "-" | lower | trunc 48 }}
@@ -311,6 +311,6 @@ spec:
           port: {{ $customRoute.service.port }}
 {{- end }}
 {{- else }}
-{{- fail "Gateway API TLSRoute CRDs (gateway.networking.k8s.io/v1alpha2) are not available on this cluster. Install experimental Gateway API CRDs before enabling ingress.type.gatewayAPI." }}
+{{- fail (printf "TLSRoute CRDs (%s) are not available on this cluster. Install the correct Gateway API CRDs or adjust ingress.gatewayAPI.tlsRouteApiVersion." .Values.ingress.gatewayAPI.tlsRouteApiVersion) }}
 {{- end }}
 {{- end }}
