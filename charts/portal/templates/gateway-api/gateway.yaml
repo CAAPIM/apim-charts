@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 # Gateway resource for Kubernetes Gateway API (TLS passthrough mode).
 # Auto-generates listeners from all portal hostnames.
 {{- if and .Values.ingress.type.gatewayAPI .Values.ingress.gatewayAPI.create }}
