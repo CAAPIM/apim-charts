@@ -1205,13 +1205,15 @@ kubernetesGateway:
 
     tls:
       # -- Reference an existing kubernetes.io/tls Secret for the backend certificate.
+      # This configuration does not handle key rotation. Bootstrapped configurations only apply during startup.
+      # We recommend managing the Gateway's certificate chains externally and only using the validation configuration above for CA validation.
       existingSecretName: ""
       # -- Enable SSL key bootstrap into the Layer7 Gateway pod.
       # When true, the backend TLS secret (auto-generated or existingSecretName) is
       # mounted into the pod and a bootstrap script loads it as the default SSL key.
       # Set to false when you only need the BackendTLSPolicy resource (e.g. you manage
       # the pod's SSL key externally and only provide a CA for validation).
-      bootstrap: true
+      bootstrap: false
       # -- Force the bootstrap script to run on every helm install/upgrade.
       # By default, on a database-backed gateway the script only runs on initial install
       # (to avoid overwriting keys rotated via Policy Manager or CI/CD).
