@@ -1,0 +1,33 @@
+{{- if and .Values.config.redis.subChart.enabled .Values.redis.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ template "gateway.fullname" . }}-redis
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: redis
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+  name: {{ template "gateway.fullname" . }}-redis-pdb
+spec:
+  {{- if .Values.redis.pdb.minAvailable }}
+  minAvailable: {{ .Values.redis.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.redis.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.redis.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-redis
+      release: {{ .Release.Name }}
+      app.kubernetes.io/component: redis
+{{- end }}

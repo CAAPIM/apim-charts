@@ -6,6 +6,14 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.0 General Updates
+- Added support for the Kubernetes Gateway API and optionally httpproxies for Contour as an alternative
+  - There are no changes to the default ingress configuration
+    - ingress.type is not mutually exclusive
+      - you can enable additional types without losing your existing ingress configuration to allow for testing and DNS updates.
+  - [configuration](#kubernetes-gateway-api-configuration)
+  - [ingress/gateway v1 examples](../../examples/ingress/)
+
 ## 2.3.22 General Updates
 - This new version of the chart supports API Portal 5.4.1
 - Upgrade to 2.3.22 requires chart version 2.3.16 (per Portal compatibility requirements).
@@ -337,6 +345,8 @@ This section describes configurable parameters in **values.yaml**, there is also
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
+| `ingress.type.contour` | Create Contour HTTPProxy resources (TLS passthrough). Requires `projectcontour.io/v1` CRDs | `false` |
+| `ingress.type.gatewayAPI` | Create Kubernetes Gateway API resources (TLSRoute, optionally Gateway). Requires Gateway API CRDs | `false` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
@@ -346,6 +356,62 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.tenantIds` | A list of tenantIds that you plan to create on the Portal. | `[] - see values.yaml` |
 | `ingress.apiVersion` | added for future compatibility, extensions/v1beta1 will soon be deprecated, if you're running 1.18 this will be `networking.k8s.io/v1beta1`  | `extensions/v1beta1` |
 | `ingress.additionalLabels` | A list of custom key: value labels | `not set` |
+
+
+### Contour HTTPProxy
+When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific `HTTPProxy` resources using TLS passthrough (`tcpproxy`) for all fixed portal routes, dynamic `ingress.tenantIds`, and `ingress.customRoutes`. The `projectcontour.io/v1` CRDs must be available on the cluster.
+
+`ingress.type.contour` and `ingress.type.kubernetes` can both be `true` simultaneously, allowing a gradual migration from standard Ingress to Contour HTTPProxy without a hard DNS cutover.
+
+You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
+
+### Kubernetes Gateway API Configuration
+When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
+
+All ingress types (`ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI`) can coexist, allowing a gradual migration between approaches without a hard DNS cutover. Each enabled type creates its own independent resources and load balancer endpoint.
+
+> **Note:** Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type, changing the ingress class is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
+
+**Requirements:**
+- Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
+- A `GatewayClass` must be available on the cluster. This is typically installed by a Gateway controller (e.g. Contour, Envoy Gateway). See [examples/ingress](../../examples/ingress) for controller installation instructions.
+
+**Gateway Resource:**
+
+The chart supports two modes for the Gateway resource:
+
+1. **Create a new Gateway** -- Set `ingress.gatewayAPI.create: true` and provide a `gatewayClassName`. The chart will create a Gateway resource with auto-generated TLS passthrough listeners for all portal hostnames.
+2. **Use an existing Gateway** -- Set `ingress.gatewayAPI.create: false` and provide `ingress.gatewayAPI.existingRef.name` and `.namespace`. All TLSRoutes will attach to the existing Gateway via `parentRefs`. This is useful when sharing a single Gateway across multiple charts (e.g. the Gateway chart and the Portal chart). Ensure the existing Gateway has `allowedRoutes.namespaces.from: All` or a selector that includes the Portal namespace.
+
+**Auto-generated routes:**
+
+The following TLSRoutes are automatically created from the portal hostname helpers:
+
+| Route Name | Hostname | Backend Service | Port |
+|---|---|---|---|
+| `portal-tlsroute-default-tenant` | `default-tenant-host` | dispatcher | 443 |
+| `portal-tlsroute-tssg-public` | `tssg-public-host` | apim | 8443 |
+| `portal-tlsroute-analytics` | `analytics-host` | apim | 9449 |
+| `portal-tlsroute-pssg-enroll` | `pssg-enroll-host` | apim | 9446 |
+| `portal-tlsroute-pssg-sync` | `pssg-sync-host` | apim | 9446 |
+| `portal-tlsroute-pssg-sso` | `pssg-sso-host` | apim | 9448 |
+| `portal-tlsroute-broker` | `broker-host` | apim | 1885 |
+
+Additional TLSRoutes are generated for each entry in `ingress.tenantIds` (routed to dispatcher:443) and each entry in `ingress.customRoutes` (routed to the specified service and port).
+
+When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS passthrough listener per unique hostname on port 443.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `false` |
+| `ingress.gatewayAPI.tlsRouteApiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
+| `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `false` |
+| `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `""` |
+| `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
+| `ingress.gatewayAPI.existingRef.name` | Name of an existing Gateway resource to attach routes to. Required when `gatewayAPI.create` is `false` | `""` |
+| `ingress.gatewayAPI.existingRef.namespace` | Namespace of the existing Gateway resource | `""` |
+| `ingress.gatewayAPI.labels` | Additional labels for Gateway API resources (Gateway and TLSRoutes) | `{}` |
+| `ingress.gatewayAPI.annotations` | Additional annotations for Gateway API resources (Gateway and TLSRoutes) | `{}` |
 
 ### SMTP Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
@@ -1049,7 +1115,6 @@ MySQL authentication is configured via global values:
 - `global.databasePassword`: MySQL password (auto-generated if not set)
 - `global.demoDatabaseRootPassword`: MySQL root password (auto-generated if not set)
 - `global.databaseName`: Database name (default: `portal`)
-
 
 ## Ingress-Nginx
 

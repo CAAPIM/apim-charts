@@ -1,14 +1,14 @@
 # Layer7 API Gateway
-This Chart deploys the API Gateway v10.x onward with the following `optional` subcharts: hazelcast, mysql, influxdb, grafana, redis.
+This Chart deploys the API Gateway v11.x onward with the following `optional` subchart: hazelcast. This Chart also includes basic MySQL and Redis statefulsets for trying out the Chart; these are example only and do not represent production ready configurations.
 
 ## Bitnami Public Catalog Removal
-In preparation for the [Bitnami public catalog deletion](https://community.broadcom.com/blogs/beltran-rueda-borrego/2025/08/18/how-to-prepare-for-the-bitnami-changes-coming-soon), mysql, redis and grafana images have been temporarily switched to the bitnami legacy repository.
+The Bitnami subCharts have now been fully removed from the Gateway Helm Chart. Please read the release notes for [Gateway v3.0.45](./release-notes.md#3039-bitnami-subchart-removal) for more details.
 
 ### Important Note
-The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
+The included MySQL Statefulset is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.45
+- Current Chart Version 3.1.0
 
   - Please review release notes [here](./release-notes.md)
 
@@ -48,7 +48,7 @@ Helm Version    Supported Kubernetes Versions
 ```
 
 ## Optional
-- Persistent Volume Provisioner (if using PVC for the Demo MySQL Database or Service Metrics example with Grafana or InfluxDb)
+- Persistent Volume Provisioner (if using PVC for the Demo MySQL or Redis Statefulset)
 
 ## Recommended
 - [An Ingress Controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
@@ -76,13 +76,16 @@ Helm Version    Supported Kubernetes Versions
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
 * [OTK Compatibility with Gateway 11.2](#otk-compatibility-with-gateway-112)
 * [Ingress Configuration](#ingress-configuration)
+* [Kubernetes Gateway API Configuration](#kubernetes-gateway-api-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Shared State Preview Features](#shared-state-preview-features)
 * [Redis Configuration](#redis-configuration)
+* [Redis StatefulSet](#redis-statefulset-developmenttesting-only)
 * [GemFire Configuration](#gemfire-configuration-1113)
 * [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [Database Configuration](#database-configuration)
+* [MySQL StatefulSet](#mysql-statefulset-developmenttesting-only)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
 * [Java Args](#java-args)
@@ -97,7 +100,6 @@ Helm Version    Supported Kubernetes Versions
 * [Autoscaling](#autoscaling)
 * [Pod Disruption Budgets](#pod-disruption-budgets)
 * [RBAC Parameters](#rbac-parameters)
-* [Service Metrics Demo](#service-metrics-demo)
 * [SubChart Configuration](#subchart-configuration)
 
 
@@ -220,6 +222,37 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `ingress.ingressClassName`    | Ingress Class Name               | `nginx` |
 | `ingress.tls`    | Ingress TLS Configuration               | `see values.yaml` |
 | `ingress.rules`    | Ingress Rules Configuration              | `see values.yaml` |
+| `ingress.rules[].annotations`    | Per-rule annotations (OpenShift Routes only). Merged with `ingress.annotations` | `not set` |
+| `kubernetesGateway.enabled`    | Enable Kubernetes Gateway API resources (EXPERIMENTAL)               | `false` |
+| `kubernetesGateway.gateway.create`    | Create a new Gateway resource               | `false` |
+| `kubernetesGateway.gateway.gatewayClassName`    | GatewayClass name (e.g. contour, eg). Required when create: true               | `""` |
+| `kubernetesGateway.gateway.addresses`    | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}`               | `[]` |
+| `kubernetesGateway.gateway.existingRef.name`    | Name of an existing Gateway to reference               | `""` |
+| `kubernetesGateway.gateway.existingRef.namespace`    | Namespace of the existing Gateway               | `""` |
+| `kubernetesGateway.gateway.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the listener. When set, no secret is created               | `""` |
+| `kubernetesGateway.gateway.labels`    | Additional labels for the Gateway resource               | `{}` |
+| `kubernetesGateway.gateway.annotations`    | Additional annotations for the Gateway resource               | `{}` |
+| `kubernetesGateway.httpRoute.enabled`    | Enable HTTPRoute resource               | `true` |
+| `kubernetesGateway.httpRoute.rules`    | HTTPRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
+| `kubernetesGateway.httpRoute.labels`    | Additional labels for the HTTPRoute               | `{}` |
+| `kubernetesGateway.httpRoute.annotations`    | Additional annotations for the HTTPRoute               | `{}` |
+| `kubernetesGateway.tlsRoute.enabled`    | Enable TLSRoute resource (SNI passthrough)               | `false` |
+| `kubernetesGateway.tlsRoute.apiVersion`    | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1               | `gateway.networking.k8s.io/v1alpha2` |
+| `kubernetesGateway.tlsRoute.rules`    | TLSRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
+| `kubernetesGateway.tlsRoute.labels`    | Additional labels for the TLSRoute               | `{}` |
+| `kubernetesGateway.tlsRoute.annotations`    | Additional annotations for the TLSRoute               | `{}` |
+| `kubernetesGateway.backendTLSPolicy.enabled`    | Enable BackendTLSPolicy for Gateway-to-backend TLS               | `false` |
+| `kubernetesGateway.backendTLSPolicy.excludePorts`    | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName`               | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname`    | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`               | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`    | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap               | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates`    | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`               | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the backend cert. When set, no secret is created               | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap`    | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource               | `true` |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap`    | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default)               | `false` |
+| `kubernetesGateway.backendTLSPolicy.labels`    | Additional labels for the BackendTLSPolicy               | `{}` |
+| `kubernetesGateway.backendTLSPolicy.annotations`    | Additional annotations for the BackendTLSPolicy               | `{}` |
+| `kubernetesGateway.labels`    | Labels applied to all Gateway API resources               | `{}` |
+| `kubernetesGateway.annotations`    | Annotations applied to all Gateway API resources               | `{}` |
 | `startupProbe.enabled`    | Enable/Disable               | `false` |
 | `startupProbe.initialDelaySeconds`    | Initial delay               | `60` |
 | `startupProbe.timeoutSeconds`    | Timeout               | `1` |
@@ -681,6 +714,97 @@ ingress:
 
 [Back to Additional Guides](#additional-guides)
 
+### Kubernetes Gateway API Configuration
+The Gateway Helm Chart supports the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) as an alternative to Ingress. The implementation is controller-agnostic and has been tested with [Contour](https://projectcontour.io/) and [Envoy Gateway](https://gateway.envoyproxy.io/). See [examples/ingress](../../examples/ingress) for controller installation instructions.
+
+**Requirements:**
+- Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
+- A `GatewayClass` must be available on the cluster (e.g. `contour`, `envoy-gateway`)
+
+**Migration from Ingress v1:**
+
+`ingress.enabled` and `kubernetesGateway.enabled` can both be `true` at the same time. Each creates independent resources and a separate load balancer endpoint, allowing a staged migration -- enable Gateway API alongside Ingress, verify the new endpoint, migrate DNS, then disable Ingress. Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a load balancer with a different address. This is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
+
+**Route Modes:**
+
+The chart supports two route modes:
+- **HTTPRoute** (default) -- TLS is terminated at the Kubernetes Gateway and re-encrypted to the Layer7 Gateway backend. Requires `backendTLSPolicy` to be enabled so the Gateway controller can validate the backend certificate.
+- **TLSRoute** -- TLS passthrough via SNI-based routing. The Kubernetes Gateway does not terminate TLS. The Layer7 Gateway handles TLS directly.
+
+**Gateway Resource:**
+
+The chart supports two modes for the Gateway resource:
+- **Create a new Gateway** -- set `kubernetesGateway.gateway.create: true` with a `gatewayClassName`. The chart creates a Gateway with auto-generated listeners from route hostnames.
+- **Use an existing Gateway** -- set `kubernetesGateway.gateway.create: false` and provide `kubernetesGateway.gateway.existingRef.name` / `.namespace`. Routes attach to the existing Gateway via `parentRefs`. This is useful when sharing a Gateway across charts. See [Shared Gateway](../../examples/ingress#shared-gateway) for details.
+
+**Backend TLS (HTTPRoute mode):**
+
+When using HTTPRoute, the Layer7 Gateway backend speaks HTTPS. Since the Gateway API does not support `tlsSkipVerify`, a `BackendTLSPolicy` must be configured with CA certificate validation. The chart can auto-generate both the backend TLS certificate (mounted to the Gateway pod via a bootstrap script) and the CA certificate (exported as a ConfigMap for BackendTLSPolicy). For production, we recommend managing certificates externally and referencing them via `validation.caCertificateRefs` -- the bootstrap does not handle key/cert rotation automatically. The `validation` block supports selective overrides -- set `validation.hostname`, `validation.caCertificateRefs`, or `validation.wellKnownCACertificates` individually without replacing the entire block.
+
+**Management Service Routing:**
+
+To route management traffic through the same Gateway, set `backend: management` on a rule:
+```
+kubernetesGateway:
+  enabled: true
+  gateway:
+    create: true
+    gatewayClassName: contour
+  httpRoute:
+    enabled: true
+    rules:
+      - hostname: dev.ca.com
+        port: 8443
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+      - hostname: dev-pm.ca.com
+        port: 9443
+        backend: management
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+  backendTLSPolicy:
+    enabled: true
+```
+
+| Parameter | Description | Default |
+|---|---|---|
+| `kubernetesGateway.enabled` | Enable Kubernetes Gateway API resources | `false` |
+| `kubernetesGateway.gateway.create` | Create a new Gateway resource | `false` |
+| `kubernetesGateway.gateway.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gateway.create` is `true` | `""` |
+| `kubernetesGateway.gateway.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
+| `kubernetesGateway.gateway.existingRef.name` | Name of an existing Gateway to reference | `""` |
+| `kubernetesGateway.gateway.existingRef.namespace` | Namespace of the existing Gateway | `""` |
+| `kubernetesGateway.gateway.tls.existingSecretName` | Existing TLS Secret for the Gateway listener | `""` |
+| `kubernetesGateway.gateway.labels` | Additional labels for the Gateway resource | `{}` |
+| `kubernetesGateway.gateway.annotations` | Additional annotations for the Gateway resource | `{}` |
+| `kubernetesGateway.httpRoute.enabled` | Enable HTTPRoute resource | `true` |
+| `kubernetesGateway.httpRoute.rules` | HTTPRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
+| `kubernetesGateway.httpRoute.labels` | Additional labels for the HTTPRoute | `{}` |
+| `kubernetesGateway.httpRoute.annotations` | Additional annotations for the HTTPRoute | `{}` |
+| `kubernetesGateway.tlsRoute.enabled` | Enable TLSRoute resource (SNI passthrough) | `false` |
+| `kubernetesGateway.tlsRoute.apiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
+| `kubernetesGateway.tlsRoute.rules` | TLSRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
+| `kubernetesGateway.tlsRoute.labels` | Additional labels for the TLSRoute | `{}` |
+| `kubernetesGateway.tlsRoute.annotations` | Additional annotations for the TLSRoute | `{}` |
+| `kubernetesGateway.backendTLSPolicy.enabled` | Enable BackendTLSPolicy for Gateway-to-backend TLS | `false` |
+| `kubernetesGateway.backendTLSPolicy.excludePorts` | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName` | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname` | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local` | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs` | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs` | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName` | Existing TLS Secret for the backend certificate | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap` | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource | `true` |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap` | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default) | `false` |
+| `kubernetesGateway.backendTLSPolicy.labels` | Additional labels for the BackendTLSPolicy | `{}` |
+| `kubernetesGateway.backendTLSPolicy.annotations` | Additional annotations for the BackendTLSPolicy | `{}` |
+| `kubernetesGateway.labels` | Labels applied to all Gateway API resources | `{}` |
+| `kubernetesGateway.annotations` | Annotations applied to all Gateway API resources | `{}` |
+
+[Back to Additional Guides](#additional-guides)
+
 ### PM Tagger Configuration
 [PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
 
@@ -981,6 +1105,149 @@ redis:
 
 [Back to Additional Guides](#additional-guides)
 
+### Redis StatefulSet (Development/Testing Only)
+**Important Note:** This is a simple Redis StatefulSet implementation for development and testing purposes only. ***It is not supported or recommended for production use.*** For production deployments, use an external Redis server or Redis cluster.
+
+The Redis StatefulSet provides standalone Redis functionality with optional authentication and TLS support.
+
+**Enabling Redis:** The Redis StatefulSet is enabled by setting `config.redis.subChart.enabled=true` in your values. This tells the Gateway to use the built-in Redis StatefulSet.
+
+#### Configuration
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `redis.image.repository`         | Redis image repository | `redis`  |
+| `redis.image.tag`                | Redis image tag | `7.4-alpine`  |
+| `redis.image.pullPolicy`         | Image pull policy | `IfNotPresent`  |
+| `redis.auth.enabled`             | Enable Redis authentication | `false`  |
+| `redis.auth.username`            | Redis username (optional, for ACL-based auth) | ``  |
+| `redis.auth.password`            | Redis password | `mypassword`  |
+| `redis.auth.existingSecret`      | Use existing secret for credentials | ``  |
+| `redis.service.type`             | Redis service type | `ClusterIP`  |
+| `redis.service.port`             | Redis service port | `6379`  |
+| `redis.service.annotations`      | Annotations for the Redis service | `{}`  |
+| `redis.pdb.create`               | Create PodDisruptionBudget for Redis | `false`  |
+| `redis.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
+| `redis.pdb.minAvailable`         | Minimum available pods | ``  |
+| `redis.persistence.enabled`      | Enable persistence using PVC | `false`  |
+| `redis.persistence.storageClass` | Storage class for PVC | ``  |
+| `redis.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |
+| `redis.persistence.size`         | PVC size | `8Gi`  |
+| `redis.persistence.annotations`  | PVC annotations (can include Helm hooks) | `{}`  |
+| `redis.persistence.existingClaim`| Use existing PVC | ``  |
+| `redis.maxmemory`                | Redis max memory limit | `256mb`  |
+| `redis.maxmemoryPolicy`          | Redis eviction policy | `allkeys-lru`  |
+| `redis.appendonly`               | Enable AOF persistence | `false`  |
+| `redis.tls.enabled`              | Enable TLS | `true`  |
+| `redis.tls.autoGenerated`        | Auto-generate self-signed certificates | `true`  |
+| `redis.tls.certificatesSecret`   | Existing secret with TLS certificates | ``  |
+| `redis.configuration`            | Custom Redis configuration | ``  |
+| `redis.commonAnnotations`        | Annotations applied to all Redis resources | `{}`  |
+| `redis.resources`                | Resource requests and limits | `{}`  |
+| `redis.livenessProbe.enabled`    | Enable liveness probe | `true`  |
+| `redis.livenessProbe.initialDelaySeconds` | Liveness probe initial delay | `5`  |
+| `redis.livenessProbe.periodSeconds` | Liveness probe period | `5`  |
+| `redis.livenessProbe.timeoutSeconds` | Liveness probe timeout | `5`  |
+| `redis.livenessProbe.failureThreshold` | Liveness probe failure threshold | `5`  |
+| `redis.readinessProbe.enabled`   | Enable readiness probe | `true`  |
+| `redis.readinessProbe.initialDelaySeconds` | Readiness probe initial delay | `5`  |
+| `redis.readinessProbe.periodSeconds` | Readiness probe period | `5`  |
+| `redis.readinessProbe.timeoutSeconds` | Readiness probe timeout | `1`  |
+| `redis.readinessProbe.failureThreshold` | Readiness probe failure threshold | `5`  |
+| `redis.startupProbe.enabled`     | Enable startup probe | `false`  |
+| `redis.nodeSelector`             | Node labels for pod assignment | `{}`  |
+| `redis.affinity`                 | Affinity settings | `{}`  |
+| `redis.tolerations`              | Tolerations for pod assignment | `[]`  |
+| `redis.podSecurityContext`       | Pod security context | `{}`  |
+| `redis.containerSecurityContext` | Container security context | `{}`  |
+| `redis.podAnnotations`           | Pod annotations | `{}`  |
+| `redis.podLabels`                | Pod labels | `{}`  |
+
+#### Example Configuration
+
+Enable Redis with basic settings (no auth, no TLS):
+```yaml
+config:
+  redis:
+    enabled: true
+    subChart:
+      enabled: true  # Enables the Redis StatefulSet
+
+redis:
+  auth:
+    enabled: false
+  tls:
+    enabled: false
+  persistence:
+    enabled: false
+```
+
+With authentication and TLS enabled:
+```yaml
+config:
+  redis:
+    enabled: true
+    subChart:
+      enabled: true
+    auth:
+      enabled: true
+      password:
+        encoded: false
+        value: mypassword
+    tls:
+      enabled: true
+      verifyPeer: true
+
+redis:
+  auth:
+    enabled: true
+    password: mypassword
+  tls:
+    enabled: true
+    autoGenerated: true  # Auto-generate self-signed certificates
+  persistence:
+    enabled: true
+    size: 8Gi
+```
+
+With custom memory and eviction policy:
+```yaml
+config:
+  redis:
+    enabled: true
+    subChart:
+      enabled: true
+
+redis:
+  maxmemory: 512mb
+  maxmemoryPolicy: allkeys-lfu
+  appendonly: true  # Enable AOF persistence
+```
+
+#### TLS Certificates
+
+When `redis.tls.autoGenerated` is `true`, the chart automatically generates self-signed TLS certificates that include the following Subject Alternative Names (SANs):
+- StatefulSet pod FQDN (e.g., `ssg-gateway-redis-0.ssg-gateway-redis-headless.namespace.svc.cluster.local`)
+- Headless service names in all variations
+- Regular service names
+- `localhost` and `127.0.0.1`
+
+To use your own certificates, set `redis.tls.autoGenerated: false` and provide your own secret:
+```yaml
+redis:
+  tls:
+    enabled: true
+    autoGenerated: false
+    certificatesSecret: my-redis-tls-secret
+```
+
+The secret must contain the following keys:
+- `tls.crt` - Server certificate
+- `tls.key` - Server private key
+- `ca.crt` - CA certificate
+
+[Back to Additional Guides](#additional-guides)
+
 ### GemFire Configuration (11.1.3)
 Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
 
@@ -1198,6 +1465,165 @@ jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=tru
 ```
 
 In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
+
+[Back to Additional Guides](#additional-guides)
+
+### MySQL StatefulSet (Development/Testing Only)
+**Important Note:** This is a simple MySQL StatefulSet implementation for development and testing purposes only. ***It is not supported or recommended for production use.*** For production deployments, use an external MySQL database.
+
+#### Configuration
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `mysql.image.repository`         | MySQL image repository | `docker.io/mysql`  |
+| `mysql.image.tag`                | MySQL image tag | `8.4.5`  |
+| `mysql.image.pullPolicy`         | Image pull policy | `IfNotPresent`  |
+| `mysql.auth.rootPassword`        | MySQL root password | `mypassword`  |
+| `mysql.auth.database`            | Database name to create | `ssg`  |
+| `mysql.auth.username`            | MySQL user (optional) | `gateway`  |
+| `mysql.auth.password`            | MySQL user password | `mypassword`  |
+| `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
+| `mysql.service.type`             | MySQL service type | `ClusterIP`  |
+| `mysql.service.port`             | MySQL service port | `3306`  |
+| `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
+| `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL | `false`  |
+| `mysql.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
+| `mysql.pdb.minAvailable`         | Minimum available pods | ``  |
+| `mysql.persistence.enabled`      | Enable persistence using PVC | `true`  |
+| `mysql.persistence.storageClass` | Storage class for PVC | ``  |
+| `mysql.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |
+| `mysql.persistence.size`         | PVC size | `8Gi`  |
+| `mysql.persistence.annotations`  | PVC annotations (can include Helm hooks) | `{}`  |
+| `mysql.persistence.existingClaim`| Use existing PVC | ``  |
+| `mysql.configuration`            | Custom MySQL configuration (my.cnf) | `see values.yaml`  |
+| `mysql.existingConfigmap`        | Use existing ConfigMap for configuration | ``  |
+| `mysql.initdbScripts`            | Init scripts as key-value pairs | `{}`  |
+| `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts | ``  |
+| `mysql.commonAnnotations`        | Annotations applied to all MySQL resources (can include Helm hooks) | `{}`  |
+| `mysql.resources`                | Resource requests and limits | `{}`  |
+| `mysql.livenessProbe.enabled`    | Enable liveness probe | `true`  |
+| `mysql.livenessProbe.initialDelaySeconds` | Liveness probe initial delay | `30`  |
+| `mysql.livenessProbe.periodSeconds` | Liveness probe period | `10`  |
+| `mysql.livenessProbe.timeoutSeconds` | Liveness probe timeout | `5`  |
+| `mysql.livenessProbe.failureThreshold` | Liveness probe failure threshold | `3`  |
+| `mysql.readinessProbe.enabled`   | Enable readiness probe | `true`  |
+| `mysql.readinessProbe.initialDelaySeconds` | Readiness probe initial delay | `5`  |
+| `mysql.readinessProbe.periodSeconds` | Readiness probe period | `5`  |
+| `mysql.readinessProbe.timeoutSeconds` | Readiness probe timeout | `1`  |
+| `mysql.readinessProbe.failureThreshold` | Readiness probe failure threshold | `3`  |
+| `mysql.startupProbe.enabled`     | Enable startup probe | `false`  |
+| `mysql.nodeSelector`             | Node labels for pod assignment | `{}`  |
+| `mysql.affinity`                 | Affinity settings | `{}`  |
+| `mysql.tolerations`              | Tolerations for pod assignment | `[]`  |
+| `mysql.podSecurityContext`       | Pod security context | `{}`  |
+| `mysql.containerSecurityContext` | Container security context | `{}`  |
+| `mysql.podAnnotations`           | Pod annotations | `{}`  |
+| `mysql.podLabels`                | Pod labels | `{}`  |
+
+#### Example Configuration
+
+Enable MySQL with basic settings:
+```yaml
+database:
+  create: true  # Enables the MySQL StatefulSet
+
+mysql:
+  auth:
+    rootPassword: mypassword
+    database: ssg
+    username: gateway
+    password: mypassword
+  persistence:
+    enabled: true
+    size: 8Gi
+```
+
+With Helm hooks for pre-install:
+```yaml
+database:
+  create: true
+
+mysql:
+  commonAnnotations:
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  persistence:
+    enabled: true
+    size: 8Gi
+    annotations:
+      helm.sh/hook: pre-install,post-upgrade
+      helm.sh/hook-weight: "-10"
+```
+
+With custom configuration:
+```yaml
+database:
+  create: true
+
+mysql:
+  configuration: |-
+    [mysqld]
+    max_connections=200
+    max_allowed_packet=32M
+    innodb_buffer_pool_size=256M
+```
+
+With init scripts:
+```yaml
+database:
+  create: true
+
+mysql:
+  initdbScripts:
+    01-create-tables.sql: |
+      CREATE TABLE IF NOT EXISTS my_table (
+        id INT PRIMARY KEY,
+        name VARCHAR(255)
+      );
+    02-insert-data.sql: |
+      INSERT INTO my_table VALUES (1, 'test');
+```
+
+#### Connecting the Gateway to MySQL
+
+When using the MySQL StatefulSet, configure the Gateway's database connection:
+```yaml
+database:
+  enabled: true
+  create: true  # This tells the Gateway to use the MySQL StatefulSet
+  username: gateway
+  password: mypassword
+  name: ssg
+```
+
+The Gateway will automatically connect to the MySQL service at `<release-name>-gateway-mysql:3306`.
+
+#### OTK Demo Database Integration
+
+When `otk.database.useDemoDb` is set to `true` and `database.create` is `true`, the MySQL StatefulSet will automatically:
+- Apply Helm hook annotations (`helm.sh/hook: pre-install,post-upgrade`) to ensure MySQL is created before OTK installation
+- Mount the OTK database initialization scripts from the `otk-db-scripts-cm` ConfigMap
+- Initialize the OTK database schema during MySQL startup
+
+This happens automatically - no additional configuration is needed. The following settings are applied automatically when `otk.database.useDemoDb=true` and `database.create=true`:
+
+```yaml
+database:
+  create: true  # Enables MySQL StatefulSet
+
+mysql:
+  # The following are automatically applied when otk.database.useDemoDb=true:
+  commonAnnotations:
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  persistence:
+    annotations:
+      helm.sh/hook: pre-install,post-upgrade
+      helm.sh/hook-weight: "-10"
+  # initdbScriptsConfigMap is automatically set to: otk-db-scripts-cm
+```
+
+**Note:** The hook weight of `-10` ensures MySQL resources are created before the OTK installation job (which typically has a weight of `0`).
 
 [Back to Additional Guides](#additional-guides)
 
@@ -1700,42 +2126,10 @@ The API Gateway containers are configured to output logs and audits as JSON even
 
 [Back to Additional Guides](#additional-guides)
 
-### Service Metrics Demo
-To deploy the service metrics example you will need to enable serviceMetrics, influxdb and grafana.
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `serviceMetrics.enabled`          | Enable the background metrics processing task | `false`  |
-| `serviceMetrics.external`          | Point to an external influx database. Set influxDbUrl if true | `false`  |
-| `serviceMetrics.influxDbUrl`          | InfluxDB URL | `http://influxdb`  |
-| `serviceMetrics.influxDbPort`          | InfluxDB port | `8086`  |
-| `serviceMetrics.influxDbDatabase`          | InfluxDB Database Name | `serviceMetricsDb`  |
-| `serviceMetrics.tags`          | InfluxDB tags | `env=dev`  |
-| `influxdb.enabled`                | Enable/Disable deployment of InfluxDb   | `false` |
-| `grafana.enabled`                | Enable/Disable deployment of Grafana   | `false` |
-
-[Back to Additional Guides](#additional-guides)
-
 ## Subchart Configuration
 ***these do not represent production configurations***
 
 For Production implementations, please see the Chart links for recommended settings. The best approach would be deploying each independently
-MySQL doesn't have a tried and tested K8's production deployment so it's best to use an external service.
-
-## MySQL
-The following table lists the configured parameters of the MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.tag`                | MySQL Image to use   | `8` |
-| `mysql.auth.username`                | MySQL Username   | `gateway` |
-| `mysql.auth.password`                | MySQL User Password   | `mypassword` |
-| `mysql.auth.database`                | Database to create   | `ssg` |
-| `mysql.auth.rootPassword`                | MySQL root password, not set by default   | `mypassword` |
-| `mysql.primary.persistence.enabled`                | Enable/Disable Persistence   | `true` |
-| `mysql.primary.persistence.size`                | Persistent Volume Size   | `8Gi` |
-| `mysql.primary.persistence.storageClass`                | Storage class to use   | `nil` |
-| `mysql.primary.configuration`                | MySQL Configuration   | `see values.yaml` |
 
 ## Hazelcast
 The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
@@ -1749,35 +2143,7 @@ The following table lists the configured parameters of the Hazelcast Subchart - 
 | `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
 | `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |
 
-## InfluxDb
-The following table lists the configured parameters of the InfluxDb Subchart - see the following for more detail https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `influxdb.enabled`                | Enable/Disable deployment of InfluxDb   | `false` |
-| `influxdb.service.port`                | Service Port  | `8086` |
-| `influxdb.persistence.enabled`                | Enable Persistence for InfluxDb   | `true` |
-| `influxdb.persistence.storageClass`                | Persistence Storage Class   | `nil` |
-| `influxdb.persistence.size`                | Persistent Volume Claim Size   | `8Gi` |
-| `influxdb.env`                | Array of additional environment variables   | `see values.yaml` |
-
-## Grafana
-The following table lists the configured parameters of the Grafana Subchart - see the following for more detail https://github.com/bitnami/charts/tree/master/bitnami/grafana
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `grafana.enabled`                | Enable/Disable deployment of Grafana   | `false` |
-| `grafana.admin.user`                | admin username  | `admin` |
-| `grafana.admin.password`                | admin password, leave blank to auto-generate  | `password` |
-| `grafana.dashboardsProvider.enabled`                | Allows dashboards to be preloaded   | `true` |
-| `grafana.dashboardsConfigMaps`                | Configmaps that contain grafana dashboards. You can create your own and set here.   | `see values.yaml` |
-| `grafana.datasources.secretName`                | Configures an InfluxDb Datasource.   | `see values.yaml` |
-
 ### Subcharts
 *  Hazelcast  (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
-*  MySQL      (default: enabled)  ==> https://github.com/bitnami/charts/tree/master/bitnami/mysql
-*  InfluxDb   (default: disabled) ==> https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-*  Grafana    (default: disabled) ==> https://github.com/bitnami/charts/tree/master/bitnami/grafana
-*  Redis      (default: disabled) ==>https://github.com/bitnami/charts/tree/master/bitnami/redis
 
 [Back to Additional Guides](#additional-guides)
