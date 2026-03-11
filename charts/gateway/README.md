@@ -229,34 +229,24 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `kubernetesGateway.gateway.addresses`    | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}`               | `[]` |
 | `kubernetesGateway.gateway.existingRef.name`    | Name of an existing Gateway to reference               | `""` |
 | `kubernetesGateway.gateway.existingRef.namespace`    | Namespace of the existing Gateway               | `""` |
-| `kubernetesGateway.gateway.listeners`    | Custom Gateway listeners. Auto-generated if empty and create: true               | `[]` |
 | `kubernetesGateway.gateway.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the listener. When set, no secret is created               | `""` |
-| `kubernetesGateway.gateway.tls.secretName`    | Override auto-generated listener TLS secret name               | `""` |
-| `kubernetesGateway.gateway.tls.crt`    | PEM-encoded TLS certificate for listener. If empty (with no existingSecretName), auto-generated               | `""` |
-| `kubernetesGateway.gateway.tls.key`    | PEM-encoded TLS private key for listener. If empty (with no existingSecretName), auto-generated               | `""` |
 | `kubernetesGateway.gateway.labels`    | Additional labels for the Gateway resource               | `{}` |
 | `kubernetesGateway.gateway.annotations`    | Additional annotations for the Gateway resource               | `{}` |
 | `kubernetesGateway.httpRoute.enabled`    | Enable HTTPRoute resource               | `true` |
-| `kubernetesGateway.httpRoute.parentRefs`    | Gateway API parentRefs. Auto-populated when empty               | `[]` |
-| `kubernetesGateway.httpRoute.hostnames`    | Hostnames for the HTTPRoute               | `[]` |
-| `kubernetesGateway.httpRoute.rules`    | HTTPRoute rules. backendRefs auto-populated from chart service               | `see values.yaml` |
+| `kubernetesGateway.httpRoute.rules`    | HTTPRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
 | `kubernetesGateway.httpRoute.labels`    | Additional labels for the HTTPRoute               | `{}` |
 | `kubernetesGateway.httpRoute.annotations`    | Additional annotations for the HTTPRoute               | `{}` |
 | `kubernetesGateway.tlsRoute.enabled`    | Enable TLSRoute resource (experimental, SNI passthrough)               | `false` |
-| `kubernetesGateway.tlsRoute.parentRefs`    | Gateway API parentRefs for TLSRoute               | `[]` |
-| `kubernetesGateway.tlsRoute.hostnames`    | Hostnames for SNI-based routing               | `[]` |
-| `kubernetesGateway.tlsRoute.rules`    | TLSRoute rules. backendRefs auto-populated from chart service               | `see values.yaml` |
+| `kubernetesGateway.tlsRoute.rules`    | TLSRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
 | `kubernetesGateway.tlsRoute.labels`    | Additional labels for the TLSRoute               | `{}` |
 | `kubernetesGateway.tlsRoute.annotations`    | Additional annotations for the TLSRoute               | `{}` |
 | `kubernetesGateway.backendTLSPolicy.enabled`    | Enable BackendTLSPolicy for Gateway-to-backend TLS               | `false` |
-| `kubernetesGateway.backendTLSPolicy.forceBootstrap`    | Force backend TLS key bootstrap on upgrade (db-backed gateways skip by default)               | `false` |
-| `kubernetesGateway.backendTLSPolicy.targetRefs`    | Target references. Auto-populated to chart Service               | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation`    | TLS validation configuration for backend               | `{}` |
-| `kubernetesGateway.backendTLSPolicy.caCrt`    | PEM-encoded CA certificate. Required when providing manual tls.crt/key. Auto-generated otherwise               | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname`    | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`               | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`    | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap               | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates`    | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`               | `""` |
 | `kubernetesGateway.backendTLSPolicy.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the backend cert. When set, no secret is created               | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.secretName`    | Override auto-generated backend TLS secret name               | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.crt`    | PEM-encoded TLS certificate for backend. If empty (with no existingSecretName), auto-generated               | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.key`    | PEM-encoded TLS private key for backend. If empty (with no existingSecretName), auto-generated               | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap`    | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource               | `true` |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap`    | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default)               | `false` |
 | `kubernetesGateway.backendTLSPolicy.labels`    | Additional labels for the BackendTLSPolicy               | `{}` |
 | `kubernetesGateway.backendTLSPolicy.annotations`    | Additional annotations for the BackendTLSPolicy               | `{}` |
 | `kubernetesGateway.labels`    | Labels applied to all Gateway API resources               | `{}` |
@@ -729,6 +719,10 @@ The Gateway Helm Chart supports the [Kubernetes Gateway API](https://gateway-api
 - Gateway API CRDs must be installed: `gateway.networking.k8s.io/v1` (Gateway, HTTPRoute, BackendTLSPolicy) and `gateway.networking.k8s.io/v1alpha2` (TLSRoute)
 - A `GatewayClass` must be available on the cluster (e.g. `contour`, `envoy-gateway`)
 
+**Migration from Ingress v1:**
+
+`ingress.enabled` and `kubernetesGateway.enabled` can both be `true` at the same time. Each creates independent resources and a separate load balancer endpoint, allowing a staged migration -- enable Gateway API alongside Ingress, verify the new endpoint, migrate DNS, then disable Ingress. Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a load balancer with a different address. This is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
+
 **Route Modes:**
 
 The chart supports two route modes:
@@ -743,7 +737,7 @@ The chart supports two modes for the Gateway resource:
 
 **Backend TLS (HTTPRoute mode):**
 
-When using HTTPRoute, the Layer7 Gateway backend speaks HTTPS. Since the Gateway API does not support `tlsSkipVerify`, a `BackendTLSPolicy` must be configured with CA certificate validation. The chart can auto-generate both the backend TLS certificate (mounted to the Gateway pod via a bootstrap script) and the CA certificate (exported as a ConfigMap for BackendTLSPolicy). Alternatively, you can reference existing secrets (e.g. from cert-manager).
+When using HTTPRoute, the Layer7 Gateway backend speaks HTTPS. Since the Gateway API does not support `tlsSkipVerify`, a `BackendTLSPolicy` must be configured with CA certificate validation. The chart can auto-generate both the backend TLS certificate (mounted to the Gateway pod via a bootstrap script) and the CA certificate (exported as a ConfigMap for BackendTLSPolicy). For production, we recommend managing certificates externally and referencing them via `validation.caCertificateRefs` -- the bootstrap does not handle key/cert rotation automatically. The `validation` block supports selective overrides -- set `validation.hostname`, `validation.caCertificateRefs`, or `validation.wellKnownCACertificates` individually without replacing the entire block.
 
 **Management Service Routing:**
 
@@ -758,11 +752,13 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
               value: /
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management
         matches:
           - path:
@@ -780,34 +776,24 @@ kubernetesGateway:
 | `kubernetesGateway.gateway.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
 | `kubernetesGateway.gateway.existingRef.name` | Name of an existing Gateway to reference | `""` |
 | `kubernetesGateway.gateway.existingRef.namespace` | Namespace of the existing Gateway | `""` |
-| `kubernetesGateway.gateway.listeners` | Custom Gateway listeners. Auto-generated if empty | `[]` |
 | `kubernetesGateway.gateway.tls.existingSecretName` | Existing TLS Secret for the Gateway listener | `""` |
-| `kubernetesGateway.gateway.tls.secretName` | Override auto-generated listener TLS secret name | `""` |
-| `kubernetesGateway.gateway.tls.crt` | PEM-encoded certificate for the listener. Auto-generated if empty | `""` |
-| `kubernetesGateway.gateway.tls.key` | PEM-encoded private key for the listener. Auto-generated if empty | `""` |
 | `kubernetesGateway.gateway.labels` | Additional labels for the Gateway resource | `{}` |
 | `kubernetesGateway.gateway.annotations` | Additional annotations for the Gateway resource | `{}` |
 | `kubernetesGateway.httpRoute.enabled` | Enable HTTPRoute resource | `true` |
-| `kubernetesGateway.httpRoute.parentRefs` | Gateway API parentRefs. Auto-populated when empty | `[]` |
-| `kubernetesGateway.httpRoute.hostnames` | Hostnames for the HTTPRoute | `[]` |
-| `kubernetesGateway.httpRoute.rules` | HTTPRoute rules. backendRefs auto-populated from chart service | `see values.yaml` |
+| `kubernetesGateway.httpRoute.rules` | HTTPRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
 | `kubernetesGateway.httpRoute.labels` | Additional labels for the HTTPRoute | `{}` |
 | `kubernetesGateway.httpRoute.annotations` | Additional annotations for the HTTPRoute | `{}` |
 | `kubernetesGateway.tlsRoute.enabled` | Enable TLSRoute resource (experimental, SNI passthrough) | `false` |
-| `kubernetesGateway.tlsRoute.parentRefs` | Gateway API parentRefs for TLSRoute | `[]` |
-| `kubernetesGateway.tlsRoute.hostnames` | Hostnames for SNI-based routing | `[]` |
-| `kubernetesGateway.tlsRoute.rules` | TLSRoute rules. backendRefs auto-populated from chart service | `see values.yaml` |
+| `kubernetesGateway.tlsRoute.rules` | TLSRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
 | `kubernetesGateway.tlsRoute.labels` | Additional labels for the TLSRoute | `{}` |
 | `kubernetesGateway.tlsRoute.annotations` | Additional annotations for the TLSRoute | `{}` |
 | `kubernetesGateway.backendTLSPolicy.enabled` | Enable BackendTLSPolicy for Gateway-to-backend TLS | `false` |
-| `kubernetesGateway.backendTLSPolicy.forceBootstrap` | Force backend TLS key bootstrap on upgrade. On a db-backed gateway, the bootstrap is skipped on upgrade to avoid overwriting keys rotated externally (e.g. Policy Manager, CI/CD pipeline). Set `true` to override | `false` |
-| `kubernetesGateway.backendTLSPolicy.targetRefs` | Target references. Auto-populated to chart Service | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation` | TLS validation configuration for backend | `{}` |
-| `kubernetesGateway.backendTLSPolicy.caCrt` | PEM-encoded CA certificate for manual cert/key mode | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname` | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local` | `""` |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs` | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap | `[]` |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs` | `""` |
 | `kubernetesGateway.backendTLSPolicy.tls.existingSecretName` | Existing TLS Secret for the backend certificate | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.secretName` | Override auto-generated backend TLS secret name | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.crt` | PEM-encoded certificate for the backend. Auto-generated if empty | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.key` | PEM-encoded private key for the backend. Auto-generated if empty | `""` |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap` | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource | `true` |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap` | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default) | `false` |
 | `kubernetesGateway.backendTLSPolicy.labels` | Additional labels for the BackendTLSPolicy | `{}` |
 | `kubernetesGateway.backendTLSPolicy.annotations` | Additional annotations for the BackendTLSPolicy | `{}` |
 | `kubernetesGateway.labels` | Labels applied to all Gateway API resources | `{}` |

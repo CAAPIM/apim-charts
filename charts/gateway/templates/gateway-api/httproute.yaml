@@ -1,9 +1,7 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.httpRoute.enabled }}
 {{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
 {{- $fullname := include "gateway.fullname" . -}}
-{{- $defaultBackendPort := (index .Values.service.ports 0).external -}}
-{{- $mgmtBackendPort := (index .Values.management.service.ports 0).external -}}
 {{- $root := . -}}
 {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.httpRoute.annotations) -}}
 {{- /*
@@ -49,20 +47,16 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-  {{- if $root.Values.kubernetesGateway.httpRoute.parentRefs }}
-    {{- toYaml $root.Values.kubernetesGateway.httpRoute.parentRefs | nindent 4 }}
-  {{- else }}
     {{ include "kubernetesGateway.defaultParentRefs" $root | nindent 4 }}
-  {{- end }}
   {{- if ne $hostname "__default__" }}
   hostnames:
     - {{ $hostname | quote }}
-  {{- else if $root.Values.kubernetesGateway.httpRoute.hostnames }}
-  hostnames:
-    {{- toYaml $root.Values.kubernetesGateway.httpRoute.hostnames | nindent 4 }}
   {{- end }}
   rules:
   {{- range $rules }}
+    {{- if not .port }}
+      {{- fail (printf "httpRoute rule for hostname '%s' is missing a port. Set port to the Layer7 Gateway service port (e.g. 8443)." (default "__default__" .hostname)) }}
+    {{- end }}
     - {{- if .matches }}
       matches:
         {{- toYaml .matches | nindent 8 }}
@@ -72,14 +66,12 @@ spec:
         {{- toYaml .filters | nindent 8 }}
       {{- end }}
       backendRefs:
-      {{- if .backendRefs }}
-        {{- toYaml .backendRefs | nindent 8 }}
-      {{- else if and .backend (eq .backend "management") }}
+      {{- if and .backend (eq .backend "management") }}
         - name: {{ $fullname }}-management
-          port: {{ $mgmtBackendPort }}
+          port: {{ .port }}
       {{- else }}
         - name: {{ $fullname }}
-          port: {{ $defaultBackendPort }}
+          port: {{ .port }}
       {{- end }}
   {{- end }}
 {{- end }}

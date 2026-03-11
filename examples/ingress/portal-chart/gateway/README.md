@@ -188,6 +188,8 @@ ingress:
     gatewayAPI: true
 ```
 
+> **Note:** Switching between ingress controllers (e.g. changing `ingressClassName` from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type (which coexists), changing the `ingressClassName` is a hard cutover. Plan this change for a maintenance window and update DNS records accordingly. See [Migration](../../readme.md#migration) for details.
+
 ---
 
 ## Auto-generated Routes

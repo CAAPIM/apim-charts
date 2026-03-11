@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.tlsRoute.enabled }}
 {{- if not .Values.kubernetesGateway.tlsRoute.rules }}
   {{- fail "kubernetesGateway.tlsRoute.rules is required when kubernetesGateway.tlsRoute.enabled is true. Define at least one rule with a hostname." }}
@@ -7,11 +7,12 @@
   {{- if not $rule.hostname }}
     {{- fail (printf "kubernetesGateway.tlsRoute.rules[%d] is missing a hostname. TLSRoute uses SNI-based routing and every rule must specify a hostname." $i) }}
   {{- end }}
+  {{- if not $rule.port }}
+    {{- fail (printf "kubernetesGateway.tlsRoute.rules[%d] (hostname: %s) is missing a port. Set port to the Layer7 Gateway service port (e.g. 8443)." $i $rule.hostname) }}
+  {{- end }}
 {{- end }}
 {{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1alpha2" }}
 {{- $fullname := include "gateway.fullname" . -}}
-{{- $defaultBackendPort := (index .Values.service.ports 0).external -}}
-{{- $mgmtBackendPort := (index .Values.management.service.ports 0).external -}}
 {{- $root := . -}}
 {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.tlsRoute.annotations) -}}
 {{- $hostnameGroups := dict -}}
@@ -47,24 +48,18 @@ metadata:
   {{- end }}
 spec:
   parentRefs:
-  {{- if $root.Values.kubernetesGateway.tlsRoute.parentRefs }}
-    {{- toYaml $root.Values.kubernetesGateway.tlsRoute.parentRefs | nindent 4 }}
-  {{- else }}
     {{ include "kubernetesGateway.defaultParentRefs" $root | nindent 4 }}
-  {{- end }}
   hostnames:
     - {{ $hostname | quote }}
   rules:
   {{- range $rules }}
     - backendRefs:
-      {{- if .backendRefs }}
-        {{- toYaml .backendRefs | nindent 8 }}
-      {{- else if and .backend (eq .backend "management") }}
+      {{- if and .backend (eq .backend "management") }}
         - name: {{ $fullname }}-management
-          port: {{ $mgmtBackendPort }}
+          port: {{ .port }}
       {{- else }}
         - name: {{ $fullname }}
-          port: {{ $defaultBackendPort }}
+          port: {{ .port }}
       {{- end }}
   {{- end }}
 {{- end }}
