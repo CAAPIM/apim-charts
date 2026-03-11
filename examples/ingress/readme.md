@@ -14,7 +14,7 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
 | Approach | API Version | Description |
 |---|---|---|
 | **Ingress v1** | `networking.k8s.io/v1` | Standard Kubernetes Ingress resources. Supported by most ingress controllers (e.g. nginx, Contour). |
-| **Gateway API v1** | `gateway.networking.k8s.io/v1` / `v1alpha2` | The newer Kubernetes Gateway API. Provides more granular routing via Gateway, HTTPRoute, and TLSRoute resources. |
+| **Gateway API v1** | `gateway.networking.k8s.io/v1` | The newer Kubernetes Gateway API. Provides more granular routing via Gateway, HTTPRoute, and TLSRoute resources. |
 
 ### Migration
 
@@ -56,7 +56,7 @@ TLS passthrough (`TLSRoute` with `mode: Passthrough`) is handled differently by 
 | **Portal Chart** | **Required.** The Portal chart uses `TLSRoute` exclusively. The Portal Dispatcher terminates TLS directly and does not support TLS re-encryption. Your Gateway API controller **must** support TLS passthrough (`protocol: TLS`, `mode: Passthrough`) and `TLSRoute` resources. | If your controller does not support TLS passthrough, the Portal chart's Gateway API configuration cannot be used. Use Ingress v1 with `ssl-passthrough` instead. |
 | **Gateway Chart** | **Optional.** The default mode is `HTTPRoute` (TLS termination + re-encryption), which works with any Gateway API controller. `TLSRoute` (passthrough) is available as an alternative when the controller supports it. Choosing a controller without TLS passthrough limits future use of the `tlsRoute` option. | No immediate impact on HTTPRoute mode. Consider controller choice based on whether passthrough may be needed later. |
 
-> **Note:** `TLSRoute` is in the Gateway API **Experimental** channel (`gateway.networking.k8s.io/v1alpha2`). Ensure your cluster has the experimental Gateway API CRDs installed if you plan to use TLS passthrough.
+> **Note:** `TLSRoute` is GA as of Gateway API v1.5.0 (`gateway.networking.k8s.io/v1`). The charts default to `v1alpha2` for broad compatibility. Set `kubernetesGateway.tlsRoute.apiVersion` (Gateway chart) or `ingress.gatewayAPI.tlsRouteApiVersion` (Portal chart) to match your cluster's CRD version. CRDs are typically installed by your Gateway controller. If you need to install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases).
 
 ### Contour
 Contour can be deployed as either an ingress controller or a Gateway API controller. Contour supports both `HTTPRoute` and `TLSRoute` (TLS passthrough).
@@ -78,6 +78,8 @@ Set `ingress.ingressClassName` to `contour` in your Gateway chart values. For th
 kubectl apply -f https://projectcontour.io/quickstart/contour-gateway-provisioner.yaml
 ```
 
+> **TLSRoute API version:** Contour v1.33 ships with TLSRoute at `v1alpha2`. The bundled Gateway API CRDs (v1.3.0 experimental channel) do not include TLSRoute at `v1`. If a future Contour release upgrades to Gateway API v1.5.0+, set `kubernetesGateway.tlsRoute.apiVersion: gateway.networking.k8s.io/v1` (Gateway chart) or `ingress.gatewayAPI.tlsRouteApiVersion: gateway.networking.k8s.io/v1` (Portal chart).
+
 Use `gatewayClassName: contour` in your Gateway API configuration.
 
 ### Envoy Gateway
@@ -88,6 +90,8 @@ See the [Envoy Gateway quickstart](https://gateway.envoyproxy.io/docs/tasks/quic
 ```bash
 helm install envoygateway oci://docker.io/envoyproxy/gateway-helm --version v1.7.0 -n envoy-gateway-system --create-namespace
 ```
+
+> **TLSRoute API version:** Envoy Gateway v1.7.0 ships with TLSRoute at `v1alpha2` (the chart default). Later versions (and `0.0.0-latest`) include TLSRoute at `v1`. When upgrading, set `kubernetesGateway.tlsRoute.apiVersion: gateway.networking.k8s.io/v1` (Gateway chart) or `ingress.gatewayAPI.tlsRouteApiVersion: gateway.networking.k8s.io/v1` (Portal chart).
 
 Use `gatewayClassName: eg` in your Gateway API configuration.
 

@@ -236,11 +236,13 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `kubernetesGateway.httpRoute.rules`    | HTTPRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
 | `kubernetesGateway.httpRoute.labels`    | Additional labels for the HTTPRoute               | `{}` |
 | `kubernetesGateway.httpRoute.annotations`    | Additional annotations for the HTTPRoute               | `{}` |
-| `kubernetesGateway.tlsRoute.enabled`    | Enable TLSRoute resource (experimental, SNI passthrough)               | `false` |
+| `kubernetesGateway.tlsRoute.enabled`    | Enable TLSRoute resource (SNI passthrough)               | `false` |
+| `kubernetesGateway.tlsRoute.apiVersion`    | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1               | `gateway.networking.k8s.io/v1alpha2` |
 | `kubernetesGateway.tlsRoute.rules`    | TLSRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
 | `kubernetesGateway.tlsRoute.labels`    | Additional labels for the TLSRoute               | `{}` |
 | `kubernetesGateway.tlsRoute.annotations`    | Additional annotations for the TLSRoute               | `{}` |
 | `kubernetesGateway.backendTLSPolicy.enabled`    | Enable BackendTLSPolicy for Gateway-to-backend TLS               | `false` |
+| `kubernetesGateway.backendTLSPolicy.excludePorts`    | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName`               | `[]` |
 | `kubernetesGateway.backendTLSPolicy.validation.hostname`    | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`               | `""` |
 | `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`    | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap               | `[]` |
 | `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates`    | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`               | `""` |
@@ -716,7 +718,7 @@ ingress:
 The Gateway Helm Chart supports the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) as an alternative to Ingress. The implementation is controller-agnostic and has been tested with [Contour](https://projectcontour.io/) and [Envoy Gateway](https://gateway.envoyproxy.io/). See [examples/ingress](../../examples/ingress) for controller installation instructions.
 
 **Requirements:**
-- Gateway API CRDs must be installed: `gateway.networking.k8s.io/v1` (Gateway, HTTPRoute, BackendTLSPolicy) and `gateway.networking.k8s.io/v1alpha2` (TLSRoute)
+- Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
 - A `GatewayClass` must be available on the cluster (e.g. `contour`, `envoy-gateway`)
 
 **Migration from Ingress v1:**
@@ -783,11 +785,13 @@ kubernetesGateway:
 | `kubernetesGateway.httpRoute.rules` | HTTPRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
 | `kubernetesGateway.httpRoute.labels` | Additional labels for the HTTPRoute | `{}` |
 | `kubernetesGateway.httpRoute.annotations` | Additional annotations for the HTTPRoute | `{}` |
-| `kubernetesGateway.tlsRoute.enabled` | Enable TLSRoute resource (experimental, SNI passthrough) | `false` |
+| `kubernetesGateway.tlsRoute.enabled` | Enable TLSRoute resource (SNI passthrough) | `false` |
+| `kubernetesGateway.tlsRoute.apiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
 | `kubernetesGateway.tlsRoute.rules` | TLSRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
 | `kubernetesGateway.tlsRoute.labels` | Additional labels for the TLSRoute | `{}` |
 | `kubernetesGateway.tlsRoute.annotations` | Additional annotations for the TLSRoute | `{}` |
 | `kubernetesGateway.backendTLSPolicy.enabled` | Enable BackendTLSPolicy for Gateway-to-backend TLS | `false` |
+| `kubernetesGateway.backendTLSPolicy.excludePorts` | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName` | `[]` |
 | `kubernetesGateway.backendTLSPolicy.validation.hostname` | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local` | `""` |
 | `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs` | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap | `[]` |
 | `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs` | `""` |

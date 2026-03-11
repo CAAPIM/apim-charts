@@ -28,12 +28,26 @@ metadata:
   {{- end }}
 spec:
   targetRefs:
-    {{- $fullname := include "gateway.fullname" . -}}
-    {{- $firstPort := index .Values.service.ports 0 }}
+    {{- $fullname := include "gateway.fullname" . }}
+    {{- $rawExclude := .Values.kubernetesGateway.backendTLSPolicy.excludePorts }}
+    {{- $excludePorts := list }}
+    {{- range $rawExclude }}
+    {{- $excludePorts = append $excludePorts (int .) }}
+    {{- end }}
+    {{- if $excludePorts }}
+    {{- range .Values.service.ports }}
+    {{- if not (has (int .external) $excludePorts) }}
     - group: ""
       kind: Service
       name: {{ $fullname }}
-      sectionName: {{ $firstPort.name }}
+      sectionName: {{ .name }}
+    {{- end }}
+    {{- end }}
+    {{- else }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}
+    {{- end }}
     {{- $hasMgmtRoute := false }}
     {{- range .Values.kubernetesGateway.httpRoute.rules }}
       {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
@@ -42,11 +56,20 @@ spec:
       {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
     {{- end }}
     {{- if $hasMgmtRoute }}
-    {{- $mgmtPort := index .Values.management.service.ports 0 }}
+    {{- if $excludePorts }}
+    {{- range .Values.management.service.ports }}
+    {{- if not (has (int .external) $excludePorts) }}
     - group: ""
       kind: Service
       name: {{ $fullname }}-management
-      sectionName: {{ $mgmtPort.name }}
+      sectionName: {{ .name }}
+    {{- end }}
+    {{- end }}
+    {{- else }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}-management
+    {{- end }}
     {{- end }}
   validation:
     {{- $v := .Values.kubernetesGateway.backendTLSPolicy.validation }}

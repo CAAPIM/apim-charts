@@ -1158,6 +1158,13 @@ kubernetesGateway:
   backendTLSPolicy:
     # -- Enable BackendTLSPolicy resource
     enabled: true
+    # -- Ports to exclude from BackendTLSPolicy targetRefs.
+    # List of external port numbers (from service.ports[].external) that do not
+    # speak TLS. By default (empty), the policy applies to all service ports
+    # (sectionName is omitted). When set, each non-excluded port gets an
+    # explicit targetRef with sectionName.
+    excludePorts: []
+    # - 8080
     # -- TLS validation configuration for the backend connection.
     # Each sub-field has an intelligent default when left empty:
     #   hostname        -- defaults to <fullname>.<namespace>.svc.cluster.local
@@ -1214,13 +1221,16 @@ kubernetesGateway:
     # -- Additional annotations for the BackendTLSPolicy resource
     annotations: {}
 
-  # --- TLSRoute (gateway.networking.k8s.io/v1alpha2) ---
+  # --- TLSRoute ---
   # Used for TLS passthrough (SNI-based routing, no termination at Gateway).
   # This is an alternative to httpRoute -- typically only one is enabled.
-  # NOTE: TLSRoute is in the Experimental channel and requires experimental CRDs.
   tlsRoute:
     # -- Enable TLSRoute resource
     enabled: false
+    # -- TLSRoute API version. TLSRoute is GA (v1) as of Gateway API 1.5.0.
+    # Set to gateway.networking.k8s.io/v1 when your Gateway API CRDs include
+    # TLSRoute at v1.
+    apiVersion: gateway.networking.k8s.io/v1alpha2
     # -- TLSRoute rules. Each rule creates a backendRef to the chart's own service.
     # Same hostname grouping as httpRoute - rules with the same hostname become one TLSRoute.
     # port is the Layer7 Gateway service port (service.ports[].external

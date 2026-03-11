@@ -413,6 +413,13 @@ Create Image Pull Secret
 {{- end -}}
 
 {{/*
+  Resolve TLSRoute apiVersion from values.
+*/}}
+{{- define "portal.gatewayAPI.tlsRouteApiVersion" -}}
+{{- .Values.ingress.gatewayAPI.tlsRouteApiVersion -}}
+{{- end -}}
+
+{{/*
   Generate default parentRefs for routes when none are provided.
   Produces a list with a single parentRef pointing to the chart's Gateway.
 */}}

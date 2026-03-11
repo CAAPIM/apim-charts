@@ -33,7 +33,7 @@ Compared to the [Gateway chart](../../../ingress/gateway-chart/gateway/), the Po
 
 ## Prerequisites
 
-1. **Gateway API CRDs** must be installed: `gateway.networking.k8s.io/v1` (Gateway) and `gateway.networking.k8s.io/v1alpha2` (TLSRoute)
+1. **Gateway API CRDs** must be installed. These are typically bundled with your Gateway controller. To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
 2. A **GatewayClass** must be available (see [GatewayClass](../../readme.md#gatewayclass))
 3. A **Gateway controller** must be running (Contour or Envoy Gateway)
 
