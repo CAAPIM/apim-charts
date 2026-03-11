@@ -1,7 +1,7 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 # ConfigMap containing the bootstrap script that loads the backend TLS certificate
 # as the Gateway's default SSL key via a Graphman key bundle.
-{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled }}
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled .Values.kubernetesGateway.backendTLSPolicy.tls.bootstrap }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -37,13 +37,13 @@ data:
 
     CHART_ACTION="{{ if .Release.IsInstall }}install{{ else }}upgrade{{ end }}"
     DATABASE="{{ .Values.database.enabled }}"
-    FORCE="{{ default false .Values.kubernetesGateway.backendTLSPolicy.forceBootstrap }}"
+    FORCE="{{ default false .Values.kubernetesGateway.backendTLSPolicy.tls.forceBootstrap }}"
 
     if [ "$FORCE" != "true" ]; then
         if [ "$CHART_ACTION" = "upgrade" ] && [ "$DATABASE" = "true" ]; then
             echo "010_load_default_ssl_key: SKIPPED - upgrade on db-backed gateway."
             echo "  The SSL key may have been updated externally (e.g. Policy Manager, pipeline)."
-            echo "  Bootstrapping would overwrite it. Set kubernetesGateway.backendTLSPolicy.forceBootstrap=true to override."
+            echo "  Bootstrapping would overwrite it. Set kubernetesGateway.backendTLSPolicy.tls.forceBootstrap=true to override."
             exit 0
         fi
     fi

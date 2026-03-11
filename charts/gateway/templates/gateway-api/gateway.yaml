@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.gateway.create }}
 {{- if and .Values.kubernetesGateway.httpRoute.enabled .Values.kubernetesGateway.tlsRoute.enabled }}
   {{- fail "kubernetesGateway.httpRoute and kubernetesGateway.tlsRoute cannot both be enabled when kubernetesGateway.gateway.create is true. The auto-generated Gateway supports one mode (HTTPS termination or TLS passthrough), not both. To use both route types, set gateway.create to false and manage the Gateway resource externally with gateway.existingRef." }}
@@ -35,10 +35,6 @@ spec:
   addresses:
     {{- toYaml .Values.kubernetesGateway.gateway.addresses | nindent 4 }}
   {{- end }}
-  {{- if .Values.kubernetesGateway.gateway.listeners }}
-  listeners:
-    {{- toYaml .Values.kubernetesGateway.gateway.listeners | nindent 4 }}
-  {{- else }}
   {{/* Auto-generate listeners from httpRoute or tlsRoute rule hostnames */}}
   {{- $tlsSecretName := include "kubernetesGateway.tlsSecretName" . }}
   {{- $isPassthrough := .Values.kubernetesGateway.tlsRoute.enabled }}
@@ -49,17 +45,11 @@ spec:
         {{- $hostnames = append $hostnames .hostname | uniq }}
       {{- end }}
     {{- end }}
-    {{- if and (not $hostnames) .Values.kubernetesGateway.httpRoute.hostnames }}
-      {{- $hostnames = .Values.kubernetesGateway.httpRoute.hostnames }}
-    {{- end }}
   {{- else if .Values.kubernetesGateway.tlsRoute.enabled }}
     {{- range .Values.kubernetesGateway.tlsRoute.rules }}
       {{- if .hostname }}
         {{- $hostnames = append $hostnames .hostname | uniq }}
       {{- end }}
-    {{- end }}
-    {{- if and (not $hostnames) .Values.kubernetesGateway.tlsRoute.hostnames }}
-      {{- $hostnames = .Values.kubernetesGateway.tlsRoute.hostnames }}
     {{- end }}
   {{- end }}
   listeners:
@@ -102,7 +92,6 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
-  {{- end }}
   {{- end }}
 {{- else }}
 {{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling kubernetesGateway.gateway.create." }}

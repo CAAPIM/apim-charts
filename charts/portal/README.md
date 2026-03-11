@@ -368,7 +368,9 @@ You can read more about Contour [here](https://projectcontour.io/) and view exam
 ### Kubernetes Gateway API Configuration
 When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` (v1alpha2) resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
 
-All ingress types (`ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI`) can coexist, allowing a gradual migration between approaches without a hard DNS cutover.
+All ingress types (`ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI`) can coexist, allowing a gradual migration between approaches without a hard DNS cutover. Each enabled type creates its own independent resources and load balancer endpoint.
+
+> **Note:** Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type, changing the ingress class is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
 
 **Requirements:**
 - Gateway API CRDs must be installed: `gateway.networking.k8s.io/v1` (Gateway) and `gateway.networking.k8s.io/v1alpha2` (TLSRoute)
@@ -397,7 +399,7 @@ The following TLSRoutes are automatically created from the portal hostname helpe
 
 Additional TLSRoutes are generated for each entry in `ingress.tenantIds` (routed to dispatcher:443) and each entry in `ingress.customRoutes` (routed to the specified service and port).
 
-When `ingress.gatewayAPI.create` is `true` and `ingress.gatewayAPI.listeners` is empty, the chart auto-generates one TLS passthrough listener per unique hostname on port 443.
+When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS passthrough listener per unique hostname on port 443.
 
 | Parameter | Description | Default |
 |---|---|---|
@@ -407,7 +409,6 @@ When `ingress.gatewayAPI.create` is `true` and `ingress.gatewayAPI.listeners` is
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
 | `ingress.gatewayAPI.existingRef.name` | Name of an existing Gateway resource to attach routes to. Required when `gatewayAPI.create` is `false` | `""` |
 | `ingress.gatewayAPI.existingRef.namespace` | Namespace of the existing Gateway resource | `""` |
-| `ingress.gatewayAPI.listeners` | Custom Gateway listeners. If empty, listeners are auto-generated from portal hostnames using TLS passthrough | `[]` |
 | `ingress.gatewayAPI.labels` | Additional labels for Gateway API resources (Gateway and TLSRoutes) | `{}` |
 | `ingress.gatewayAPI.annotations` | Additional annotations for Gateway API resources (Gateway and TLSRoutes) | `{}` |
 

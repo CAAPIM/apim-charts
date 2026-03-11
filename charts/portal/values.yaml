@@ -214,18 +214,6 @@ ingress:
     existingRef:
       name: ""
       namespace: ""
-    # -- Gateway listeners. If empty and create: true, listeners are auto-generated
-    # from all portal hostnames using protocol: TLS, port: 443, mode: Passthrough.
-    listeners: []
-    # - name: tls-passthrough
-    #   protocol: TLS
-    #   port: 443
-    #   hostname: "*.example.com"
-    #   tls:
-    #     mode: Passthrough
-    #   allowedRoutes:
-    #     namespaces:
-    #       from: Same
 
     # -- Additional labels for the Gateway resource
     labels: {}

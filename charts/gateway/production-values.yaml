@@ -1080,8 +1080,8 @@ ingress:
 # ref: https://gateway-api.sigs.k8s.io/implementations/
 kubernetesGateway:
   # -- Enable Kubernetes Gateway API resources.
-  # When enabled with defaults, the chart auto-generates an HTTPRoute with backendRefs
-  # pointing to the chart's own service. Customize each sub-section as needed.
+  # When enabled, the chart creates routes pointing to the chart's own service.
+  # Customize each sub-section as needed.
   enabled: false
 
   # --- Gateway Resource (gateway.networking.k8s.io/v1) ---
@@ -1098,60 +1098,23 @@ kubernetesGateway:
     addresses: []
     # - type: IPAddress
     #   value: "1.2.3.4"
-    # - type: Hostname
-    #   value: "my-gateway.example.com"
     # -- Reference to an existing Gateway resource. Used when create: false.
     # Routes will use this as their parentRef.
     existingRef:
       name: ""
       namespace: ""
-    # -- Gateway listeners. If empty and create: true, a default HTTPS listener
-    # on port 443 is auto-generated using the TLS secret configured below.
-    listeners: []
-    # - name: https
-    #   protocol: HTTPS
-    #   port: 443
-    #   hostname: "*.ca.com"
-    #   tls:
-    #     mode: Terminate
-    #     certificateRefs:
-    #       - name: my-tls-secret
-    #         kind: Secret
-    #   allowedRoutes:
-    #     namespaces:
-    #       from: Same
-    # - name: https-management
-    #   protocol: HTTPS
-    #   port: 443
-    #   hostname: "dev-pm.ca.com"
-    #   tls:
-    #     mode: Terminate
-    #     certificateRefs:
-    #       - name: my-tls-secret
-    #         kind: Secret
-    #   allowedRoutes:
-    #     namespaces:
-    #       from: Same
 
     # -- TLS configuration for the Gateway listener(s).
     # Part of the Gateway spec (spec.listeners[].tls).
     # The listener TLS secret is the certificate presented to clients (frontend).
-    # Three modes:
+    # Two modes:
     #   1. Reference an existing secret: set existingSecretName
-    #   2. Provide cert/key: set crt and key (PEM-encoded)
-    #   3. Auto-generate: leave crt, key, and existingSecretName empty
+    #   2. Auto-generate: leave existingSecretName empty
     #      A self-signed certificate is generated using Helm built-in functions.
     tls:
       # -- Reference an existing kubernetes.io/tls Secret.
       # When set, no TLS secret is created by this chart.
       existingSecretName: ""
-      # -- Override the auto-generated secret name.
-      # If empty, auto-generated as <fullname>-gateway-tls
-      secretName: ""
-      # -- PEM-encoded TLS certificate (used when existingSecretName is empty)
-      crt: ""
-      # -- PEM-encoded TLS private key (used when existingSecretName is empty)
-      key: ""
 
     # -- Additional labels for the Gateway resource
     labels: {}
@@ -1160,33 +1123,26 @@ kubernetesGateway:
 
   # --- HTTPRoute (gateway.networking.k8s.io/v1) ---
   # Used for TLS termination at the Gateway with re-encryption to the backend.
-  # backendRefs service name is auto-populated from the chart's service.
   # parentRefs are auto-resolved from gateway.create or gateway.existingRef.
   httpRoute:
     # -- Enable HTTPRoute resource
     enabled: true
-    # -- Gateway API parentRefs. If empty and gateway.create is true,
-    # auto-populated from the chart-created Gateway.
-    # Must reference an existing Gateway when gateway.create is false.
-    parentRefs: []
-    # - name: my-gateway
-    #   namespace: gateway-namespace
-    #   sectionName: https
-    # -- Hostnames for the HTTPRoute (used for rules without a hostname).
-    # Prefer setting hostname on individual rules for per-host routing.
-    hostnames: []
-    # -- HTTPRoute rules. backendRefs service name is auto-populated from the chart.
+    # -- HTTPRoute rules. Each rule creates a backendRef to the chart's own service.
     # Rules are grouped by hostname - rules with the same hostname become one HTTPRoute.
     # Set hostname on a rule to create a dedicated HTTPRoute for that host.
     # Set backend: management to route to the management service.
+    # port is the Layer7 Gateway service port (service.ports[].external
+    # or management.service.ports[].external).
     rules:
     # Example: per-hostname routing with management service
       - hostname: dev.ca.com
+        port: 8443
         matches:
         - path:
             type: PathPrefix
             value: /
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management
         matches:
         - path:
@@ -1203,67 +1159,57 @@ kubernetesGateway:
   # Gateway API does not support tlsSkipVerify.
   backendTLSPolicy:
     # -- Enable BackendTLSPolicy resource
-    enabled: false
-    # -- Force the backend TLS key bootstrap on helm upgrade.
-    # By default, the bootstrap script only loads the SSL key on initial install or
-    # when the gateway is ephemeral (database.enabled: false). On a database-backed
-    # gateway, the key may have been rotated externally (e.g. via Policy Manager or
-    # a CI/CD pipeline), and bootstrapping would overwrite it.
-    # Set to true to force bootstrap on every helm install/upgrade.
-    forceBootstrap: false
-    # -- Target references. If empty, auto-populated to target the chart's Service.
-    targetRefs: []
-    # - group: ""
-    #   kind: Service
-    #   name: my-gateway-service
-    #   sectionName: https
+    enabled: true
     # -- TLS validation configuration for the backend connection.
-    # When empty, auto-configured with:
-    #   - hostname: <fullname>.<namespace>.svc.cluster.local
-    #   - caCertificateRefs pointing to the auto-generated CA ConfigMap
-    # Provide a custom validation block to override (e.g. for wellKnownCACertificates).
-    validation: {}
-    # hostname: my-gateway-service.default.svc.cluster.local
-    # caCertificateRefs:
-    #   - name: gateway-ca-cert
-    #     group: ""
-    #     kind: ConfigMap
-    # wellKnownCACertificates: System
+    # Each sub-field has an intelligent default when left empty:
+    #   hostname        -- defaults to <fullname>.<namespace>.svc.cluster.local
+    #   caCertificateRefs -- defaults to the auto-generated CA ConfigMap
+    # Override individual fields without replacing the entire block.
+    validation:
+      # -- Hostname for backend TLS validation.
+      # If empty, defaults to <fullname>.<namespace>.svc.cluster.local
+      hostname: ""
+      # -- CA certificate references for backend validation.
+      # If empty, defaults to the auto-generated CA ConfigMap (created alongside
+      # the backend TLS secret). Override to reference your own ConfigMap, Secret, etc.
+      caCertificateRefs: []
+      # - name: my-ca-configmap
+      #   group: ""
+      #   kind: ConfigMap
+      # - name: my-ca-secret
+      #   group: ""
+      #   kind: Secret
+      # -- Use well-known CA certificates (e.g. "System").
+      # When set, caCertificateRefs is not rendered (they are mutually exclusive per Gateway API spec).
+      wellKnownCACertificates: ""
 
     # -- Backend TLS certificate configuration.
     # This is the certificate that the Layer7 Gateway pod serves to the
     # Kubernetes Gateway controller. This is separate from the listener TLS
     # (kubernetesGateway.gateway.tls) which is presented to clients.
-    # Four modes:
-    #   1. Reference an existing secret: set existingSecretName
-    #   2. Provide cert/key: set crt and key (PEM-encoded)
-    #   3. Auto-generate: leave crt, key, and existingSecretName empty
-    #      A self-signed certificate is generated using Helm built-in functions.
-    #   4. CA-only: set backendTLSPolicy.caCrt or existingCACertConfigMapName
-    #      (no crt/key/existingSecretName). Use when the Gateway pod manages
-    #      its own SSL keys externally. No backend TLS secret is created and
-    #      no bootstrap script is mounted.
-
-
-   # -- PEM-encoded CA certificate for backend TLS validation.
-    # When tls.crt/key are provided manually, set this to the CA that signed them.
-    # A ConfigMap is automatically created from this value.
-    # When tls is auto-generated, this is ignored (the CA is auto-generated too).
-    caCrt: ""
-    # -- Reference an existing ConfigMap containing the CA certificate (key: ca.crt).
-    # When set, no CA ConfigMap is created -- the BackendTLSPolicy references this directly.
-    existingCACertConfigMapName: ""
+    # Two modes:
+    #   1. Auto-generate: leave existingSecretName empty (default)
+    #      A self-signed certificate + CA is generated using Helm built-in functions.
+    #      The CA is exported as a ConfigMap for BackendTLSPolicy validation.
+    #   2. Reference an existing secret: set existingSecretName
+    #      You must also set validation.caCertificateRefs or
+    #      validation.wellKnownCACertificates so the controller can verify
+    #      the backend certificate.
 
     tls:
       # -- Reference an existing kubernetes.io/tls Secret for the backend certificate.
       existingSecretName: ""
-      # -- Override the auto-generated secret name.
-      # If empty, auto-generated as <fullname>-backend-tls
-      secretName: ""
-      # -- PEM-encoded TLS certificate for the backend
-      crt: ""
-      # -- PEM-encoded TLS private key for the backend
-      key: ""
+      # -- Enable SSL key bootstrap into the Layer7 Gateway pod.
+      # When true, the backend TLS secret (auto-generated or existingSecretName) is
+      # mounted into the pod and a bootstrap script loads it as the default SSL key.
+      # Set to false when you only need the BackendTLSPolicy resource (e.g. you manage
+      # the pod's SSL key externally and only provide a CA for validation).
+      bootstrap: true
+      # -- Force the bootstrap script to run on every helm install/upgrade.
+      # By default, on a database-backed gateway the script only runs on initial install
+      # (to avoid overwriting keys rotated via Policy Manager or CI/CD).
+      # Set true to override this safety check.
+      forceBootstrap: false
 
     # -- Additional labels for the BackendTLSPolicy resource
     labels: {}
@@ -1277,40 +1223,17 @@ kubernetesGateway:
   tlsRoute:
     # -- Enable TLSRoute resource
     enabled: false
-    # -- Gateway API parentRefs. Same behavior as httpRoute.parentRefs.
-    parentRefs: []
-    # - name: my-gateway
-    #   namespace: gateway-namespace
-    #   sectionName: tls-passthrough
-    # -- Hostnames for SNI-based routing (used for rules without a hostname).
-    # Prefer setting hostname on individual rules for per-host routing.
-    hostnames: []
-    # -- TLSRoute rules. backendRefs are auto-populated from the chart's service.
+    # -- TLSRoute rules. Each rule creates a backendRef to the chart's own service.
     # Same hostname grouping as httpRoute - rules with the same hostname become one TLSRoute.
+    # port is the Layer7 Gateway service port (service.ports[].external
+    # or management.service.ports[].external).
     rules:
       - hostname: dev.ca.com
+        port: 8443
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management
-    # Example: per-hostname SNI routing with management service
-    # - hostname: app.example.com
-    # - hostname: pm.example.com
-    #   backend: management
-    # Example: custom backendRefs
-    # - hostname: custom.example.com
-    #   backendRefs:
-    #     - name: my-custom-service
-    #       port: 8443
-    #       weight: 1
-    # Example: per-hostname SNI routing with management service
-    # - hostname: app.example.com
-    # - hostname: pm.example.com
-    #   backend: management
-    # Example: custom backendRefs
-    # - hostname: custom.example.com
-    #   backendRefs:
-    #     - name: my-custom-service
-    #       port: 8443
-    #       weight: 1
+
     # -- Additional labels for the TLSRoute resource
     labels: {}
     # -- Additional annotations for the TLSRoute resource

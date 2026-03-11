@@ -50,7 +50,9 @@ TLSRoute Mode (passthrough)
 
 1. **Gateway API CRDs** must be installed on the cluster
 2. A **GatewayClass** must be available (see [GatewayClass](../../readme.md#gatewayclass))
-3. A **Gateway controller** must be running (Contour or Envoy Gateway are examples covered here)
+3. A **Gateway controller** must be running (any controller implementing the Gateway API specification works -- Contour and Envoy Gateway are the examples used here)
+
+> **Controller Compatibility:** The Gateway chart produces standard Gateway API resources and is controller-agnostic. The default `HTTPRoute` mode works with any Gateway API controller. The `TLSRoute` (passthrough) mode requires controller support for `protocol: TLS` / `mode: Passthrough` and is in the Experimental channel. Choosing a controller without TLS passthrough support does not affect HTTPRoute, but limits future use of the passthrough option. See [TLS Passthrough Requirements](../../readme.md#tls-passthrough-requirements) for details.
 
 ---
 
@@ -65,6 +67,8 @@ kubernetesGateway:
 ```
 
 This means existing deployments are not affected. You opt in to the Gateway API by setting `kubernetesGateway.enabled: true`.
+
+> **Staged migration:** `ingress.enabled` can remain `true` while enabling Gateway API. Both create independent resources and load balancer endpoints, so you can verify the new Gateway API endpoint and migrate DNS before disabling Ingress. Note that switching ingress controllers (changing `ingressClassName`) uses a load balancer with a different address -- this is a hard cutover, not a coexistence scenario, and should be planned for a maintenance window. See [Migration](../../readme.md#migration) for details.
 
 ---
 
@@ -97,6 +101,7 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
@@ -126,11 +131,13 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
               value: /
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management     # routes to the management service
         matches:
           - path:
@@ -158,6 +165,7 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
@@ -199,7 +207,9 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management
   backendTLSPolicy:
     enabled: false              # not needed for passthrough
@@ -231,6 +241,7 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
@@ -279,23 +290,36 @@ TLS Certificate Architecture (HTTPRoute mode)
  Config: gateway.tls              Config: backendTLSPolicy.tls
 
 
- Provisioning modes (both secrets support the same three modes):
+ Listener TLS provisioning modes:
 
-   1. Auto-generate  -- leave crt, key, existingSecretName empty
-                        Helm generates a self-signed cert on install
-                        and preserves it across upgrades (lookup)
+   1. Auto-generate    -- leave existingSecretName empty
+                          Helm generates a self-signed cert on install
+                          and preserves it across upgrades (lookup)
 
-   2. Provide values -- set crt and key with PEM-encoded content
-                        For backend, also set caCrt on backendTLSPolicy
+   2. Existing secret  -- set existingSecretName to reference a
+                          pre-existing kubernetes.io/tls Secret
+                          (e.g. managed by cert-manager)
 
-   3. Existing secret -- set existingSecretName to reference a
-                         pre-existing kubernetes.io/tls Secret
-                         (e.g. managed by cert-manager)
 
-   4. CA-only         -- set backendTLSPolicy.caCrt (inline) or
-                         existingCACertConfigMapName (reference)
-                         No crt/key/existingSecretName needed.
-                         Use when the Gateway manages its own keys.
+ Backend TLS provisioning modes:
+
+   1. Auto-generate    -- leave existingSecretName empty (default)
+                          Helm generates a self-signed cert + CA on
+                          install and preserves across upgrades.
+                          CA exported as ConfigMap for validation.
+
+   2. Existing secret  -- set existingSecretName to reference a
+                          pre-existing kubernetes.io/tls Secret.
+                          You must also set validation.caCertificateRefs
+                          or validation.wellKnownCACertificates.
+
+ Validation defaults (apply to all modes):
+
+   validation.hostname             -- auto: <fullname>.<ns>.svc.cluster.local
+   validation.caCertificateRefs    -- auto: the chart's CA ConfigMap
+                                      (only created in auto-generate mode)
+   validation.wellKnownCACertificates -- set to "System" to skip CA refs
+                                        (mutually exclusive with caCertificateRefs)
 ```
 
 ### Mode 1: Auto-generated certificates (default)
@@ -310,57 +334,21 @@ kubernetesGateway:
     gatewayClassName: contour
     tls:
       existingSecretName: ""    # empty = auto-generate
-      crt: ""
-      key: ""
   backendTLSPolicy:
     enabled: true
     tls:
       existingSecretName: ""    # empty = auto-generate
-      crt: ""
-      key: ""
 ```
 
 The backend certificate is automatically loaded onto the Layer7 Gateway pod via a bootstrap script that converts the PEM certificate into a Graphman JSON bundle and writes it to the pod's bootstrap directory.
 
-### Mode 2: Provide certificate values
+### Mode 2: Reference existing secrets
 
-Supply PEM-encoded certificate and key directly in values. For the backend certificate, also provide the CA certificate that signed it.
+Reference secrets that already exist in the cluster (e.g. managed by cert-manager). The backendTLSPolicy keys are mounted to the Gateway pod; key rotation takes effect after Gateway restart.
 
-```yaml
-kubernetesGateway:
-  enabled: true
-  gateway:
-    create: true
-    gatewayClassName: contour
-    tls:
-      crt: |
-        -----BEGIN CERTIFICATE-----
-        <listener certificate PEM>
-        -----END CERTIFICATE-----
-      key: |
-        -----BEGIN PRIVATE KEY-----
-        <listener private key PEM>
-        -----END PRIVATE KEY-----
-  backendTLSPolicy:
-    enabled: true
-    caCrt: |
-      -----BEGIN CERTIFICATE-----
-      <CA certificate that signed the backend cert>
-      -----END CERTIFICATE-----
-    tls:
-      crt: |
-        -----BEGIN CERTIFICATE-----
-        <backend certificate PEM>
-        -----END CERTIFICATE-----
-      key: |
-        -----BEGIN PRIVATE KEY-----
-        <backend private key PEM>
-        -----END PRIVATE KEY-----
-```
+When using existing secrets, you must tell the chart how to validate the backend certificate by setting `validation.caCertificateRefs` or `validation.wellKnownCACertificates`.
 
-### Mode 3: Reference existing secrets
-
-Reference secrets that already exist in the cluster (e.g. managed by cert-manager). The backendTLSPolicy keys are mounted to the Gateway, key rotation will only take effect after Gateway restart.
+**Reference a CA ConfigMap:**
 
 ```yaml
 kubernetesGateway:
@@ -374,62 +362,40 @@ kubernetesGateway:
     enabled: true
     tls:
       existingSecretName: my-backend-tls-secret
-    # When using an existing backend secret, provide the CA or configure
-    # validation to use wellKnownCACertificates
-    caCrt: |
-      -----BEGIN CERTIFICATE-----
-      <CA certificate>
-      -----END CERTIFICATE-----
-    # OR use system trust store (controller must support this):
-    # validation:
-    #   hostname: my-gateway.default.svc.cluster.local
-    #   wellKnownCACertificates: System
+    validation:
+      caCertificateRefs:
+        - name: my-ca-configmap       # must contain key: ca.crt
+          group: ""
+          kind: ConfigMap
 ```
 
-> **Note:** When using `existingSecretName` for the backend, you must either provide the CA certificate via `caCrt` or configure a custom `validation` block with `wellKnownCACertificates: System` or appropriate `caCertificateRefs`.
-
-### Mode 4: CA-only (customer-managed backend keys)
-
-When the Layer7 Gateway manages its own SSL keys externally (e.g. via Policy Manager, Restman, or a CI/CD pipeline), provide only the CA certificate. The chart does not create a backend TLS secret or mount the bootstrap script.
-
-**Inline CA certificate:**
+**Use system trust store:**
 
 ```yaml
-kubernetesGateway:
-  enabled: true
-  gateway:
-    create: true
-    gatewayClassName: contour
+  backendTLSPolicy:
+    enabled: true
     tls:
-      existingSecretName: wildcard-example-com    # listener cert (frontend)
-  httpRoute:
-    enabled: true
-    rules:
-      - hostname: dev.ca.com
-        matches:
-          - path:
-              type: PathPrefix
-              value: /
-  backendTLSPolicy:
-    enabled: true
-    caCrt: |
-      -----BEGIN CERTIFICATE-----
-      <CA certificate that signed the Gateway's backend cert>
-      -----END CERTIFICATE-----
+      existingSecretName: my-backend-tls-secret
+    validation:
+      wellKnownCACertificates: System
 ```
 
-**Reference an existing CA ConfigMap:**
+**Custom hostname and Secret-based CA:**
 
 ```yaml
   backendTLSPolicy:
     enabled: true
-    existingCACertConfigMapName: my-ca-configmap    # must contain key: ca.crt
+    tls:
+      existingSecretName: my-backend-tls-secret
+    validation:
+      hostname: custom-hostname.default.svc.cluster.local
+      caCertificateRefs:
+        - name: my-ca-secret
+          group: ""
+          kind: Secret
 ```
 
-**What happens:**
-- The **BackendTLSPolicy** is created, referencing the CA ConfigMap (auto-created from `caCrt`, or the existing one from `existingCACertConfigMapName`)
-- **No backend TLS secret** is created -- the Gateway pod uses its own externally-managed keys
-- **No bootstrap script** is mounted on the pod
+> **Note:** When using `existingSecretName` for the backend, you **must** set `validation.caCertificateRefs` or `validation.wellKnownCACertificates`. The auto-generated CA ConfigMap is only created when the backend TLS secret is also auto-generated.
 
 ---
 
@@ -471,11 +437,13 @@ kubernetesGateway:
     enabled: true
     rules:
       - hostname: dev.ca.com
+        port: 8443
         matches:
           - path:
               type: PathPrefix
               value: /
       - hostname: dev-pm.ca.com
+        port: 9443
         backend: management
         matches:
           - path:
@@ -485,8 +453,9 @@ kubernetesGateway:
     enabled: true
     tls:
       existingSecretName: gateway-backend-cert    # cert-manager managed
-    caCrt: |
-      -----BEGIN CERTIFICATE-----
-      <your CA certificate>
-      -----END CERTIFICATE-----
+    validation:
+      caCertificateRefs:
+        - name: gateway-ca-cert                   # externally managed ConfigMap
+          group: ""
+          kind: ConfigMap
 ```

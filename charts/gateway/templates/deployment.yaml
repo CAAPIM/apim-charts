@@ -315,7 +315,7 @@ spec:
               subPath: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
-{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled .Values.kubernetesGateway.backendTLSPolicy.tls.bootstrap (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
             - name: {{ template "gateway.fullname" . }}-load-ssl-key-script
               mountPath: /opt/docker/rc.d/010_load_default_ssl_key.sh
               subPath: 010_load_default_ssl_key.sh
@@ -724,7 +724,7 @@ spec:
               path: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
-{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled .Values.kubernetesGateway.backendTLSPolicy.tls.bootstrap (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
         - name: {{ template "gateway.fullname" . }}-load-ssl-key-script
           configMap:
             name: {{ template "gateway.fullname" . }}-script-configmap

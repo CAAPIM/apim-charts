@@ -1,5 +1,7 @@
 ## Ingress v1 / Gateway API v1 Examples
-The Layer7 API Management Helm Charts support multiple ingress strategies for routing external traffic to the Gateway and Portal services. A controller agnostic approach has been taken in providing support for both ingress v1 and gateway v1. The controllers that are referenced in these examples have minimal configuration applied to them. These examples are limited to Contour and Envoy-Gateway, please refer to the relevant documentation for more information about additional options.
+The Layer7 API Management Helm Charts support multiple ingress strategies for routing external traffic to the Gateway and Portal services. The charts are **controller-agnostic** -- they produce standard Kubernetes Ingress v1 and Gateway API v1 resources and do not embed controller-specific configuration. Any Ingress or Gateway API controller that implements the relevant specifications should work.
+
+[Contour](https://projectcontour.io/) and [Envoy Gateway](https://gateway.envoyproxy.io/) are used as examples throughout this documentation because they have been tested with these charts. They are not requirements. The only controller-specific consideration is **TLS passthrough** support (see [TLS Passthrough Requirements](#tls-passthrough-requirements) below).
 
 > **Ingress NGINX Retirement Notice**
 >
@@ -13,6 +15,17 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
 |---|---|---|
 | **Ingress v1** | `networking.k8s.io/v1` | Standard Kubernetes Ingress resources. Supported by most ingress controllers (e.g. nginx, Contour). |
 | **Gateway API v1** | `gateway.networking.k8s.io/v1` / `v1alpha2` | The newer Kubernetes Gateway API. Provides more granular routing via Gateway, HTTPRoute, and TLSRoute resources. |
+
+### Migration
+
+**Ingress v1 and Gateway API v1 can coexist.** Each approach creates its own independent resources and load balancer endpoint. This allows a staged migration -- enable the new approach alongside Ingress, verify the new endpoint, migrate DNS, then disable the old approach.
+
+| Chart | Coexistence flags |
+|---|---|
+| **Gateway chart** | `ingress.enabled: true` + `kubernetesGateway.enabled: true` |
+| **Portal chart** | `ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI` can all be `true` simultaneously |
+
+**Switching ingress controllers (ingress classes) causes an address change.** Changing `ingressClassName` (e.g. from `nginx` to `contour`) provisions a new load balancer with a different IP/hostname. The old address becomes unavailable immediately. Unlike enabling an additional ingress type, changing the ingress class is a **hard cutover** that requires DNS updates and should be planned for a maintenance window.
 
 ### Examples
 
@@ -32,10 +45,21 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
   - [Ingress Options](../../charts/portal/README.md#ingress-options) -- Ingress v1 parameter reference
   - [Kubernetes Gateway API Configuration](../../charts/portal/README.md#kubernetes-gateway-api-configuration) -- Gateway API parameter reference
 
-The implementation is controller-agnostic. The following controllers have been tested:
+The charts produce standard resources and are controller-agnostic. The following controllers are used as examples:
+
+### TLS Passthrough Requirements
+
+TLS passthrough (`TLSRoute` with `mode: Passthrough`) is handled differently by each chart:
+
+| Chart | TLS Passthrough | Impact |
+|---|---|---|
+| **Portal Chart** | **Required.** The Portal chart uses `TLSRoute` exclusively. The Portal Dispatcher terminates TLS directly and does not support TLS re-encryption. Your Gateway API controller **must** support TLS passthrough (`protocol: TLS`, `mode: Passthrough`) and `TLSRoute` resources. | If your controller does not support TLS passthrough, the Portal chart's Gateway API configuration cannot be used. Use Ingress v1 with `ssl-passthrough` instead. |
+| **Gateway Chart** | **Optional.** The default mode is `HTTPRoute` (TLS termination + re-encryption), which works with any Gateway API controller. `TLSRoute` (passthrough) is available as an alternative when the controller supports it. Choosing a controller without TLS passthrough limits future use of the `tlsRoute` option. | No immediate impact on HTTPRoute mode. Consider controller choice based on whether passthrough may be needed later. |
+
+> **Note:** `TLSRoute` is in the Gateway API **Experimental** channel (`gateway.networking.k8s.io/v1alpha2`). Ensure your cluster has the experimental Gateway API CRDs installed if you plan to use TLS passthrough.
 
 ### Contour
-Contour can be deployed as either an ingress controller or a Gateway API controller.
+Contour can be deployed as either an ingress controller or a Gateway API controller. Contour supports both `HTTPRoute` and `TLSRoute` (TLS passthrough).
 
 **Ingress Controller Deployment**
 
@@ -57,7 +81,7 @@ kubectl apply -f https://projectcontour.io/quickstart/contour-gateway-provisione
 Use `gatewayClassName: contour` in your Gateway API configuration.
 
 ### Envoy Gateway
-Envoy Gateway is a Gateway API-native controller.
+Envoy Gateway is a Gateway API-native controller. Envoy Gateway supports `HTTPRoute` and `TLSRoute` (TLS passthrough).
 
 See the [Envoy Gateway quickstart](https://gateway.envoyproxy.io/docs/tasks/quickstart/#installation) for more detail.
 

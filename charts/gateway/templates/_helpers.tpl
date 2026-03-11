@@ -377,13 +377,11 @@ Define OTK Image Pull Secret Name
 
 {{/*
   Resolve the Gateway listener TLS secret name.
-  Priority: existingSecretName > secretName > auto-generated name.
+  Uses existingSecretName if set, otherwise auto-generates as <fullname>-gateway-tls.
 */}}
 {{- define "kubernetesGateway.tlsSecretName" -}}
 {{- if .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
   {{- .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
-{{- else if .Values.kubernetesGateway.gateway.tls.secretName -}}
-  {{- .Values.kubernetesGateway.gateway.tls.secretName -}}
 {{- else -}}
   {{- printf "%s-gateway-tls" (include "gateway.fullname" .) -}}
 {{- end -}}
@@ -391,13 +389,11 @@ Define OTK Image Pull Secret Name
 
 {{/*
   Resolve the backend TLS secret name (Layer7 Gateway pod certificate).
-  Priority: existingSecretName > secretName > auto-generated name.
+  Uses existingSecretName if set, otherwise auto-generates as <fullname>-backend-tls.
 */}}
 {{- define "kubernetesGateway.backendTlsSecretName" -}}
 {{- if .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
   {{- .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
-{{- else if .Values.kubernetesGateway.backendTLSPolicy.tls.secretName -}}
-  {{- .Values.kubernetesGateway.backendTLSPolicy.tls.secretName -}}
 {{- else -}}
   {{- printf "%s-backend-tls" (include "gateway.fullname" .) -}}
 {{- end -}}
@@ -415,29 +411,20 @@ Define OTK Image Pull Secret Name
 
 {{/*
   Determine if the chart should create the backend TLS secret.
-  True when: backendTLSPolicy is enabled, no existingSecretName is set,
-  and not in CA-only mode (caCrt or existingCACertConfigMapName set without crt/key).
+  True when: backendTLSPolicy is enabled and no existingSecretName is set.
 */}}
 {{- define "kubernetesGateway.createBackendTlsSecret" -}}
 {{- if and .Values.kubernetesGateway.backendTLSPolicy.enabled
-          (not .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName)
-          (not (and (or .Values.kubernetesGateway.backendTLSPolicy.caCrt .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName)
-                    (not .Values.kubernetesGateway.backendTLSPolicy.tls.crt)
-                    (not .Values.kubernetesGateway.backendTLSPolicy.tls.key))) -}}
+          (not .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) -}}
   true
 {{- end -}}
 {{- end -}}
 
 {{/*
-  Resolve the BackendTLSPolicy CA ConfigMap name.
-  Priority: existingCACertConfigMapName > auto-generated name.
+  Auto-generated CA ConfigMap name for BackendTLSPolicy validation.
 */}}
 {{- define "kubernetesGateway.caCertConfigMapName" -}}
-{{- if .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName -}}
-  {{- .Values.kubernetesGateway.backendTLSPolicy.existingCACertConfigMapName -}}
-{{- else -}}
-  {{- printf "%s-gateway-ca-cert" (include "gateway.fullname" .) -}}
-{{- end -}}
+{{- printf "%s-gateway-ca-cert" (include "gateway.fullname" .) -}}
 {{- end -}}
 
 {{/*
@@ -447,15 +434,4 @@ Define OTK Image Pull Secret Name
 {{- define "kubernetesGateway.defaultParentRefs" -}}
 - name: {{ include "kubernetesGateway.gatewayName" . }}
   namespace: {{ include "kubernetesGateway.gatewayNamespace" . }}
-{{- end -}}
-
-{{/*
-  Generate auto backendRefs pointing to the chart's own service.
-  Default uses the first port from service.ports.
-*/}}
-{{- define "kubernetesGateway.defaultBackendRefs" -}}
-{{- $fullname := include "gateway.fullname" . -}}
-{{- $firstPort := index .Values.service.ports 0 -}}
-- name: {{ $fullname }}
-  port: {{ $firstPort.external }}
 {{- end -}}
