@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -29,10 +31,12 @@ data:
   TSSG_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   TSSG_PUBLIC_PORT: {{ .Values.portal.otk.port | quote }}
 {{- if .Values.portal.intelligence.enabled }}
-  # Intelligence Feature Flag
   INTELLIGENCE_ENABLED: "true"
+  KAFKA_PROXY_TARGET_SERVERS: {{ default "kafka:9092" .Values.portal.intelligence.kafkaProxy.targetBootstrapServers | quote }}
+  KAFKA_PROXY_LISTEN_PORT: {{ default 9192 .Values.portal.intelligence.kafkaProxy.listenPort | quote }}
+  KAFKA_PROXY_BROKER_START_PORT: {{ default 9193 .Values.portal.intelligence.kafkaProxy.brokerStartPort | quote }}
+  KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "tssg-public-host" .) .Values.portal.intelligence.kafkaProxy.advertisedHost | quote }}
 {{- else }}
-  # Intelligence Feature Flag
   INTELLIGENCE_ENABLED: "false"
 {{- end }}
 {{ if .Values.apim.additionalEnv }}

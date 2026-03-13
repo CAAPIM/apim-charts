@@ -420,10 +420,85 @@ Create Image Pull Secret
 {{- end -}}
 
 {{/*
+Generate Kafka TCP Proxy ingress hostname based on configurations.
+Used when intelligence is enabled.
+*/}}
+{{- define "kafka-proxy-host" -}}
+    {{- if .Values.global.legacyHostnames }}
+        {{- printf "kafka-proxy.%s" .Values.portal.domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "kafka-proxy-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-kafka-proxy.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
   Generate default parentRefs for routes when none are provided.
   Produces a list with a single parentRef pointing to the chart's Gateway.
 */}}
 {{- define "portal.gatewayAPI.defaultParentRefs" -}}
 - name: {{ include "portal.gatewayAPI.gatewayName" . }}
   namespace: {{ include "portal.gatewayAPI.gatewayNamespace" . }}
+{{- end -}}
+
+{{/*
+  ============================================================
+  Intelligence Server Helpers
+  ============================================================
+*/}}
+
+{{/*
+Get "intelligence" database name
+*/}}
+{{- define "intelligence-db-name" -}}
+    {{ if .Values.global.legacyDatabaseNames }}
+        {{- print "intelligence" }}
+    {{- else }}
+        {{- $f:= .Values.global.subdomainPrefix -}}
+        {{ if empty $f }}
+            {{- fail "Please define subdomainPrefix in values.yaml" }}
+        {{- else }}
+            {{- printf "%s_%s" $f "intelligence" | replace "-" "_" -}}
+        {{- end }}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Set the service account name for the Intelligence Server
+*/}}
+{{- define "intelligence.serviceAccountName" -}}
+{{- if .Values.global.serviceAccountName }}
+   {{ default "default" .Values.global.serviceAccountName }}
+{{- else }}
+{{- if .Values.intelligence.serviceAccount.create -}}
+    {{ default "intelligence-server" .Values.intelligence.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.intelligence.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get Kafka broker address for intelligence server.
+Uses the kafka subchart's fullnameOverride and internal listener port.
+*/}}
+{{- define "intelligence.kafkaBrokers" -}}
+    {{- $kafkaName := default "kafka" .Values.kafka.fullnameOverride -}}
+    {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
+    {{- else }}
+        {{- printf "%s:9092" $kafkaName -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate Kafka proxy bootstrap address for intelligence server.
+Format: {kafka-proxy-host}:{listenPort}
+Reuses the kafka-proxy-host helper and the kafkaProxy.listenPort value.
+*/}}
+{{- define "intelligence.kafkaProxyBootstrap" -}}
+    {{- $host := include "kafka-proxy-host" . -}}
+    {{- $port := int (.Values.portal.intelligence.kafkaProxy.listenPort | default 9192) -}}
+    {{- printf "%s:%d" $host $port -}}
 {{- end -}}

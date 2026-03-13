@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.ingress.type.openshift }}
 ---
 apiVersion: route.openshift.io/v1
@@ -125,4 +126,24 @@ spec:
     name: apim
     weight: 100
   wildcardPolicy: None
+{{- if .Values.portal.intelligence.enabled }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-kafka-proxy
+  labels:
+    router: default
+spec:
+  host: {{ include "kafka-proxy-host" . | quote }}
+  port:
+    targetPort: kafka-proxy-bootstrap
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+{{- end }}
 {{- end }}

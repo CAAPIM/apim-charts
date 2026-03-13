@@ -825,7 +825,7 @@ Portal Analytics
 For Production, use an external MySQL Server.
 
 ## Intelligence (APIM Intelligence)
-The Intelligence subchart provides advanced analytics and third-party agent integration capabilities.
+The Intelligence server provides advanced analytics and third-party agent integration capabilities.
 
 **Important Dependencies:**
 - When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
@@ -834,10 +834,8 @@ The Intelligence subchart provides advanced analytics and third-party agent inte
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `portal.intelligence.enabled` | Enable Intelligence service | `false` |
-| `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
-| `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
-
-For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
+| `intelligence.replicaCount` | Number of intelligence server replicas | `1` |
+| `intelligence.kafka.kafkaCa.caSecretName` | Secret containing the CA certificate for Kafka mTLS | `portal-external-secret` |
 
 ## SeaweedFS
 The SeaweedFS subchart provides S3-compatible object storage for analytics data.
@@ -872,8 +870,6 @@ The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) fo
 | `kafka.enabled` | Enable Kafka subchart | `false` |
 | `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
 | `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
-| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
-| `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
 
 For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
 
