@@ -1127,7 +1127,7 @@ kafka: &kafka_config
   # External access configuration for autodiscovery
   # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
   # Intelligence requires external Kafka access for third-party agents
-  # Default is false. Set to true manually or enable intelligence feature.
+  # Default is false. Set to true manually for using intelligence feature.
   externalAccess:
     enabled: false
     # Service type for external access (LoadBalancer or NodePort)
@@ -1254,11 +1254,10 @@ apim-intelligence:
 
   # NOTE: Do NOT set portal.domain here - it will override user values
   # Intelligence will automatically use portal.domain from parent chart if available
-  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
 
   # Image configuration
   image:
-    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container
     intelligenceServer: intelligence-server:5.4.1
     pullPolicy: IfNotPresent
 

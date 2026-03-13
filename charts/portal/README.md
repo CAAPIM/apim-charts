@@ -866,7 +866,7 @@ The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) fo
 | `kafka.enabled` | Enable Kafka subchart | `false` |
 | `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
 | `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
-| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
+| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers accessible from gateways for Intelligence sync | `true` |
 | `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
 
 For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
