@@ -33,8 +33,10 @@ data:
   INTELLIGENCE_ENABLED: "true"
   KAFKA_PROXY_TARGET_SERVERS: {{ default "kafka:9092" .Values.portal.intelligence.kafkaProxy.targetBootstrapServers | quote }}
   KAFKA_PROXY_LISTEN_PORT: {{ default 9192 .Values.portal.intelligence.kafkaProxy.listenPort | quote }}
-  KAFKA_PROXY_BROKER_START_PORT: {{ default 9193 .Values.portal.intelligence.kafkaProxy.brokerStartPort | quote }}
-  KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "tssg-public-host" .) .Values.portal.intelligence.kafkaProxy.advertisedHost | quote }}
+  KAFKA_PROXY_BROKER_START_PORT: {{ default 9194 .Values.portal.intelligence.kafkaProxy.brokerStartPort | quote }}
+  KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "kafka-proxy-host" .) .Values.portal.intelligence.kafkaProxy.advertisedHost | quote }}
+  KAFKA_PROXY_ADVERTISED_PORT: {{ default 443 .Values.portal.intelligence.kafkaProxy.advertisedPort | quote }}
+  KAFKA_PROXY_BROKER_ADDRESS_PATTERN: {{ default (include "kafka-proxy-broker-pattern" .) .Values.portal.intelligence.kafkaProxy.brokerAddressPattern | quote }}
 {{- else }}
   INTELLIGENCE_ENABLED: "false"
 {{- end }}

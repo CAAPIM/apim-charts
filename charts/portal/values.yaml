@@ -81,12 +81,20 @@ portal:
       targetBootstrapServers: "kafka:9092"
       # Bootstrap listen port on the APIM Gateway (KafkaTcpProxy assertion)
       listenPort: 9192
-      # Per-broker listen ports start from this value (9193, 9194, 9195, ...)
-      brokerStartPort: 9193
+      # Per-broker listen ports start from this value (9194, 9195, 9196, ...)
+      # init-tssg.sh subtracts 1 for the assertion's internal brokerStartPort,
+      # so actual ports are (brokerStartPort-1) + nodeId where nodeId starts at 1.
+      brokerStartPort: 9194
       # Hostname advertised to Kafka clients in metadata responses.
-      # Defaults to the APIM Gateway's public hostname (tssg-public-host).
-      # Must be externally reachable by TSSGs connecting through the proxy.
+      # Defaults to kafka-proxy-host (the ingress hostname).
       advertisedHost: ""
+      # Port advertised to Kafka clients. Default 443 for SNI-based routing
+      # through the ingress on standard HTTPS port.
+      advertisedPort: 443
+      # Per-broker hostname pattern for SNI routing. Must contain $(nodeId).
+      # Defaults to kafka-proxy-broker-pattern helper (e.g., dev-portal-kafka-proxy-$(nodeId).example.com).
+      # Leave empty to use the auto-generated default.
+      brokerAddressPattern: ""
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -1202,16 +1210,6 @@ intelligence:
   image:
     pullPolicy: IfNotPresent
 
-  # RBAC configuration
-  rbac:
-    create: false
-
-  # Service Account configuration
-  serviceAccount:
-    create: false
-    automountServiceAccountToken: false
-    name: ""
-
   # Kafka configuration for the intelligence server
   kafka:
     brokers: "kafka:9092"
@@ -1275,8 +1273,6 @@ ingress-nginx:
    #  enabled: true
    #  default: false
    #  controllerValue: "k8s.io/ingress-nginx"
-#  tcp:
-#    9443: "<namespace>/dispatcher:9443"
 
 # Settings for portal jobs
 jobs:

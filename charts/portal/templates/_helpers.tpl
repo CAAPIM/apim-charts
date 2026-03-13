@@ -434,6 +434,27 @@ Used when intelligence is enabled.
 {{- end -}}
 
 {{/*
+Generate per-broker hostname for a given nodeId using the kafka-proxy-host base.
+Produces pattern like: dev-portal-kafka-proxy-$(nodeId).example.com
+Used as the default for KAFKA_PROXY_BROKER_ADDRESS_PATTERN.
+*/}}
+{{- define "kafka-proxy-broker-pattern" -}}
+    {{- $base := include "kafka-proxy-host" . -}}
+    {{- $parts := splitn "." 2 $base -}}
+    {{- printf "%s-$(nodeId).%s" (index $parts "_0") (index $parts "_1") -}}
+{{- end -}}
+
+{{/*
+Generate per-broker hostname for a specific nodeId (for ingress routes).
+Takes a dict with "root" (context) and "nodeId" (int).
+*/}}
+{{- define "kafka-proxy-broker-host" -}}
+    {{- $base := include "kafka-proxy-host" .root -}}
+    {{- $parts := splitn "." 2 $base -}}
+    {{- printf "%s-%s.%s" (index $parts "_0") (toString .nodeId) (index $parts "_1") -}}
+{{- end -}}
+
+{{/*
   Generate default parentRefs for routes when none are provided.
   Produces a list with a single parentRef pointing to the chart's Gateway.
 */}}
@@ -465,21 +486,6 @@ Get "intelligence" database name
 {{- end -}}
 
 {{/*
-Set the service account name for the Intelligence Server
-*/}}
-{{- define "intelligence.serviceAccountName" -}}
-{{- if .Values.global.serviceAccountName }}
-   {{ default "default" .Values.global.serviceAccountName }}
-{{- else }}
-{{- if .Values.intelligence.serviceAccount.create -}}
-    {{ default "intelligence-server" .Values.intelligence.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.intelligence.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Get Kafka broker address for intelligence server.
 Uses the kafka subchart's fullnameOverride and internal listener port.
 */}}
@@ -494,11 +500,10 @@ Uses the kafka subchart's fullnameOverride and internal listener port.
 
 {{/*
 Generate Kafka proxy bootstrap address for intelligence server.
-Format: {kafka-proxy-host}:{listenPort}
-Reuses the kafka-proxy-host helper and the kafkaProxy.listenPort value.
+Uses the advertised port (default 443) for SNI-based routing.
 */}}
 {{- define "intelligence.kafkaProxyBootstrap" -}}
     {{- $host := include "kafka-proxy-host" . -}}
-    {{- $port := int (.Values.portal.intelligence.kafkaProxy.listenPort | default 9192) -}}
+    {{- $port := int (.Values.portal.intelligence.kafkaProxy.advertisedPort | default 443) -}}
     {{- printf "%s:%d" $host $port -}}
 {{- end -}}

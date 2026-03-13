@@ -42,8 +42,7 @@ spec:
       {{- end }}
       {{- end }}
     spec:
-      serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
-      automountServiceAccountToken: {{ .Values.intelligence.serviceAccount.automountServiceAccountToken }}
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.intelligence.affinity }}
       affinity: {{- toYaml .Values.intelligence.affinity | nindent 12 }}
       {{- end }}
