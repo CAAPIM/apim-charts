@@ -135,10 +135,8 @@ tls:
 # These secrets are NOT Helm managed, you will need to clean them up manually.
 # This will force all of the deployments that use the secrets to upgrade
 # If you don't do this, you will have to perform a manual restart of each affected container
-  internalSecretName: &internalSecretName portal-internal-secret
-  externalSecretName: &externalSecretName portal-external-secret
-  kafkaCaSecretName: &kafkaCaSecretName portal-kafka-ca-secret
-  kafkaSecretName: portal-kafka-tls-secret
+  internalSecretName: portal-internal-secret
+  externalSecretName: portal-external-secret
 
   useSignedCertificates: false
 # crt, crtChain and key expect files, use --set-file or add them here
@@ -601,6 +599,7 @@ image:
   tps: tenant-provisioning-service:5.4.1
   analytics: analytics-server:5.4.1
   authenticator: authenticator:5.4.1
+  intelligenceServer: intelligence-server:5.4.1
   dbUpgrade: db-upgrade-portal:5.4.1
   rbacUpgrade: db-upgrade-rbac:5.4.1
   upgradeVerify: upgrade-verify:5.4.1
@@ -1141,7 +1140,7 @@ druid:
 
 
 # Configuration for the custom Kafka subchart
-kafka: &kafka_config
+kafka:
   # Enable/disable Kafka deployment
   # Automatically enabled when analytics or intelligence is enabled
   # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
@@ -1215,12 +1214,6 @@ kafka: &kafka_config
         enabled: true
         port: 9092
         protocol: PLAINTEXT
-      # External listener for clients outside the cluster (third-party agents)
-      # NOTE: Automatically controlled by kafka.externalAccess.enabled
-      # External listener is created only when intelligence is enabled
-      external:
-        port: 9094
-        protocol: SSL
       # Controller listener for KRaft mode
       controller:
         enabled: true
@@ -1231,24 +1224,6 @@ kafka: &kafka_config
 
     # Log retention configuration
     logRetentionHours: 6
-
-    # TLS/SSL Configuration
-    tls:
-      # Enable TLS/SSL - enabled by default for external SSL support
-      enabled: true
-      # TLS type (PEM or JKS)
-      type: PEM
-      # Client authentication (none, requested, required)
-      clientAuth: required
-      # Secret containing TLS certificates (via environment variables)
-      # Leave empty to use volume-mounted certificates from internalSecretName instead
-      secretName: ""
-      # Keys in the secret
-      keystoreKeyKey: "keystore.key"
-      truststoreCertKey: "truststore.pem"
-      # Password secret for encrypted keys
-      passwordSecretName: ""
-      passwordSecretKey: "keypass.txt"
 
     # SASL Authentication Configuration
     sasl:
@@ -1278,44 +1253,8 @@ kafka: &kafka_config
     name: ""
     automountServiceAccountToken: true
 
-  # External access configuration for autodiscovery
-  # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
-  # Intelligence requires external Kafka access for third-party agents
-  # Default is false. Set to true manually or enable intelligence feature.
-  externalAccess:
-    enabled: false
-    # Service type for external access (LoadBalancer or NodePort)
-    serviceType: LoadBalancer
-    # Port for external access
-    port: 9094
-    # Hostname/domain for external access (used in advertised listeners)
-    hostname: ""
-    # Annotations for external services
-    annotations:
-      cloud.google.com/load-balancer-type: Internal
-    # LoadBalancer IPs (optional, for static IPs)
-    loadBalancerIPs: []
-    # NodePort values (optional, for NodePort service type)
-    nodePorts: []
-    # Auto-generate advertised listeners based on service IPs
-    autoAdvertisedListeners: true
-    # Discovery configuration for LoadBalancer/NodePort IP detection
-    # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
-    # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
-    discovery:
-      # Maximum time to wait for LoadBalancer IP (in seconds)
-      # Increase this if your cloud provider takes longer to provision LoadBalancers
-      timeoutSeconds: 120
-      # Retry interval (in seconds)
-      retryIntervalSeconds: 5
-      # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
-      # This prevents Kafka from starting with incorrect advertised listeners
-      # IMPORTANT: Only affects behavior when intelligence is enabled
-      # Recommended: true (prevents connection issues for external clients)
-      failOnDiscoveryFailure: true
-
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
-rabbitmq: &rabbitmq_config
+rabbitmq:
   enabled: true
   host: rabbitmq
   fullnameOverride: rabbitmq
@@ -1408,22 +1347,11 @@ rabbitmq: &rabbitmq_config
         - -ec
         - curl -f  --user {{ .Values.auth.username }}:$RABBITMQ_PASSWORD 127.0.0.1:{{ .Values.containerPorts.manager }}/api/health/checks/local-alarms
 
-# Settings for the intelligence subchart
-apim-intelligence:
-  # Use a YAML alias (*) to reference the Kafka configuration from above.
-  # This avoids duplicating the configuration and ensures the intelligence
-  # subchart has the correct values for broker discovery.
-  kafka: *kafka_config
-  rabbitmq: *rabbitmq_config
-
-  # NOTE: Do NOT set portal.domain here - it will override user values
-  # Intelligence will automatically use portal.domain from parent chart if available
-  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
-
-  # Image configuration
+# Intelligence Server configuration
+intelligence:
+  forceRedeploy: false
+  replicaCount: 1
   image:
-    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
-    intelligenceServer: intelligence-server:5.4.1
     pullPolicy: IfNotPresent
 
   # RBAC configuration
@@ -1436,54 +1364,43 @@ apim-intelligence:
     automountServiceAccountToken: true
     name: ""
 
-  intelligenceServer:
-    # Configuration for the Intelligence Server.
-    kafka:
-      # A list of external advertised Kafka brokers.
-      # externalAdvertisedBrokers:
-      # Configuration for Kafka broker auto-discovery.
-      autoDiscovery:
-        # Enables or disables Kafka broker auto-discovery.
-        enabled: true
-        image:
-          # The repository of the auto-discovery image.
-          repository: "docker.io/caapim/kubectl"
-          # The tag of the auto-discovery image.
-          tag: "1.33.3-debian-12-r0"
-          # The pull policy for the auto-discovery image.
-          pullPolicy: IfNotPresent
-        # Resource requests and limits for the auto-discovery init container
-        # resources: {}
-      # Configuration for the Kafka CA certificate.
-      kafkaCa:
-        # The name of the secret containing the Kafka CA certificate.
-        caSecretName: *externalSecretName
-        # The name of the secret containing the password for the Kafka CA certificate.
-        passwordSecretName: *externalSecretName
-        # The key in the password secret that contains the password.
-        passwordSecretKey: "keypass.txt"
-    forceRedeploy: false
-    pdb:
-      create: false
-      maxUnavailable: ""
-      minAvailable: ""
-    replicaCount: 1
-    image:
-      pullPolicy: IfNotPresent
-    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    podAnnotations: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-    podSecurityContext: {}
-    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-    containerSecurityContext: {}
-    resources:
-      requests: {}
-      # memory: 4Gi
-      limits: {}
-      # memory: 4Gi
-    # nodeSelector: {}
-    # tolerations: []
-    # affinity: {}
+  # Kafka configuration for the intelligence server
+  kafka:
+    brokers: "kafka:9092"
+    securityProtocol: PLAINTEXT
+    kafkaCa:
+      caSecretName: portal-external-secret
+      passwordSecretName: portal-external-secret
+      passwordSecretKey: "keypass.txt"
+      caCertKey: "apim-ssl.crt"
+      caKeyKey: "apim-ssl.key"
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8282
+    sessionAffinity: None
+    externalTrafficPolicy: ""
+    internalTrafficPolicy: ""
+
+  portalDataHost: "portal-data:8080"
+
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  resources:
+    requests: {}
+    # memory: 4Gi
+    limits: {}
+    # memory: 4Gi
+  additionalLabels: {}
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:

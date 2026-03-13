@@ -41,6 +41,25 @@ spec:
       targetPort: 9448
       protocol: TCP
       name: apim-sso
+{{- if .Values.portal.intelligence.enabled }}
+    - port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
+      targetPort: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
+      protocol: TCP
+      name: kafka-proxy-bootstrap
+{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9193) }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $brokerPort := add $brokerStartPort (add $ordinalStart $i) }}
+    - port: {{ $brokerPort }}
+      targetPort: {{ $brokerPort }}
+      protocol: TCP
+      name: kafka-proxy-broker-{{ add $ordinalStart $i }}
+{{- end }}
+{{- end }}
   selector:
     app: apim
   type: ClusterIP

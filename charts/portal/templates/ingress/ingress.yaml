@@ -146,6 +146,24 @@ spec:
           serviceName: apim
           servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
 {{- end }}
+{{- if .Values.portal.intelligence.enabled }}
+  - host: {{ include "kafka-proxy-host" . | quote }}
+    http:
+      paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: kafka-proxy-bootstrap
+{{- else }}
+      - backend:
+          serviceName: apim
+          servicePort: kafka-proxy-bootstrap
+{{- end }}
+{{- end }}
 {{- range .Values.ingress.customRoutes }}
   - host: "{{ .subdomain }}.{{ $.Values.portal.domain }}"
     http:

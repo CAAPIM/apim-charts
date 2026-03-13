@@ -175,6 +175,34 @@ spec:
       port: 1885
 ---
 
+{{- if .Values.portal.intelligence.enabled }}
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-kafka-proxy-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "kafka-proxy-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
+{{- end }}
+
 {{- range $i,$tenantId := $.Values.ingress.tenantIds }}
 ---
 apiVersion: projectcontour.io/v1

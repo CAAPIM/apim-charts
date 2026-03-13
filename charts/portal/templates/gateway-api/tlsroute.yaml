@@ -232,6 +232,40 @@ spec:
     - backendRefs:
         - name: apim
           port: 1885
+{{- if .Values.portal.intelligence.enabled }}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-kafka-proxy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "kafka-proxy-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
+{{- end }}
 {{/*
   ============================================================
   Dynamic TLSRoutes - generated from ingress.tenantIds

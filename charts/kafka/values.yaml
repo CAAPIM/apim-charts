@@ -85,11 +85,6 @@ kafka:
       enabled: true
       port: 9092
       protocol: PLAINTEXT
-    # External listener for clients outside the cluster
-    external:
-      enabled: true
-      port: 9094
-      protocol: SSL
     # Controller listener for KRaft mode
     controller:
       enabled: true
@@ -100,61 +95,12 @@ kafka:
 
   # Advertised Listeners Configuration
   # Custom advertised listeners (portal-dist style)
-  # Format: "INTERNAL://kafka:9092,EXTERNAL://apim-kafka.subdomain:9094"
-  # Leave empty to auto-generate based on externalAccess settings
+  # Format: "INTERNAL://kafka:9092"
+  # Leave empty to auto-generate
   advertisedListeners: ""
 
   # Log retention configuration
   logRetentionHours: 6
-
-  # TLS/SSL Configuration
-  tls:
-    # Enable TLS/SSL (required when external listener uses SSL protocol)
-    enabled: false
-    # TLS type (PEM or JKS)
-    type: PEM
-    # Client authentication (none, requested, required)
-    clientAuth: required
-
-    # ============================================
-    # Option 1: Kubernetes Secret (Recommended)
-    # ============================================
-    # Secret containing TLS certificates
-    # Should contain: keystore.key, truststore.pem
-    # When using Intelligence, set to portal-internal-secret
-    secretName: ""
-    # Keys in the secret
-    keystoreKeyKey: "keystore.key"
-    truststoreCertKey: "truststore.pem"
-    # Password secret for encrypted keys (required for encrypted private keys)
-    # When using Intelligence, set to portal-internal-secret
-    passwordSecretName: ""
-    passwordSecretKey: "keypass.txt"
-
-    # TSSG Certificates (use apim-ssl from internal secret by default)
-    # The secret name for TSSG certificates (apim-ssl)
-    # Changed to portal-external-secret to support static certificate deployments
-    internalSecretName: "portal-external-secret"
-    tssgKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl, can be overridden
-    tssgCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
-    passwordKey: "keypass.txt"
-
-    # ============================================
-    # Option 2: Inline Certificates (portal-dist style)
-    # ============================================
-    # Pass certificates as environment variables
-    # These take precedence over secretName if both are set
-    # Can be base64 encoded or PEM format
-    truststoreCertContent: ""
-    keystoreKeyContent: ""
-
-    # ============================================
-    # Option 3: CA Certificates (analytics_util style)
-    # ============================================
-    # Alternative certificate format
-    caKey: ""
-    caCertificate: ""
-    caTruststoreCertificate: ""
 
   # SASL Authentication Configuration
   sasl:
@@ -189,46 +135,9 @@ serviceAccount:
   # Automount service account token
   automountServiceAccountToken: true
 
-# External access configuration for autodiscovery
-externalAccess:
-  # External access should be enabled only when Intelligence is enabled
-  # Analytics (Druid) uses internal Kafka service only
-  enabled: false
-  # Service type for external access (LoadBalancer or NodePort)
-  serviceType: LoadBalancer
-  # Port for external access (should match kafka.listeners.external.port)
-  port: 9094
-  # Hostname/domain for external access (used in advertised listeners)
-  # Format: apim-kafka.{subdomain} or specific hostname
-  hostname: ""
-  # Annotations for external services
-  annotations: {}
-  # LoadBalancer IPs (optional, for static IPs)
-  loadBalancerIPs: []
-  # NodePort values (optional, for NodePort service type)
-  nodePorts: []
-  # Auto-generate advertised listeners based on service IPs
-  autoAdvertisedListeners: true
-
-  # Discovery configuration for LoadBalancer/NodePort IP detection
-  # NOTE: This only applies when externalAccess.enabled is true
-  # When intelligence is disabled, Kafka uses internal-only listeners and these settings are ignored
-  discovery:
-    # Maximum time to wait for LoadBalancer IP (in seconds)
-    # Default: 120 seconds (24 retries * 5 seconds)
-    timeoutSeconds: 120
-    # Retry interval (in seconds)
-    retryIntervalSeconds: 5
-    # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
-    # This prevents Kafka from starting with incorrect advertised listeners
-    # If false, falls back to service hostname (NOT RECOMMENDED - causes connection issues)
-    # IMPORTANT: Only affects behavior when externalAccess.enabled=true
-    failOnDiscoveryFailure: true
-
-  # Discovery image for LoadBalancer IP detection (kubectl)
-  # Note: When used as a subchart, image.autoDiscovery should be provided by parent chart
-  # When used standalone, provide these values during deployment
-  discoveryImage:
-    repository: "tls-automator"
-    tag: "latest"  # Should be overridden with specific version
-    pullPolicy: IfNotPresent
+# kubectl image for pre-upgrade cleanup jobs
+# Note: When used as a subchart, image.autoDiscovery should be provided by parent chart
+kubectlImage:
+  repository: "tls-automator"
+  tag: "latest"
+  pullPolicy: IfNotPresent

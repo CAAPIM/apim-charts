@@ -41,6 +41,10 @@ spec:
   {{- $hostnames = append $hostnames (include "pssg-sync-host" .) }}
   {{- $hostnames = append $hostnames (include "pssg-sso-host" .) }}
   {{- $hostnames = append $hostnames (include "broker-host" .) }}
+  {{/* Kafka proxy route */}}
+  {{- if .Values.portal.intelligence.enabled }}
+  {{- $hostnames = append $hostnames (include "kafka-proxy-host" .) }}
+  {{- end }}
   {{/* Dynamic tenant routes */}}
   {{- range .Values.ingress.tenantIds }}
   {{- $hostnames = append $hostnames (printf "%s.%s" . $.Values.portal.domain) }}

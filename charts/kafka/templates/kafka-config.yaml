@@ -13,10 +13,7 @@ metadata:
 data:
   SERVICE_NAME: {{ include "kafka.fullname" . }}
 
-  # Intelligence enabled flag (controls EXTERNAL listener)
-  INTELLIGENCE_ENABLED: {{ .Values.global.intelligenceEnabled | quote }}
-
-  # Portal subdomain for advertised listeners
+  # Portal subdomain
   {{- if .Values.global.subdomainPrefix }}
   APIM_PORTAL_SUBDOMAIN: {{ .Values.global.subdomainPrefix | quote }}
   {{- end }}
@@ -93,9 +90,6 @@ data:
   {{- if .Values.kafka.listeners.internal.enabled }}
   {{- $listeners = append $listeners (printf "INTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.internal.port)) }}
   {{- end }}
-  {{- if .Values.externalAccess.enabled }}
-  {{- $listeners = append $listeners (printf "EXTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.external.port)) }}
-  {{- end }}
   {{- if .Values.kafka.listeners.controller.enabled }}
   {{- $listeners = append $listeners (printf "CONTROLLER://0.0.0.0:%d" (int .Values.kafka.listeners.controller.port)) }}
   {{- end }}
@@ -105,9 +99,6 @@ data:
   {{- $protocolMap := list }}
   {{- if .Values.kafka.listeners.internal.enabled }}
   {{- $protocolMap = append $protocolMap (printf "INTERNAL:%s" .Values.kafka.listeners.internal.protocol) }}
-  {{- end }}
-  {{- if .Values.externalAccess.enabled }}
-  {{- $protocolMap = append $protocolMap (printf "EXTERNAL:%s" .Values.kafka.listeners.external.protocol) }}
   {{- end }}
   {{- if .Values.kafka.listeners.controller.enabled }}
   {{- $protocolMap = append $protocolMap (printf "CONTROLLER:%s" .Values.kafka.listeners.controller.protocol) }}
@@ -119,20 +110,10 @@ data:
   
   # Advertised listeners
   {{- if .Values.kafka.advertisedListeners }}
-  # Custom advertised listeners (portal-dist style)
+  # Custom advertised listeners
   KAFKA_CFG_ADVERTISED_LISTENERS: {{ .Values.kafka.advertisedListeners | quote }}
-  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.hostname }}
-  # Use provided hostname for external access
-  {{- $fullName := include "kafka.fullname" . }}
-  {{- $internalPort := int .Values.kafka.listeners.internal.port }}
-  {{- $externalPort := int .Values.externalAccess.port }}
-  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ $fullName }}:{{ $internalPort }},EXTERNAL://{{ .Values.externalAccess.hostname }}:{{ $externalPort }}"
-  {{- else if and .Values.externalAccess.enabled .Values.externalAccess.autoAdvertisedListeners }}
-  # Will be set at runtime by init container - DO NOT set here to avoid override
-  # KAFKA_CFG_ADVERTISED_LISTENERS will be sourced from /shared/node-id.env
   {{- else }}
-  # Internal only
-  KAFKA_CFG_ADVERTISED_LISTENERS: "INTERNAL://{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+  # Will be set at runtime by init container from /shared/node-id.env
   {{- end }}
   
   {{- else }}
@@ -146,20 +127,6 @@ data:
   # Log Retention Configuration
   # ============================================
   KAFKA_CFG_LOG_RETENTION_HOURS: {{ .Values.kafka.logRetentionHours | quote }}
-  
-  # ============================================
-  # SSL/TLS Configuration
-  # ============================================
-  {{- if .Values.kafka.tls.enabled }}
-  KAFKA_TLS_TYPE: {{ .Values.kafka.tls.type | quote }}
-  KAFKA_CFG_SSL_CLIENT_AUTH: {{ .Values.kafka.tls.clientAuth | quote }}
-  KAFKA_CFG_SSL_KEYSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
-  KAFKA_CFG_SSL_TRUSTSTORE_TYPE: {{ .Values.kafka.tls.type | quote }}
-  
-  # Note: KAFKA_CFG_SSL_TRUSTSTORE_CERTIFICATES and KAFKA_CFG_SSL_KEYSTORE_KEY
-  # are loaded from mounted files in the StatefulSet command and exported as env vars
-  # This allows the certificate content to be passed to the Kafka startup script
-  {{- end }}
   
   # ============================================
   # SASL Authentication Configuration
