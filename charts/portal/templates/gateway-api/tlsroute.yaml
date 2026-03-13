@@ -265,6 +265,48 @@ spec:
     - backendRefs:
         - name: apim
           port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
+{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9193) }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+{{- $brokerPort := add $brokerStartPort $nodeId }}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-kafka-broker-{{ $nodeId }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" $root }}
+    chart: {{ template "portal.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" $root | nindent 4 }}
+  hostnames:
+    - {{ include "kafka-proxy-broker-host" (dict "root" $root "nodeId" $nodeId) | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: {{ $brokerPort }}
+{{- end }}
 {{- end }}
 {{/*
   ============================================================

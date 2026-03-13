@@ -1354,16 +1354,6 @@ intelligence:
   image:
     pullPolicy: IfNotPresent
 
-  # RBAC configuration
-  rbac:
-    create: true
-
-  # Service Account configuration
-  serviceAccount:
-    create: true
-    automountServiceAccountToken: true
-    name: ""
-
   # Kafka configuration for the intelligence server
   kafka:
     brokers: "kafka:9092"

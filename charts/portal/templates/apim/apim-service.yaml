@@ -46,19 +46,20 @@ spec:
     - port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
       targetPort: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
       protocol: TCP
-      name: kafka-proxy-bootstrap
-{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9193) }}
+      name: kfk-proxy-boot
+{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9194) }}
 {{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
 {{- $ordinalStart := 0 }}
 {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
 {{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
 {{- end }}
 {{- range $i := until $replicaCount }}
-{{- $brokerPort := add $brokerStartPort (add $ordinalStart $i) }}
+{{- $nodeId := add $ordinalStart $i }}
+{{- $brokerPort := add (sub $brokerStartPort 1) $nodeId }}
     - port: {{ $brokerPort }}
       targetPort: {{ $brokerPort }}
       protocol: TCP
-      name: kafka-proxy-broker-{{ add $ordinalStart $i }}
+      name: kfk-proxy-brk-{{ $nodeId }}
 {{- end }}
 {{- end }}
   selector:
