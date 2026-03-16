@@ -600,7 +600,7 @@ image:
   data: portal-data:5.4.1
   tps: tenant-provisioning-service:5.4.1
   analytics: analytics-server:5.4.1
-  authenticator: authenticator:5.4.1
+  authenticator: authenticator:5.4.1.2
   dbUpgrade: db-upgrade-portal:5.4.1
   rbacUpgrade: db-upgrade-rbac:5.4.1
   upgradeVerify: upgrade-verify:5.4.1
