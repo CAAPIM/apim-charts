@@ -1,4 +1,3 @@
-# Global values (inherited from parent chart)
 global:
   portalRepository: ""
   storageClass: ""
@@ -61,6 +60,7 @@ kafka:
     # limits:
     #   cpu: 1000m
     #   memory: 1.5Gi
+
   # KRaft Mode Configuration (Kafka 4.0.0+)
   kraft:
     # Enable KRaft mode (Zookeeper-less)
@@ -76,6 +76,7 @@ kafka:
     # Controller quorum voters format: id@host:port
     # For StatefulSet with 3 replicas: "0@kafka-0.kafka:9093,1@kafka-1.kafka:9093,2@kafka-2.kafka:9093"
     controllerQuorumVoters: ""
+
   # Listener Configuration
   listeners:
     # Internal listener for inter-broker and client communication within cluster
@@ -90,6 +91,7 @@ kafka:
       protocol: PLAINTEXT
     # Inter-broker listener name
     interBrokerListenerName: INTERNAL
+
   # Advertised Listeners Configuration
   # Custom advertised listeners (portal-dist style)
   # Format: "INTERNAL://kafka:9092"
@@ -99,53 +101,22 @@ kafka:
   # Log retention configuration
   logRetentionHours: 6
 
-<<<<<<< HEAD
-  # TLS/SSL Configuration
-  tls:
-    # Enable TLS/SSL (required when external listener uses SSL protocol)
-    enabled: false
-    # TLS type (PEM or JKS)
-    type: PEM
-    # Client authentication (none, requested, required)
-    clientAuth: required
-    # ============================================
-    # Option 1: Kubernetes Secret (Recommended)
-    # ============================================
-    # Secret containing TLS certificates
-    # Should contain: keystore.key, truststore.pem
-    # When using Intelligence, set to portal-internal-secret
-    secretName: ""
-    # Keys in the secret
-    keystoreKeyKey: "keystore.key"
-    truststoreCertKey: "truststore.pem"
-    # Password secret for encrypted keys (required for encrypted private keys)
-    # When using Intelligence, set to portal-internal-secret
-    passwordSecretName: ""
-    passwordSecretKey: "keypass.txt"
-    # TSSG Certificates (use apim-ssl from internal secret by default)
-    # The secret name for TSSG certificates (apim-ssl)
-    # Changed to portal-external-secret to support static certificate deployments
-    internalSecretName: "portal-external-secret"
-    tssgKeyKey: "apim-ssl.p8.key"      # Default to apim-ssl, can be overridden
-    tssgCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
-    passwordKey: "keypass.txt"
-    # ============================================
-    # Option 2: Inline Certificates (portal-dist style)
-    # ============================================
-    # Pass certificates as environment variables
-    # These take precedence over secretName if both are set
-    # Can be base64 encoded or PEM format
-    truststoreCertContent: ""
-    keystoreKeyContent: ""
-    # ============================================
-    # Option 3: CA Certificates (analytics_util style)
-    # ============================================
-    # Alternative certificate format
-    caKey: ""
-    caCertificate: ""
-    caTruststoreCertificate: ""
-=======
->>>>>>> 44b9d09 (remove kafka tls)
+  # Topic replication configuration
+  # default.replication.factor: applied to auto-created topics
+  # Set to min(replicaCount, 3) by default for resilience during scale-down
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  defaultReplicationFactor: 0
+  # min.insync.replicas: minimum replicas that must acknowledge a write
+  # Must be <= replicaCount. Set to 1 to allow single-broker operation.
+  minInsyncReplicas: 1
+  # offsets.topic.replication.factor: replication for __consumer_offsets
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  offsetsTopicReplicationFactor: 0
+  # transaction.state.log.replication.factor
+  transactionStateLogReplicationFactor: 0
+  # transaction.state.log.min.isr
+  transactionStateLogMinIsr: 1
+
   # SASL Authentication Configuration
   sasl:
     # Enable SASL authentication
