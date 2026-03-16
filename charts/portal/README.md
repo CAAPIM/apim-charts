@@ -7,7 +7,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.4.1 General Updates
-- This new version of the chart supports API Portal 5.4.1.2 - Authenticator hot fixes.
+- This new version of the chart supports API Portal 5.4.1.2
 
 ## 2.4.0 General Updates
 - Added support for the Kubernetes Gateway API and optionally httpproxies for Contour as an alternative
