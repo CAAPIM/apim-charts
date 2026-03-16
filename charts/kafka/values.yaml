@@ -102,6 +102,22 @@ kafka:
   # Log retention configuration
   logRetentionHours: 6
 
+  # Topic replication configuration
+  # default.replication.factor: applied to auto-created topics
+  # Set to min(replicaCount, 3) by default for resilience during scale-down
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  defaultReplicationFactor: 0
+  # min.insync.replicas: minimum replicas that must acknowledge a write
+  # Must be <= replicaCount. Set to 1 to allow single-broker operation.
+  minInsyncReplicas: 1
+  # offsets.topic.replication.factor: replication for __consumer_offsets
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  offsetsTopicReplicationFactor: 0
+  # transaction.state.log.replication.factor
+  transactionStateLogReplicationFactor: 0
+  # transaction.state.log.min.isr
+  transactionStateLogMinIsr: 1
+
   # SASL Authentication Configuration
   sasl:
     # Enable SASL authentication

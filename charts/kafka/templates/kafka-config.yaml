@@ -129,6 +129,35 @@ data:
   KAFKA_CFG_LOG_RETENTION_HOURS: {{ .Values.kafka.logRetentionHours | quote }}
   
   # ============================================
+  # Topic Replication Configuration
+  # ============================================
+  # Auto-calculate replication factors: use configured value, or min(replicaCount, 3) when 0
+  {{- $replicaCount := int .Values.kafka.replicaCount }}
+  {{- $maxReplication := 3 }}
+  {{- $autoRF := min $replicaCount $maxReplication }}
+
+  {{- $defaultRF := int .Values.kafka.defaultReplicationFactor }}
+  {{- if eq $defaultRF 0 }}
+  {{- $defaultRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: {{ $defaultRF | quote }}
+
+  KAFKA_CFG_MIN_INSYNC_REPLICAS: {{ .Values.kafka.minInsyncReplicas | quote }}
+
+  {{- $offsetsRF := int .Values.kafka.offsetsTopicReplicationFactor }}
+  {{- if eq $offsetsRF 0 }}
+  {{- $offsetsRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: {{ $offsetsRF | quote }}
+
+  {{- $txnRF := int .Values.kafka.transactionStateLogReplicationFactor }}
+  {{- if eq $txnRF 0 }}
+  {{- $txnRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: {{ $txnRF | quote }}
+  KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: {{ .Values.kafka.transactionStateLogMinIsr | quote }}
+  
+  # ============================================
   # SASL Authentication Configuration
   # ============================================
   {{- if .Values.kafka.sasl.enabled }}

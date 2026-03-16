@@ -1091,6 +1091,15 @@ kafka:
     # Log retention configuration
     logRetentionHours: 6
 
+    # Topic replication configuration
+    # 0 = auto-calculate as min(replicaCount, 3)
+    defaultReplicationFactor: 0
+    # Must be <= replicaCount; set to 1 for single-broker tolerance
+    minInsyncReplicas: 1
+    offsetsTopicReplicationFactor: 0
+    transactionStateLogReplicationFactor: 0
+    transactionStateLogMinIsr: 1
+
     # SASL Authentication Configuration
     sasl:
       # Enable SASL authentication
