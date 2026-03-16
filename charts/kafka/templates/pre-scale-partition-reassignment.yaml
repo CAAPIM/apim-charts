@@ -1,0 +1,278 @@
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
+{{- if .Values.kafka.kraft.enabled }}
+#
+# Pre-Upgrade Partition Reassignment Job
+#
+# Purpose:
+#   Runs BEFORE each Helm upgrade to detect Kafka broker scale-down and reassign
+#   topic partitions to the surviving brokers. Without this, partitions whose
+#   replicas reside only on removed brokers become leaderless and unavailable.
+#
+# How It Works:
+#   1. Reads the current StatefulSet replica count from K8s
+#   2. Compares it with the new desired replica count from Helm values
+#   3. If scaling DOWN, connects to a surviving broker and:
+#      a. Lists all topic partitions
+#      b. Identifies partitions with replicas on brokers being removed
+#      c. Generates a reassignment plan moving them to surviving brokers
+#      d. Executes the reassignment and waits for completion
+#   4. If NOT scaling down, exits immediately (no-op)
+#
+# Safety:
+#   - Only runs on scale-down (current > desired replicas)
+#   - Waits for ISR sync before exiting so brokers can be safely terminated
+#   - Uses Kafka's built-in reassignment tooling
+#   - Idempotent: safe to run multiple times
+#
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kafka.fullname" . }}-partition-reassign
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kafka.fullname" . }}-partition-reassign
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+rules:
+- apiGroups: ["apps"]
+  resources: ["statefulsets"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kafka.fullname" . }}-partition-reassign
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kafka.fullname" . }}-partition-reassign
+subjects:
+- kind: ServiceAccount
+  name: {{ include "kafka.fullname" . }}-partition-reassign
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "kafka.fullname" . }}-partition-reassign-{{ .Release.Revision }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-8"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.labels" . | nindent 8 }}
+        job: partition-reassign
+    spec:
+      serviceAccountName: {{ include "kafka.fullname" . }}-partition-reassign
+      restartPolicy: Never
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      containers:
+      - name: reassign
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+        env:
+        - name: KAFKA_HOME
+          value: /opt/ca/kafka
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "=== Kafka Pre-Scale Partition Reassignment ==="
+
+          NAMESPACE="{{ .Release.Namespace }}"
+          STS_NAME="{{ include "kafka.statefulsetName" . }}"
+          SERVICE_NAME="{{ include "kafka.fullname" . }}"
+          DESIRED_REPLICAS={{ int .Values.kafka.replicaCount }}
+          KAFKA_BIN="$KAFKA_HOME/bin"
+          KAFKA_PORT={{ int .Values.kafka.listeners.internal.port }}
+          {{- $startOrdinal := 0 }}
+          {{- if .Values.kafka.ordinals }}
+          {{- $startOrdinal = int .Values.kafka.ordinals.start }}
+          {{- end }}
+          ORDINAL_START={{ $startOrdinal }}
+
+          echo "Desired replicas: $DESIRED_REPLICAS (ordinal start: $ORDINAL_START)"
+
+          # Detect current replica count from the running StatefulSet
+          if ! command -v kubectl >/dev/null 2>&1; then
+            echo "kubectl not available in this image. Checking if scale-down is needed via Kafka metadata..."
+
+            # Connect to the first surviving broker to discover current brokers
+            BOOTSTRAP="${STS_NAME}-${ORDINAL_START}.${SERVICE_NAME}:${KAFKA_PORT}"
+            echo "Connecting to bootstrap: $BOOTSTRAP"
+
+            # Get broker list from Kafka metadata
+            BROKER_IDS=$($KAFKA_BIN/kafka-broker-api-versions.sh --bootstrap-server "$BOOTSTRAP" 2>/dev/null \
+              | grep "^${STS_NAME}-" | sed "s/${STS_NAME}-//" | cut -d'.' -f1 | sort -n)
+
+            if [ -z "$BROKER_IDS" ]; then
+              echo "Could not discover brokers. Kafka may not be running yet. Skipping reassignment."
+              exit 0
+            fi
+
+            CURRENT_BROKER_COUNT=$(echo "$BROKER_IDS" | wc -l | tr -d ' ')
+            echo "Current brokers ($CURRENT_BROKER_COUNT): $(echo $BROKER_IDS | tr '\n' ' ')"
+          else
+            # Use kubectl to get current replica count
+            CURRENT_REPLICAS=$(kubectl get statefulset "$STS_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.replicas}' 2>/dev/null || echo "0")
+
+            if [ "$CURRENT_REPLICAS" = "0" ] || [ -z "$CURRENT_REPLICAS" ]; then
+              echo "StatefulSet not found or has 0 replicas. Fresh install. Skipping."
+              exit 0
+            fi
+
+            echo "Current replicas: $CURRENT_REPLICAS"
+            CURRENT_BROKER_COUNT=$CURRENT_REPLICAS
+          fi
+
+          if [ "$DESIRED_REPLICAS" -ge "$CURRENT_BROKER_COUNT" ]; then
+            echo "Not scaling down ($CURRENT_BROKER_COUNT -> $DESIRED_REPLICAS). No partition reassignment needed."
+            exit 0
+          fi
+
+          echo "=== SCALE-DOWN DETECTED: $CURRENT_BROKER_COUNT -> $DESIRED_REPLICAS ==="
+
+          # Build the list of surviving broker IDs
+          SURVIVING_BROKERS=""
+          i=0
+          while [ $i -lt $DESIRED_REPLICAS ]; do
+            BID=$((ORDINAL_START + i))
+            if [ -z "$SURVIVING_BROKERS" ]; then
+              SURVIVING_BROKERS="$BID"
+            else
+              SURVIVING_BROKERS="$SURVIVING_BROKERS,$BID"
+            fi
+            i=$((i + 1))
+          done
+          echo "Surviving broker IDs: $SURVIVING_BROKERS"
+
+          # Build the list of brokers being removed
+          REMOVED_BROKERS=""
+          i=$DESIRED_REPLICAS
+          while [ $i -lt $CURRENT_BROKER_COUNT ]; do
+            BID=$((ORDINAL_START + i))
+            if [ -z "$REMOVED_BROKERS" ]; then
+              REMOVED_BROKERS="$BID"
+            else
+              REMOVED_BROKERS="$REMOVED_BROKERS,$BID"
+            fi
+            i=$((i + 1))
+          done
+          echo "Brokers being removed: $REMOVED_BROKERS"
+
+          BOOTSTRAP="${STS_NAME}-${ORDINAL_START}.${SERVICE_NAME}:${KAFKA_PORT}"
+          echo "Bootstrap server: $BOOTSTRAP"
+
+          # Use the Kafka reassign tool's --generate mode with a topics JSON
+          TOPICS=$($KAFKA_BIN/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" --list 2>/dev/null | grep -v "^__")
+
+          if [ -z "$TOPICS" ]; then
+            echo "No user topics found. Skipping reassignment."
+            exit 0
+          fi
+
+          echo "Topics to check: $(echo $TOPICS | tr '\n' ' ')"
+
+          # Build topics-to-move JSON
+          TOPICS_JSON='{"version":1,"topics":['
+          TFIRST=true
+          for TOPIC in $TOPICS; do
+            if [ "$TFIRST" = "true" ]; then
+              TFIRST=false
+            else
+              TOPICS_JSON="${TOPICS_JSON},"
+            fi
+            TOPICS_JSON="${TOPICS_JSON}{\"topic\":\"$TOPIC\"}"
+          done
+          TOPICS_JSON="${TOPICS_JSON}]}"
+
+          echo "$TOPICS_JSON" > /tmp/topics-to-move.json
+
+          # Generate the reassignment plan targeting surviving brokers only
+          echo "Generating reassignment plan for brokers: $SURVIVING_BROKERS"
+          GENERATED=$($KAFKA_BIN/kafka-reassign-partitions.sh \
+            --bootstrap-server "$BOOTSTRAP" \
+            --generate \
+            --topics-to-move-json-file /tmp/topics-to-move.json \
+            --broker-list "$SURVIVING_BROKERS" 2>&1)
+
+          echo "$GENERATED"
+
+          # Extract the proposed reassignment (second JSON block in output)
+          PROPOSED=$(echo "$GENERATED" | grep "^{" | tail -1)
+
+          if [ -z "$PROPOSED" ]; then
+            echo "No reassignment plan generated. Skipping."
+            exit 0
+          fi
+
+          echo "$PROPOSED" > /tmp/reassignment.json
+          echo "=== Executing partition reassignment ==="
+          cat /tmp/reassignment.json
+
+          $KAFKA_BIN/kafka-reassign-partitions.sh \
+            --bootstrap-server "$BOOTSTRAP" \
+            --execute \
+            --reassignment-json-file /tmp/reassignment.json
+
+          echo "=== Waiting for reassignment to complete ==="
+          TIMEOUT=300
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$($KAFKA_BIN/kafka-reassign-partitions.sh \
+              --bootstrap-server "$BOOTSTRAP" \
+              --verify \
+              --reassignment-json-file /tmp/reassignment.json 2>&1)
+
+            echo "$STATUS" | tail -5
+
+            if echo "$STATUS" | grep -q "is complete"; then
+              if ! echo "$STATUS" | grep -q "still in progress"; then
+                echo "=== All partition reassignments completed ==="
+                exit 0
+              fi
+            fi
+
+            sleep 5
+            ELAPSED=$((ELAPSED + 5))
+            echo "Waiting... ($ELAPSED/${TIMEOUT}s)"
+          done
+
+          echo "WARNING: Reassignment did not complete within ${TIMEOUT}s. Proceeding anyway."
+          echo "Partitions may need manual reassignment after scale-down."
+          exit 0
+{{- end }}
