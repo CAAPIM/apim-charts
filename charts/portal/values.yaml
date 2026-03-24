@@ -527,13 +527,13 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.1
+  dispatcher: dispatcher:5.4.1.2
   apim: ingress:5.4.1
   enterprise: portal-enterprise:5.4.1
   data: portal-data:5.4.1
   tps: tenant-provisioning-service:5.4.1
   analytics: analytics-server:5.4.1
-  authenticator: authenticator:5.4.1
+  authenticator: authenticator:5.4.1.2
   dbUpgrade: db-upgrade-portal:5.4.1
   rbacUpgrade: db-upgrade-rbac:5.4.1
   upgradeVerify: upgrade-verify:5.4.1
@@ -1259,7 +1259,7 @@ apim-intelligence:
   # Image configuration
   image:
     autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
-    intelligenceServer: intelligence-server:5.4.1
+    intelligenceServer: intelligence-server:5.4.1.2
     pullPolicy: IfNotPresent
 
   # RBAC configuration
