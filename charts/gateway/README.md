@@ -8,7 +8,7 @@ The Bitnami subCharts have now been fully removed from the Gateway Helm Chart. P
 The included MySQL Statefulset is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.1.0
+- Current Chart Version 3.1.1
 
   - Please review release notes [here](./release-notes.md)
 
