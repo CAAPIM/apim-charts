@@ -339,7 +339,7 @@ management:
 
 ### OTK Compatibility with Gateway 11.2
 These below information is relevant for those who are upgrading their Gateway to version 11.2 and utilizing the OAuth Toolkit (OTK)
-1. **OTK 4.6.4** is presently the only version that provides seamless support for Gateway 11.2
+1. **OTK 4.6.4 & OTK 4.7.0 ** are presently the only versions that provides seamless support for Gateway versions 11.2 & greater
 2. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
    * After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
        * 4.6.0.1
