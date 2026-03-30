@@ -27,7 +27,6 @@ dependencies:
   repository: "file://../seaweedfs"
 - name: kafka
   version: ^1.0.0
-  condition: kafka.enabled
   repository: "file://../kafka"
 - name: ingress-nginx
   repository: "https://kubernetes.github.io/ingress-nginx/"
