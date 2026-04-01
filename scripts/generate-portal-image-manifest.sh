@@ -91,6 +91,6 @@ fi
 echo "Extracting image list from values.yaml..." >&2
 {
   echo "# Portal appVersion: ${PORTAL_VERSION} | Helm chart version: ${chart_version}"
-  "${SCRIPT_DIR}/extract-portal-images.sh" "$values_file"
+  "${SCRIPT_DIR}/extract-portal-images.sh" "$values_file" | sort -u
 } > "$MANIFEST_OUTPUT"
 echo "Manifest written to ${MANIFEST_OUTPUT} (Portal ${PORTAL_VERSION}, chart ${chart_version})" >&2
