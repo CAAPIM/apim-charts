@@ -65,6 +65,10 @@ spec:
              value: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
            - name: CREATE_DATABASE
              value: "true"
+           - name: DATABASE_USE_SSL
+             value: {{ .Values.global.databaseUseSSL | quote }}
+           - name: DATABASE_REQUIRE_SSL
+             value: {{ .Values.global.databaseRequireSSL | quote }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
