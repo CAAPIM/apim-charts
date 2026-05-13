@@ -910,6 +910,16 @@ otk:
     username: otk_user
     password: mypassword
 
+    # Diskless Configuration modes for the OTK
+    disklessConfig:
+      existingSecret: { }
+      #   name: otk-secret
+      #   csi:
+      #      driver: secrets-store.csi.k8s.io
+      #      readOnly: true
+      #      volumeAttributes:
+      #        secretProviderClass: "secret-provider-class-name"
+
     # existingSecretName: otkDbSecret
 
     # Database connection properties

@@ -167,10 +167,22 @@ spec:
             - name: {{ template "gateway.fullname" . }}-node-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
+            - name: {{ template "gateway.fullname" . }}-otk-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk.properties
+              subPath: otk.properties
+            - name: { { template "gateway.fullname" . } }-truststore-jks
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk-truststore.jks
+              subPath: truststore.jks
       {{- else }}
             - name: shared-secret
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
               subPath: node.properties
+            - name: otk-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk.properties
+              subPath: otk.properties
+            - name: otk-truststore-jks
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/truststore.jks
+              subPath: truststore.jks
       {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}

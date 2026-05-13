@@ -912,6 +912,15 @@ otk:
     username: otk_user
     password: mypassword
 
+    disklessConfig:
+      existingSecret: {}
+      #   name: otk-secret
+      #   csi:
+      #      driver: secrets-store.csi.k8s.io
+      #      readOnly: true
+      #      volumeAttributes:
+      #        secretProviderClass: "secret-provider-class-name"
+
     # existingSecretName: otkDbSecret
 
     # Database connection properties
