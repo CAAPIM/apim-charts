@@ -196,11 +196,11 @@ guards, RBAC files, ci-values, production values for `minio.enabled`).
 
 | File | Change |
 |------|--------|
-| `charts/seaweedfs/values.yaml` | Add `minio.replicaCount: 1` and `minio.image: minio:5.4` |
-| `charts/seaweedfs/templates/.../seaweedfs-data-copy-job.yaml` | Add `minio-local` sidecar; dynamic multi-PVC volumes; change data-copier from filesystem-to-S3 to S3-to-S3 via localhost:9000 |
-| `charts/seaweedfs/templates/.../migration-role.yaml` | Add `list` verb (needed for kubectl delete with multiple PVCs) |
-| `charts/portal/values-production.yaml` | Keep `druid.minio.replicaCount: 4`; add `seaweedfs.minio.replicaCount: 4` and `seaweedfs.minio.image: minio:5.4` |
-| `utils/MINIO-TO-SEAWEEDFS-MIGRATION.md` | Updated operator instructions for sidecar approach |
+| `charts/seaweedfs/values.yaml` | Add `minio.replicaCount: 1`, `minio.image: minio:5.4.1`, and `minio.pvcBaseName: minio-vol-claim-minio` (configurable PVC base name) |
+| `charts/seaweedfs/templates/.../seaweedfs-data-copy-job.yaml` | Add `minio-local` sidecar; dynamic multi-PVC volumes; S3-to-S3 via localhost:9000 |
+| `charts/seaweedfs/templates/.../migration-role.yaml` | Add `list` verb for multi-PVC kubectl delete |
+| `charts/portal/values-production.yaml` | `druid.minio.enabled: false`; add `seaweedfs.minio.image: minio:5.4.1`; `seaweedfs.minio.replicaCount` is NOT set here — it is install-specific |
+| `utils/MINIO-TO-SEAWEEDFS-MIGRATION.md` | Updated operator upgrade steps for sidecar approach |
 
 ---
 
@@ -211,24 +211,27 @@ guards, RBAC files, ci-values, production values for `minio.enabled`).
 ```yaml
 minio:
   bucketName: api-metrics    # existing
-  replicaCount: 1            # NEW: 1=standalone (default), 4=distributed
-  image: minio:5.4           # NEW: must match druid.image.minio
+  replicaCount: 1            # NEW default: standalone. Operator overrides for distributed.
+  image: minio:5.4.1         # NEW: must match druid.image.minio
+  pvcBaseName: minio-vol-claim-minio  # NEW: configurable base name; override if StatefulSet used a custom name
 ```
 
 These values are used **only** when `global.deepStorage.enableDataMigration: true`.
 
-### `charts/portal/values-production.yaml` (migration upgrade)
+### `charts/portal/values-production.yaml`
 
 ```yaml
 druid:
   minio:
     enabled: false            # MinIO removed in 5.4.2
-    replicaCount: 4           # Kept at 4 — reflects what customers had installed
 
 seaweedfs:
   minio:
-    replicaCount: 4           # Must mirror druid.minio.replicaCount
-    image: minio:5.4          # Must mirror druid.image.minio
+    image: minio:5.4.1        # Pre-set; operators do not need to pass this on CLI
+    # replicaCount is intentionally NOT set here.
+    # It depends on each customer's original install and must be passed explicitly:
+    #   --set seaweedfs.minio.replicaCount=4   (for distributed MinIO)
+    # Standalone MinIO uses the default of 1 from seaweedfs/values.yaml.
 
 global:
   deepStorage:
@@ -242,12 +245,10 @@ global:
 ### Upgrading from 5.3 (standalone MinIO, replicaCount: 1)
 
 ```bash
-# Step 1: Upgrade and trigger migration
+# Step 1: Upgrade and trigger migration (replicaCount defaults to 1 — no extra flag needed)
 helm upgrade <release> ./charts/portal \
   --set druid.minio.enabled=false \
-  --set global.deepStorage.enableDataMigration=true \
-  --set seaweedfs.minio.replicaCount=1 \
-  --set seaweedfs.minio.image=minio:5.4
+  --set global.deepStorage.enableDataMigration=true
 
 # Step 2: Monitor the migration Job
 kubectl get job <release>-seaweedfs-data-copy-job -n <namespace>
@@ -262,12 +263,11 @@ helm upgrade <release> ./charts/portal \
 ### Upgrading from 5.3 (distributed MinIO, replicaCount: 4)
 
 ```bash
-# Step 1: Upgrade and trigger migration (all 4 PVCs mounted to sidecar)
+# Step 1: Upgrade and trigger migration — replicaCount must be explicitly specified
 helm upgrade <release> ./charts/portal \
   --set druid.minio.enabled=false \
   --set global.deepStorage.enableDataMigration=true \
-  --set seaweedfs.minio.replicaCount=4 \
-  --set seaweedfs.minio.image=minio:5.4
+  --set seaweedfs.minio.replicaCount=4
 
 # Step 2: Verify the minio-local sidecar started correctly
 kubectl logs job/<release>-seaweedfs-data-copy-job -c minio-local -n <namespace>

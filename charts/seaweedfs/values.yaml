@@ -40,6 +40,20 @@ replicaCount: 1
 clusterDomain: cluster.local
 minio:
     bucketName: api-metrics
+    # Number of MinIO PVCs to mount in the migration Job sidecar.
+    # Set to match the druid.minio.replicaCount from the previous install:
+    #   1 = standalone MinIO (single drive, default)
+    #   4 = distributed MinIO (4 drives, erasure-coded)
+    # Only used when global.deepStorage.enableDataMigration: true.
+    replicaCount: 1
+    # MinIO image used as the migration Job sidecar. Must match druid.image.minio.
+    # Only used when global.deepStorage.enableDataMigration: true.
+    image: minio:5.4.1
+    # Base name of the MinIO PVCs to mount. The ordinal index (-0, -1, ...) is appended
+    # automatically based on replicaCount. Override if the MinIO StatefulSet was given a
+    # custom name (e.g. minio-vol-claim-analytics-minio for StatefulSet "analytics-minio").
+    # Only used when global.deepStorage.enableDataMigration: true.
+    pvcBaseName: minio-vol-claim-minio
 forceRedeploy: true
 nameOverride: seaweedfs-s3
 serviceAccount:

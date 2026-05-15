@@ -13,5 +13,5 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
-    verbs: ["get", "delete"]
+    verbs: ["get", "list", "delete"]
 {{- end }}

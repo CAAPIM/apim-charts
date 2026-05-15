@@ -565,6 +565,12 @@ seaweedfs:
   bucketName: api-metrics
   minio:
     bucketName: api-metrics
+    # image: MinIO image used as the migration Job sidecar (must match druid.image.minio).
+    # Only active when global.deepStorage.enableDataMigration: true.
+    # replicaCount is NOT set here — it is install-specific and must be passed explicitly:
+    #   --set seaweedfs.minio.replicaCount=1  (standalone MinIO, the default)
+    #   --set seaweedfs.minio.replicaCount=4  (distributed/erasure-coded MinIO)
+    image: minio:5.4.1
   restartPolicy: Always
   imagePullPolicy: Always
   loggingLevel: 1

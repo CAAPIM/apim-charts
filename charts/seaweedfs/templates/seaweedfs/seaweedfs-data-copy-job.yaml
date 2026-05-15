@@ -1,32 +1,42 @@
 {{- if (eq .Values.global.deepStorage.enableDataMigration true) }}
-# Data Migration Job: MinIO PVC → SeaweedFS (filesystem-to-S3)
+# Data Migration Job: MinIO → SeaweedFS (Sidecar MinIO SNMD + S3-to-S3)
 #
-# This Job migrates analytics data from a legacy MinIO PVC directly into SeaweedFS
-# WITHOUT requiring the MinIO service to be running. The old MinIO PVC
-# (minio-vol-claim-minio-0) is mounted read-only and rclone copies its content
-# into SeaweedFS over the S3 gateway. After a successful copy + verification,
-# the MinIO PVC is deleted automatically.
+# How it works:
+#   1. init container: waits for SeaweedFS master to be ready (TCP probe).
+#   2. sidecar container (minio-local): starts the MinIO binary in Single-Node
+#      Multi-Drive (SNMD) mode with all original MinIO PVCs mounted. MinIO
+#      reconstructs erasure-coded objects and serves them via S3 at localhost:9000.
+#      Exits cleanly when data-copier writes /shared/migration-done.
+#   3. main container (data-copier): waits for localhost:9000 to be healthy, then
+#      uses rclone S3-to-S3 (local MinIO → SeaweedFS), verifies integrity, deletes
+#      all MinIO PVCs, and signals the sidecar to stop.
+#
+# This works for BOTH standalone (minio.replicaCount: 1) and distributed MinIO
+# (minio.replicaCount: 4). SNMD mode uses the same on-disk XL erasure format as
+# distributed mode and can reconstruct objects from the original drive set.
+# No original MinIO credentials or Kubernetes Service needed.
 #
 # Prerequisites:
-#   - druid.minio.enabled must be false (MinIO StatefulSet must not be running
-#     so the RWO PVC is released and can be mounted by this Job)
-#   - The MinIO PVC (minio-vol-claim-minio-0) must exist from a previous install
-#     For fresh 5.4.2 installs, set enableDataMigration: false — no PVC will exist.
-#   - Standalone MinIO only (replicaCount: 1). Distributed MinIO (replicaCount > 1)
-#     uses erasure coding across multiple PVCs; see MINIO-TO-SEAWEEDFS-MIGRATION.md
-#     for the recommended path in that case.
+#   - druid.minio.enabled: false  (MinIO StatefulSet not running; RWO PVCs released)
+#   - seaweedfs.minio.replicaCount must match the original druid.minio.replicaCount
+#   - seaweedfs.minio.image must match druid.image.minio
+#   - For fresh 5.4.2 installs (no prior MinIO data), keep enableDataMigration: false
 #
-# Usage:
-#   Upgrade from 5.3 or 5.4 (with MinIO data):
-#     helm upgrade <release> <chart> --set druid.minio.enabled=false \
-#       --set global.deepStorage.enableDataMigration=true
-#   After migration completes:
-#     helm upgrade <release> <chart> --set global.deepStorage.enableDataMigration=false
+# Upgrade command:
+#   helm upgrade <release> <chart> \
+#     --set druid.minio.enabled=false \
+#     --set global.deepStorage.enableDataMigration=true \
+#     --set seaweedfs.minio.replicaCount=<original-replica-count> \
+#     --set seaweedfs.minio.image=minio:5.4.1
+#
+# After migration completes:
+#   helm upgrade <release> <chart> --set global.deepStorage.enableDataMigration=false
 #
 # Monitoring:
-#   kubectl get job <release>-seaweedfs-data-copy-job -n <namespace>
-#   kubectl logs job/<release>-seaweedfs-data-copy-job -n <namespace> -c wait-for-seaweedfs
-#   kubectl logs job/<release>-seaweedfs-data-copy-job -n <namespace> -c data-copier
+#   kubectl get job {{ .Release.Name }}-seaweedfs-data-copy-job -n {{ .Release.Namespace }}
+#   kubectl logs job/{{ .Release.Name }}-seaweedfs-data-copy-job -c wait-for-seaweedfs -n {{ .Release.Namespace }}
+#   kubectl logs job/{{ .Release.Name }}-seaweedfs-data-copy-job -c minio-local -n {{ .Release.Namespace }}
+#   kubectl logs job/{{ .Release.Name }}-seaweedfs-data-copy-job -c data-copier -n {{ .Release.Namespace }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -64,37 +74,62 @@ spec:
               RETRY_INTERVAL=10
               ELAPSED=0
 
-              echo "Waiting for SeaweedFS master to become ready at seaweedfs-s3:{{ .Values.readinessProbe.httpGet.port }}..."
+              echo "Waiting for SeaweedFS master at seaweedfs-s3:{{ .Values.readinessProbe.httpGet.port }}..."
               while [ $ELAPSED -lt $MAX_WAIT ]; do
                 if timeout 5 bash -c ">/dev/tcp/seaweedfs-s3/{{ .Values.readinessProbe.httpGet.port }}" 2>/dev/null; then
                   echo "SeaweedFS is ready."
-                  break
+                  exit 0
                 fi
-                echo "SeaweedFS not ready yet, retrying in ${RETRY_INTERVAL}s... (elapsed: ${ELAPSED}s / max: ${MAX_WAIT}s)"
+                echo "Not ready yet, retrying in ${RETRY_INTERVAL}s... (elapsed: ${ELAPSED}s / max: ${MAX_WAIT}s)"
                 sleep $RETRY_INTERVAL
                 ELAPSED=$((ELAPSED + RETRY_INTERVAL))
               done
 
-              if [ $ELAPSED -ge $MAX_WAIT ]; then
-                echo "ERROR: SeaweedFS did not become ready within ${MAX_WAIT} seconds."
-                exit 1
-              fi
-
-              # Check whether there is any data to migrate.
-              # If the MinIO PVC mount is empty, the migration has already been
-              # completed or there is nothing to copy; skip gracefully.
-              BUCKET_PATH="/mnt/minio-old/{{ .Values.minio.bucketName }}"
-              if [ ! -d "$BUCKET_PATH" ] || [ -z "$(ls -A $BUCKET_PATH 2>/dev/null)" ]; then
-                echo "No data found at ${BUCKET_PATH}. Nothing to migrate — exiting."
-                exit 0
-              fi
-
-              echo "Data found at ${BUCKET_PATH}. Proceeding with migration."
-          volumeMounts:
-            - name: minio-old-data
-              mountPath: /mnt/minio-old
-              readOnly: true
+              echo "ERROR: SeaweedFS did not become ready within ${MAX_WAIT} seconds."
+              exit 1
       containers:
+        # Sidecar: starts MinIO in SNMD mode reading from original PVC(s).
+        # Serves reconstructed objects via S3 at localhost:9000.
+        # Watches /shared/migration-done and exits when data-copier signals completion.
+        - name: minio-local
+          image: "{{ .Values.global.portalRepository }}{{ .Values.minio.image }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              COUNT={{ .Values.minio.replicaCount }}
+              DRIVES=""
+              for i in $(seq 0 $((COUNT - 1))); do
+                DRIVES="$DRIVES /mnt/minio-$i"
+              done
+
+              echo "Starting MinIO SNMD with drives:${DRIVES}"
+              minio server $DRIVES &
+              MINIO_PID=$!
+
+              echo "MinIO started (PID: ${MINIO_PID}). Waiting for migration-done signal..."
+              while [ ! -f /shared/migration-done ]; do
+                sleep 5
+              done
+
+              echo "Signal received. Stopping MinIO (PID: ${MINIO_PID})."
+              kill $MINIO_PID 2>/dev/null
+              wait $MINIO_PID 2>/dev/null || true
+              exit 0
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: migration-user
+            - name: MINIO_SECRET_KEY
+              value: migration-pass-tmp
+          volumeMounts:
+            - name: migration-signal
+              mountPath: /shared
+            {{- range $i := until (int .Values.minio.replicaCount) }}
+            - name: minio-data-{{ $i }}
+              mountPath: /mnt/minio-{{ $i }}
+            {{- end }}
+
+        # Main: waits for local MinIO, copies S3-to-S3, verifies, deletes PVC(s), signals sidecar.
         - name: data-copier
           image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
@@ -103,24 +138,33 @@ spec:
             - |
               set -e
 
-              BUCKET_PATH="/mnt/minio-old/{{ .Values.minio.bucketName }}"
-
-              # Guard: skip if source bucket is missing or empty (init container
-              # already logged this case, but also handle restarts)
-              if [ ! -d "$BUCKET_PATH" ] || [ -z "$(ls -A $BUCKET_PATH 2>/dev/null)" ]; then
-                echo "Source path ${BUCKET_PATH} is empty or absent. Migration already complete."
-                exit 0
-              fi
+              # --- Step 0: Wait for local MinIO sidecar ---
+              echo "Waiting for local MinIO to become healthy at localhost:9000..."
+              MAX_MINIO_WAIT=300
+              ELAPSED=0
+              until curl -sf http://localhost:9000/minio/health/live 2>/dev/null; do
+                sleep 5
+                ELAPSED=$((ELAPSED + 5))
+                if [ $ELAPSED -ge $MAX_MINIO_WAIT ]; then
+                  echo "ERROR: Local MinIO did not become healthy within ${MAX_MINIO_WAIT}s."
+                  echo "Check the minio-local container logs for startup errors."
+                  exit 1
+                fi
+                echo "MinIO not ready yet... (${ELAPSED}s / ${MAX_MINIO_WAIT}s)"
+              done
+              echo "Local MinIO is healthy."
 
               echo "========================================"
-              echo "  Starting MinIO → SeaweedFS migration"
-              echo "  Source : ${BUCKET_PATH}"
+              echo "  MinIO → SeaweedFS Migration"
+              echo "  Source : minio:/{{ .Values.minio.bucketName }} (localhost:9000)"
               echo "  Target : seaweedfs:/{{ .Values.global.deepStorage.analytics.bucketName }}"
+              echo "  Drives : {{ .Values.minio.replicaCount }} PVC(s)"
               echo "========================================"
 
+              # --- Step 1: Copy ---
               echo "--- Step 1: Copy ---"
               rclone copy \
-                "${BUCKET_PATH}" \
+                "minio:/{{ .Values.minio.bucketName }}" \
                 "seaweedfs:/{{ .Values.global.deepStorage.analytics.bucketName }}" \
                 --checksum \
                 --transfers 16 \
@@ -132,24 +176,33 @@ spec:
                 -vv \
                 --progress
 
+              # --- Step 2: Verify (one-way check source ⊆ destination) ---
               echo "--- Step 2: Verify (one-way check) ---"
               rclone check \
-                "${BUCKET_PATH}" \
+                "minio:/{{ .Values.minio.bucketName }}" \
                 "seaweedfs:/{{ .Values.global.deepStorage.analytics.bucketName }}" \
                 --one-way \
                 -v
 
-              echo "--- Step 3: Cleanup MinIO PVC ---"
-              kubectl delete pvc minio-vol-claim-minio-0 \
-                -n {{ .Release.Namespace }} \
-                --ignore-not-found \
-                && echo "MinIO PVC deleted successfully." \
-                || echo "WARNING: PVC deletion returned non-zero; it may have already been removed."
+              # --- Step 3: Delete all MinIO PVC(s) ---
+              echo "--- Step 3: Delete MinIO PVC(s) ---"
+              COUNT={{ .Values.minio.replicaCount }}
+              for i in $(seq 0 $((COUNT - 1))); do
+                kubectl delete pvc "{{ .Values.minio.pvcBaseName }}-${i}" \
+                  -n {{ .Release.Namespace }} \
+                  --ignore-not-found \
+                  && echo "Deleted {{ .Values.minio.pvcBaseName }}-${i}." \
+                  || echo "WARNING: {{ .Values.minio.pvcBaseName }}-${i} may already be removed."
+              done
+
+              # --- Step 4: Signal sidecar to stop ---
+              echo "--- Step 4: Signalling minio-local sidecar to exit ---"
+              touch /shared/migration-done
 
               echo "========================================"
               echo "  Migration completed successfully!"
-              echo "  Set global.deepStorage.enableDataMigration=false"
-              echo "  in your values file for future upgrades."
+              echo "  Run: helm upgrade <release> <chart>"
+              echo "    --set global.deepStorage.enableDataMigration=false"
               echo "========================================"
           env:
             - name: SEAWEEDFS_ACCESS_KEY
@@ -162,6 +215,18 @@ spec:
                 secretKeyRef:
                   name: seaweedfs-s3-secret
                   key: admin_secret_access_key
+            - name: RCLONE_CONFIG_MINIO_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_MINIO_PROVIDER
+              value: Minio
+            - name: RCLONE_CONFIG_MINIO_ENDPOINT
+              value: http://localhost:9000
+            - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+              value: migration-user
+            - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+              value: migration-pass-tmp
+            - name: RCLONE_CONFIG_MINIO_ENV_AUTH
+              value: "false"
             - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
               value: s3
             - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
@@ -172,18 +237,22 @@ spec:
               value: $(SEAWEEDFS_ACCESS_KEY)
             - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
               value: $(SEAWEEDFS_SECRET_KEY)
+            - name: RCLONE_CONFIG_SEAWEEDFS_ENV_AUTH
+              value: "false"
           volumeMounts:
-            - name: minio-old-data
-              mountPath: /mnt/minio-old
-              readOnly: true
+            - name: migration-signal
+              mountPath: /shared
           resources:
             limits:
               memory: 4Gi
             requests:
               memory: 4Gi
       volumes:
-        - name: minio-old-data
+        - name: migration-signal
+          emptyDir: {}
+        {{- range $i := until (int .Values.minio.replicaCount) }}
+        - name: minio-data-{{ $i }}
           persistentVolumeClaim:
-            claimName: minio-vol-claim-minio-0
-            readOnly: true
-{{ end }}
+            claimName: {{ .Values.minio.pvcBaseName }}-{{ $i }}
+        {{- end }}
+{{- end }}
