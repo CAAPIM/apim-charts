@@ -36,13 +36,14 @@ global:
 # storageClass: "_"
 # schedulerName:
   deepStorage:
-    # Set to true to create a data migration Job from Minio to SeaweedFS
-    # The Job runs independently and will not block helm operations
-    # Rclone will automatically retry if services are not ready
-    # Set to false to remove the Job resource
-    enableDataMigration: true
-    # Maximum time in seconds to wait for services to become ready (default: 600 = 10 minutes)
-    # The Job will check service accessibility every 10 seconds until ready or timeout
+    # Set to true when upgrading from 5.3 or 5.4 (with existing MinIO data) to trigger
+    # the PVC-based data migration Job. The Job mounts the old MinIO PVC read-only,
+    # copies data into SeaweedFS, verifies integrity, then deletes the MinIO PVC.
+    # Set to false (default) for fresh 5.4.2 installs or after migration completes.
+    # NOTE: druid.minio.enabled must be false before setting this to true so the
+    # MinIO StatefulSet is not running (RWO PVC must be unbound for the Job to mount it).
+    enableDataMigration: false
+    # Maximum seconds to wait for SeaweedFS to become ready before starting the copy.
     migrationInitialDelaySeconds: 600
     auth:
       secretName: seaweedfs-s3-secret
@@ -773,10 +774,15 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    # MinIO is disabled in Portal 5.4.2. SeaweedFS is the only supported deep storage.
+    # Set enabled: true only if you need to temporarily restore the MinIO StatefulSet
+    # (e.g., for the distributed-MinIO S3-to-S3 migration path described in
+    # utils/MINIO-TO-SEAWEEDFS-MIGRATION.md before upgrading to 5.4.2).
+    enabled: false
     forceRedeploy: false
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
-    replicaCount: 4
+    replicaCount: 1
     # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
     podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod

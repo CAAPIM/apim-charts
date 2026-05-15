@@ -1,0 +1,21 @@
+{{- if eq .Values.global.deepStorage.enableDataMigration true }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "seaweedfs.fullname" . }}-migration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: data-migration
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "seaweedfs.fullname" . }}-migration
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "seaweedfs.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

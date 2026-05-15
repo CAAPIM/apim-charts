@@ -44,6 +44,9 @@ serviceAccount:
 # name:
 
 minio:
+  # Set to true to re-enable the MinIO StatefulSet (legacy mode).
+  # MinIO is disabled by default in 5.4.2; SeaweedFS is the only supported deep storage.
+  enabled: false
   auth:
     secretName: minio-secret
     # Auto-generated minio-auth

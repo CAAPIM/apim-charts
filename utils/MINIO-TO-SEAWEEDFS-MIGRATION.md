@@ -1,387 +1,239 @@
-# Minio to SeaweedFS Data Migration Guide
+# MinIO to SeaweedFS Data Migration Guide
 
 ## Overview
 
-Starting from Portal version 5.4, the Portal Helm chart has transitioned from using Minio to SeaweedFS as the deep storage solution for analytics data. SeaweedFS provides improved performance, scalability, and S3-compatible object storage capabilities for the Druid analytics stack.
+Portal 5.4.2 fully removes MinIO as the Druid analytics deep storage backend. SeaweedFS
+is now the only supported storage. Customers upgrading from earlier versions that used MinIO
+must migrate their analytics data into SeaweedFS before the MinIO resources are removed.
 
-This document provides guidance on the automated data migration process that occurs during Helm upgrade operations.
+The migration approach changed between Portal 5.4 and 5.4.2:
 
----
+| Release | Migration approach | MinIO service required? |
+|---------|-------------------|------------------------|
+| 5.4 | rclone S3-to-S3 (MinIO endpoint → SeaweedFS endpoint) | Yes |
+| **5.4.2** | **rclone filesystem-to-S3 (MinIO PVC mount → SeaweedFS)** | **No** |
 
-## Background
-
-### What Changed?
-
-- **Previous Architecture**: Portal used Minio as the S3-compatible object storage backend for Druid's deep storage
-- **New Architecture**: Portal now uses SeaweedFS as the S3-compatible object storage backend for Druid's deep storage
-- **Impact**: Existing analytics data stored in Minio needs to be migrated to SeaweedFS to maintain historical data continuity
-
-### What is Migrated?
-
-The migration process transfers all analytics data from the Minio `api-metrics` bucket to the SeaweedFS `api-metrics` bucket, ensuring that:
-- Historical analytics data remains accessible
-- Druid can continue to query past data segments
-- No data loss occurs during the transition
+The 5.4.2 approach mounts the old MinIO PVC (`minio-vol-claim-minio-0`) directly into the
+migration Job as a read-only volume, copies its data into SeaweedFS, verifies integrity,
+then automatically deletes the PVC — no MinIO service required.
 
 ---
 
-## Automated Migration Process
+## Release Upgrade Matrix
 
-### How It Works
-
-The Portal Helm chart includes an automated migration mechanism that is controlled by the `global.deepStorage.enableDataMigration` property in your values files.
-
-**Key Configuration Files:**
-- `charts/portal/values.yaml` (development/default configuration)
-- `charts/portal/values-production.yaml` (production configuration)
-
-**Migration Configuration:**
-
-```yaml
-global:
-  deepStorage:
-    seaweedfs: true
-    # Set to true to create a data migration Job from Minio to SeaweedFS
-    # The Job runs independently and will not block helm operations
-    # Rclone will automatically retry if services are not ready
-    # Set to false to remove the Job resource
-    enableDataMigration: true
-    # Maximum time in seconds to wait for services to become ready (default: 600 = 10 minutes)
-    # The Job will check service accessibility every 10 seconds until ready or timeout
-    migrationInitialDelaySeconds: 600
-    auth:
-      secretName: seaweedfs-s3-secret
-    analytics:
-      bucketName: api-metrics
-```
-
-### Migration Job Characteristics
-
-1. **Non-Blocking**: The migration Job runs independently and does not block Helm upgrade operations
-2. **Automatic Retry**: Uses Rclone with built-in retry logic to handle service readiness delays
-3. **Service Wait**: Waits up to 10 minutes (configurable via `migrationInitialDelaySeconds`) for both Minio and SeaweedFS services to become ready
-4. **Idempotent**: Safe to run multiple times; only copies data that doesn't already exist in the destination
-5. **Kubernetes Job**: Deployed as a Kubernetes Job resource that can be monitored using standard kubectl commands
+| Upgrading from | Action required |
+|---------------|----------------|
+| **5.3** (MinIO only) | Full migration: set `druid.minio.enabled=false` + `enableDataMigration=true` |
+| **5.4** (already migrated to SeaweedFS) | No data migration; ensure `enableDataMigration=false` |
+| **5.4** (MinIO still active / not yet migrated) | Standalone MinIO: follow the 5.3→5.4.2 path below. Distributed MinIO (replicaCount > 1): see [Distributed MinIO](#distributed-minio-replicacount--1) |
+| **Fresh 5.4.2 install** | No migration needed; `enableDataMigration=false` (default) |
 
 ---
 
-## Upgrade Instructions
+## Prerequisites
 
-### Step 1: Perform Helm Upgrade
+- The MinIO StatefulSet (`druid.minio.enabled`) **must be disabled** before running the
+  migration so the RWO PVC is unbound and can be mounted by the Job.
+- This approach works for **standalone MinIO** (`replicaCount: 1`, the default). See
+  [Distributed MinIO](#distributed-minio-replicacount--1) for the 4-replica case.
+- Adequate cluster resources: the migration Job requests 4 Gi memory.
 
-When upgrading your Portal deployment to version 5.4 or later, the migration will be automatically triggered if `enableDataMigration` is set to `true` (which is the default).
+---
+
+## Upgrade Path: 5.3 → 5.4.2 (or 5.4 with MinIO data)
+
+### Step 1: Helm upgrade with migration enabled
 
 ```bash
-# Upgrade the Portal Helm chart
-helm upgrade <release-name> <chart-path> \
+helm upgrade <release-name> ./charts/portal \
   -n <namespace> \
-  -f values.yaml \
-  --wait
-```
-
-**Example:**
-```bash
-helm upgrade portal ./charts/portal \
-  -n portal-namespace \
   -f values-production.yaml \
-  --wait
+  --set druid.minio.enabled=false \
+  --set global.deepStorage.enableDataMigration=true
 ```
 
-### Step 2: Monitor Migration Progress
+What happens during the upgrade:
+1. `druid.minio.enabled=false` — MinIO StatefulSet is no longer rendered; MinIO pod
+   terminates and the PVC (`minio-vol-claim-minio-0`) is released from its RWO bind.
+2. SeaweedFS is deployed (or already running from a previous 5.4 install).
+3. The migration Job is created. It:
+   - Waits for SeaweedFS master to be reachable on port `9333`.
+   - Checks if `/mnt/minio-old/<bucket>` contains data; exits cleanly if empty.
+   - Runs `rclone copy` with `--checksum --transfers 16` from the PVC mount to SeaweedFS.
+   - Runs `rclone check --one-way` to verify all files are present and intact.
+   - Deletes `minio-vol-claim-minio-0` on success.
 
-After the Helm upgrade completes, monitor the migration Job:
+### Step 2: Monitor migration progress
 
 ```bash
-# Check the migration Job status
-kubectl get jobs -n <namespace> | grep migration
+# Watch Job status
+kubectl get job <release>-seaweedfs-data-copy-job -n <namespace> -w
 
-# View migration Job details
-kubectl describe job <migration-job-name> -n <namespace>
+# Init container logs (SeaweedFS wait + empty-check)
+kubectl logs job/<release>-seaweedfs-data-copy-job \
+  -n <namespace> -c wait-for-seaweedfs -f
 
-# Check migration logs
-kubectl logs -n <namespace> job/<migration-job-name> -f
+# Main migration logs (copy, verify, cleanup)
+kubectl logs job/<release>-seaweedfs-data-copy-job \
+  -n <namespace> -c data-copier -f
 ```
 
-**Example:**
+Expected final output in data-copier logs:
+```
+========================================
+  Migration completed successfully!
+  Set global.deepStorage.enableDataMigration=false
+  in your values file for future upgrades.
+========================================
+```
+
+### Step 3: Verify analytics data in SeaweedFS
+
 ```bash
-# List all jobs
-kubectl get jobs -n portal-namespace
+# Port-forward SeaweedFS S3 gateway
+kubectl port-forward -n <namespace> svc/seaweedfs-s3 8333:8333
 
-# Follow migration logs
-kubectl logs -n portal-namespace job/portal-minio-to-seaweedfs-migration -f
-```
-
-### Step 3: Verify Migration Completion
-
-Check that the migration Job has completed successfully:
-
-```bash
-# Check Job completion status
-kubectl get job <migration-job-name> -n <namespace>
-```
-
-**Expected Output:**
-```
-NAME                                    COMPLETIONS   DURATION   AGE
-portal-minio-to-seaweedfs-migration    1/1           5m30s      10m
-```
-
-**Verify data in SeaweedFS:**
-```bash
-# Port-forward to SeaweedFS S3 service
-kubectl port-forward -n <namespace> svc/seaweedfs 8333:8333
-
-# Use AWS CLI or s3cmd to list bucket contents
+# List bucket contents with AWS CLI
 aws s3 ls s3://api-metrics/ \
   --endpoint-url http://localhost:8333 \
   --no-verify-ssl
 ```
 
-### Step 4: Disable Migration for Future Upgrades
+### Step 4: Disable migration for future upgrades
 
-**IMPORTANT**: After the migration completes successfully, you **MUST** manually update your values file to prevent unnecessary re-migration on subsequent Helm upgrades.
-
-Edit your values file (`values.yaml` or `values-production.yaml`):
+After the migration Job completes successfully, update your values file:
 
 ```yaml
 global:
   deepStorage:
-    seaweedfs: true
-    # Set to false after initial migration completes
-    enableDataMigration: false  # Change from true to false
-    migrationInitialDelaySeconds: 600
-    auth:
-      secretName: seaweedfs-s3-secret
-    analytics:
-      bucketName: api-metrics
+    enableDataMigration: false   # prevents re-run on every helm upgrade
 ```
 
-**Apply the updated configuration:**
+Then apply:
 ```bash
-# Upgrade with the updated values file
-helm upgrade <release-name> <chart-path> \
+helm upgrade <release-name> ./charts/portal \
   -n <namespace> \
-  -f values.yaml
+  -f values-production.yaml
 ```
-
-This step is crucial because:
-- Prevents redundant migration attempts on every upgrade
-- Reduces unnecessary resource consumption
-- Speeds up future Helm upgrade operations
-- Avoids potential data synchronization issues
 
 ---
 
-## Migration Scenarios
+## Upgrade Path: 5.4 → 5.4.2 (already migrated)
 
-### Scenario 1: Fresh Installation (No Migration Needed)
+If you already ran the 5.4 migration Job (S3-to-S3) and your data is in SeaweedFS:
 
-If you're installing Portal for the first time on version 5.4 or later:
-- No migration is necessary
-- SeaweedFS will be used from the start
-- You can set `enableDataMigration: false` before installation
+1. Ensure `druid.minio.enabled: false` and `enableDataMigration: false`.
+2. If the MinIO PVC still exists (it is not automatically cleaned up by the 5.4 Job),
+   delete it manually:
+   ```bash
+   kubectl delete pvc minio-vol-claim-minio-0 -n <namespace> --ignore-not-found
+   ```
+3. Perform the helm upgrade normally.
 
-### Scenario 2: Upgrade from Pre-5.4.1 with Minio Data
+---
 
-If you're upgrading from a version that used Minio:
-1. Leave `enableDataMigration: true` (default)
-2. Perform the Helm upgrade
-3. Monitor the migration Job
-4. Set `enableDataMigration: false` after completion
+## Distributed MinIO (replicaCount > 1)
 
-### Scenario 3: Upgrade from 5.4.1+ (Already Migrated)
+The production values previously set `druid.minio.replicaCount: 4`. This runs MinIO in
+**distributed erasure-coding mode**, where data is spread across 4 PVCs
+(`minio-vol-claim-minio-{0..3}`) in a non-filesystem-readable format.
 
-If you've already migrated to SeaweedFS:
-1. Ensure `enableDataMigration: false` in your values file
-2. Perform the Helm upgrade normally
-3. No migration Job will be created
+The PVC-mount migration approach in 5.4.2 **does not work** for distributed MinIO, because
+rclone cannot read the XL erasure-coded files directly from the filesystem.
+
+**Recommended path for distributed MinIO customers:**
+
+1. **While still on 5.4**, re-enable the S3-to-S3 migration Job temporarily:
+   ```yaml
+   global:
+     deepStorage:
+       enableDataMigration: true
+   druid:
+     minio:
+       enabled: true    # keep MinIO running for the S3-to-S3 copy
+   ```
+   Deploy this 5.4 configuration and wait for the migration Job to complete.
+
+2. **Verify** that data is accessible in SeaweedFS (see Step 3 above).
+
+3. **Upgrade to 5.4.2** with MinIO disabled:
+   ```yaml
+   global:
+     deepStorage:
+       enableDataMigration: false
+   druid:
+     minio:
+       enabled: false
+   ```
+
+4. Manually delete the MinIO PVCs:
+   ```bash
+   for i in 0 1 2 3; do
+     kubectl delete pvc "minio-vol-claim-minio-${i}" -n <namespace> --ignore-not-found
+   done
+   ```
 
 ---
 
 ## Troubleshooting
 
-### Migration Job Fails to Start
+### Job pod is Pending (volume mount failure)
 
-**Symptoms:**
-- Job is created but no pods are running
-- Job shows 0/1 completions
+**Symptom**: Pod stuck in `Pending` state; `kubectl describe pod` shows a volume attach error.
 
-**Possible Causes & Solutions:**
-1. **Image pull issues**: Verify image pull secrets are configured correctly
-   ```bash
-   kubectl describe job <migration-job-name> -n <namespace>
-   ```
+**Cause**: `minio-vol-claim-minio-0` does not exist (fresh install or already deleted)
+or MinIO StatefulSet is still running and holds the RWO PVC.
 
-2. **Resource constraints**: Check if the cluster has sufficient resources
-   ```bash
-   kubectl describe nodes
-   ```
+**Fix**:
+- If MinIO is still running: ensure `druid.minio.enabled=false` and re-run the upgrade.
+- If PVC does not exist: set `enableDataMigration=false` (no data to migrate).
 
-### Migration Job Times Out
+### Migration Job times out waiting for SeaweedFS
 
-**Symptoms:**
-- Job pod shows "Init:Error" or "Error" status
-- Logs indicate timeout waiting for services
+**Symptom**: Init container exits with `SeaweedFS did not become ready`.
 
-**Possible Causes & Solutions:**
-1. **Services not ready**: Increase `migrationInitialDelaySeconds`
-   ```yaml
-   global:
-     deepStorage:
-       migrationInitialDelaySeconds: 1200  # Increase to 20 minutes
-   ```
-
-2. **Network issues**: Verify service connectivity
-   ```bash
-   kubectl get svc -n <namespace> | grep -E 'minio|seaweedfs'
-   ```
-
-### Partial Data Migration
-
-**Symptoms:**
-- Job completes but not all data is transferred
-- Missing analytics data in SeaweedFS
-
-**Possible Causes & Solutions:**
-1. **Rclone errors**: Check Job logs for specific errors
-   ```bash
-   kubectl logs -n <namespace> job/<migration-job-name>
-   ```
-
-2. **Credential issues**: Verify secrets are correctly configured
-   ```bash
-   kubectl get secret minio-secret -n <namespace> -o yaml
-   kubectl get secret seaweedfs-s3-secret -n <namespace> -o yaml
-   ```
-
-3. **Re-run migration**: Delete the Job and upgrade again with `enableDataMigration: true`
-   ```bash
-   kubectl delete job <migration-job-name> -n <namespace>
-   helm upgrade <release-name> <chart-path> -n <namespace> -f values.yaml
-   ```
-
-### Migration Job Stuck in Running State
-
-**Symptoms:**
-- Job shows 0/1 completions for extended period
-- Pod is running but not completing
-
-**Possible Causes & Solutions:**
-1. **Large data transfer**: Be patient; large datasets take time
-   - Monitor logs to see progress
-   - Check network bandwidth
-
-2. **Pod issues**: Check pod status and logs
-   ```bash
-   kubectl get pods -n <namespace> | grep migration
-   kubectl logs -n <namespace> <migration-pod-name> -f
-   ```
-
-### Accessing Migration Logs After Job Completion
-
-```bash
-# Get the completed pod name
-kubectl get pods -n <namespace> | grep migration
-
-# View logs from completed pod
-kubectl logs -n <namespace> <migration-pod-name>
+**Fix**: Increase the timeout:
+```yaml
+global:
+  deepStorage:
+    migrationInitialDelaySeconds: 1200  # 20 minutes
 ```
 
----
+### rclone copy fails midway
 
-## Post-Migration Validation
+**Symptom**: `data-copier` container exits non-zero before the cleanup step.
 
-### Verify Analytics Data Availability
-
-1. **Access Portal UI**: Navigate to your Portal analytics dashboard
-2. **Check Historical Data**: Verify that historical analytics data is visible
-3. **Query Druid**: Confirm Druid can access data from SeaweedFS
-
-### Verify Druid Configuration
-
-Check that Druid components are using SeaweedFS:
-
+**Fix**: The Job has `backoffLimit: 5`, so Kubernetes restarts it automatically.
+rclone's `--retries 30` and `--low-level-retries 10` also handle transient errors.
+If the Job exhausts retries, check logs for the specific error, fix the root cause, then
+delete the failed Job and re-run:
 ```bash
-# Check coordinator logs
-kubectl logs -n <namespace> deployment/druid-coordinator | grep -i seaweedfs
-
-# Check historical logs
-kubectl logs -n <namespace> deployment/druid-historical | grep -i seaweedfs
+kubectl delete job <release>-seaweedfs-data-copy-job -n <namespace>
+helm upgrade <release> ./charts/portal -n <namespace> -f values-production.yaml \
+  --set global.deepStorage.enableDataMigration=true
 ```
 
-### Optional: Decommission Minio
+### PVC not deleted after successful migration
 
-Once you've verified that:
-- Migration completed successfully
-- Analytics data is accessible in Portal
-- Druid is functioning correctly with SeaweedFS
-- You've updated `enableDataMigration: false`
+**Symptom**: Job completed but `kubectl get pvc` still shows `minio-vol-claim-minio-0`.
 
-You can optionally scale down or remove Minio resources to free up cluster resources:
-
+**Fix**: Delete it manually:
 ```bash
-# Scale down Minio (if deployed as part of Druid subchart)
-kubectl scale statefulset minio -n <namespace> --replicas=0
-
-# Or disable Minio in your values file for future upgrades
-# Note: Check your chart version's documentation for the correct approach
+kubectl delete pvc minio-vol-claim-minio-0 -n <namespace> --ignore-not-found
 ```
-
-**Warning**: Only decommission Minio after thorough validation. Keep backups of critical data.
-
----
-
-## Best Practices
-
-1. **Test in Non-Production First**: Always test the migration in a development or staging environment before production
-2. **Backup Data**: Take backups of your Minio data before starting the migration
-3. **Monitor Resources**: Ensure adequate cluster resources during migration
-4. **Plan Maintenance Window**: Schedule the upgrade during a maintenance window to minimize user impact
-5. **Document Configuration**: Keep track of your `enableDataMigration` setting changes
-6. **Verify Before Disabling**: Only set `enableDataMigration: false` after confirming successful migration
-7. **Keep Migration Logs**: Save migration Job logs for troubleshooting and audit purposes
 
 ---
 
 ## Configuration Reference
 
-### Key Configuration Parameters
-
-| Parameter | Location | Default | Description |
-|-----------|----------|---------|-------------|
-| `global.deepStorage.seaweedfs` | values.yaml | `true` | Enable SeaweedFS as deep storage backend |
-| `global.deepStorage.enableDataMigration` | values.yaml | `true` | Enable/disable migration Job creation |
-| `global.deepStorage.migrationInitialDelaySeconds` | values.yaml | `600` | Maximum wait time for services (seconds) |
-| `global.deepStorage.auth.secretName` | values.yaml | `seaweedfs-s3-secret` | Secret containing SeaweedFS credentials |
-| `global.deepStorage.analytics.bucketName` | values.yaml | `api-metrics` | Target bucket name in SeaweedFS |
-
-### Related Secrets
-
-- **minio-secret**: Contains Minio access credentials (source)
-- **seaweedfs-s3-secret**: Contains SeaweedFS S3 credentials (destination)
-
-Both secrets should contain:
-- `access_key` or `accesskey`
-- `secret_key` or `secretkey`
-
----
-
-## Additional Resources
-
-- [Portal Helm Chart Documentation](../../charts/portal/README.md)
-- [SeaweedFS Documentation](https://github.com/seaweedfs/seaweedfs)
-- [Rclone Documentation](https://rclone.org/docs/)
-- [Broadcom API Portal Documentation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/)
-
----
-
-## Support
-
-For issues or questions related to the migration process:
-1. Check the troubleshooting section above
-2. Review migration Job logs for specific error messages
-3. Consult the Portal Helm chart issues on GitHub
-4. Contact Broadcom support with relevant logs and configuration details
+| Parameter | Default (5.4.2) | Description |
+|-----------|----------------|-------------|
+| `druid.minio.enabled` | `false` | Deploy the MinIO StatefulSet. Must be `false` for PVC-based migration. |
+| `global.deepStorage.enableDataMigration` | `false` | Create the migration Job. Set `true` only when migrating from 5.3/5.4. |
+| `global.deepStorage.migrationInitialDelaySeconds` | `600` | Seconds to wait for SeaweedFS before starting the copy. |
+| `global.deepStorage.auth.secretName` | `seaweedfs-s3-secret` | Secret containing SeaweedFS admin credentials. |
+| `global.deepStorage.analytics.bucketName` | `api-metrics` | Target bucket in SeaweedFS. |
+| `seaweedfs.minio.bucketName` | `api-metrics` | Source bucket name in the MinIO PVC filesystem path. |
 
 ---
 
@@ -389,8 +241,5 @@ For issues or questions related to the migration process:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | 2026-01-29 | Initial documentation for Minio to SeaweedFS migration |
-
----
-
-**Note**: This migration is a one-time process per Portal deployment. Once completed and verified, ensure `enableDataMigration` is set to `false` to prevent unnecessary re-execution on future upgrades.
+| 2.0 | 2026-05-15 | 5.4.2: PVC-based migration (no MinIO service); auto-cleanup of MinIO PVC; distributed MinIO guidance |
+| 1.0 | 2026-01-29 | 5.4: Initial S3-to-S3 migration documentation |

@@ -1,3 +1,4 @@
 minio:
+  enabled: false
   cloudStorage: false
 
