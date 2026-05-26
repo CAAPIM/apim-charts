@@ -1,0 +1,67 @@
+{{- if .Values.database.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "gateway.fullname" . }}-mysql-config
+  labels:
+    app: {{ template "gateway.name" . }}-mysql
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    meta.helm.sh/release-name: {{ .Release.Name }}
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+  {{- if or .Values.additionalAnnotations .Values.mysql.commonAnnotations (and .Values.otk.enabled .Values.otk.database.useDemoDb) }}
+  {{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- range $key, $val := .Values.mysql.commonAnnotations }}
+    {{ $key }}: "{{ $val }}"
+  {{- end }}
+  {{- if and .Values.otk.enabled .Values.otk.database.useDemoDb }}
+    helm.sh/hook: pre-install,post-upgrade
+    helm.sh/hook-weight: "-10"
+  {{- end }}
+  {{- end }}
+data:
+  my.cnf: |
+    {{- if .Values.mysql.configuration }}
+{{ .Values.mysql.configuration | indent 4 }}
+    {{- else }}
+    # For advice on how to change settings please see
+    # http://dev.mysql.com/doc/refman/8.4/en/server-configuration-defaults.html
+    [client]
+    port=3306
+    socket=/var/lib/mysql/mysql.sock
+    default-character-set=UTF8MB4
+    [mysqld]
+    # Core settings from Oracle MySQL Community Server defaults
+    host-cache-size=0
+    skip-name-resolve
+    datadir=/var/lib/mysql
+    socket=/var/lib/mysql/mysql.sock
+    secure-file-priv=/var/lib/mysql-files
+    user=mysql
+    pid-file=/var/run/mysqld/mysqld.pid
+    port=3306    
+    # Gateway-specific settings
+    log-bin-trust-function-creators=1
+    bind-address=0.0.0.0
+    # Character set
+    character-set-server=UTF8MB4
+    collation-server=utf8mb4_general_ci
+    # InnoDB settings
+    innodb_log_buffer_size=64M
+    innodb_log_file_size=80M
+    # General settings
+    max_allowed_packet=20M
+    explicit_defaults_for_timestamp
+    sql_mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
+    {{- end }}
+{{- end }}
+

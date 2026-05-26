@@ -1,0 +1,91 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: {{ template "gateway.fullname" . }}-backendtlspolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.backendTLSPolicy.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.backendTLSPolicy.annotations) }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  targetRefs:
+    {{- $fullname := include "gateway.fullname" . }}
+    {{- $rawExclude := .Values.kubernetesGateway.backendTLSPolicy.excludePorts }}
+    {{- $excludePorts := list }}
+    {{- range $rawExclude }}
+    {{- $excludePorts = append $excludePorts (int .) }}
+    {{- end }}
+    {{- if $excludePorts }}
+    {{- range .Values.service.ports }}
+    {{- if not (has (int .external) $excludePorts) }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}
+      sectionName: {{ .name }}
+    {{- end }}
+    {{- end }}
+    {{- else }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}
+    {{- end }}
+    {{- $hasMgmtRoute := false }}
+    {{- range .Values.kubernetesGateway.httpRoute.rules }}
+      {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
+    {{- end }}
+    {{- range .Values.kubernetesGateway.tlsRoute.rules }}
+      {{- if and .backend (eq .backend "management") }}{{ $hasMgmtRoute = true }}{{ end }}
+    {{- end }}
+    {{- if $hasMgmtRoute }}
+    {{- if $excludePorts }}
+    {{- range .Values.management.service.ports }}
+    {{- if not (has (int .external) $excludePorts) }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}-management
+      sectionName: {{ .name }}
+    {{- end }}
+    {{- end }}
+    {{- else }}
+    - group: ""
+      kind: Service
+      name: {{ $fullname }}-management
+    {{- end }}
+    {{- end }}
+  validation:
+    {{- $v := .Values.kubernetesGateway.backendTLSPolicy.validation }}
+    hostname: {{ default (printf "%s.%s.svc.cluster.local" (include "gateway.fullname" .) .Release.Namespace) $v.hostname | quote }}
+    {{- if $v.wellKnownCACertificates }}
+    wellKnownCACertificates: {{ $v.wellKnownCACertificates }}
+    {{- else if $v.caCertificateRefs }}
+    caCertificateRefs:
+      {{- toYaml $v.caCertificateRefs | nindent 6 }}
+    {{- else }}
+    caCertificateRefs:
+      - name: {{ include "kubernetesGateway.caCertConfigMapName" . }}
+        group: ""
+        kind: ConfigMap
+    {{- end }}
+{{- else }}
+{{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling kubernetesGateway.backendTLSPolicy." }}
+{{- end }}
+{{- end }}

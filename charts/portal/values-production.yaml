@@ -23,6 +23,11 @@ global:
   legacyHostnames: false
   legacyDatabaseNames: false
   subdomainPrefix: dev-portal
+  # IMPORTANT: Set domain here - it will be used by ALL components including intelligence
+  # When you set portal.domain, also set global.domain to the same value
+  # Or just set global.domain and portal.domain will use it
+  domain: dev.ca.com
+  defaultTenantId: apim
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   #   podSecurityContext:
@@ -55,6 +60,8 @@ global:
     allowInsecureImages: true
 
 portal:
+  # NOTE: domain is now set in global.domain (above) for consistency across all components
+  # Keeping this for backward compatibility - it references global.domain
   domain: example.com
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
@@ -80,7 +87,7 @@ portal:
     secretName: ssg-secret
   # username: admin
   # password: M2NlY2RhZTMyZDZkNWMyZGI3
-# Internal password for the Portal API - auto-generated on install
+  # Internal password for the Portal API - auto-generated on install
   papi:
     secretName: papi-secret
   # password: 7layer
@@ -88,13 +95,15 @@ portal:
     port: 443
   ssoDebug: false
   hostnameWhitelist:
+  # NOTE: defaultTenantId is now set in global.defaultTenantId (above)
+  # Keeping this for backward compatibility
   defaultTenantId: apim
-  #Configuration to use custom registries to pull the container images with appropriate credentials.
-  #This refers to the dockerconfigjson that contains the information about the registry and its creds.
+  # Configuration to use custom registries to pull the container images with appropriate credentials.
+  # This refers to the dockerconfigjson that contains the information about the registry and its creds.
   registryCredentials:
-  #Set this to true if there is already an existing pull secret available.
+  # Set this to true if there is already an existing pull secret available.
   useExistingPullSecret: false
-  #Set this if you would like to add an image pull secret directly to the Portal deployment.
+  # Set this if you would like to add an image pull secret directly to the Portal deployment.
   imagePullSecret:
     enabled: false
     username:
@@ -126,8 +135,11 @@ tls:
 # These secrets are NOT Helm managed, you will need to clean them up manually.
 # This will force all of the deployments that use the secrets to upgrade
 # If you don't do this, you will have to perform a manual restart of each affected container
-  internalSecretName: portal-internal-secret
-  externalSecretName: portal-external-secret
+  internalSecretName: &internalSecretName portal-internal-secret
+  externalSecretName: &externalSecretName portal-external-secret
+  kafkaCaSecretName: &kafkaCaSecretName portal-kafka-ca-secret
+  kafkaSecretName: portal-kafka-tls-secret
+
   useSignedCertificates: false
 # crt, crtChain and key expect files, use --set-file or add them here
 # in pem format
@@ -155,9 +167,11 @@ ingress:
   type:
     kubernetes: true
     openshift: false
+    contour: false
+    gatewayAPI: false
   # enable/disable tls on ingress rule
   tls: true
-  # existingSecret:
+# existingSecret:
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
@@ -174,6 +188,46 @@ ingress:
 #   - tenant2
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
+  additionalLabels: {}
+  # Kubernetes Gateway API Configuration
+  # ref: https://gateway-api.sigs.k8s.io/
+  # When enabled, TLSRoute resources are auto-generated for all portal services
+  # (fixed routes and dynamic tenantIds/customRoutes). All routes use TLS passthrough
+  # since portal backends terminate TLS themselves.
+  gatewayAPI:
+    # -- Create a new Gateway resource managed by this chart
+    create: false
+    # -- GatewayClass name (e.g. contour, eg). Required when create: true.
+    gatewayClassName: ""
+    # -- Optional addresses requested for the Gateway (e.g. static IPs).
+    # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
+    addresses: []
+    # - type: IPAddress
+    #   value: "1.2.3.4"
+    # - type: Hostname
+    #   value: "my-gateway.example.com"
+    # -- Reference to an existing Gateway resource. Used when create: false.
+    # Routes will use this as their parentRef.
+    existingRef:
+      name: ""
+      namespace: ""
+    # -- Gateway listeners. If empty and create: true, listeners are auto-generated
+    # from all portal hostnames using protocol: TLS, port: 443, mode: Passthrough.
+    listeners: []
+    # - name: tls-passthrough
+    #   protocol: TLS
+    #   port: 443
+    #   hostname: "*.example.com"
+    #   tls:
+    #     mode: Passthrough
+    #   allowedRoutes:
+    #     namespaces:
+    #       from: Same
+
+    # -- Additional labels for the Gateway resource
+    labels: {}
+    # -- Additional annotations for the Gateway resource
+    annotations: {}
 
 smtp:
   host: notinstalled
@@ -540,13 +594,13 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.1
+  dispatcher: dispatcher:5.4.1.3
   apim: ingress:5.4.1
   enterprise: portal-enterprise:5.4.1
   data: portal-data:5.4.1
   tps: tenant-provisioning-service:5.4.1
   analytics: analytics-server:5.4.1
-  authenticator: authenticator:5.4.1
+  authenticator: authenticator:5.4.1.2
   dbUpgrade: db-upgrade-portal:5.4.1
   rbacUpgrade: db-upgrade-rbac:5.4.1
   upgradeVerify: upgrade-verify:5.4.1
@@ -1085,8 +1139,183 @@ druid:
     kafka: kafka:5.4.1
     ingestion: ingestion-server:5.4.1
 
+
+# Configuration for the custom Kafka subchart
+kafka: &kafka_config
+  # Enable/disable Kafka deployment
+  # Automatically enabled when analytics or intelligence is enabled
+  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
+  enabled: true
+
+  # Global configuration passed to Kafka subchart
+  global:
+    # Set to your portal subdomain for advertised listeners
+    subdomainPrefix: ""
+
+  # Image configuration
+  image:
+    kafka: kafka:5.4.1
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
+    pullPolicy: IfNotPresent
+
+  # Kafka deployment configuration
+  kafka:
+    # Number of Kafka broker replicas
+    # Set to 3 for production deployments with intelligence enabled
+    replicaCount: 1
+
+    # Ordinals configuration (Kubernetes 1.27+)
+    # Set start ordinal for StatefulSet pods
+    # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+    # where old meta.properties had broker.id=1
+    ordinals:
+      # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+      start: 1
+
+    # Additional labels for Kafka pods
+    additionalLabels: {}
+    # Pod annotations
+    podAnnotations: {}
+    # Force redeploy by adding timestamp annotation
+    forceRedeploy: false
+    # Pod affinity rules
+    affinity: {}
+    # Node selector
+    nodeSelector: {}
+    # Tolerations
+    tolerations: []
+    # Pod security context
+    podSecurityContext: {}
+    # Container security context
+    containerSecurityContext: {}
+    # Resource requests and limits
+    resources: {}
+      # requests:
+      #   cpu: 100m
+      #   memory: 750Mi
+      # limits:
+      #   cpu: 1000m
+      #   memory: 1.5Gi
+
+    # KRaft Mode Configuration (Kafka 4.0.0+)
+    kraft:
+      # Enable KRaft mode (Zookeeper-less)
+      enabled: true
+      # Cluster ID for KRaft (auto-generated if empty)
+      clusterId: ""
+      # Process roles (broker, controller, or both)
+      processRoles: "broker,controller"
+      # Controller quorum voters (auto-generated based on replicas if empty)
+      controllerQuorumVoters: ""
+
+    # Listener Configuration
+    listeners:
+      # Internal listener for inter-broker and client communication
+      internal:
+        enabled: true
+        port: 9092
+        protocol: PLAINTEXT
+      # External listener for clients outside the cluster (third-party agents)
+      # NOTE: Automatically controlled by kafka.externalAccess.enabled
+      # External listener is created only when intelligence is enabled
+      external:
+        port: 9094
+        protocol: SSL
+      # Controller listener for KRaft mode
+      controller:
+        enabled: true
+        port: 9093
+        protocol: PLAINTEXT
+      # Inter-broker listener name
+      interBrokerListenerName: INTERNAL
+
+    # Log retention configuration
+    logRetentionHours: 6
+
+    # TLS/SSL Configuration
+    tls:
+      # Enable TLS/SSL - enabled by default for external SSL support
+      enabled: true
+      # TLS type (PEM or JKS)
+      type: PEM
+      # Client authentication (none, requested, required)
+      clientAuth: required
+      # Secret containing TLS certificates (via environment variables)
+      # Leave empty to use volume-mounted certificates from internalSecretName instead
+      secretName: ""
+      # Keys in the secret
+      keystoreKeyKey: "keystore.key"
+      truststoreCertKey: "truststore.pem"
+      # Password secret for encrypted keys
+      passwordSecretName: ""
+      passwordSecretKey: "keypass.txt"
+
+    # SASL Authentication Configuration
+    sasl:
+      # Enable SASL authentication
+      enabled: false
+      # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+      mechanisms: PLAIN
+      # Inter-broker SASL mechanism
+      interBrokerProtocol: PLAIN
+      # JAAS configuration file path
+      jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
+
+  # Zookeeper configuration (not used in KRaft mode, kept for compatibility)
+  zookeeper:
+    hostname: zookeeper
+    port: 2181
+
+  # Persistence configuration
+  persistence:
+    storage:
+      kafka: 10Gi
+
+  # Service Account
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+    automountServiceAccountToken: true
+
+  # External access configuration for autodiscovery
+  # NOTE: External access is automatically enabled when portal.intelligence.enabled is true
+  # Intelligence requires external Kafka access for third-party agents
+  # Default is false. Set to true manually or enable intelligence feature.
+  externalAccess:
+    enabled: false
+    # Service type for external access (LoadBalancer or NodePort)
+    serviceType: LoadBalancer
+    # Port for external access
+    port: 9094
+    # Hostname/domain for external access (used in advertised listeners)
+    hostname: ""
+    # Annotations for external services
+    annotations:
+      cloud.google.com/load-balancer-type: Internal
+    # LoadBalancer IPs (optional, for static IPs)
+    loadBalancerIPs: []
+    # NodePort values (optional, for NodePort service type)
+    nodePorts: []
+    # Auto-generate advertised listeners based on service IPs
+    autoAdvertisedListeners: true
+    # Discovery configuration for LoadBalancer/NodePort IP detection
+    # NOTE: This only applies when externalAccess.enabled is true (i.e., when intelligence is enabled)
+    # When intelligence is disabled, Kafka uses internal-only listeners and will start normally
+    discovery:
+      # Maximum time to wait for LoadBalancer IP (in seconds)
+      # Increase this if your cloud provider takes longer to provision LoadBalancers
+      timeoutSeconds: 120
+      # Retry interval (in seconds)
+      retryIntervalSeconds: 5
+      # Fail fast: If true, pod will fail when LoadBalancer IP cannot be discovered
+      # This prevents Kafka from starting with incorrect advertised listeners
+      # IMPORTANT: Only affects behavior when intelligence is enabled
+      # Recommended: true (prevents connection issues for external clients)
+      failOnDiscoveryFailure: true
+
 # Settings for RabbitMQ - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq
-rabbitmq:
+rabbitmq: &rabbitmq_config
   enabled: true
   host: rabbitmq
   fullnameOverride: rabbitmq
@@ -1181,10 +1410,20 @@ rabbitmq:
 
 # Settings for the intelligence subchart
 apim-intelligence:
+  # Use a YAML alias (*) to reference the Kafka configuration from above.
+  # This avoids duplicating the configuration and ensures the intelligence
+  # subchart has the correct values for broker discovery.
+  kafka: *kafka_config
+  rabbitmq: *rabbitmq_config
+
+  # NOTE: Do NOT set portal.domain here - it will override user values
+  # Intelligence will automatically use portal.domain from parent chart if available
+  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
+
   # Image configuration
   image:
-    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container
-    intelligenceServer: intelligence-server:5.4.1
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
+    intelligenceServer: intelligence-server:5.4.1.2
     pullPolicy: IfNotPresent
 
   # RBAC configuration
@@ -1200,17 +1439,51 @@ apim-intelligence:
   intelligenceServer:
     # Configuration for the Intelligence Server.
     kafka:
+      # A list of external advertised Kafka brokers.
+      # externalAdvertisedBrokers:
       # Configuration for Kafka broker auto-discovery.
       autoDiscovery:
         # Enables or disables Kafka broker auto-discovery.
         enabled: true
         image:
+          # The repository of the auto-discovery image.
+          repository: "docker.io/caapim/kubectl"
+          # The tag of the auto-discovery image.
+          tag: "1.33.3-debian-12-r0"
+          # The pull policy for the auto-discovery image.
           pullPolicy: IfNotPresent
+        # Resource requests and limits for the auto-discovery init container
+        # resources: {}
+      # Configuration for the Kafka CA certificate.
+      kafkaCa:
+        # The name of the secret containing the Kafka CA certificate.
+        caSecretName: *externalSecretName
+        # The name of the secret containing the password for the Kafka CA certificate.
+        passwordSecretName: *externalSecretName
+        # The key in the password secret that contains the password.
+        passwordSecretKey: "keypass.txt"
     forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
       minAvailable: ""
+    replicaCount: 1
+    image:
+      pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+    podSecurityContext: {}
+    # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+    containerSecurityContext: {}
+    resources:
+      requests: {}
+      # memory: 4Gi
+      limits: {}
+      # memory: 4Gi
+    # nodeSelector: {}
+    # tolerations: []
+    # affinity: {}
 
 # Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
 ingress-nginx:
@@ -1242,11 +1515,12 @@ jobs:
   # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
   podAnnotations: {}
   labels: {}
-# nodeSelector: {}
-# tolerations: []
+  # nodeSelector: {}
+  # tolerations: []
   # set default imagePullPolicy for db-upgrade-portal, db-upgrade-rbac and cert-upgrade jobs
   image:
     pullPolicy: IfNotPresent
+
   dbUpgradePortal:
     resources:
       requests: {}
@@ -1380,9 +1654,9 @@ mysql:
 
   # Init scripts
   # Scripts to run when MySQL starts for the first time
-  initdbScripts:
-    elevate-admin.sql: |
-      GRANT ALL PRIVILEGES ON *.* TO 'portal'@'%'; FLUSH PRIVILEGES;
+  # NOTE: This is templated in the ConfigMap, not here
+  # The actual SQL is rendered with the correct username value
+  initdbScripts: {}
 
 
   # Use an existing ConfigMap for init scripts

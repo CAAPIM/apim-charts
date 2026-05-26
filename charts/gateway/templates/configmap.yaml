@@ -29,7 +29,7 @@ data:
 {{- if .Values.disklessConfig.enabled }}
   {{- if .Values.database.enabled }}
     {{- if .Values.database.create }}
-  SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
+  SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ template "gateway.fullname" . }}-mysql:3306/{{ .Values.database.name }}
     {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
     {{- end }}

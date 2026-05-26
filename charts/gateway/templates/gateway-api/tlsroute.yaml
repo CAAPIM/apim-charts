@@ -1,0 +1,69 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.tlsRoute.enabled }}
+{{- if not .Values.kubernetesGateway.tlsRoute.rules }}
+  {{- fail "kubernetesGateway.tlsRoute.rules is required when kubernetesGateway.tlsRoute.enabled is true. Define at least one rule with a hostname." }}
+{{- end }}
+{{- range $i, $rule := .Values.kubernetesGateway.tlsRoute.rules }}
+  {{- if not $rule.hostname }}
+    {{- fail (printf "kubernetesGateway.tlsRoute.rules[%d] is missing a hostname. TLSRoute uses SNI-based routing and every rule must specify a hostname." $i) }}
+  {{- end }}
+  {{- if not $rule.port }}
+    {{- fail (printf "kubernetesGateway.tlsRoute.rules[%d] (hostname: %s) is missing a port. Set port to the Layer7 Gateway service port (e.g. 8443)." $i $rule.hostname) }}
+  {{- end }}
+{{- end }}
+{{- if $.Capabilities.APIVersions.Has .Values.kubernetesGateway.tlsRoute.apiVersion }}
+{{- $fullname := include "gateway.fullname" . -}}
+{{- $root := . -}}
+{{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.tlsRoute.annotations) -}}
+{{- $hostnameGroups := dict -}}
+{{- range $i, $rule := .Values.kubernetesGateway.tlsRoute.rules }}
+  {{- $existing := default list (get $hostnameGroups $rule.hostname) }}
+  {{- $_ := set $hostnameGroups $rule.hostname (append $existing $rule) }}
+{{- end }}
+{{- range $hostname, $rules := $hostnameGroups }}
+---
+apiVersion: {{ include "kubernetesGateway.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: {{ $fullname }}-tlsroute-{{ $hostname | replace "." "-" | replace "*" "wildcard" | lower | trunc 48 }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    chart: {{ include "gateway.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.kubernetesGateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.kubernetesGateway.tlsRoute.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{ include "kubernetesGateway.defaultParentRefs" $root | nindent 4 }}
+  hostnames:
+    - {{ $hostname | quote }}
+  rules:
+  {{- range $rules }}
+    - backendRefs:
+      {{- if and .backend (eq .backend "management") }}
+        - name: {{ $fullname }}-management
+          port: {{ .port }}
+      {{- else }}
+        - name: {{ $fullname }}
+          port: {{ .port }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+{{- else }}
+{{- fail (printf "TLSRoute CRDs (%s) are not available on this cluster. Install the correct Gateway API CRDs or adjust kubernetesGateway.tlsRoute.apiVersion." .Values.kubernetesGateway.tlsRoute.apiVersion) }}
+{{- end }}
+{{- end }}
