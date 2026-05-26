@@ -232,7 +232,6 @@ spec:
     - backendRefs:
         - name: apim
           port: 1885
-{{- if .Values.portal.intelligence.enabled }}
 ---
 apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
 kind: TLSRoute
@@ -264,8 +263,8 @@ spec:
   rules:
     - backendRefs:
         - name: apim
-          port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
-{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9193) }}
+          port: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+{{- $brokerStartPort := int (.Values.portal.kafka.proxy.brokerStartPort | default 9193) }}
 {{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
 {{- $ordinalStart := 0 }}
 {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
@@ -306,7 +305,6 @@ spec:
     - backendRefs:
         - name: apim
           port: {{ $brokerPort }}
-{{- end }}
 {{- end }}
 {{/*
   ============================================================

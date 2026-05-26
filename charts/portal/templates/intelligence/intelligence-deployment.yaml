@@ -88,7 +88,7 @@ spec:
                   key: mysql-password
                   {{- end }}
             - name: KAFKA_BROKERS
-              value: {{ .Values.intelligence.kafka.brokers | default "kafka:9092" | quote }}
+              value: {{ default (include "kafka.brokers" .) .Values.intelligence.kafka.brokers | quote }}
             - name: KAFKA_SECURITY_PROTOCOL
               value: {{ .Values.intelligence.kafka.securityProtocol | default "PLAINTEXT" | quote }}
           {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
@@ -127,7 +127,7 @@ spec:
               value: ""
           {{- end }}
             - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
-              value: {{ include "intelligence.kafkaProxyBootstrap" . | quote }}
+              value: {{ include "kafka.proxyBootstrap" . | quote }}
           {{- if .Values.intelligence.env }}
           {{- range $key, $value := .Values.intelligence.env }}
             - name: {{ $key }}

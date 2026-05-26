@@ -147,7 +147,6 @@ spec:
           serviceName: apim
           servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
 {{- end }}
-{{- if .Values.portal.intelligence.enabled }}
   - host: {{ include "kafka-proxy-host" . | quote }}
     http:
       paths:
@@ -186,7 +185,6 @@ spec:
       - backend:
           serviceName: apim
           servicePort: kfk-proxy-brk-{{ $nodeId }}
-{{- end }}
 {{- end }}
 {{- end }}
 {{- range .Values.ingress.customRoutes }}

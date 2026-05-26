@@ -176,7 +176,6 @@ spec:
       port: 1885
 ---
 
-{{- if .Values.portal.intelligence.enabled }}
 ---
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
@@ -201,8 +200,8 @@ spec:
   tcpproxy:
     services:
     - name: apim
-      port: {{ .Values.portal.intelligence.kafkaProxy.listenPort | default 9192 }}
-{{- $brokerStartPort := int (.Values.portal.intelligence.kafkaProxy.brokerStartPort | default 9193) }}
+      port: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+{{- $brokerStartPort := int (.Values.portal.kafka.proxy.brokerStartPort | default 9193) }}
 {{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
 {{- $ordinalStart := 0 }}
 {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
@@ -236,7 +235,6 @@ spec:
     services:
     - name: apim
       port: {{ $brokerPort }}
-{{- end }}
 {{- end }}
 
 {{- range $i,$tenantId := $.Values.ingress.tenantIds }}

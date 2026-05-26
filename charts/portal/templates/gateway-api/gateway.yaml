@@ -42,7 +42,6 @@ spec:
   {{- $hostnames = append $hostnames (include "pssg-sso-host" .) }}
   {{- $hostnames = append $hostnames (include "broker-host" .) }}
   {{/* Kafka proxy routes: bootstrap + per-broker SNI hostnames */}}
-  {{- if .Values.portal.intelligence.enabled }}
   {{- $hostnames = append $hostnames (include "kafka-proxy-host" .) }}
   {{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
   {{- $ordinalStart := 0 }}
@@ -52,7 +51,6 @@ spec:
   {{- range $i := until $replicaCount }}
   {{- $nodeId := add $ordinalStart $i }}
   {{- $hostnames = append $hostnames (include "kafka-proxy-broker-host" (dict "root" $ "nodeId" $nodeId)) }}
-  {{- end }}
   {{- end }}
   {{/* Dynamic tenant routes */}}
   {{- range .Values.ingress.tenantIds }}

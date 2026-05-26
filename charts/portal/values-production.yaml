@@ -66,14 +66,22 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
-  # Intelligence feature for advanced analytics and third-party agent integration
-  # IMPORTANT: When intelligence.enabled is true:
-  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+    aggregation: true
+  # Kafka is the messaging backbone for Portal 
+  # Production recommendation: kafka.kafka.replicaCount: 3 (see Kafka subchart block below).
+  kafka:
+    proxy:
+      targetBootstrapServers: "kafka:9092"
+      listenPort: 9191
+      brokerStartPort: 9193
+      advertisedHost: ""
+      advertisedPort: 443
+      brokerAddressPattern: ""
+      configBrokerHost: "localhost"
+  # Intelligence feature for advanced analytics and third-party agent integration.
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
-  # Please set analytics.replicaCount to a minimum of 2
-    aggregation: true
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
@@ -1139,11 +1147,10 @@ druid:
     ingestion: ingestion-server:5.4.1
 
 
-# Configuration for the custom Kafka subchart
+# Configuration for the custom Kafka subchart.
+# Kafka is the messaging backbone for Portal and is always deployed. The kafka pod's internal listener (9092) is never exposed
+# externally - all external Kafka traffic flows through the APIM Kafka Proxy assertion.
 kafka:
-  # Enable/disable Kafka deployment
-  # Automatically enabled when analytics or intelligence is enabled
-  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
   enabled: true
 
   # Global configuration passed to Kafka subchart
