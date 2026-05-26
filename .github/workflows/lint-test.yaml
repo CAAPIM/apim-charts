@@ -24,6 +24,9 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.0
       - name: Run chart-testing (lint)
-        run: ct lint --config .github/ct-lint.yaml --check-version-increment true --target-branch stable
+        # Version increment check is enforced only for stable, as that branch is customer-facing
+        run: ct lint --config .github/ct-lint.yaml --check-version-increment ${{ github.base_ref == 'stable' }} --target-branch ${{ github.base_ref }}
       - name: Run version-check
+        # Version check is only required for stable since it is the branch exposed to customers
+        if: github.base_ref == 'stable'
         run: .github/version-check.sh
