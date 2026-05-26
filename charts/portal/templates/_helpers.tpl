@@ -486,10 +486,18 @@ Get "intelligence" database name
 {{- end -}}
 
 {{/*
-Get Kafka broker address for intelligence server.
-Uses the kafka subchart's fullnameOverride and internal listener port.
+  ============================================================
+  Kafka Helpers (shared by portal-data, analytics-server,
+  tenant-provisioner, authenticator, intelligence)
+  ============================================================
 */}}
-{{- define "intelligence.kafkaBrokers" -}}
+
+{{/*
+In-cluster Kafka bootstrap broker list. Resolves to the kafka subchart's
+service name + internal listener port (default kafka:9092). Used by every
+in-cluster Kafka producer / consumer
+*/}}
+{{- define "kafka.brokers" -}}
     {{- $kafkaName := default "kafka" .Values.kafka.fullnameOverride -}}
     {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
         {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
@@ -499,11 +507,12 @@ Uses the kafka subchart's fullnameOverride and internal listener port.
 {{- end -}}
 
 {{/*
-Generate Kafka proxy bootstrap address for intelligence server.
-Uses the advertised port (default 443) for SNI-based routing.
+External Kafka proxy bootstrap address advertised to tenant Gateways via SNI
+on port 443 (default). Used by intelligence server and exposed via APIM
+KafkaTcpProxy assertion.
 */}}
-{{- define "intelligence.kafkaProxyBootstrap" -}}
+{{- define "kafka.proxyBootstrap" -}}
     {{- $host := include "kafka-proxy-host" . -}}
-    {{- $port := int (.Values.portal.intelligence.kafkaProxy.advertisedPort | default 443) -}}
+    {{- $port := int (.Values.portal.kafka.proxy.advertisedPort | default 443) -}}
     {{- printf "%s:%d" $host $port -}}
 {{- end -}}

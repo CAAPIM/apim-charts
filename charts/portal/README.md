@@ -822,14 +822,27 @@ For Production, use an external MySQL Server.
 The Intelligence server provides advanced analytics and third-party agent integration capabilities.
 
 **Important Dependencies:**
-- When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
-  - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
+- Kafka is always deployed - intelligence consumes from the same in-cluster Kafka used by Portal  deployment messaging, analytics.
+- For production with intelligence enabled, set `kafka.kafka.replicaCount: 3`.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `portal.intelligence.enabled` | Enable Intelligence service | `false` |
 | `intelligence.replicaCount` | Number of intelligence server replicas | `1` |
 | `intelligence.kafka.kafkaCa.caSecretName` | Secret containing the CA certificate for Kafka mTLS | `portal-external-secret` |
+
+## Kafka and KafkaTcpProxy on APIM
+Portal 5.4.2 (rmq2kafka / F161288) uses Kafka for deployment messaging. Kafka is always deployed; the brokers' internal listener (9092) is never exposed externally. All external Kafka traffic is fronted by the `KafkaTcpProxyAssertion` on the APIM gateway, with SNI-based per-broker routing on port 443. 
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.kafka.proxy.targetBootstrapServers` | Upstream Kafka the proxy forwards to | `kafka:9092` |
+| `portal.kafka.proxy.listenPort` | APIM bootstrap listen port for Kafka clients | `9191` |
+| `portal.kafka.proxy.brokerStartPort` | Per-broker start port; per-broker port = `brokerStartPort + nodeId` | `9193` |
+| `portal.kafka.proxy.advertisedHost` | Hostname advertised to Kafka clients (defaults to `kafka-proxy-host` helper) | `""` |
+| `portal.kafka.proxy.advertisedPort` | Port advertised to Kafka clients; `443` enables SNI routing through ingress | `443` |
+| `portal.kafka.proxy.brokerAddressPattern` | Per-broker SNI hostname pattern with `$(nodeId)` (defaults to helper) | `""` |
+| `portal.kafka.proxy.configBrokerHost` | Value baked into the enrollment bundle CWP `portal.config.broker.kafka.host` | `localhost` |
 
 ## SeaweedFS
 The SeaweedFS subchart provides S3-compatible object storage for analytics data.
@@ -852,18 +865,15 @@ The SeaweedFS subchart provides S3-compatible object storage for analytics data.
 
 For detailed SeaweedFS configuration and migration guide, see [Minio to SeaweedFS Migration Guide](../../utils/MINIO-TO-SEAWEEDFS-MIGRATION.md).
 
-## Kafka
-The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) for message streaming.
-
-**Automatic Deployment:**
-- Deployed when `kafka.enabled: true`
-- Required for Intelligence service
+## Kafka Subchart
+The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less). Kafka is the messaging backbone for Portal.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `kafka.enabled` | Enable Kafka subchart | `false` |
-| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
+| `kafka.enabled` | Deploy the Kafka subchart | `true` |
+| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production with intelligence) | `1` |
 | `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
+| `kafka.kafka.ordinals.start` | StatefulSet pod start ordinal (1 preserves KRaft nodeId across Zookeeper upgrade) | `1` |
 
 For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
 

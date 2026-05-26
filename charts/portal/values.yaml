@@ -69,22 +69,20 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
-  # Intelligence feature for advanced analytics and third-party agent integration
-  # IMPORTANT: When intelligence.enabled is true:
-  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
-  # Intelligence is disabled by default. Enable it for third-party agent integration.
-  intelligence:
-    enabled: false
-    # KafkaTcpProxy configuration on APIM Gateway
-    kafkaProxy:
-      # Internal Kafka bootstrap servers that the proxy forwards traffic to
+
+  # Kafka is the messaging backbone for Portal :
+  # Kafka is always deployed and proxied through APIM
+  # the kafka subchart itself is governed by kafka.enabled.
+  kafka:
+    # Kafka Proxy configuration on APIM Gateway (server mode, SNI on :443).
+    proxy:
+      # Internal Kafka bootstrap servers that the proxy forwards traffic to.
       targetBootstrapServers: "kafka:9092"
-      # Bootstrap listen port on the APIM Gateway (KafkaTcpProxy assertion)
-      listenPort: 9192
-      # Per-broker listen ports start from this value (9194, 9195, 9196, ...)
-      # init-tssg.sh subtracts 1 for the assertion's internal brokerStartPort,
-      # so actual ports are (brokerStartPort-1) + nodeId where nodeId starts at 1.
-      brokerStartPort: 9194
+      # Bootstrap listen port on the APIM Gateway (KafkaTcpProxy assertion).
+      listenPort: 9191
+      # Per-broker port = brokerStartPort + nodeId; with kafka.kafka.ordinals.start=1
+      # this yields 9194, 9195, 9196 ... for KRaft brokers internally
+      brokerStartPort: 9193
       # Hostname advertised to Kafka clients in metadata responses.
       # Defaults to kafka-proxy-host (the ingress hostname).
       advertisedHost: ""
@@ -95,6 +93,18 @@ portal:
       # Defaults to kafka-proxy-broker-pattern helper (e.g., dev-portal-kafka-proxy-$(nodeId).example.com).
       # Leave empty to use the auto-generated default.
       brokerAddressPattern: ""
+      # Value baked into the enrollment bundle for the tenant Gateway CWP
+      # portal.config.broker.kafka.host. Production policy is "localhost"
+      # the tenant Gateway's Kafka client connects to its local
+      # Kafka Proxy relay; the relay handles upstream TLS / mTLS / SNI /
+      # HTTP CONNECT. The port baked into the bundle is KAFKA_PROXY_LISTEN_PORT
+      configBrokerHost: "localhost"
+  # Intelligence feature for advanced analytics and third-party agent integration
+  # IMPORTANT: When intelligence.enabled is true:
+  #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
+  # Intelligence is disabled by default. Enable it for third-party agent integration.
+  intelligence:
+    enabled: false
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -1005,11 +1015,11 @@ druid:
     ingestion: ingestion-server:5.4.1
 
 
-# Configuration for the custom Kafka subchart
+# Configuration for the custom Kafka subchart.
+# Kafka is the messaging backbone for Portal and always deployed.
+# all external Kafka traffic flows through the APIM Kafka Proxy
+# assertion.
 kafka:
-  # Enable/disable Kafka deployment
-  # Automatically enabled when analytics or intelligence is enabled
-  # Set to false to explicitly disable Kafka even when analytics/intelligence are enabled
   enabled: true
 
   # Global configuration passed to Kafka subchart
