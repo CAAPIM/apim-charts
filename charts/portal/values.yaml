@@ -170,6 +170,8 @@ ingress:
   type:
     kubernetes: true
     openshift: false
+    contour: false
+    gatewayAPI: false
   # enable/disable tls on ingress rule
   tls: true
 # existingSecret:
@@ -189,6 +191,38 @@ ingress:
 #   - tenant2
 # Added for backwards compatibility pre deprecation of this API in 1.18
 #  apiVersion: networking.k8s.io/v1beta1
+  additionalLabels: {}
+  # Kubernetes Gateway API Configuration
+  # ref: https://gateway-api.sigs.k8s.io/
+  # When enabled, TLSRoute resources are auto-generated for all portal services
+  # (fixed routes and dynamic tenantIds/customRoutes). All routes use TLS passthrough
+  # since portal backends terminate TLS themselves.
+  gatewayAPI:
+    # -- TLSRoute API version. TLSRoute is GA (v1) as of Gateway API 1.5.0.
+    # Set to gateway.networking.k8s.io/v1 when your Gateway API CRDs include
+    # TLSRoute at v1.
+    tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
+    # -- Create a new Gateway resource managed by this chart
+    create: false
+    # -- GatewayClass name (e.g. contour, eg). Required when create: true.
+    gatewayClassName: ""
+    # -- Optional addresses requested for the Gateway (e.g. static IPs).
+    # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
+    addresses: []
+    # - type: IPAddress
+    #   value: "1.2.3.4"
+    # - type: Hostname
+    #   value: "my-gateway.example.com"
+    # -- Reference to an existing Gateway resource. Used when create: false.
+    # Routes will use this as their parentRef.
+    existingRef:
+      name: ""
+      namespace: ""
+
+    # -- Additional labels for the Gateway resource
+    labels: {}
+    # -- Additional annotations for the Gateway resource
+    annotations: {}
 
 smtp:
   host: notinstalled
@@ -493,13 +527,13 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.1
+  dispatcher: dispatcher:5.4.1.3
   apim: ingress:5.4.1
   enterprise: portal-enterprise:5.4.1
   data: portal-data:5.4.1
   tps: tenant-provisioning-service:5.4.1
   analytics: analytics-server:5.4.1
-  authenticator: authenticator:5.4.1
+  authenticator: authenticator:5.4.1.2
   dbUpgrade: db-upgrade-portal:5.4.1
   rbacUpgrade: db-upgrade-rbac:5.4.1
   upgradeVerify: upgrade-verify:5.4.1
@@ -1225,7 +1259,7 @@ apim-intelligence:
   # Image configuration
   image:
     autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
-    intelligenceServer: intelligence-server:5.4.1
+    intelligenceServer: intelligence-server:5.4.1.2
     pullPolicy: IfNotPresent
 
   # RBAC configuration
@@ -1249,7 +1283,7 @@ apim-intelligence:
         enabled: true
         image:
           # The repository of the auto-discovery image.
-          repository: "docker.io/bitnami/kubectl"
+          repository: "docker.io/caapim/kubectl"
           # The tag of the auto-discovery image.
           tag: "1.33.3-debian-12-r0"
           # The pull policy for the auto-discovery image.

@@ -72,6 +72,25 @@ Properties related to OTK database install/Upgrade.
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
 | `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 
+> :information_source: **Important** <br>
+When deploying the OTK via the gateway helm chart with the Demo DB the JDBC connection created does not work with mySQL 8.4 as it requires  the use of allowPublicKeyRetrieval in the otk.database.sql.jdbcURL. 
+
+Via YAML Configuration:
+```
+otk:
+  database:
+    sql:
+      connectionProperties:
+        useSSL: "true"
+        allowPublicKeyRetrieval: "true"
+```
+Via helm command line:
+```
+--set-string otk.database.sql.connectionProperties.useSSL="true"
+
+--set-string otk.database.sql.connectionProperties.allowPublicKeyRetrieval="true"
+```
+
 To configure external mysql/oracle database as OTK db, configure properties in below table.
 
 | Parameter                        | Description                               | Default                                                      |

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.filer.s3.createBuckets }}
 ---
 apiVersion: batch/v1
@@ -5,8 +6,8 @@ kind: Job
 metadata:
   name: "{{ $.Release.Name }}-bucket-hook"
   labels:
-    app: {{ template "portal.name" . }}
-    chart: {{ template "portal.chart" . }}
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
