@@ -35,6 +35,12 @@ data:
   # Intelligence Feature Flag
   INTELLIGENCE_ENABLED: "false"
 {{- end }}
+  KAFKA_PROXY_LISTEN_PORT: {{ .Values.apim.kafka.proxyPort | default 9192 | quote }}
+  KAFKA_PROXY_ADVERTISED_PORT: {{ .Values.apim.kafka.advertisedPort | default 9192 | quote }}
+  KAFKA_PROXY_BROKER_START_PORT: {{ .Values.apim.kafka.brokerStartPort | default 9195 | quote }}
+{{- if .Values.apim.kafka.targetServers }}
+  KAFKA_PROXY_TARGET_SERVERS: {{ .Values.apim.kafka.targetServers | quote }}
+{{- end }}
 {{ if .Values.apim.additionalEnv }}
 {{- range $key, $val := .Values.apim.additionalEnv }}
   {{ $key }}: {{ $val | quote }}

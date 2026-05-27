@@ -284,6 +284,11 @@ apim:
 # tolerations: []
 # affinity: {}
   additionalEnv:
+  kafka:
+    targetServers: "kafka:9092"
+    proxyPort: 9192
+    advertisedPort: 9192
+    brokerStartPort: 9195
 
 authenticator:
   forceRedeploy: false

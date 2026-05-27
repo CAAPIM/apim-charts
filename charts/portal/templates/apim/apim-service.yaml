@@ -13,6 +13,10 @@ spec:
       targetPort: 8080
       protocol: TCP
       name: apim-http
+    - port: {{ .Values.apim.kafka.proxyPort | default 9192 }}
+      targetPort: {{ .Values.apim.kafka.proxyPort | default 9192 }}
+      protocol: TCP
+      name: kafka-proxy
     - port: 8443
       targetPort: 8443
       protocol: TCP

@@ -187,6 +187,7 @@ spec:
             - containerPort: 9449
             - containerPort: 1885
             - containerPort: 9448
+            - containerPort: {{ .Values.apim.kafka.proxyPort | default 9192 }}
           {{- if or (contains "4.5" .Chart.AppVersion) .Values.apim.volumeMounts }}
           volumeMounts:
             {{- if contains "4.5" .Chart.AppVersion }}
