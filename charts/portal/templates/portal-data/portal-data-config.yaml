@@ -38,6 +38,7 @@ data:
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
   KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
   KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "kafka-proxy-host" .) .Values.portal.kafka.proxy.advertisedHost | quote }}
+  KAFKA_PROXY_ADVERTISED_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
   CONFIG_BROKER_KAFKA_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
   RBAC_DATABASE_NAME: {{ include "rbac-db-name" . | quote }}
   RBAC_DATABASE_PORT: {{ include "database-port" . | quote }}
