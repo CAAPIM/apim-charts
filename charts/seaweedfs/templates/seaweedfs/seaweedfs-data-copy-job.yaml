@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if (eq .Values.global.deepStorage.enableDataMigration true) }}
 # Data Migration Job: MinIO → SeaweedFS (Sidecar MinIO SNMD + S3-to-S3)
 #
@@ -40,10 +41,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "portal.fullname" . }}-seaweedfs-data-copy-job
+  name: {{ template "seaweedfs.fullname" . }}-seaweedfs-data-copy-job
   labels:
-    app: {{ template "portal.name" . }}
-    chart: {{ template "portal.chart" . }}
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     component: data-migration
@@ -247,12 +248,5 @@ spec:
               memory: 4Gi
             requests:
               memory: 4Gi
-      volumes:
-        - name: migration-signal
-          emptyDir: {}
-        {{- range $i := until (int .Values.minio.replicaCount) }}
-        - name: minio-data-{{ $i }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.minio.pvcBaseName }}-{{ $i }}
-        {{- end }}
-{{- end }}
+      restartPolicy: "OnFailure"
+{{ end }}

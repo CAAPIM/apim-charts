@@ -25,9 +25,8 @@ global:
 
 image: seaweedfs:5.4.1
 persistence:
-    storage:
-      seaweedfs: 50Gi
-
+  storage:
+    seaweedfs: 50Gi
 
 migrateData: false
 # time post-install hook re-tries to create the bucket.

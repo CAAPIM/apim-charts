@@ -7,6 +7,51 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.1 OTK 4.7.0 Released
+- The default image tag in values.yaml and production-values.yaml for OTK updated to 4.7.0.
+  - otk.job.image.tag: 4.7.0
+- Added support for SSL connection for MySQL database. The sslMode option can be used in the JDBC query
+- Upgrading to 4.7.0 should be tested & validated in a lower environment prior to production rollout
+- For OTK 4.7.0 specific features please refer to [Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-7.html)
+
+## 3.1.0 Bitnami SubChart removal
+- All Bitnami SubCharts have been removed from the Gateway Helm Chart
+- Statefulsets for mysql and redis have been added to replace the subCharts
+  - These are examples only and should <b>NOT</b> be used in production environments!
+  - If you are using the mysql subChart in a development environment, a new persistent volume claim and statefulset will be created.
+    - use graphman to export your gateway configuration prior to upgrading
+    - your old mysql persistent volume claim and statefulset will remain
+      - you will need to restart the gateway manually
+       - ```kubectl rollout restart deployment <deployment-name>```
+  - The new Redis Statefulset is standalone only with optional SSL/TLS and password auth
+- Upgrading to the latest version of the Chart
+  - will not remove the existing mysql statefulset or associated persistent volume claim
+    - you will need to clean these up manually
+  - will not redeploy the Gateway if restartOnConfigChange.enabled is not true
+    - ```kubectl rollout restart deployment <release-name>-gateway```
+
+## 3.1.0 Kubernetes Gateway v1 Support
+- Added support for the Gateway v1 API
+  - See [kubernetesGateway Configuration](./README.md#kubernetes-gateway-api-configuration) for more details and the [examples](../../examples/ingress/readme.md) for getting started.
+    - By default we autogenerate certificates for both Gateways
+  - Ingress v1 will remain the default
+    - Enabling the kubernetesGateway will not remove your existing ingress record
+      - this can be done by setting ingress.enabled to false after testing and configuring DNS.
+    - The default ingress class (nginx) will stay the same for the foreseeable future
+      - this avoids unplanned changes if you are not already overriding the ingress class
+
+## 3.1.0 General Updates
+- Added per route annotations for Openshift
+  - configured in ingress.rules
+    - this has no impact on ingress v1
+- InfluxDB and the service metrics example have been removed
+  - using the [OTel integration](./README.md#opentelemetry-configuration) is a much better alternative
+- installSolutionKits has been removed
+  - if you were using this functionality in previous versions of the Gateway we recommend configuring a kubernetes job instead
+
+## 3.0.45 General Updates
+Update chart to generate default TLS secret for external GemFire deployed by GemFire operator.
+
 ## 3.0.44 General Updates
 This patch resolves conflicting labels/selectors for the OTK install, upgrade and scheduled task jobs. 
 
