@@ -20,6 +20,8 @@ global:
   legacyDatabaseNames: false
 # databasePassword: 7layer
   deepStorage:
+    minio: true
+    minioRemoved: false
     analytics:
       bucketName: api-metrics
 

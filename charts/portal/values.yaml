@@ -44,13 +44,23 @@ global:
 # saas: false
 
   deepStorage:
-    # Set to true to create a data migration Job from Minio to SeaweedFS
-    # The Job runs independently and will not block helm operations
-    # Rclone will automatically retry if services are not ready
-    # Set to false to remove the Job resource
-    enableDataMigration: true
-    # Maximum time in seconds to wait for services to become ready (default: 600 = 10 minutes)
-    # The Job will check service accessibility every 10 seconds until ready or timeout
+    # Controls which S3 backend Druid uses.
+    # true  = Druid points at MinIO (http://minio:9000) — safe default for all pre-5.4.1 upgraders
+    # false = Druid points at SeaweedFS (http://seaweedfs-s3:8333)
+    # Fresh 5.4.2 installs must explicitly set this to false.
+    # Pre-5.4.1 upgraders (5.3.3, 5.4.0): leave true until migration is verified complete.
+    minio: true
+    # Set to true to create a data migration Job from MinIO to SeaweedFS.
+    # The Job runs as a Helm post-upgrade hook and blocks helm upgrade until complete.
+    # Use --timeout 3h (or longer) when enabling this to avoid premature timeout.
+    # Set back to false after migration is verified complete.
+    enableDataMigration: false
+    # Set to true ONLY after migration is complete and MinIO is no longer needed.
+    # Removes the MinIO StatefulSet, Service, and ConfigMap from Helm management.
+    # The MinIO PVC is NOT deleted automatically — remove it manually after validation.
+    minioRemoved: false
+    # Maximum time in seconds to wait for MinIO and SeaweedFS to become ready (default: 600 = 10 minutes)
+    # The migration Job init container checks service accessibility every 10 seconds until ready or timeout
     migrationInitialDelaySeconds: 600
     auth:
       secretName: seaweedfs-s3-secret

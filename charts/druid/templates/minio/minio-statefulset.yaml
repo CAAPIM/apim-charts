@@ -1,4 +1,4 @@
-{{- if not .Values.minio.cloudStorage }}
+{{- if and .Values.global.deepStorage.minio (not .Values.minio.cloudStorage) (not .Values.global.deepStorage.minioRemoved) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
