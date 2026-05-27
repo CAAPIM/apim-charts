@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: Service
 metadata:
@@ -41,6 +42,24 @@ spec:
       targetPort: 9448
       protocol: TCP
       name: apim-sso
+    - port: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+      targetPort: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+      protocol: TCP
+      name: kfk-proxy-boot
+{{- $brokerStartPort := int (.Values.portal.kafka.proxy.brokerStartPort | default 9193) }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+{{- $brokerPort := add $brokerStartPort $nodeId }}
+    - port: {{ $brokerPort }}
+      targetPort: {{ $brokerPort }}
+      protocol: TCP
+      name: kfk-proxy-brk-{{ $nodeId }}
+{{- end }}
   selector:
     app: apim
   type: ClusterIP

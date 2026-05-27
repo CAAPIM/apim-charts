@@ -1484,6 +1484,7 @@ In order the create the database on the remote server, the provided user in the 
 | `mysql.auth.username`            | MySQL user (optional) | `gateway`  |
 | `mysql.auth.password`            | MySQL user password | `mypassword`  |
 | `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
+| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `128M` |
 | `mysql.service.type`             | MySQL service type | `ClusterIP`  |
 | `mysql.service.port`             | MySQL service port | `3306`  |
 | `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
@@ -1565,7 +1566,7 @@ mysql:
   configuration: |-
     [mysqld]
     max_connections=200
-    max_allowed_packet=32M
+    max_allowed_packet=128M
     innodb_buffer_pool_size=256M
 ```
 
