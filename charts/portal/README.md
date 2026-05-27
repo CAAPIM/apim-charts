@@ -1108,6 +1108,7 @@ The Portal chart includes a standalone MySQL StatefulSet for demo/development pu
 | `mysql.readinessProbe.failureThreshold` | Failure threshold for readiness probe   | `3` |
 | `mysql.startupProbe.enabled`     | Enable startup probe   | `false` |
 | `mysql.configuration`            | MySQL configuration (my.cnf)   | `""` (uses default) |
+| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `128M` |
 | `mysql.initdbScripts`            | Dictionary of initdb scripts   | `{}` |
 | `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts   | `""` |
 | `mysql.extraEnvVars`             | Extra environment variables   | `[]` |
