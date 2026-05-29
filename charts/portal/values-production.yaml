@@ -42,11 +42,12 @@ global:
 # schedulerName:
   deepStorage:
     # Controls which S3 backend Druid uses.
-    # true  = Druid points at MinIO (http://minio:9000) — safe default for all pre-5.4.1 upgraders
-    # false = Druid points at SeaweedFS (http://seaweedfs-s3:8333)
-    # Fresh 5.4.2 installs must explicitly set this to false.
-    # Pre-5.4.1 upgraders (5.3.3, 5.4.0): leave true until migration is verified complete.
-    minio: true
+    # false = Druid points at SeaweedFS (http://seaweedfs-s3:8333) — default for fresh installs
+    # true  = Druid points at MinIO (http://minio:9000)
+    # Pre-5.4.1 upgraders (5.3.3, 5.4.0) MUST explicitly set this to true in Step 1 of the
+    # upgrade procedure, then set it back to false after migration is verified complete.
+    # See utils/MINIO-TO-SEAWEEDFS-MIGRATION.md for the full upgrade procedure.
+    minio: false
     # Set to true to create a data migration Job from MinIO to SeaweedFS.
     # The Job runs as a Helm post-upgrade hook and blocks helm upgrade until complete.
     # Use --timeout 3h (or longer) when enabling this to avoid premature timeout.

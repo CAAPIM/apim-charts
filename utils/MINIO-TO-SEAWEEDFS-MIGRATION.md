@@ -66,13 +66,15 @@ Both 5.3.3 and 5.4.0 are MinIO-only releases (SeaweedFS did not exist). Use the 
 
 #### Step 1 — Upgrade and install SeaweedFS alongside MinIO
 
-Druid stays on MinIO throughout this step. No outage.
+> **REQUIRED FLAG — do not skip:** The 5.4.2 chart defaults to `global.deepStorage.minio=false`
+> (SeaweedFS). You must pass `--set global.deepStorage.minio=true` in this step or Druid will
+> immediately switch to an empty SeaweedFS and analytics will go dark.
 
 ```bash
 helm upgrade <release> ./charts/portal \
   -n <namespace> \
   -f values-production.yaml \
-  --set global.deepStorage.minio=true \
+  --set global.deepStorage.minio=true \        # REQUIRED — keeps Druid on MinIO
   --set global.deepStorage.enableDataMigration=false \
   --set global.deepStorage.minioRemoved=false
 ```
@@ -114,13 +116,13 @@ Expected final output:
 
 #### Step 3 — Switch Druid to SeaweedFS
 
+Drop the `minio=true` override. The chart default of `false` now takes effect automatically:
+
 ```bash
 helm upgrade <release> ./charts/portal \
   -n <namespace> \
-  -f values-production.yaml \
-  --set global.deepStorage.minio=false \
-  --set global.deepStorage.enableDataMigration=false \
-  --set global.deepStorage.minioRemoved=false
+  -f values-production.yaml
+  # No --set global.deepStorage.minio needed — chart default false switches Druid to SeaweedFS
 ```
 
 Verify analytics data is accessible in the Portal UI.
@@ -205,17 +207,19 @@ helm upgrade <release> ./charts/portal \
 
 ## Flag State Reference
 
+Chart default for `minio` is **`false`** (SeaweedFS). `(default)` = no flag needed. `*` = must be set explicitly.
+
 | Scenario | Step | minio | enableDataMigration | minioRemoved |
 |---|---|---|---|---|
-| Fresh 5.4.2 install | Install | `false` | `false` | `false` |
-| Pre-5.4.1 → 5.4.2 | 1 — Upgrade | `true` | `false` | `false` |
-| Pre-5.4.1 → 5.4.2 | 2 — Migrate | `true` | `true` | `false` |
-| Pre-5.4.1 → 5.4.2 | 3 — Switch | `false` | `false` | `false` |
-| Pre-5.4.1 → 5.4.2 | 4 — Cleanup | `false` | `false` | `true` |
-| 5.4.1 → 5.4.2 (on SeaweedFS) | Upgrade | `false` | `false` | `false` |
-| 5.4.1 → 5.4.2 (on MinIO) | 1 — Migrate | `true` | `true` | `false` |
-| 5.4.1 → 5.4.2 (on MinIO) | 2 — Switch | `false` | `false` | `false` |
-| 5.4.1 → 5.4.2 (on MinIO) | 3 — Cleanup | `false` | `false` | `true` |
+| Fresh 5.4.2 install | Install | `false` (default) | `false` (default) | `false` (default) |
+| Pre-5.4.1 → 5.4.2 | 1 — Upgrade | `true` **REQUIRED \*** | `false` (default) | `false` (default) |
+| Pre-5.4.1 → 5.4.2 | 2 — Migrate | `true` **REQUIRED \*** | `true` * | `false` (default) |
+| Pre-5.4.1 → 5.4.2 | 3 — Switch | `false` (default) | `false` (default) | `false` (default) |
+| Pre-5.4.1 → 5.4.2 | 4 — Cleanup | `false` (default) | `false` (default) | `true` * |
+| 5.4.1 → 5.4.2 (on SeaweedFS) | Upgrade | `false` (default) | `false` (default) | `false` (default) |
+| 5.4.1 → 5.4.2 (on MinIO) | 1 — Migrate | `true` (existing override) | `true` * | `false` (default) |
+| 5.4.1 → 5.4.2 (on MinIO) | 2 — Switch | `false` (default) | `false` (default) | `false` (default) |
+| 5.4.1 → 5.4.2 (on MinIO) | 3 — Cleanup | `false` (default) | `false` (default) | `true` * |
 
 ---
 
