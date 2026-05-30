@@ -69,12 +69,20 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Infrastructure Management — enables intelligence_server for patch management.
+  # intelligence will be enabled if infrastructureManagement is enabled.
+  infrastructureManagement:
+    enabled: false
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
+  # SeaweedFS object storage sub-chart gate. 
+  # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
+  seaweedFs:
+    enabled: true
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
@@ -1220,11 +1228,10 @@ apim-intelligence:
 
   # NOTE: Do NOT set portal.domain here - it will override user values
   # Intelligence will automatically use portal.domain from parent chart if available
-  # Jenkins must set: portal.domain AND apim-intelligence.portal.domain to the same value
 
   # Image configuration
   image:
-    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container (Overridden by Jenkins with TAG_TLS_MANAGER)
+    autoDiscovery: tls-automator:5.4.1  # Used for Kafka broker discovery init container
     intelligenceServer: intelligence-server:5.4.1
     pullPolicy: IfNotPresent
 

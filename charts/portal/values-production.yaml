@@ -59,6 +59,10 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+  # Infrastructure Management — enables intelligence_server for patch management.
+  # intelligence will be enabled if infrastructureManagement is enabled.
+  infrastructureManagement:
+    enabled: false
   # Intelligence feature for advanced analytics and third-party agent integration
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)

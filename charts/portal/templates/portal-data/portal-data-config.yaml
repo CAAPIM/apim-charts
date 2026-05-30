@@ -1,4 +1,6 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
+{{- include "portal.validateInfrastructureManagement" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -53,6 +55,11 @@ data:
   CONFIG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
   {{- if .Values.portal.hostnameWhitelist }}
   HOSTNAME_WHITELIST: {{ .Values.portal.hostnameWhitelist}}
+  {{- end }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "true"
+  {{- else }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
   {{- end }}
   {{- if .Values.telemetry.plaEnabled}}
   TELEMETRY_PLA_ENABLED: {{ .Values.telemetry.plaEnabled | quote }}

@@ -1,4 +1,25 @@
 {{/*
+Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
+*/}}
+
+{{/*
+Validate that portal.intelligence.enabled and portal.seaweedFs.enabled are both true
+when portal.infrastructureManagement.enabled is true.
+Helm condition: fields in Chart.yaml cannot evaluate OR expressions, so callers
+(Jenkins, direct helm install) must set all three flags explicitly.
+This guard aborts helm install/upgrade with a clear message if the flags are inconsistent.
+*/}}
+{{- define "portal.validateInfrastructureManagement" -}}
+{{- if and .Values.portal.infrastructureManagement.enabled (not .Values.portal.intelligence.enabled) -}}
+{{- fail "portal.infrastructureManagement.enabled=true requires portal.intelligence.enabled=true. Set --set portal.intelligence.enabled=true in your helm command or values file." -}}
+{{- end -}}
+{{- if and .Values.portal.infrastructureManagement.enabled (not .Values.portal.seaweedFs.enabled) -}}
+{{- fail "portal.infrastructureManagement.enabled=true requires portal.seaweedFs.enabled=true. Set --set portal.seaweedFs.enabled=true in your helm command or values file." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "portal.name" -}}

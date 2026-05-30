@@ -23,7 +23,7 @@ dependencies:
   repository: "file://../intelligence"
 - name: seaweedfs
   version: ^1.0.0
-  condition: portal.analytics.enabled
+  condition: portal.seaweedFs.enabled
   repository: "file://../seaweedfs"
 - name: kafka
   version: ^1.0.0
