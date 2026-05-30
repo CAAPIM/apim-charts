@@ -1,0 +1,99 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.gateway.create }}
+{{- if and .Values.kubernetesGateway.httpRoute.enabled .Values.kubernetesGateway.tlsRoute.enabled }}
+  {{- fail "kubernetesGateway.httpRoute and kubernetesGateway.tlsRoute cannot both be enabled when kubernetesGateway.gateway.create is true. The auto-generated Gateway supports one mode (HTTPS termination or TLS passthrough), not both. To use both route types, set gateway.create to false and manage the Gateway resource externally with gateway.existingRef." }}
+{{- end }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "kubernetesGateway.gatewayName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kubernetesGateway.gateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.gateway.annotations) }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ required "kubernetesGateway.gateway.gatewayClassName is required when kubernetesGateway.gateway.create is true" .Values.kubernetesGateway.gateway.gatewayClassName }}
+  {{- if .Values.kubernetesGateway.gateway.addresses }}
+  addresses:
+    {{- toYaml .Values.kubernetesGateway.gateway.addresses | nindent 4 }}
+  {{- end }}
+  {{/* Auto-generate listeners from httpRoute or tlsRoute rule hostnames */}}
+  {{- $tlsSecretName := include "kubernetesGateway.tlsSecretName" . }}
+  {{- $isPassthrough := .Values.kubernetesGateway.tlsRoute.enabled }}
+  {{- $hostnames := list }}
+  {{- if .Values.kubernetesGateway.httpRoute.enabled }}
+    {{- range .Values.kubernetesGateway.httpRoute.rules }}
+      {{- if .hostname }}
+        {{- $hostnames = append $hostnames .hostname | uniq }}
+      {{- end }}
+    {{- end }}
+  {{- else if .Values.kubernetesGateway.tlsRoute.enabled }}
+    {{- range .Values.kubernetesGateway.tlsRoute.rules }}
+      {{- if .hostname }}
+        {{- $hostnames = append $hostnames .hostname | uniq }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  listeners:
+  {{- if $hostnames }}
+    {{- range $i, $hostname := $hostnames }}
+    {{- if $isPassthrough }}
+    - name: tls-passthrough-{{ $i }}
+      protocol: TLS
+      port: 443
+      hostname: {{ $hostname }}
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- else }}
+    - name: https-{{ $i }}
+      protocol: HTTPS
+      port: 443
+      hostname: {{ $hostname }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $tlsSecretName }}
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same
+    {{- end }}
+    {{- end }}
+  {{- else }}
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $tlsSecretName }}
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same
+  {{- end }}
+{{- else }}
+{{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling kubernetesGateway.gateway.create." }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,33 @@
+{{- if and .Values.database.create .Values.mysql.pdb.create }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ template "gateway.fullname" . }}-mysql
+    chart: {{ template "gateway.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+    {{- range $key, $val := .Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if .Values.additionalAnnotations }}
+  annotations:
+{{- range $key, $val := .Values.additionalAnnotations }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+{{- end }}
+  name: {{ template "gateway.fullname" . }}-mysql-pdb
+spec:
+  {{- if .Values.mysql.pdb.minAvailable }}
+  minAvailable: {{ .Values.mysql.pdb.minAvailable }}
+  {{- end }}
+  {{- if .Values.mysql.pdb.maxUnavailable }}
+  maxUnavailable: {{ .Values.mysql.pdb.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "gateway.fullname" . }}-mysql
+      release: {{ .Release.Name }}
+      app.kubernetes.io/component: mysql
+{{- end }}

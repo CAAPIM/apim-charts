@@ -1,0 +1,390 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if .Values.ingress.type.gatewayAPI }}
+{{- if $.Capabilities.APIVersions.Has .Values.ingress.gatewayAPI.tlsRouteApiVersion }}
+{{- $root := . -}}
+{{- $annotations := default (dict) .Values.ingress.gatewayAPI.annotations -}}
+{{/*
+  ============================================================
+  Fixed TLSRoutes - auto-generated from portal hostname helpers
+  ============================================================
+*/}}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-default-tenant
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "default-tenant-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: dispatcher
+          port: 443
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-tssg-public
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "tssg-public-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 8443
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-analytics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "analytics-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 9449
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-pssg-enroll
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "pssg-enroll-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 9446
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-pssg-sync
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "pssg-sync-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 9446
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-pssg-sso
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "pssg-sso-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 9448
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-broker
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "broker-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: 1885
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-kafka-proxy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" . | nindent 4 }}
+  hostnames:
+    - {{ include "kafka-proxy-host" . | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+{{- $brokerStartPort := int (.Values.portal.kafka.proxy.brokerStartPort | default 9193) }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+{{- $brokerPort := add $brokerStartPort $nodeId }}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-kafka-broker-{{ $nodeId }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" $root }}
+    chart: {{ template "portal.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" $root | nindent 4 }}
+  hostnames:
+    - {{ include "kafka-proxy-broker-host" (dict "root" $root "nodeId" $nodeId) | quote }}
+  rules:
+    - backendRefs:
+        - name: apim
+          port: {{ $brokerPort }}
+{{- end }}
+{{/*
+  ============================================================
+  Dynamic TLSRoutes - generated from ingress.tenantIds
+  ============================================================
+*/}}
+{{- range $i, $tenantId := .Values.ingress.tenantIds }}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-tenant-{{ $tenantId }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" $root }}
+    chart: {{ template "portal.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" $root | nindent 4 }}
+  hostnames:
+    - {{ printf "%s.%s" $tenantId $root.Values.portal.domain | quote }}
+  rules:
+    - backendRefs:
+        - name: dispatcher
+          port: 443
+{{- end }}
+{{/*
+  ============================================================
+  Dynamic TLSRoutes - generated from ingress.customRoutes
+  ============================================================
+*/}}
+{{- range $i, $customRoute := .Values.ingress.customRoutes }}
+---
+apiVersion: {{ include "portal.gatewayAPI.tlsRouteApiVersion" $root }}
+kind: TLSRoute
+metadata:
+  name: portal-tlsroute-custom-{{ $customRoute.subdomain | replace "." "-" | lower | trunc 48 }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" $root }}
+    chart: {{ template "portal.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- include "portal.gatewayAPI.defaultParentRefs" $root | nindent 4 }}
+  hostnames:
+    - {{ printf "%s.%s" $customRoute.subdomain $root.Values.portal.domain | quote }}
+  rules:
+    - backendRefs:
+        - name: {{ $customRoute.service.name }}
+          port: {{ $customRoute.service.port }}
+{{- end }}
+{{- else }}
+{{- fail (printf "TLSRoute CRDs (%s) are not available on this cluster. Install the correct Gateway API CRDs or adjust ingress.gatewayAPI.tlsRouteApiVersion." .Values.ingress.gatewayAPI.tlsRouteApiVersion) }}
+{{- end }}
+{{- end }}

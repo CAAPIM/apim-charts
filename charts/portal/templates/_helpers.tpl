@@ -397,3 +397,143 @@ Create Image Pull Secret
 {{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"auth\":\"%s\"}}}" .Values.global.portalRepository .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password (printf "%s:%s" .Values.portal.imagePullSecret.username .Values.portal.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
 {{- end }}
+
+{{/*
+  ============================================================
+  Kubernetes Gateway API Helpers
+  ============================================================
+*/}}
+
+{{/*
+  Resolve the Gateway name.
+  - If gatewayAPI.create is true, generate a name from the chart fullname.
+  - Otherwise, use the existingRef.name.
+*/}}
+{{- define "portal.gatewayAPI.gatewayName" -}}
+{{- if .Values.ingress.gatewayAPI.create -}}
+  {{- printf "%s-gateway" (include "portal.fullname" .) -}}
+{{- else -}}
+  {{- required "ingress.gatewayAPI.existingRef.name is required when ingress.type.gatewayAPI is true and ingress.gatewayAPI.create is false" .Values.ingress.gatewayAPI.existingRef.name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway namespace for parentRefs.
+  - If gatewayAPI.create is true, use the release namespace.
+  - If gatewayAPI.existingRef.namespace is set, use that.
+  - Otherwise, use the release namespace.
+*/}}
+{{- define "portal.gatewayAPI.gatewayNamespace" -}}
+{{- if .Values.ingress.gatewayAPI.create -}}
+  {{- .Release.Namespace -}}
+{{- else if .Values.ingress.gatewayAPI.existingRef.namespace -}}
+  {{- .Values.ingress.gatewayAPI.existingRef.namespace -}}
+{{- else -}}
+  {{- .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve TLSRoute apiVersion from values.
+*/}}
+{{- define "portal.gatewayAPI.tlsRouteApiVersion" -}}
+{{- .Values.ingress.gatewayAPI.tlsRouteApiVersion -}}
+{{- end -}}
+
+{{/*
+Generate Kafka TCP Proxy ingress hostname based on configurations.
+Used when intelligence is enabled.
+*/}}
+{{- define "kafka-proxy-host" -}}
+    {{- if .Values.global.legacyHostnames }}
+        {{- printf "kafka-proxy.%s" .Values.portal.domain -}}
+    {{- else if .Values.global.saas }}
+         {{- printf "kafka-proxy-%s.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- else }}
+         {{- printf "%s-kafka-proxy.%s" .Values.global.subdomainPrefix  .Values.portal.domain -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+Generate per-broker hostname for a given nodeId using the kafka-proxy-host base.
+Produces pattern like: dev-portal-kafka-proxy-$(nodeId).example.com
+Used as the default for KAFKA_PROXY_BROKER_ADDRESS_PATTERN.
+*/}}
+{{- define "kafka-proxy-broker-pattern" -}}
+    {{- $base := include "kafka-proxy-host" . -}}
+    {{- $parts := splitn "." 2 $base -}}
+    {{- printf "%s-$(nodeId).%s" (index $parts "_0") (index $parts "_1") -}}
+{{- end -}}
+
+{{/*
+Generate per-broker hostname for a specific nodeId (for ingress routes).
+Takes a dict with "root" (context) and "nodeId" (int).
+*/}}
+{{- define "kafka-proxy-broker-host" -}}
+    {{- $base := include "kafka-proxy-host" .root -}}
+    {{- $parts := splitn "." 2 $base -}}
+    {{- printf "%s-%s.%s" (index $parts "_0") (toString .nodeId) (index $parts "_1") -}}
+{{- end -}}
+
+{{/*
+  Generate default parentRefs for routes when none are provided.
+  Produces a list with a single parentRef pointing to the chart's Gateway.
+*/}}
+{{- define "portal.gatewayAPI.defaultParentRefs" -}}
+- name: {{ include "portal.gatewayAPI.gatewayName" . }}
+  namespace: {{ include "portal.gatewayAPI.gatewayNamespace" . }}
+{{- end -}}
+
+{{/*
+  ============================================================
+  Intelligence Server Helpers
+  ============================================================
+*/}}
+
+{{/*
+Get "intelligence" database name
+*/}}
+{{- define "intelligence-db-name" -}}
+    {{ if .Values.global.legacyDatabaseNames }}
+        {{- print "intelligence" }}
+    {{- else }}
+        {{- $f:= .Values.global.subdomainPrefix -}}
+        {{ if empty $f }}
+            {{- fail "Please define subdomainPrefix in values.yaml" }}
+        {{- else }}
+            {{- printf "%s_%s" $f "intelligence" | replace "-" "_" -}}
+        {{- end }}
+    {{- end }}
+{{- end -}}
+
+{{/*
+  ============================================================
+  Kafka Helpers (shared by portal-data, analytics-server,
+  tenant-provisioner, authenticator, intelligence)
+  ============================================================
+*/}}
+
+{{/*
+In-cluster Kafka bootstrap broker list. Resolves to the kafka subchart's
+service name + internal listener port (default kafka:9092). Used by every
+in-cluster Kafka producer / consumer
+*/}}
+{{- define "kafka.brokers" -}}
+    {{- $kafkaName := default "kafka" .Values.kafka.fullnameOverride -}}
+    {{- if and .Values.kafka.kafka .Values.kafka.kafka.listeners }}
+        {{- printf "%s:%g" $kafkaName .Values.kafka.kafka.listeners.internal.port -}}
+    {{- else }}
+        {{- printf "%s:9092" $kafkaName -}}
+    {{- end }}
+{{- end -}}
+
+{{/*
+External Kafka proxy bootstrap address advertised to tenant Gateways via SNI
+on port 443 (default). Used by intelligence server and exposed via APIM
+KafkaTcpProxy assertion.
+*/}}
+{{- define "kafka.proxyBootstrap" -}}
+    {{- $host := include "kafka-proxy-host" . -}}
+    {{- $port := int (.Values.portal.kafka.proxy.advertisedPort | default 443) -}}
+    {{- printf "%s:%d" $host $port -}}
+{{- end -}}

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- $kubeTargetVersion := .Capabilities.KubeVersion.GitVersion }}
 {{ if .Values.ingress.type.kubernetes }}
 {{- if semverCompare ">=1.19-0" $kubeTargetVersion -}}
@@ -145,6 +146,46 @@ spec:
       - backend:
           serviceName: apim
           servicePort: {{ printf "%s-broker" .Values.portal.defaultTenantId | quote }}
+{{- end }}
+  - host: {{ include "kafka-proxy-host" . | quote }}
+    http:
+      paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: kfk-proxy-boot
+{{- else }}
+      - backend:
+          serviceName: apim
+          servicePort: kfk-proxy-boot
+{{- end }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+  - host: {{ include "kafka-proxy-broker-host" (dict "root" $ "nodeId" $nodeId) | quote }}
+    http:
+      paths:
+{{- if semverCompare ">=1.19-0" $kubeTargetVersion }}
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: apim
+            port:
+              name: kfk-proxy-brk-{{ $nodeId }}
+{{- else }}
+      - backend:
+          serviceName: apim
+          servicePort: kfk-proxy-brk-{{ $nodeId }}
+{{- end }}
 {{- end }}
 {{- range .Values.ingress.customRoutes }}
   - host: "{{ .subdomain }}.{{ $.Values.portal.domain }}"

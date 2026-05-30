@@ -25,9 +25,8 @@ global:
 
 image: seaweedfs:5.4.1
 persistence:
-    storage:
-      seaweedfs: 50Gi
-
+  storage:
+    seaweedfs: 50Gi
 
 migrateData: false
 # time post-install hook re-tries to create the bucket.
@@ -39,7 +38,7 @@ loggingLevel: 1
 replicaCount: 1
 clusterDomain: cluster.local
 minio:
-    bucketName: api-metrics
+  bucketName: api-metrics
 forceRedeploy: true
 nameOverride: seaweedfs-s3
 serviceAccount:

@@ -47,6 +47,29 @@ Expand the name of the chart.
 
 
 {{/*
+Get database port from global values (used when chart is subchart of portal).
+*/}}
+{{- define "database-port" -}}
+{{- print .Values.global.databasePort -}}
+{{- end -}}
+
+{{/*
+Get portal database name from global values (used when chart is subchart of portal).
+*/}}
+{{- define "portal-db-name" -}}
+{{- if .Values.global.legacyDatabaseNames -}}
+{{- print "portal" -}}
+{{- else -}}
+{{- $f := .Values.global.subdomainPrefix -}}
+{{- if empty $f -}}
+{{- fail "Please define global.subdomainPrefix in values.yaml" -}}
+{{- else -}}
+{{- printf "%s_%s" $f "portal" | replace "-" "_" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the Master Server peers
 */}}
 {{- define "seaweedfs.master.servers" -}}

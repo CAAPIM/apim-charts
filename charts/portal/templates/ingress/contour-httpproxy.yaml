@@ -1,0 +1,299 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{ if and (.Values.ingress.type.contour) ($.Capabilities.APIVersions.Has "projectcontour.io/v1") }}
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-dispatcher-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "default-tenant-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: dispatcher
+      port: 443
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-tssg-public-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "tssg-public-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 8443
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-analytics-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "analytics-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 9449
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-pssg-enroll-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "pssg-enroll-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 9446
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-pssg-sync-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "pssg-sync-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 9446
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-pssg-sso-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "pssg-sso-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 9448
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-broker-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "broker-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: 1885
+---
+
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-kafka-proxy-httpproxy
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "kafka-proxy-host" . | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: {{ .Values.portal.kafka.proxy.listenPort | default 9191 }}
+{{- $brokerStartPort := int (.Values.portal.kafka.proxy.brokerStartPort | default 9193) }}
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+{{- $brokerPort := add $brokerStartPort $nodeId }}
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-kafka-broker-{{ $nodeId }}-httpproxy
+  labels:
+    app: {{ template "portal.name" $ }}
+    chart: {{ template "portal.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: {{ include "kafka-proxy-broker-host" (dict "root" $ "nodeId" $nodeId) | quote }}
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: apim
+      port: {{ $brokerPort }}
+{{- end }}
+
+{{- range $i,$tenantId := $.Values.ingress.tenantIds }}
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-dispatcher-httpproxy-{{ $tenantId }}
+  labels:
+    app: {{ template "portal.name" $ }}
+    chart: {{ template "portal.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: "{{ . }}.{{ $.Values.portal.domain }}"
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: dispatcher
+      port: 443
+---
+{{- end }}
+
+{{- range $i,$customRoute := .Values.ingress.customRoutes }}
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: portal-dispatcher-httpproxy
+  labels:
+    app: {{ template "portal.name" $ }}
+    chart: {{ template "portal.chart" $ }}
+    release: {{ $.Release.Name }}
+    heritage: {{ $.Release.Service }}
+    {{- range $key, $val := $.Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $.Values.ingress.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  virtualhost:
+    fqdn: "{{ $customRoute.subdomain }}.{{ $.Values.portal.domain }}"
+    tls:
+      passthrough: true
+  tcpproxy:
+    services:
+    - name: {{ $customRoute.service.name }}
+      port: {{ $customRoute.service.port }}
+
+---
+{{- end }}
+
+{{ end }}

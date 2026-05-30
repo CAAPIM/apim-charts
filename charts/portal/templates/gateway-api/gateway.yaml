@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Gateway resource for Kubernetes Gateway API (TLS passthrough mode).
+# Auto-generates listeners from all portal hostnames.
+{{- if and .Values.ingress.type.gatewayAPI .Values.ingress.gatewayAPI.create }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ include "portal.gatewayAPI.gatewayName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.ingress.gatewayAPI.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if .Values.ingress.gatewayAPI.annotations }}
+  annotations:
+    {{- range $key, $val := .Values.ingress.gatewayAPI.annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ required "ingress.gatewayAPI.gatewayClassName is required when ingress.gatewayAPI.create is true" .Values.ingress.gatewayAPI.gatewayClassName }}
+  {{- if .Values.ingress.gatewayAPI.addresses }}
+  addresses:
+    {{- toYaml .Values.ingress.gatewayAPI.addresses | nindent 4 }}
+  {{- end }}
+  {{/* Auto-generate TLS passthrough listeners from all portal hostnames */}}
+  {{- $hostnames := list }}
+  {{/* Fixed routes */}}
+  {{- $hostnames = append $hostnames (include "default-tenant-host" .) }}
+  {{- $hostnames = append $hostnames (include "tssg-public-host" .) }}
+  {{- $hostnames = append $hostnames (include "analytics-host" .) }}
+  {{- $hostnames = append $hostnames (include "pssg-enroll-host" .) }}
+  {{- $hostnames = append $hostnames (include "pssg-sync-host" .) }}
+  {{- $hostnames = append $hostnames (include "pssg-sso-host" .) }}
+  {{- $hostnames = append $hostnames (include "broker-host" .) }}
+  {{/* Kafka proxy routes: bootstrap + per-broker SNI hostnames */}}
+  {{- $hostnames = append $hostnames (include "kafka-proxy-host" .) }}
+  {{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+  {{- $ordinalStart := 0 }}
+  {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+  {{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+  {{- end }}
+  {{- range $i := until $replicaCount }}
+  {{- $nodeId := add $ordinalStart $i }}
+  {{- $hostnames = append $hostnames (include "kafka-proxy-broker-host" (dict "root" $ "nodeId" $nodeId)) }}
+  {{- end }}
+  {{/* Dynamic tenant routes */}}
+  {{- range .Values.ingress.tenantIds }}
+  {{- $hostnames = append $hostnames (printf "%s.%s" . $.Values.portal.domain) }}
+  {{- end }}
+  {{/* Dynamic custom routes */}}
+  {{- range .Values.ingress.customRoutes }}
+  {{- $hostnames = append $hostnames (printf "%s.%s" .subdomain $.Values.portal.domain) }}
+  {{- end }}
+  {{- $hostnames = $hostnames | uniq }}
+  listeners:
+  {{- range $i, $hostname := $hostnames }}
+    - name: tls-{{ $i }}
+      protocol: TLS
+      port: 443
+      hostname: {{ $hostname | quote }}
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: Same
+  {{- end }}
+{{- else }}
+{{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling ingress.gatewayAPI.create." }}
+{{- end }}
+{{- end }}
