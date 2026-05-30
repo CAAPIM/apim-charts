@@ -1457,6 +1457,8 @@ jobs:
 # This configuration enables the standalone MySQL StatefulSet
 # instead of using the Bitnami MySQL subchart
 mysql:
+  # Maximum size of one packet or any generated/string string.
+  maxAllowedPacket: 128M
   # Image configuration
   image:
     repository: docker.io/mysql
