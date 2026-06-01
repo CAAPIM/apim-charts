@@ -201,10 +201,6 @@ spec:
 
               copy_bucket "{{ .Values.minio.bucketName }}" "{{ .Values.global.deepStorage.analytics.bucketName }}"
 
-              {{- if .Values.portal.intelligence.enabled }}
-              copy_bucket "{{ .Values.global.deepStorage.intelligence.bucketName }}" "{{ .Values.global.deepStorage.intelligence.bucketName }}"
-              {{- end }}
-
               echo "=== Migration complete. All buckets copied and verified. ==="
           env:
            - name: MINIO_ACCESS_KEY
