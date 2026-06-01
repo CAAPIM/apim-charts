@@ -111,10 +111,8 @@ data:
   size: ""  # Size of the PVC
   storageClass: ""  # Storage class for the PVC
 # Health checks
-# Disabled by default: SeaweedFS master (port 9333) may not respond within the initial delay,
-# causing cascading pod restart loops in K8s. Override to true in your values if needed.
 readinessProbe:
-  enabled: false
+  enabled: true
   httpGet:
     path: /cluster/status
     port: 9333
@@ -125,7 +123,7 @@ readinessProbe:
   failureThreshold: 6
   timeoutSeconds: 40
 livenessProbe:
-  enabled: false
+  enabled: true
   httpGet:
     path: /cluster/status
     port: 9333
