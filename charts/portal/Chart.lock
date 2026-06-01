@@ -1,7 +1,7 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.21
+  version: 1.0.22
 - name: rabbitmq
   repository: ""
   version: 12.0.3
@@ -17,5 +17,5 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:7fedd7f356b26d553e6ffee80b9f4ab2cea51f6f841f1c60df43d849904b98d3
-generated: "2026-06-01T17:53:28.2916927+05:30"
+digest: sha256:1010c9756d66c1be252a1ec28dbbd63f04cb21fb068904163e72d94e75f2493c
+generated: "2026-06-01T18:41:50.77238+05:30"
