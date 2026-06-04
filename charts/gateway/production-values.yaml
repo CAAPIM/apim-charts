@@ -648,6 +648,10 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
+  # Embedded database type selection. Leave empty to use the default (derby).
+  # Set to "h2" to use the H2 embedded database. Requires database.enabled: false.
+  # type: "h2"
+  type: ""
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
