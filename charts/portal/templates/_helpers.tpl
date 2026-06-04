@@ -4,18 +4,23 @@ AI assistance has been used to generate some or all contents of this file. That 
 */}}
 
 {{/*
-Validate that portal.intelligence.enabled and portal.seaweedFs.enabled are both true
-when portal.infrastructureManagement.enabled is true.
-Helm condition: fields in Chart.yaml cannot evaluate OR expressions, so callers
-(Jenkins, direct helm install) must set all three flags explicitly.
-This guard aborts helm install/upgrade with a clear message if the flags are inconsistent.
+Validate that portal.seaweedFs.enabled is true when portal.infrastructureManagement.enabled
+is true.
 */}}
 {{- define "portal.validateInfrastructureManagement" -}}
-{{- if and .Values.portal.infrastructureManagement.enabled (not .Values.portal.intelligence.enabled) -}}
-{{- fail "portal.infrastructureManagement.enabled=true requires portal.intelligence.enabled=true. Set --set portal.intelligence.enabled=true in your helm command or values file." -}}
-{{- end -}}
 {{- if and .Values.portal.infrastructureManagement.enabled (not .Values.portal.seaweedFs.enabled) -}}
 {{- fail "portal.infrastructureManagement.enabled=true requires portal.seaweedFs.enabled=true. Set --set portal.seaweedFs.enabled=true in your helm command or values file." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate that portal.seaweedFs.enabled is true when portal.analytics.enabled is true.
+The seaweedfs sub-chart is gated on portal.seaweedFs.enabled; upgrades from earlier
+releases must explicitly set portal.seaweedFs.enabled=true when analytics is enabled.
+*/}}
+{{- define "portal.validateAnalyticsSeaweedFs" -}}
+{{- if and .Values.portal.analytics.enabled (not .Values.portal.seaweedFs.enabled) -}}
+{{- fail "portal.analytics.enabled=true requires portal.seaweedFs.enabled=true. Set --set portal.seaweedFs.enabled=true in your helm command or values file." -}}
 {{- end -}}
 {{- end -}}
 

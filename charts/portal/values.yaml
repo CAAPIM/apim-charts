@@ -99,13 +99,12 @@ portal:
       # HTTP CONNECT. The port baked into the bundle is KAFKA_PROXY_LISTEN_PORT
       configBrokerHost: "localhost"
   
-  # Infrastructure Management — enables intelligence_server for patch management.
-  # intelligence will be enabled if infrastructureManagement is enabled.
+  # Infrastructure Management — enables intelligence_server for patch management (PMS).
   infrastructureManagement:
-    enabled: false  # Intelligence feature for advanced analytics and third-party agent integration
+    enabled: false
+  # Intelligence — enables intelligence-server for third-party agent integration.
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
-  # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
   # SeaweedFS object storage sub-chart gate. 

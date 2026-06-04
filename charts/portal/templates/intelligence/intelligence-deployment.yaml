@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{- if .Values.portal.intelligence.enabled }}
+{{- if or .Values.portal.intelligence.enabled .Values.portal.infrastructureManagement.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
