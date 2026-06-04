@@ -66,6 +66,11 @@ data:
   {{- else }}
   INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
   {{- end }}
+  {{- if .Values.portal.intelligence.enabled }}
+  INTELLIGENCE_ENABLED: "true"
+  {{- else }}
+  INTELLIGENCE_ENABLED: "false"
+  {{- end }}
   {{- if .Values.telemetry.plaEnabled}}
   TELEMETRY_PLA_ENABLED: {{ .Values.telemetry.plaEnabled | quote }}
   TELEMETRY_USAGE_TYPE: {{ .Values.telemetry.usageType | quote }}
