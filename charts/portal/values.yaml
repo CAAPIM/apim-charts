@@ -98,7 +98,7 @@ portal:
       # Kafka Proxy relay; the relay handles upstream TLS / mTLS / SNI /
       # HTTP CONNECT. The port baked into the bundle is KAFKA_PROXY_LISTEN_PORT
       configBrokerHost: "localhost"
-  
+
   # Infrastructure Management — enables intelligence_server for patch management (PMS).
   infrastructureManagement:
     enabled: false
@@ -107,7 +107,7 @@ portal:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
   intelligence:
     enabled: false
-  # SeaweedFS object storage sub-chart gate. 
+  # SeaweedFS object storage sub-chart gate.
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
     enabled: true
