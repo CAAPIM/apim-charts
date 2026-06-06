@@ -4,7 +4,6 @@ charts:
   - charts/gateway
   - charts/seaweedfs
   - charts/kafka
-  - charts/intelligence
 chart-repos:
   - hazelcast=https://hazelcast-charts.s3.amazonaws.com/
   - nginx=https://kubernetes.github.io/ingress-nginx/

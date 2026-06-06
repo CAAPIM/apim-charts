@@ -5,17 +5,14 @@ dependencies:
 - name: rabbitmq
   repository: ""
   version: 12.0.3
-- name: apim-intelligence
-  repository: file://../intelligence
-  version: 1.0.21
 - name: seaweedfs
   repository: file://../seaweedfs
   version: 1.0.6
 - name: kafka
   repository: file://../kafka
-  version: 1.0.0
+  version: 1.0.2
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.12.1
-digest: sha256:1010c9756d66c1be252a1ec28dbbd63f04cb21fb068904163e72d94e75f2493c
-generated: "2026-06-01T18:41:50.77238+05:30"
+digest: sha256:fb4f9aa9bdde4b986cfd0c8fd56e60b8432e79994254d1720a8da9a093739bb1
+generated: "2026-03-16T12:59:25.278734+05:30"

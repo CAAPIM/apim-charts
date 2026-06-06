@@ -1,0 +1,174 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if .Values.portal.intelligence.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelligence-server
+  labels:
+    app: intelligence-server
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.intelligence.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: {{ .Values.intelligence.replicaCount }}
+  selector:
+    matchLabels:
+      app: intelligence-server
+  template:
+    metadata:
+      labels:
+        app: intelligence-server
+        release: {{ .Release.Name }}
+      {{- if .Values.intelligence.podAnnotations }}
+      annotations: {{- toYaml .Values.intelligence.podAnnotations | nindent 8 }}
+      {{- if .Values.intelligence.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.intelligence.podAnnotations }}
+      {{- if .Values.intelligence.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "portal.serviceAccountName" . }}
+      {{- if .Values.intelligence.affinity }}
+      affinity: {{- toYaml .Values.intelligence.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligence.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligence.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligence.tolerations }}
+      tolerations: {{- toYaml .Values.intelligence.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligence.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligence.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: intelligence-server
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.intelligence.image.pullPolicy }}"
+          {{- if .Values.intelligence.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.intelligence.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          command: ["java"]
+          args: ["-jar", "/opt/app/intelligence-server.jar"]
+          env:
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName | default "rabbitmq" }}
+                  key: rabbitmq-password
+                  optional: false
+            - name: INTELLIGENCE_DATABASE_NAME
+              value: {{ template "intelligence-db-name" . }}
+            - name: DATABASE_USERNAME
+              value: {{ .Values.global.databaseUsername | quote }}
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+                  {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+                  {{- end }}
+            - name: KAFKA_BROKERS
+              value: {{ default (include "kafka.brokers" .) .Values.intelligence.kafka.brokers | quote }}
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: {{ .Values.intelligence.kafka.securityProtocol | default "PLAINTEXT" | quote }}
+          {{- if .Values.intelligence.kafka.kafkaCa.caSecretName }}
+            - name: KAFKA_CA_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligence.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
+                  optional: false
+            - name: KAFKA_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligence.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}
+                  optional: false
+            - name: KAFKA_CA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  optional: false
+            - name: TSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligence.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  optional: false
+          {{- else }}
+            - name: KAFKA_CA_CERTIFICATE
+              value: ""
+            - name: KAFKA_CA_KEY
+              value: ""
+            - name: KAFKA_CA_PASSWORD
+              value: ""
+            - name: TSSG_SSL_KEY_PASS
+              value: ""
+          {{- end }}
+            - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
+              value: {{ include "kafka.proxyBootstrap" . | quote }}
+          {{- if .Values.intelligence.env }}
+          {{- range $key, $value := .Values.intelligence.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
+            - name: PAPI_PUBLIC_HOST
+              value: {{ include "tssg-public-host" . | quote }}
+            - name: PAPI_PUBLIC_PORT
+              value: {{ include "tssg-public-port" . | quote }}
+          envFrom:
+          - configMapRef:
+              name: intelligence-server-config
+          readinessProbe:
+            httpGet:
+              path: "/health/readiness"
+              port: 8282
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/health/liveness"
+              port: 8282
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          {{- if .Values.intelligence.resources }}
+          resources: {{- toYaml .Values.intelligence.resources | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8282
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+{{- end }}

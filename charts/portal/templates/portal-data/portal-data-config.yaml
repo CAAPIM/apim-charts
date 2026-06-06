@@ -1,4 +1,5 @@
-# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -35,6 +36,10 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
+  KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "kafka-proxy-host" .) .Values.portal.kafka.proxy.advertisedHost | quote }}
+  KAFKA_PROXY_ADVERTISED_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
+  CONFIG_BROKER_KAFKA_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
   RBAC_DATABASE_NAME: {{ include "rbac-db-name" . | quote }}
   RBAC_DATABASE_PORT: {{ include "database-port" . | quote }}
   RBAC_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
