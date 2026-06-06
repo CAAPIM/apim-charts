@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{- if .Values.portal.intelligence.enabled }}
+{{- if or .Values.portal.intelligence.enabled .Values.portal.infrastructureManagement.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
