@@ -80,7 +80,6 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
-
   # Kafka is the messaging backbone for Portal :
   # Kafka is always deployed and proxied through APIM
   # the kafka subchart itself is governed by kafka.enabled.
@@ -110,12 +109,19 @@ portal:
       # Kafka Proxy relay; the relay handles upstream TLS / mTLS / SNI /
       # HTTP CONNECT. The port baked into the bundle is KAFKA_PROXY_LISTEN_PORT
       configBrokerHost: "localhost"
-  # Intelligence feature for advanced analytics and third-party agent integration
+
+  # Infrastructure Management — enables intelligence_server for patch management (PMS).
+  infrastructureManagement:
+    enabled: false
+  # Intelligence — enables intelligence-server for third-party agent integration.
   # IMPORTANT: When intelligence.enabled is true:
   #   - kafka.kafka.replicaCount should be set to 3 (recommended for production)
-  # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
+  # SeaweedFS object storage sub-chart gate.
+  # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
+  seaweedFs:
+    enabled: true
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value

@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved. -->
+<!-- AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits. -->
+
 # Layer7 API Developer Portal
 The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and API Gateway.
 
@@ -8,6 +11,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.4.2 General Updates
 - This new version of the chart supports API Portal 5.4.1.3
+- `portal.intelligence.enabled` and `portal.infrastructureManagement.enabled` are now independent. The `intelligence-server` deploys when either flag is true.
+- SeaweedFS sub-chart condition changed from `portal.analytics.enabled` to `portal.seaweedFs.enabled`. Upgrade customers with analytics enabled must explicitly set `portal.seaweedFs.enabled=true` (a helm install/upgrade guard aborts with a clear error if missing).
+- Infrastructure Management (`portal.infrastructureManagement.enabled`) now requires `portal.seaweedFs.enabled=true` but no longer requires `portal.intelligence.enabled=true`.
 
 ## 2.4.1 General Updates
 - This new version of the chart supports API Portal 5.4.1.2
@@ -825,17 +831,30 @@ Portal Analytics
 For Production, use an external MySQL Server.
 
 ## Intelligence (APIM Intelligence)
-The Intelligence server provides advanced analytics and third-party agent integration capabilities.
+The Intelligence server provides advanced analytics and third-party agent integration capabilities. The `intelligence-server` pod is deployed when **either** `portal.intelligence.enabled` **or** `portal.infrastructureManagement.enabled` is true — the two flags are independent of each other.
 
 **Important Dependencies:**
-- Kafka is always deployed - intelligence consumes from the same in-cluster Kafka used by Portal  deployment messaging, analytics.
+- Kafka is always deployed — intelligence consumes from the same in-cluster Kafka used by Portal deployment messaging and analytics.
 - For production with intelligence enabled, set `kafka.kafka.replicaCount: 3`.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `portal.intelligence.enabled` | Enable Intelligence service | `false` |
+| `portal.intelligence.enabled` | Enable Intelligence features (third-party agent integration). Independent of `portal.infrastructureManagement.enabled`. | `false` |
+| `portal.infrastructureManagement.enabled` | Enable Infrastructure Management (PMS). Also causes `intelligence-server` to deploy. Requires `portal.seaweedFs.enabled=true`. Independent of `portal.intelligence.enabled`. | `false` |
 | `intelligence.replicaCount` | Number of intelligence server replicas | `1` |
 | `intelligence.kafka.kafkaCa.caSecretName` | Secret containing the CA certificate for Kafka mTLS | `portal-external-secret` |
+
+## Infrastructure Management
+Infrastructure Management enables the Patch Management System (PMS) for gateway lifecycle operations.
+
+**Requirements:**
+- `portal.seaweedFs.enabled=true` — PMS uses SeaweedFS for object storage (enforced at install/upgrade time).
+- The `intelligence-server` is deployed automatically when this flag is true (regardless of `portal.intelligence.enabled`).
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.infrastructureManagement.enabled` | Enable Infrastructure Management (PMS) | `false` |
+| `portal.seaweedFs.enabled` | Required when infrastructure management is enabled | `true` |
 
 ## Kafka and KafkaTcpProxy on APIM
 Portal 5.4.2 (rmq2kafka / F161288) uses Kafka for deployment messaging. Kafka is always deployed; the brokers' internal listener (9092) is never exposed externally. All external Kafka traffic is fronted by the `KafkaTcpProxyAssertion` on the APIM gateway, with SNI-based per-broker routing on port 443. 
@@ -851,18 +870,21 @@ Portal 5.4.2 (rmq2kafka / F161288) uses Kafka for deployment messaging. Kafka is
 | `portal.kafka.proxy.configBrokerHost` | Value baked into the enrollment bundle CWP `portal.config.broker.kafka.host` | `localhost` |
 
 ## SeaweedFS
-The SeaweedFS subchart provides S3-compatible object storage for analytics data.
+The SeaweedFS subchart provides S3-compatible object storage used by analytics (Druid deep storage) and Infrastructure Management (PMS).
 
-**Automatic Deployment:**
-- Deployed when `portal.analytics.enabled: true`
-- By default, `portal.analytics.enabled: true` in values.yaml, so SeaweedFS is deployed automatically
-- SeaweedFS is ONLY deployed for analytics features
-- Intelligence features do NOT require SeaweedFS (PMS requirement postponed)
+**Deployment Gate:**
+SeaweedFS is controlled by `portal.seaweedFs.enabled`. It is required when either:
+- `portal.analytics.enabled: true` — object storage for Druid deep storage
+- `portal.infrastructureManagement.enabled: true` — object storage for PMS
+
+By default `portal.seaweedFs.enabled: true` matches the default `portal.analytics.enabled: true`.
+
+> **Upgrade note:** In earlier chart versions the seaweedfs sub-chart was gated directly on `portal.analytics.enabled`. If upgrading with analytics enabled, ensure `portal.seaweedFs.enabled: true` is explicitly set (a helm install/upgrade guard will abort with a clear error if it is not).
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `portal.analytics.enabled` | Enable analytics features (automatically deploys SeaweedFS) | `true` |
-| `portal.intelligence.enabled` | Enable intelligence features (does not require SeaweedFS) | `false` |
+| `portal.seaweedFs.enabled` | Deploy the SeaweedFS subchart. Required when analytics or infrastructure management is enabled. | `true` |
+| `portal.analytics.enabled` | Enable analytics features (Druid stack) | `true` |
 | `global.deepStorage.minio` | Use Minio instead of SeaweedFS for deep storage | `false` |
 | `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
 | `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |

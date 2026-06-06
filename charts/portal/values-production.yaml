@@ -89,10 +89,16 @@ portal:
       advertisedPort: 443
       brokerAddressPattern: ""
       configBrokerHost: "localhost"
-  # Intelligence feature for advanced analytics and third-party agent integration.
+  # Infrastructure Management — enables intelligence_server for patch management.
+  infrastructureManagement:
+    enabled: false
   # Intelligence is disabled by default. Enable it for third-party agent integration.
   intelligence:
     enabled: false
+  # SeaweedFS object storage sub-chart gate. 
+  # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
+  seaweedFs:
+    enabled: true
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
