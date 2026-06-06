@@ -1,4 +1,30 @@
 {{/*
+Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
+*/}}
+
+{{/*
+Validate that portal.seaweedFs.enabled is true when portal.infrastructureManagement.enabled
+is true.
+*/}}
+{{- define "portal.validateInfrastructureManagement" -}}
+{{- if and .Values.portal.infrastructureManagement.enabled (not .Values.portal.seaweedFs.enabled) -}}
+{{- fail "portal.infrastructureManagement.enabled=true requires portal.seaweedFs.enabled=true. Set --set portal.seaweedFs.enabled=true in your helm command or values file." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate that portal.seaweedFs.enabled is true when portal.analytics.enabled is true.
+The seaweedfs sub-chart is gated on portal.seaweedFs.enabled; upgrades from earlier
+releases must explicitly set portal.seaweedFs.enabled=true when analytics is enabled.
+*/}}
+{{- define "portal.validateAnalyticsSeaweedFs" -}}
+{{- if and .Values.portal.analytics.enabled (not .Values.portal.seaweedFs.enabled) -}}
+{{- fail "portal.analytics.enabled=true requires portal.seaweedFs.enabled=true. Set --set portal.seaweedFs.enabled=true in your helm command or values file." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "portal.name" -}}
