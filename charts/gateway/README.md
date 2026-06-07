@@ -183,6 +183,11 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.password`          | Database Password | `mypassword` |
 | `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
 | `database.name`          | Database name | `ssg`  |
+| `database.migrationJob.enabled`          | Enable a pre-upgrade database migration job. If enabled, any database proxies should be avoided and configure database.migrationJob.jdbcUrl to connect to the single writer endpoint. | `false`  |
+| `database.migrationJob.jdbcUrl`          | Mandatory JDBC URL for the migration job to connect directly to the single writer endpoint. | `nil`  |
+| `database.migrationJob.hookWeight`          | Helm hook weight for the migration job | `"-5"`  |
+| `database.migrationJob.annotations`          | Annotations for the migration job resource | `{}`  |
+| `database.migrationJob.podAnnotations`          | Annotations for the migration job pod | `{}`  |
 | `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false` |
 | `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out` |
 | `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |

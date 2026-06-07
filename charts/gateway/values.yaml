@@ -646,6 +646,19 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
+  # Configure a pre-upgrade database migration job.
+  # This is useful when connecting to the database via a proxy with connection multiplexing
+  # as it allows the upgrade to connect directly to the primary node (by overriding jdbcUrl)
+  # before the live cluster is upgraded.
+  migrationJob:
+    enabled: false
+    # Mandatory: Provide the direct primary JDBC URL to bypass proxies here
+    jdbcUrl: ""
+    # Optional: Annotations for the Job resource
+    annotations: {}
+    # Optional: Annotations for the Pod
+    podAnnotations: {}
+    hookWeight: "-5"
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
