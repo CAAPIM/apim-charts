@@ -648,6 +648,19 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
+  # Configure an opt-in pre-upgrade database migration job.
+  # This job will use gateway.db.schema-update.mode=liquibase-only-with-unlock to clear
+  # any stuck locks before attempting schema updates.
+  # 
+  # IMPORTANT: After the migration job completes (if you have Gateway 11.2.2 or newer),
+  # you can start up the main Gateway containers with -Dgateway.db.schema-update.mode=skip.
+  # This means that regardless if the DATABASECHANGELOGLOCK is locked or not, the 
+  # Gateway will startup skipping the liquibase schema check entirely.
+  migrationJob:
+    enabled: false
+    # Mandatory: Provide the direct primary JDBC URL here
+    jdbcUrl: ""
+    hookWeight: "-5"
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
