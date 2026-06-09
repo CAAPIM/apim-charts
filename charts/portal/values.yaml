@@ -56,10 +56,6 @@ global:
     # Use --timeout 3h (or longer) when enabling this to avoid premature timeout.
     # Set back to false after migration is verified complete.
     enableDataMigration: false
-    # Set to true ONLY after migration is complete and MinIO is no longer needed.
-    # Removes the MinIO StatefulSet, Service, and ConfigMap from Helm management.
-    # The MinIO PVC is NOT deleted automatically — remove it manually after validation.
-    minioRemoved: false
     # Maximum time in seconds to wait for MinIO and SeaweedFS to become ready (default: 600 = 10 minutes)
     # The migration Job init container checks service accessibility every 10 seconds until ready or timeout
     migrationInitialDelaySeconds: 600

@@ -1,4 +1,4 @@
-{{- if and .Values.global.deepStorage.minio (not .Values.global.deepStorage.minioRemoved) }}
+{{- if .Values.global.deepStorage.minio }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

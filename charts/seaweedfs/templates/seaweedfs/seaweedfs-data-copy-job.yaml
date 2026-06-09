@@ -1,24 +1,29 @@
 # Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{- if and (eq .Values.global.deepStorage.enableDataMigration true) (not .Values.global.deepStorage.minioRemoved) }}
+{{- if eq .Values.global.deepStorage.enableDataMigration true }}
 # Data Migration Job for MinIO to SeaweedFS
 #
-# This Job runs as a Helm post-upgrade hook, so:
-# - helm upgrade BLOCKS until the Job completes (or the --timeout is reached)
-# - IMPORTANT: use --timeout 3h (or longer) to avoid premature timeout on large datasets
-# - The Job is deleted before each new hook run (hook-delete-policy: before-hook-creation)
-# - A failed Job is also automatically deleted, surfacing the failure in helm output
+# This is a regular Kubernetes Job (not a Helm hook), so helm upgrade completes
+# immediately without waiting — safe for large datasets that take hours to migrate.
 #
 # Two-phase upgrade procedure:
 #   Phase 1 (keep Druid on MinIO, trigger migration):
 #     helm upgrade <release> <chart> --set global.deepStorage.minio=true \
-#       --set global.deepStorage.enableDataMigration=true --timeout 3h
-#   Phase 2 (switch Druid to SeaweedFS):
+#       --set global.deepStorage.enableDataMigration=true
+#   Wait for job to complete before Phase 2:
+#     kubectl get job <release>-seaweedfs-s3-seaweedfs-data-copy-job -n <namespace>
+#     kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
+#   Phase 2 (switch Druid to SeaweedFS) — ONLY after job shows Complete:
 #     helm upgrade <release> <chart> --set global.deepStorage.minio=false \
 #       --set global.deepStorage.enableDataMigration=false
 #
-# Monitor progress during Phase 1:
-#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-data-copy-job -c wait-for-services
-#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-data-copy-job -c data-copier
+# WARNING: Do NOT run Phase 2 while migration job is still running.
+# Setting enableDataMigration=false removes the Job from Helm management,
+# which will terminate a running migration mid-copy.
+#
+# The Job auto-deletes 24 hours after completion (ttlSecondsAfterFinished).
+# Monitor progress:
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c wait-for-services
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -31,12 +36,10 @@ metadata:
     component: data-migration
     migration-source: minio
     migration-target: seaweedfs
-  annotations:
-    "helm.sh/hook": post-upgrade
-    "helm.sh/hook-weight": "10"
-    "helm.sh/hook-delete-policy": "before-hook-creation,hook-failed"
 spec:
+  ttlSecondsAfterFinished: 86400
   backoffLimit: 5
+  suspend: false
   parallelism: 1
   template:
     metadata:

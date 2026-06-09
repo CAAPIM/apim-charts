@@ -21,7 +21,6 @@ global:
 # databasePassword: 7layer
   deepStorage:
     minio: false
-    minioRemoved: false
     analytics:
       bucketName: api-metrics
 
