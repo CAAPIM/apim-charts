@@ -62,7 +62,18 @@ spec:
             {{ end }}
           {{- end }}
           {{- end }}
-
+          {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) }}
+          - name: {{ template "gateway.fullname" . }}-otk-secret-properties
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk-secret.properties
+            subPath: otk-secret-properties
+            readOnly: true
+          {{- end }}
+          {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
+          - name: {{ template "gateway.fullname" . }}-otk-secret-jks
+            mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk-secret.jks
+            subPath: otk-secret-jks
+            readOnly: true
+          {{- end }}
           resources: {{- toYaml .Values.otk.job.resources | nindent 12 }}
           envFrom:
             - secretRef:
@@ -81,6 +92,20 @@ spec:
                 name: {{ template "gateway.fullname" . }}-otk-install-configmap
 
       volumes:
+        {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled)}}
+        - name: {{ template "gateway.fullname" . }}-otk-secret-properties
+          {{- if .Values.otk.otkSecretConfig.csi }}
+          csi: {{ toYaml .Values.otk.otkSecretConfig.csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ .Values.otk.otkSecretConfig.name }}
+          {{- end }}
+        {{- end }}
+        {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
+        - name: {{ template "gateway.fullname" . }}-otk-secret-jks
+          secret:
+            secretName: {{ .Values.otk.database.sql.oracleTruststore.name }}
+        {{- end }}
         {{- if .Values.otk.customizations.existingBundle.enabled }}
         {{- range .Values.otk.customizations.existingBundle.configMaps }}
         - name: {{ .name }}

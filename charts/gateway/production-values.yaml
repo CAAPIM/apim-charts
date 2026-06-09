@@ -789,6 +789,11 @@ otk:
   skipPostInstallationTasks: false
   skipInternalServerTools: false
 
+  # Secret Configuration for the OTK
+  otkSecretConfig:
+    enabled: true
+    name: otk-secret-properties
+
   # Restman host and port (optional). Valid only for db backed gateways
   # Default - gateway service
   # restmanHost:
@@ -911,15 +916,6 @@ otk:
     # OTK database user name and password used to create Gateway Database/cassandra connection.
     username: otk_user
     password: mypassword
-
-    disklessConfig:
-      existingSecret: {}
-      #   name: otk-secret
-      #   csi:
-      #      driver: secrets-store.csi.k8s.io
-      #      readOnly: true
-      #      volumeAttributes:
-      #        secretProviderClass: "secret-provider-class-name"
 
     # existingSecretName: otkDbSecret
 
