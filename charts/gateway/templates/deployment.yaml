@@ -331,13 +331,17 @@ spec:
 {{- end }}
 {{- end }}
 {{- if .Values.initContainers }}
+           {{- $seenInitMountPaths := list }}
            {{- range .Values.initContainers }}
            {{- range .volumeMounts }}
+           {{- if not (has .mountPath $seenInitMountPaths) }}
+           {{- $seenInitMountPaths = append $seenInitMountPaths .mountPath }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{- if .subPath }}
               subPath: {{ .subPath }}
               {{- end }}
+           {{- end }}
            {{- end }}
            {{- end }}
 {{- end }}
@@ -346,20 +350,22 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
 {{- if .Values.sidecars }}
+         {{- $seenVMNames := list }}
          {{- range .Values.sidecars }}
          {{- range .volumeMounts }}
          {{- $vn := .name }}
-         {{ $duplicate := false}}
+         {{- $duplicate := false }}
          {{- if $.Values.initContainers}}
            {{- range $_,$ic := $.Values.initContainers }}
              {{- range $_,$icvm := $ic.volumeMounts }}
                {{- if eq $vn $icvm.name }}
-                 {{ $duplicate = true}}
+                 {{- $duplicate = true}}
                {{- end }}
              {{- end }}
            {{- end }}
          {{- end }}
-         {{- if not $duplicate }}
+         {{- if and (not $duplicate) (not (has $vn $seenVMNames)) }}
+         {{- $seenVMNames = append $seenVMNames $vn }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
               {{- if .subPath }}
@@ -788,6 +794,7 @@ spec:
      {{- end }}
 {{- end }}
 {{- end }}
+{{- $seenNames := list }}
 {{- if .Values.initContainers }}
      {{- range .Values.initContainers }}
      {{- $cvIndex := 0 }}
@@ -803,6 +810,8 @@ spec:
        {{- end }}
        {{- end }}
        {{- end }}
+       {{- if not (has $vn $seenNames) }}
+       {{- $seenNames = append $seenNames $vn }}
        {{- if eq $found true }}
         {{- with (index $.Values.customInitVolumes $cvIndex) }}
         - {{- toYaml . | nindent 10}}
@@ -810,6 +819,7 @@ spec:
       {{- else }}
         - name: {{ $vn }}
           emptyDir: {}
+      {{- end }}
       {{- end }}
      {{- end }}
      {{- end }}
@@ -846,17 +856,7 @@ spec:
      {{- range .volumeMounts }}
        {{- $vn := .name }}
        {{- $found := false }}
-       {{- $duplicate := false }}
        {{- $cvIndex = 0 }}
-      {{- if $.Values.initContainers }}
-        {{- range  $_,$ic :=  $.Values.initContainers }}
-          {{- range $_,$icvm :=  $ic.volumeMounts }}
-            {{- if eq $vn $icvm.name }}
-              {{- $duplicate = true }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
        {{- if $.Values.customSideCarVolumes }}
          {{- range $i,$cv := $.Values.customSideCarVolumes }}
          {{- if eq $vn $cv.name }}
@@ -865,7 +865,8 @@ spec:
          {{- end }}
          {{- end }}
        {{- end }}
-       {{- if not $duplicate }}
+       {{- if not (has $vn $seenNames) }}
+       {{- $seenNames = append $seenNames $vn }}
        {{- if $found }}
         {{- with (index $.Values.customSideCarVolumes $cvIndex) }}
         - {{- toYaml . | nindent 10}}
@@ -874,7 +875,7 @@ spec:
         - name: {{ $vn }}
           emptyDir: {}
       {{- end }}
-     {{- end }}
+      {{- end }}
      {{- end }}
      {{- end }}
 {{- end }}

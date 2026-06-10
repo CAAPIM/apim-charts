@@ -205,6 +205,8 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml` |
 | `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml` |
 | `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml` |
+| `customSideCarVolumes`          | Override the auto-generated emptyDir for named volumes used by sidecars. Volumes are deduplicated across all sidecars and initContainers — a volume shared by multiple containers is emitted only once. Match by name. If the same name appears in both `customSideCarVolumes` and `customInitVolumes`, `customSideCarVolumes` takes precedence.  | `[]` |
+| `customInitVolumes`          | Override the auto-generated emptyDir for named volumes used by initContainers. Volumes are deduplicated across all initContainers and sidecars — initContainers are processed before sidecars.  | `[]` |
 | `service.type`    | Service Type               | `LoadBalancer` |
 | `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
 | `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
