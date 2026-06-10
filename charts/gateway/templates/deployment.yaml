@@ -175,14 +175,12 @@ spec:
 {{- end }}
 {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled)}}
             - name: {{ template "gateway.fullname" . }}-otk-secret-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk-secret.properties
-              subPath: otk-secret-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/secrets
               readOnly: true
 {{- end }}
 {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
             - name: {{ template "gateway.fullname" . }}-otk-secret-jks
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk-secret.jks
-              subPath: otk-secret-jks
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/jks
               readOnly: true
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
