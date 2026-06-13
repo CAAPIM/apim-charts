@@ -27,7 +27,7 @@ Gateway Helm Chart Readme
 Thinking in Kubernetes
 - https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html#thinkingk8s
 
-{{- if .Values.database.migrationJob.enabled }}
+{{- if and .Values.database.migrationJob.enabled .Release.IsUpgrade }}
 
 ----------------------------------------------------------------------------------
 IMPORTANT: DB Migration Job Enabled
