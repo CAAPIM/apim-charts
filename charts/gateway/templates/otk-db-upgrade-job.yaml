@@ -50,12 +50,7 @@ spec:
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
           volumeMounts:
-          {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) }}
-            - name: {{ template "gateway.fullname" . }}-otk-secret-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/secrets
-              readOnly: true
-          {{- end }}
-          {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
+          {{- if and (.Values.otk.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
             - name: {{ template "gateway.fullname" . }}-otk-secret-jks
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/jks
               readOnly: true
@@ -88,20 +83,21 @@ spec:
            - name: OTK_TEST_CLIENTS_REDIRECT_URL_PREFIX
              value: {{ required "Please provide test clients redirect url prefix otk.database.sql.testClientsRedirectUrlPrefix in values.yaml" .Values.otk.database.sql.testClientsRedirectUrlPrefix | quote }}
            {{- end }}
-           - name: OTK_SECRET_CONFIG
-             value: {{ default "false" .Values.otk.otkSecretConfig.enabled | quote }}
+           {{- if and (eq .Values.otk.database.type "oracle") (.Values.otk.database.sql.oracleSsl.enabled) }}
+           - name: OTK_ORACLE_SSL_ENABLED
+             value: "true"
+           - name: OTK_ORACLE_SSL_SERVER_DN_MATCH
+             value: {{ .Values.otk.database.sql.oracleSsl.sslServerDnMatch | quote }}
+           {{- if .Values.otk.database.sql.oracleTruststore.enabled }}
+           - name: OTK_ORACLE_TRUST_STORE
+             value: "/opt/SecureSpan/Gateway/node/default/etc/conf/otk/jks/{{ .Values.otk.database.sql.oracleSsl.trustStoreFileName }}"
+           - name: OTK_ORACLE_TRUST_STORE_TYPE
+             value: {{ .Values.otk.database.sql.oracleSsl.trustStoreType | default "JKS" | quote }}
+           {{- end }}
+           {{- end }}
 
       volumes:
-        {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled)}}
-        - name: {{ template "gateway.fullname" . }}-otk-secret-properties
-          {{- if .Values.otk.otkSecretConfig.csi }}
-          csi: {{ toYaml .Values.otk.otkSecretConfig.csi | nindent 12 }}
-          {{- else }}
-          secret:
-            secretName: {{ .Values.otk.otkSecretConfig.name }}
-          {{- end }}
-        {{- end }}
-        {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
+        {{- if and (.Values.otk.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
         - name: {{ template "gateway.fullname" . }}-otk-secret-jks
           secret:
             secretName: {{ .Values.otk.database.sql.oracleTruststore.name }}

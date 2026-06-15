@@ -454,6 +454,13 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
 | `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
 | `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.sql.oracleTruststore.enabled` | Enable/Disable mounting a JKS truststore Kubernetes secret into the OTK database upgrade job. Required when `oracleSsl.enabled` is `true` | `false` |
+| `otk.database.sql.oracleTruststore.name`    | Name of the Kubernetes Secret containing the JKS truststore file for Oracle SSL | |
+| `otk.database.sql.oracleSsl.enabled`        | Enable/Disable Oracle SSL (TCPS) for the OTK database upgrade job | `false` |
+| `otk.database.sql.oracleSsl.trustStoreFileName` | Filename of the JKS truststore file within the `oracleTruststore` Kubernetes secret | |
+| `otk.database.sql.oracleSsl.trustStorePassword` | Password for the JKS truststore. Stored in `otk-db-secret` | |
+| `otk.database.sql.oracleSsl.trustStoreType` | Keystore type of the truststore file (`JKS` or `PKCS12`) | `JKS` |
+| `otk.database.sql.oracleSsl.sslServerDnMatch` | Enable/Disable Oracle server DN verification during SSL handshake | `true` |
 | `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection   | `false` |
 | `otk.database.readOnlyConnection.connectionName` | OTK read only database connection name  | `OAuth_ReadOnly` |
 | `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK read only database Secret |

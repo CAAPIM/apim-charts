@@ -173,16 +173,6 @@ spec:
               subPath: node.properties
       {{- end }}
 {{- end }}
-{{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled)}}
-            - name: {{ template "gateway.fullname" . }}-otk-secret-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/secrets
-              readOnly: true
-{{- end }}
-{{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
-            - name: {{ template "gateway.fullname" . }}-otk-secret-jks
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/jks
-              readOnly: true
-{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
@@ -532,20 +522,7 @@ spec:
             - key: node.properties
               path: node.properties
           {{- end }}
-  {{- end }}
-  {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled)}}
-        - name: {{ template "gateway.fullname" . }}-otk-secret-properties
-          {{- if .Values.otk.otkSecretConfig.csi }}
-          csi: {{ toYaml .Values.otk.otkSecretConfig.csi | nindent 12 }}
-          {{- else }}
-          secret:
-            secretName: {{ .Values.otk.otkSecretConfig.name }}
-          {{- end }}
-  {{- end }}
-  {{- if and (.Values.otk.enabled) (.Values.otk.otkSecretConfig.enabled) (.Values.otk.database.sql.oracleTruststore.enabled) }}
-        - name: {{ template "gateway.fullname" . }}-otk-secret-jks
-          secret:
-            secretName: {{ .Values.otk.database.sql.oracleTruststore.name }}
+          #### add csi config if using an existingSecret
   {{- end }}
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:

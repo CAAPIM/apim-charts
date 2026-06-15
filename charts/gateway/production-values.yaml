@@ -789,11 +789,6 @@ otk:
   skipPostInstallationTasks: false
   skipInternalServerTools: false
 
-  # Secret Configuration for the OTK
-  otkSecretConfig:
-    enabled: true
-    name: otk-secret-properties
-
   # Restman host and port (optional). Valid only for db backed gateways
   # Default - gateway service
   # restmanHost:
@@ -939,6 +934,22 @@ otk:
       jdbcDriverClass: com.mysql.jdbc.Driver
       # Oracle database name or MySQL demo db name
       databaseName: otk_db
+
+      oracleTruststore:
+        enabled: false
+        name:
+
+      # Oracle SSL - Disabled by default to preserve backward compatibility with non-SSL connections
+      oracleSsl:
+        enabled: false
+        # JKS-based SSL: reuses the oracleTruststore secret mount above.
+        # Set to the filename of the JKS file present inside the oracleTruststore secret.
+        trustStoreFileName:
+        trustStorePassword:
+        # Keystore type of the truststore file: JKS (Java 8+) or PKCS12 (Java 9+).
+        trustStoreType: JKS
+        # Set to false to disable Oracle server DN verification (OTK_ORACLE_SSL_SERVER_DN_MATCH).
+        sslServerDnMatch: true
 
       # c3p0 connection properties.
       # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
