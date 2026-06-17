@@ -216,6 +216,7 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    - -Dgateway.db.schema-update.mode=default
     # - -Djava.net.preferIPv4Stack=false
     # - -Djava.net.preferIPv6Addresses=true
   log:
@@ -638,7 +639,7 @@ database:
   enabled: true
   # A MySQL Database is configured with this Chart, set to false and set jdbcURL to use your own DB server
   # Do not use this demo database in production!!!
-  create: false
+  create: true
   # jdbcURL: jdbc:mysql://<host>:<port>/<database> | jdbc:mysql://<host>:<port>,<host>:<port>/<database>,...
   # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
   username: gateway
@@ -648,19 +649,19 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
-  # Configure an opt-in pre-upgrade database migration job.
-  # This job will use gateway.db.schema-update.mode=liquibase-only-with-unlock to clear
-  # any stuck locks before attempting schema updates.
-  # 
-  # IMPORTANT: After the migration job completes (if you have Gateway 11.2.2 or newer),
-  # you can start up the main Gateway containers with -Dgateway.db.schema-update.mode=skip.
-  # This means that regardless if the DATABASECHANGELOGLOCK is locked or not, the 
-  # Gateway will startup skipping the liquibase schema check entirely.
+  # This pre-upgrade job executes any pending database schema updates and exits. The job executes before the rollout of new Gateways.
+  # Ensure the requirements are met before enabling.
+  # Requirement: The Gateway must be 11.2.2 or newer which supports applying db schema changes and exiting without starting Gateway.
+  # Warning, if this job fails, it may leave the DATABASECHANGELOGLOCK locked in which case  
+  # the lock must be manually removed before a retry can be attempted.
   migrationJob:
-    enabled: false
-    # Mandatory: Provide the direct primary JDBC URL here
-    jdbcUrl: ""
+    enabled: true
+    # Provide the jdbcUrl to apply the database schema update.  Recommended to specify the primary writer endpoint.
+    jdbcUrl: "jdbc:mysql://my-gateway-mysql:3306/ssg"
     hookWeight: "-5"
+    # Set to true to force release any stuck Liquibase locks before running the schema updates. 
+    # Warning: use with caution as another simultaneous db schema udpate may corrupt the db schema.
+    clearStuckLocks: false
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.

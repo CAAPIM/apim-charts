@@ -659,6 +659,8 @@ database:
     # Mandatory: Provide the direct primary JDBC URL here
     jdbcUrl: ""
     hookWeight: "-5"
+    # Set to true to force release any stuck Liquibase locks before running the schema updates
+    clearStuckLocks: false
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.

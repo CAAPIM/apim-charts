@@ -53,7 +53,11 @@ spec:
             - name: SSG_DATABASE_JDBC_URL
               value: {{ required "A direct primary database JDBC URL (database.migrationJob.jdbcUrl) is REQUIRED when the migration job is enabled to bypass proxies." .Values.database.migrationJob.jdbcUrl | quote }}
             - name: EXTRA_JAVA_ARGS
-              value: "-Dgateway.db.schema-update.mode=liquibase-only
+              {{- if .Values.database.migrationJob.clearStuckLocks }}
+              value: "-Dgateway.db.schema-update.mode=liquibase-only-with-unlock"
+              {{- else }}
+              value: "-Dgateway.db.schema-update.mode=liquibase-only"
+              {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
