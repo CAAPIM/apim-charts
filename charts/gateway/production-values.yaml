@@ -659,8 +659,8 @@ database:
     # Provide the jdbcUrl to apply the database schema update.  Recommended to specify the primary writer endpoint.
     jdbcUrl: "jdbc:mysql://my-gateway-mysql:3306/ssg"
     hookWeight: "-5"
-    # Set to true to force release any stuck Liquibase locks before running the schema updates. 
-    # Warning: use with caution as another simultaneous db schema udpate may corrupt the db schema.
+    # Set to true to force release of any stuck Liquibase db schema locks before running the schema updates.
+    # Warning: use with caution as another simultaneous db schema update may corrupt the db schema.
     clearStuckLocks: false
 
 ## If loading a TLS Key/Pair
