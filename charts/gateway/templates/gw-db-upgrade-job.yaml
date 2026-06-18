@@ -29,6 +29,9 @@ spec:
       annotations: {{- toYaml .Values.database.migrationJob.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
+      {{- if .Values.database.migrationJob.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.database.migrationJob.activeDeadlineSeconds }}
+      {{- end }}
       serviceAccountName: {{ include "gateway.serviceAccountName" . }}
       {{- if .Values.podSecurityContext }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -53,7 +56,7 @@ spec:
             - name: SSG_DATABASE_JDBC_URL
               value: {{ required "A direct primary database JDBC URL (database.migrationJob.jdbcUrl) is REQUIRED when the migration job is enabled to bypass proxies." .Values.database.migrationJob.jdbcUrl | quote }}
             - name: EXTRA_JAVA_ARGS
-              {{- if .Values.database.migrationJob.clearStuckLocks }}
+              {{- if .Values.database.migrationJob.clearLocks }}
               value: "-Dgateway.db.schema-update.mode=liquibase-only-with-unlock"
               {{- else }}
               value: "-Dgateway.db.schema-update.mode=liquibase-only"
