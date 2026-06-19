@@ -138,6 +138,18 @@ spec:
               value: {{ include "tssg-public-host" . | quote }}
             - name: PAPI_PUBLIC_PORT
               value: {{ include "tssg-public-port" . | quote }}
+          {{- if .Values.portal.infrastructureManagement.enabled }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_access_key_id
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_secret_access_key
+          {{- end }}
           envFrom:
           - configMapRef:
               name: intelligence-server-config
