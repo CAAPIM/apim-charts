@@ -31,11 +31,7 @@ data:
   INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
   {{- end }}
   {{- if .Values.portal.infrastructureManagement.enabled }}
-  {{- if .Values.global.deepStorage.minio }}
-  S3_URL: "http://minio:9000"
-  {{- else }}
   S3_URL: "http://seaweedfs-s3:8333"
-  {{- end }}
   S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | quote }}
   {{- end }}
 {{- end }}
