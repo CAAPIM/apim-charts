@@ -138,6 +138,31 @@ spec:
               value: {{ include "tssg-public-host" . | quote }}
             - name: PAPI_PUBLIC_PORT
               value: {{ include "tssg-public-port" . | quote }}
+          {{- if .Values.portal.infrastructureManagement.enabled }}
+          {{- if .Values.global.deepStorage.minio }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.druid.minio.auth.secretName }}
+                  key: MINIO_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.druid.minio.auth.secretName }}
+                  key: MINIO_SECRET_KEY
+          {{- else }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_access_key_id
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_secret_access_key
+          {{- end }}
+          {{- end }}
           envFrom:
           - configMapRef:
               name: intelligence-server-config

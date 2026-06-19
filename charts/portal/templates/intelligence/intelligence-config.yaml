@@ -21,6 +21,21 @@ data:
   INTELLIGENCE_DATABASE_NAME: {{ include "intelligence-db-name" . | quote }}
   KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
   PORTAL_DATA_HOST: {{ .Values.intelligence.portalDataHost | default "portal-data:8080" | quote }}
+  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  RABBITMQ_USERNAME: {{ .Values.rabbitmq.auth.username | quote }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "true"
+  {{- else }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
+  {{- end }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  {{- if .Values.global.deepStorage.minio }}
+  S3_URL: "http://minio:9000"
+  {{- else }}
+  S3_URL: "http://seaweedfs-s3:8333"
+  {{- end }}
+  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | quote }}
+  {{- end }}
 {{- end }}
