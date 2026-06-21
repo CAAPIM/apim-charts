@@ -31,7 +31,7 @@ data:
   INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
   {{- end }}
   {{- if .Values.portal.infrastructureManagement.enabled }}
-  S3_URL: "http://seaweedfs-s3:8333"
+  S3_ENDPOINT: "http://seaweedfs-s3:8333"
   S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | quote }}
   {{- end }}
 {{- end }}
