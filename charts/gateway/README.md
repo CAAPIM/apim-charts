@@ -1617,13 +1617,23 @@ In order the create the database on the remote server, the provided user in the 
 
 Gateway 11.2.2 introduces an opt-in `pre-upgrade` Kubernetes Job that applies Liquibase database schema changes before the new Gateway pods roll out. This decouples the schema upgrade from the Gateway startup process, preventing stuck `DATABASECHANGELOGLOCK` entries from blocking pod startup during rolling upgrades.
 
-> **Requirements:** Gateway connected to external MySQL The target Gateway image must be **11.2.2 or newer**. 
+> **Requirements:** Gateway must be connected to an external MySQL database. The target Gateway image must be **11.2.2 or newer**.
+
+> **Important — for upgrades only:** The `db-migration` job is a `pre-upgrade` Helm hook. It runs **only during `helm upgrade`**, never during `helm install`. Likewise, `-Dgateway.db.schema-update.mode=skip` must **not** be set during a fresh installation — if Liquibase is skipped on first install, the `ssg` database schema will never be populated and the Gateway will fail to start. Only add `skip` mode after the schema has been fully initialised by either a previous `helm install` (default mode) or a successful migration job.
 
 #### How it works
 
 When `database.migrationJob.enabled: true`, a short-lived `db-migration` Job pod is created as a Helm `pre-upgrade` hook. It runs the Gateway container image configured with a special startup mode that applies all pending schema changes and then exits — without starting the Gateway JVM. Once the Job completes successfully, Helm proceeds to roll out the main Gateway Deployment.
 
 The main Gateway pods should be configured with `javaArgs: ["-Dgateway.db.schema-update.mode=skip"]` so they bypass the Liquibase check entirely and start immediately without touching the database lock.
+
+#### Fresh install vs upgrade
+
+| Operation | `skip` mode | Migration job | Expected behaviour |
+|---|---|---|---|
+| `helm install` (first time) | Not set (default) | Not applicable (`pre-upgrade` only) | Gateway populates the `ssg` schema on first boot — **correct** |
+| `helm install` (first time) | Set | Not applicable | Gateway skips Liquibase — **schema never populated, Gateway broken** |
+| `helm upgrade` | Set | Enabled | Migration job populates schema and exits, Gateway pods start fast — **correct** |
 
 #### Upgrade workflow
 
@@ -1632,13 +1642,14 @@ The main Gateway pods should be configured with `javaArgs: ["-Dgateway.db.schema
 ```yaml
 database:
   enabled: true
+  create: false
   jdbcURL: jdbc:mysql://myprimaryserver:3306/ssg
 
   migrationJob:
     enabled: true
     # Optional: specify the primary writer endpoint directly.
     # If omitted, falls back to database.jdbcURL above.
-    jdbcUrl: "jdbc:mysql://myprimaryserver:3306/ssg"
+    jdbcURL: "jdbc:mysql://myprimaryserver:3306/ssg"
 ```
 
 ```bash
@@ -1654,6 +1665,10 @@ After the migration completes, add the following to ensure normal Gateway pods s
 ```yaml
 javaArgs:
   - "-Dgateway.db.schema-update.mode=skip"
+
+database:
+  migrationJob:
+    enabled: false   # disable now that migration is complete
 ```
 
 #### Recovering from a stuck lock
@@ -1671,14 +1686,12 @@ database:
 
 #### Configuration
 
-
-| Parameter                                     | Description                                                                                                                                | Default |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| `database.migrationJob.enabled`               | Enable the pre-upgrade schema migration Job                                                                                                | `false` |
-| `database.migrationJob.jdbcUrl`               | JDBC URL for the migration job. Recommended to point at the primary writer endpoint directly. Falls back to `database.jdbcURL` if not set. | `""`    |
-| `database.migrationJob.clearLocks`            | Forcefully release any stuck Liquibase locks before applying schema changes                                                                | `false` |
-| `database.migrationJob.activeDeadlineSeconds` | Maximum time (in seconds) the job pod is allowed to run before being terminated                                                            | `300`   |
-
+| Parameter | Description | Default |
+|---|---|---|
+| `database.migrationJob.enabled` | Enable the pre-upgrade schema migration Job. For upgrades only — do not enable on `helm install`. | `false` |
+| `database.migrationJob.jdbcURL` | JDBC URL for the migration job. Recommended to point at the primary writer endpoint directly to bypass load balancers or proxies. Falls back to `database.jdbcURL` if not set. | `""` |
+| `database.migrationJob.clearLocks` | Forcefully release any stuck Liquibase locks before applying schema changes | `false` |
+| `database.migrationJob.activeDeadlineSeconds` | Maximum time (in seconds) the job pod is allowed to run before being terminated | `300` |
 
 #### Retry behaviour
 
