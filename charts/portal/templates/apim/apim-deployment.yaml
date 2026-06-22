@@ -158,13 +158,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.deepStorage.auth.secretName }}
                   key: admin_access_key_id
-                  optional: false
             - name: S3_ACCESS_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.deepStorage.auth.secretName }}
                   key: admin_secret_access_key
-                  optional: false
           envFrom:
           - configMapRef:
               name: apim-config
