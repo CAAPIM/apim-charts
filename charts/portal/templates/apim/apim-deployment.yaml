@@ -153,6 +153,16 @@ spec:
                   name: {{ .Values.tls.externalSecretName }}
                   key: keypass.txt
                   optional: false
+            - name: PORTAL_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_access_key_id
+            - name: S3_ACCESS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_secret_access_key
           envFrom:
           - configMapRef:
               name: apim-config

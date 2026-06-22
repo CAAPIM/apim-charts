@@ -38,6 +38,7 @@ data:
   KAFKA_PROXY_ADVERTISED_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
   KAFKA_PROXY_BROKER_ADDRESS_PATTERN: {{ default (include "kafka-proxy-broker-pattern" .) .Values.portal.kafka.proxy.brokerAddressPattern | quote }}
   PORTAL_CONFIG_BROKER_KAFKA_HOST: {{ default "localhost" .Values.portal.kafka.proxy.configBrokerHost | quote }}
+  PORTAL_S3_URL: "http://seaweedfs-s3:8333"
 {{ if .Values.apim.additionalEnv }}
 {{- range $key, $val := .Values.apim.additionalEnv }}
   {{ $key }}: {{ $val | quote }}
