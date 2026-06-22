@@ -108,6 +108,13 @@ To configure external mysql/oracle database as OTK db, configure properties in b
 | `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
 | `otk.database.properties`         | OTK database additional properties  | `{}`
 | `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.sql.oracleTruststore.enabled` | Enable/Disable mounting a JKS truststore Kubernetes secret into the OTK database upgrade job. Required when `oracleSsl.enabled` is `true` | `false` |
+| `otk.database.sql.oracleTruststore.name`    | Name of the Kubernetes Secret containing the JKS truststore file for Oracle SSL | |
+| `otk.database.sql.oracleSsl.enabled`        | Enable/Disable Oracle SSL (TCPS) for the OTK database upgrade job | `false` |
+| `otk.database.sql.oracleSsl.trustStoreFileName` | Filename of the JKS truststore file within the `oracleTruststore` Kubernetes secret | |
+| `otk.database.sql.oracleSsl.trustStorePassword` | Password for the JKS truststore. Stored in `otk-db-secret` | |
+| `otk.database.sql.oracleSsl.trustStoreType` | Keystore type of the truststore file (`JKS` or `PKCS12`) | `JKS` |
+| `otk.database.sql.oracleSsl.sslServerDnMatch` | Enable/Disable Oracle server DN verification during SSL handshake | `true` |
 
 Optionally, OTK also supports read only database connection for MySQL and Oracle
 
@@ -162,6 +169,46 @@ otk:
 ....
 .....
 ```
+
+#### Oracle SSL (TCPS) configuration
+
+Oracle SSL connections require a TCPS JDBC URL and a JKS truststore. The truststore must be stored in a Kubernetes secret and referenced via `oracleTruststore`. The truststore password is stored in `otk-db-secret`.
+
+Prerequisites:
+1. Create a Kubernetes secret containing the JKS truststore file:
+```
+kubectl create secret generic otk-secret-jks --from-file=truststore.jks=/path/to/truststore.jks
+```
+2. Configure Oracle SSL in values:
+```
+otk:
+  database:
+    type: oracle
+    dbUpgrade: true
+    useDemoDb: false
+    username: otk_user
+    password: mypassword
+    sql:
+      jdbcURL: jdbc:oracle:thin:@tcps://oracle-host:1522/service_name
+      jdbcDriverClass: oracle.jdbc.OracleDriver
+      databaseName: ORCLCDB
+      oracleTruststore:
+        enabled: true
+        name: otk-secret-jks
+      oracleSsl:
+        enabled: true
+        trustStoreFileName: truststore.jks
+        trustStorePassword: changeit
+        trustStoreType: JKS
+        sslServerDnMatch: true
+```
+
+> **Note:** The TCPS JDBC URL uses a **service name** (e.g. `service_name`), not the Oracle SID. Using the SID in a TCPS URL will result in a connection failure. Ensure `OTK_DATABASE_NAME` (`databaseName`) is set to the SID/CDB name as it is used separately by internal processes.
+
+> **Note:** `sslServerDnMatch` controls Oracle server certificate verification behaviour:
+> - `true` (default) — full SSL certificate verification is performed. The Oracle server's certificate must either be signed by a CA trusted by the system, or the truststore must be provided via `oracleTruststore` containing the CA certificate. Use this in production environments.
+> - `false` — certificate verification is disabled entirely. The SSL connection is still encrypted but the server's identity is not verified. Use only in non-production environments or when the Oracle server uses a self-signed certificate that cannot be added to a truststore.
+
 ### Cassandra database  (`otk.database.type:cassandra`) 
 > :information_source: **Important** <br>
 > - Install or Upgrade of OTK database on Cassandra is not supported.
