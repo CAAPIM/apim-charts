@@ -646,6 +646,24 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
+  # This pre-upgrade job executes any pending database schema updates and exits. The job executes before the rollout of new Gateways.
+  # Ensure the requirements are met before enabling.
+  # Requirement: The Gateway must be 11.2.2 or newer which supports applying db schema changes and exiting without starting Gateway.
+  # Warning, if this job fails, it may leave the DATABASECHANGELOGLOCK locked in which case
+  # the lock must be manually removed before a retry can be attempted.
+  migrationJob:
+    # Opt-in: set to true only when running helm upgrade against a Gateway 11.2.2+ image.
+    # This job does not run on helm install (it is a pre-upgrade hook only).
+    enabled: false
+    # Optional: Override the JDBC URL used by the migration job. Recommended to specify the primary writer endpoint
+    # to avoid routing through a load balancer or proxy during schema updates. If not set, falls back to database.jdbcURL.
+    jdbcUrl: ""
+
+    # Set to true to force release of any stuck Liquibase db schema locks before running the schema updates.
+    # Warning: use with caution as another simultaneous db schema update may corrupt the db schema.
+    clearLocks: false
+    # The maximum duration (in seconds) the job is allowed to run before being terminated.
+    activeDeadlineSeconds: 300
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.

@@ -85,6 +85,7 @@ Helm Version    Supported Kubernetes Versions
 * [Shared State Provider Configuration](#shared-state-provider-config)
 * [OpenTelemetry Configuration](#opentelemetry-configuration)
 * [Database Configuration](#database-configuration)
+* [Database Migration Job](#database-migration-job-pre-upgrade-schema-updates)
 * [MySQL StatefulSet](#mysql-statefulset-developmenttesting-only)
 * [Cluster-Wide Properties](#cluster-wide-properties)
 * [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
@@ -339,9 +340,8 @@ management:
 
 ### OTK Compatibility with Gateway 11.2
 These below information is relevant for those who are upgrading their Gateway to version 11.2 and utilizing the OAuth Toolkit (OTK)
-1. **OTK 4.6.4 & OTK 4.7.0 ** are presently the only versions that provides seamless support for Gateway versions 11.2 & greater
-2. Upgrading to 4.6.4 & 4.7.0 should be tested & validated in a lower environment prior to production rollout
-3. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
+1. **OTK 4.6.4** is presently the only version that provides seamless support for Gateway 11.2
+2. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
    * After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
        * 4.6.0.1
        * 4.6.1.1
@@ -1625,6 +1625,99 @@ mysql:
 ```
 
 **Note:** The hook weight of `-10` ensures MySQL resources are created before the OTK installation job (which typically has a weight of `0`).
+
+[Back to Additional Guides](#additional-guides)
+
+### Database Migration Job (Pre-Upgrade Schema Updates)
+
+Gateway 11.2.2 introduces an opt-in `pre-upgrade` Kubernetes Job that applies Liquibase database schema changes before the new Gateway pods roll out. By running the schema update once, in a dedicated job, before any Gateway pod starts, it avoids multiple pods racing to acquire the `DATABASECHANGELOGLOCK` simultaneously — reducing the risk of contention, stuck locks, and schema update failures that can block pods from starting during a rolling upgrade. The job also supports specifying a dedicated JDBC URL (for example, a primary writer endpoint) so that schema changes are applied directly to the primary database node, bypassing read replicas or load-balancing proxies that could route writes incorrectly.
+
+> **Requirements:** Gateway must be connected to an external MySQL database. The target Gateway image must be **11.2.2 or newer**.
+
+> **Important — for upgrades only:** The `db-migration` job is a `pre-upgrade` Helm hook. It runs **only during `helm upgrade`**, never during `helm install`. Likewise, `-Dgateway.db.schema-update.mode=skip (which starts up Gateway container without Liquibase` must **not** be set during a fresh installation — if Liquibase is skipped on first install, the `ssg` database schema will never be populated and the Gateway will fail to start. Only add `skip` mode after the schema has been fully initialised by either a previous `helm install` (default mode) or a successful migration job.
+
+#### How it works
+
+When `database.migrationJob.enabled: true`, a short-lived `db-migration` Job pod is created as a Helm `pre-upgrade` hook. It runs the Gateway container image configured with a special startup mode that applies all pending schema changes and then exits — without starting the Gateway JVM. Once the Job completes successfully, Helm proceeds to roll out the main Gateway Deployment.
+
+The main Gateway pods can be configured with `javaArgs: ["-Dgateway.db.schema-update.mode=skip"]` so they bypass the Liquibase check entirely and start immediately without touching the database lock. This feature requires 11.2.2 or newer.
+
+#### Fresh install vs upgrade
+
+
+| Operation                   | `config.javaArgs` — `-Dgateway.db.schema-update.mode` | Migration job (`database.migrationJob.enabled`) | Expected behaviour                                                              |
+| --------------------------- | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `helm install` (first time) | Not set — Gateway runs Liquibase on startup (default)  | Not applicable (`pre-upgrade` hook only)         | Gateway populates the `ssg` schema on first boot — **correct**                  |
+| `helm upgrade`              | `skip` — Gateway bypasses Liquibase on startup         | `true` — migration job applies schema changes first | Migration job populates schema and exits, Gateway pods start fast — **correct** |
+
+> **Warning:** Do not set `-Dgateway.db.schema-update.mode=skip` during `helm install`. The migration job is a `pre-upgrade` hook and does not run on install, so if Liquibase is skipped the `ssg` schema is never populated and the Gateway will fail to start.
+
+
+#### Upgrade workflow
+
+Configure both the migration job and `-Dgateway.db.schema-update.mode=skip` in your `values.yaml` together, then run `helm upgrade` once. The migration job runs as a `pre-upgrade` hook — it applies all pending schema changes and exits before any Gateway pod starts. The new Gateway pods, already configured to bypass Liquibase, can then start immediately without competing for the database lock.
+
+```yaml
+database:
+  enabled: true
+  create: false
+  jdbcURL: jdbc:mysql://myprimaryserver:3306/ssg
+
+  migrationJob:
+    enabled: true
+    # Optional: specify the primary writer endpoint directly.
+    # If omitted, falls back to database.jdbcURL above.
+    jdbcURL: "jdbc:mysql://myprimaryserver:3306/ssg"
+
+config:
+  javaArgs:
+    - "-Dgateway.db.schema-update.mode=skip"
+    # ... your other javaArgs
+```
+
+```bash
+helm upgrade my-release layer7/gateway -f values.yaml
+```
+
+Helm runs the `db-migration` job first. Once it completes successfully, Helm rolls out the new Gateway pods. Because `skip` mode is already set, the pods bypass Liquibase and start immediately.
+
+Once enabled, you can leave `database.migrationJob.enabled: true` permanently. If there are no pending schema changes, the job completes in seconds and exits cleanly, so there is no harm in running it on every upgrade.
+
+#### Recovering from a stuck lock
+
+If a previous upgrade left the `DATABASECHANGELOGLOCK` locked (e.g. due to a crashed Gateway pod), set `clearLocks: true`. The migration job will forcefully release the stuck lock before applying schema changes.
+
+```yaml
+database:
+  migrationJob:
+    enabled: true
+    clearLocks: true
+```
+
+> **Warning:** Use `clearLocks: true` with caution. Forcefully releasing the lock while another process is actively updating the schema can corrupt the database.
+
+#### Configuration
+
+
+| Parameter                                     | Description                                                                                                                                                                    | Default |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `database.migrationJob.enabled`               | Enable the pre-upgrade schema migration Job. For upgrades only — do not enable on `helm install`.                                                                              | `false` |
+| `database.migrationJob.jdbcURL`               | JDBC URL for the migration job. Recommended to point at the primary writer endpoint directly to bypass load balancers or proxies. Falls back to `database.jdbcURL` if not set. | `""`    |
+| `database.migrationJob.clearLocks`            | Forcefully release any stuck Liquibase locks before applying schema changes                                                                                                    | `false` |
+| `database.migrationJob.activeDeadlineSeconds` | Maximum time (in seconds) the job pod is allowed to run before being terminated                                                                                                | `300`   |
+
+
+#### Retry behaviour
+
+The Job is configured with `backoffLimit: 1`. If the first pod fails or times out, Kubernetes creates exactly one retry pod. If the retry also fails, the Job is marked `Failed` and Helm aborts the upgrade, leaving the existing Gateway pods untouched.
+
+To investigate a failed migration, retrieve the job logs to identify the failing changeset:
+
+```bash
+kubectl logs -n <namespace> -l job-name=<release-name>-db-migration --tail=200
+```
+
+Fix the root cause (for example, a missing MySQL privilege) and re-run `helm upgrade`. If the migration continues to fail, contact [Broadcom Support](https://support.broadcom.com) for assistance.
 
 [Back to Additional Guides](#additional-guides)
 
