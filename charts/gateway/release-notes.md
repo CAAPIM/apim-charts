@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.2 Sync with stable
+- Sync develop/gateway branch with stable
+
 ## 3.1.1 OTK 4.7.0 Released
 - The default image tag in values.yaml and production-values.yaml for OTK updated to 4.7.0.
   - otk.job.image.tag: 4.7.0
