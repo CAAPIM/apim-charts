@@ -92,7 +92,7 @@ portal:
   # SeaweedFS object storage sub-chart gate. 
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
-    enabled: true
+    enabled: false
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
@@ -1179,7 +1179,7 @@ kafka:
   kafka:
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
-    replicaCount: 1
+    replicaCount: 3
 
     # Ordinals configuration (Kubernetes 1.27+)
     # Set start ordinal for StatefulSet pods
