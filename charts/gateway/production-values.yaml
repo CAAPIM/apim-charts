@@ -655,7 +655,9 @@ database:
   # Warning, if this job fails, it may leave the DATABASECHANGELOGLOCK locked in which case  
   # the lock must be manually removed before a retry can be attempted.
   migrationJob:
-    enabled: true
+    # Opt-in: set to true only when running helm upgrade against a Gateway 11.2.2+ image.
+    # This job does not run on helm install (it is a pre-upgrade hook only).
+    enabled: false
     # Optional: Override the JDBC URL used by the migration job. Recommended to specify the primary writer endpoint
     # to avoid routing through a load balancer or proxy during schema updates. If not set, falls back to database.jdbcURL.
     jdbcUrl: ""
