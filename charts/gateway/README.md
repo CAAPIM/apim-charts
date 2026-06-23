@@ -184,6 +184,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.password`          | Database Password | `mypassword` |
 | `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
 | `database.name`          | Database name | `ssg`  |
+| `database.type`          | Embedded database type (`h2` or empty for Derby). Only used when `database.enabled: false`. | `""`  |
 | `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false` |
 | `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out` |
 | `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
@@ -1915,6 +1916,21 @@ admin.pass=mypassword
 node.db.type=derby
 node.db.config.main.user=gateway
 ```
+
+##### H2 Embedded Database (Alternative to Derby)
+When running in ephemeral mode (`database.enabled: false`), you can use H2 as the embedded database instead of Derby by setting `database.type: "h2"` in your values file.
+
+The chart automatically sets `node.db.type=h2` in node.properties and the `SSG_DATABASE_TYPE` environment variable (when `disklessConfig.enabled: true`).
+
+Example values.yaml configuration:
+```yaml
+database:
+  enabled: false
+  create: false
+  type: "h2"
+```
+
+> **Note:** `database.type` cannot be set when `database.enabled: true`. Using an embedded database alongside an external MySQL database is not supported and will cause `helm install`/`helm upgrade` to fail at render time.
 Unlike interactive password changes in Policy Manager, the container startup scripts validate the following username and password against a restricted character set (for parsing/scripting safety):
 ```
 admin.user, admin.pass, node.db.config.main.user, node.db.config.main.pass
