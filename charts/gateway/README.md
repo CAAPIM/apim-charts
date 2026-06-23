@@ -1,18 +1,22 @@
 # Layer7 API Gateway
+
 This Chart deploys the API Gateway v11.x onward with the following `optional` subchart: hazelcast. This Chart also includes basic MySQL and Redis statefulsets for trying out the Chart; these are example only and do not represent production ready configurations.
 
 ## Bitnami Public Catalog Removal
+
 The Bitnami subCharts have now been fully removed from the Gateway Helm Chart. Please read the release notes for [Gateway v3.0.45](./release-notes.md#3039-bitnami-subchart-removal) for more details.
 
 ### Important Note
+
 The included MySQL Statefulset is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.1.1
 
+- Current Chart Version 3.1.1
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
+
 - Kubernetes
   - [Refer to techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/release-notes_cgw/requirements-and-compatibility.html#concept.dita_req_comp_refresh_gw10cr2_platforms) for the latest version support
 - Helm v3.x
@@ -20,26 +24,34 @@ The included MySQL Statefulset is enabled by default to make trying this chart o
 - Gateway v10.x or v11.x License
 
 #### Note
+
 It's important that your Kubernetes Client and Server versions are compatible.
 
 You can verify this by running the following
+
 ```
 kubectl version
 ```
+
 output
+
 ```
 Client Version: v1.29.1
 Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 Server Version: v1.27.6+b49f9d1
 WARNING: version difference between client (1.29) and server (1.27) exceeds the supported minor version skew of +/-1
 ```
+
 The above message indicates that the client version (kubectl) is greater than the server version by more than 1 minor version. This may cause unforseen errors when using Kubectl or Helm.
 
 Please also check your Helm version against [this](https://helm.sh/docs/topics/version_skew/#supported-version-skew) compatibility matrix
+
 ```
 helm version
 ```
+
 output
+
 ```
 version.BuildInfo{Version:"v3.13.3", GitCommit:"c8b948945e52abba22ff885446a1486cb5fd3474", GitTreeState:"clean", GoVersion:"go1.21.5"}
 
@@ -48,76 +60,89 @@ Helm Version    Supported Kubernetes Versions
 ```
 
 ## Optional
+
 - Persistent Volume Provisioner (if using PVC for the Demo MySQL or Redis Statefulset)
 
 ## Recommended
+
 - [An Ingress Controller](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
 
 ### Production
+
 - [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) if you would like to enable autoscaling.
 
 #### MySQL/Database Backed Gateways
+
 - [A dedicated external MySQL 8.0.22/8.0.26 server](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/install-configure-upgrade/using-mysql-8-0-with-gateway-10.html)
 
 ### Advanced Configuration
-* [Additional Guides](#additional-guides)
-* [Thinking in Kubernetes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html)
+
+- [Additional Guides](#additional-guides)
+- [Thinking in Kubernetes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html)
 
 #### Getting Started
+
 ***If you are using a previous version of this Chart please read the updates section before you upgrade.***
-* [Install the Chart](#installing-the-chart)
-* [Upgrade the Chart](#upgrading-the-chart)
-* [Uninstall the Chart](#uninstalling-the-chart)
+
+- [Install the Chart](#installing-the-chart)
+- [Upgrade the Chart](#upgrading-the-chart)
+- [Uninstall the Chart](#uninstalling-the-chart)
 
 ## Additional Guides
-* [Configuration](#configuration)
-* [Service Configuration](#port-configuration)
-* [Gateway Application Ports](#gateway-application-ports)
-* [OTK Install or Upgrade](#otk-install-or-upgrade)
-* [OTK Compatibility with Gateway 11.2](#otk-compatibility-with-gateway-112)
-* [Ingress Configuration](#ingress-configuration)
-* [Kubernetes Gateway API Configuration](#kubernetes-gateway-api-configuration)
-* [PM Tagger Configuration](#pm-tagger-configuration)
-* [Shared State Preview Features](#shared-state-preview-features)
-* [Redis Configuration](#redis-configuration)
-* [Redis StatefulSet](#redis-statefulset-developmenttesting-only)
-* [GemFire Configuration](#gemfire-configuration-1113)
-* [Shared State Provider Configuration](#shared-state-provider-config)
-* [OpenTelemetry Configuration](#opentelemetry-configuration)
-* [Database Configuration](#database-configuration)
-* [Database Migration Job](#database-migration-job-pre-upgrade-schema-updates)
-* [MySQL StatefulSet](#mysql-statefulset-developmenttesting-only)
-* [Cluster-Wide Properties](#cluster-wide-properties)
-* [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
-* [Java Args](#java-args)
-* [System Properties](#system-properties)
-* [Diskless Configuration](#diskless-configuration)
-* [Gateway Bundles](#bundle-configuration)
-* [Bootstrap Script](#bootstrap-script)
-* [Custom Health Checks](#custom-health-checks)
-* [Custom Configuration Files](#custom-configuration-files)
-* [Logs & Audit Configuration](#logs--audit-configuration)
-* [Graceful Termination](#graceful-termination)
-* [Autoscaling](#autoscaling)
-* [Pod Disruption Budgets](#pod-disruption-budgets)
-* [RBAC Parameters](#rbac-parameters)
-* [SubChart Configuration](#subchart-configuration)
 
-
+- [Configuration](#configuration)
+- [Service Configuration](#port-configuration)
+- [Gateway Application Ports](#gateway-application-ports)
+- [OTK Install or Upgrade](#otk-install-or-upgrade)
+- [OTK Compatibility with Gateway 11.2](#otk-compatibility-with-gateway-112)
+- [Ingress Configuration](#ingress-configuration)
+- [Kubernetes Gateway API Configuration](#kubernetes-gateway-api-configuration)
+- [PM Tagger Configuration](#pm-tagger-configuration)
+- [Shared State Preview Features](#shared-state-preview-features)
+- [Redis Configuration](#redis-configuration)
+- [Redis StatefulSet](#redis-statefulset-developmenttesting-only)
+- [GemFire Configuration](#gemfire-configuration-1113)
+- [Shared State Provider Configuration](#shared-state-provider-config)
+- [OpenTelemetry Configuration](#opentelemetry-configuration)
+- [Database Configuration](#database-configuration)
+- [Database Migration Job](#database-migration-job-pre-upgrade-schema-updates)
+- [MySQL StatefulSet](#mysql-statefulset-developmenttesting-only)
+- [Cluster-Wide Properties](#cluster-wide-properties)
+- [Enable DualStack(IPv4/IPv6)](#enable-dualstack)
+- [Java Args](#java-args)
+- [System Properties](#system-properties)
+- [Diskless Configuration](#diskless-configuration)
+- [Gateway Bundles](#bundle-configuration)
+- [Bootstrap Script](#bootstrap-script)
+- [Custom Health Checks](#custom-health-checks)
+- [Custom Configuration Files](#custom-configuration-files)
+- [Logs & Audit Configuration](#logs--audit-configuration)
+- [Graceful Termination](#graceful-termination)
+- [Autoscaling](#autoscaling)
+- [Pod Disruption Budgets](#pod-disruption-budgets)
+- [RBAC Parameters](#rbac-parameters)
+- [SubChart Configuration](#subchart-configuration)
 
 ## Installing the Chart
+
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
+
 ```
 $ helm repo add layer7 https://caapim.github.io/apim-charts/
 $ helm repo update
 $ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
+
 ## Upgrading the Chart
+
 To upgrade your Gateway Release
+
 ```
 $ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
 ```
+
 ## Uninstalling the Chart
+
 To uninstall the Gateway Chart
 
 ```
@@ -125,12 +150,15 @@ $ helm uninstall <release name> -n <release namespace>
 ```
 
 ## Custom values
+
 To make sure that your custom values don't get overwritten by a pull, create your own values.yaml (myvalues.yaml..) then specify -f myvalues.yaml when deploying/upgrading
 
 ## Note on custom values
+
 You only need to include the values you wish to change in your myvalues.yaml
 
 For example, you wish to deploy the Gateway Chart as is without a database. Your myvalues.yaml would then contain the following
+
 ```
 database:
   enabled: false
@@ -138,160 +166,165 @@ database:
 ```
 
 ## Configuration
+
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
 
-| Parameter                        | Description                               | Default                                                    |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `nameOverride`                | Name override   | `nil` |
-| `fullnameOverride`                      | Full name override                       | `nil`                                                   |
-| `global.schedulerName`                    | Override the default scheduler | `nil` |
-| `license.value`          | Gateway license file | `nil`  |
-| `license.accept`          | Accept Gateway license EULA | `false` |
-| `disklessConfig.enabled` | Enable diskless configuration | `true` |
-| `disklessConfig.setSecretByInitContainer` | Fetch and mount node.properties secret by InitContainer | `false` |
-| `disklessConfig.existingSecret` | existing node.properties secret mount configuration | `{}` |
-| `disklessConfig.existingSecret.name` | existing secret containing node.properties | `gateway-secret` |
-| `disklessConfig.existingSecret.csi` | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) | `commented out` |
-| `image.registry`    | Image Registry               | `docker.io` |
-| `image.repository`          | Image Repository  | `caapim/gateway` |
-| `image.tag`          | Image tag | `11.0.00` |
-| `image.pullPolicy`          | Image Pull Policy | `IfNotPresent` |
-| `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false` |
-| `imagePullSecret.existingSecretName`        | Point to an existing Image Pull Secret | `commented out` |
-| `imagePullSecret.username`          | Registry Username | `nil`  |
-| `imagePullSecret.password`          | Registry Password | `nil`  |
-| `additionalAnnotations`          | Additional Annotations apply to all deployed objects | `{}`  |
-| `additionalLabels`          | Additional Labels apply to all deployed objects | `{}`  |
-| `podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
-| `podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
-| `replicas`                   | Number of Gateway replicas        | `1`                                                        |
-| `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                            |
-| `updateStrategy.rollingUpdate.maxSurge`           | Rolling Update Max Surge                       | `1`                                            |
-| `updateStrategy.rollingUpdate.maxUnavailable`           | Rolling Update Max Unavailable                       | `0`                                            |
-| `clusterHostname`          | Gateway Cluster Hostname  | `my.localdomain` |
-| `existingGatewaySecretName`          | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out` |
-| `clusterPassword`          | Cluster Password, used if db backed  | `mypassword` |
-| `management.enabled`          | Enable/Disable Policy Manager access | `true` |
-| `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false` |
-| `management.username`          | Policy Manager Username | `admin` |
-| `management.password`          | Policy Manager Password | `mypassword` |
-| `management.kubernetes.loadServiceAccountToken`  | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false` |
-| `management.service.ipFamilyPolicy`   | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `commented out` |
-| `management.service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `nil`  |
-| `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true` |
-| `database.create`          | Deploy the MySQL stable deployment as part of this release | `true` |
-| `database.username`          | Database Username | `gateway` |
-| `database.password`          | Database Password | `mypassword` |
-| `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
-| `database.name`          | Database name | `ssg`  |
-| `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false` |
-| `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out` |
-| `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
-| `tls.pass`          | p12 container password - this cannot be empty | `nil`  |
-| `config.heapSize`          | Java Heap Size | `2g`  |
-| `config.minHeapSize`          | Java Min Heap Size | `1g`  |
-| `config.maxHeapSize`          | Java Max Heap Size | `3g`  |
-| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml` |
-| `config.log.override`          | Override the standard log configuration | `true` |
-| `config.log.properties`          | Custom logging properties | `see values.yaml` |
-| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false` |
-| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml` |
-| `config.sytemProperties`          | Configure the Gateway's system.properties file | `see values.yaml` |
-| `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml` |
-| `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml` |
-| `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false` |
-| `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"` |
-| `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false` |
-| `existingBundle.configMaps`          | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml` |
-| `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml` |
-| `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml` |
-| `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml` |
-| `service.type`    | Service Type               | `LoadBalancer` |
-| `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
-| `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
-| `service.loadbalancer`    | Additional Loadbalancer Configuration               | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
-| `service.ports`    | List of http external port mappings               | https: 8443 -> 8443, management: 9443->9443 |
-| `service.annotations`    | Additional annotations to add to the service               | {} |
-| `service.internalTrafficPolicy`    | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)               | `Cluster` |
-| `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
-| `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
-| `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
-| `ingress.openshift.route.wildcardPolicy`  | Openshift Route Wildcard Policy               | `None` |
-| `ingress.openshift.route.weight`    | Openshift Route Weight (0-255)               | `commented` |
-| `ingress.annotations`    | ingress annotations               | `{}` |
-| `ingress.labels`    | additional ingress labels               | `{}` |
-| `ingress.ingressClassName`    | Ingress Class Name               | `nginx` |
-| `ingress.tls`    | Ingress TLS Configuration               | `see values.yaml` |
-| `ingress.rules`    | Ingress Rules Configuration              | `see values.yaml` |
-| `ingress.rules[].annotations`    | Per-rule annotations (OpenShift Routes only). Merged with `ingress.annotations` | `not set` |
-| `kubernetesGateway.enabled`    | Enable Kubernetes Gateway API resources (EXPERIMENTAL)               | `false` |
-| `kubernetesGateway.gateway.create`    | Create a new Gateway resource               | `false` |
-| `kubernetesGateway.gateway.gatewayClassName`    | GatewayClass name (e.g. contour, eg). Required when create: true               | `""` |
-| `kubernetesGateway.gateway.addresses`    | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}`               | `[]` |
-| `kubernetesGateway.gateway.existingRef.name`    | Name of an existing Gateway to reference               | `""` |
-| `kubernetesGateway.gateway.existingRef.namespace`    | Namespace of the existing Gateway               | `""` |
-| `kubernetesGateway.gateway.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the listener. When set, no secret is created               | `""` |
-| `kubernetesGateway.gateway.labels`    | Additional labels for the Gateway resource               | `{}` |
-| `kubernetesGateway.gateway.annotations`    | Additional annotations for the Gateway resource               | `{}` |
-| `kubernetesGateway.httpRoute.enabled`    | Enable HTTPRoute resource               | `true` |
-| `kubernetesGateway.httpRoute.rules`    | HTTPRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
-| `kubernetesGateway.httpRoute.labels`    | Additional labels for the HTTPRoute               | `{}` |
-| `kubernetesGateway.httpRoute.annotations`    | Additional annotations for the HTTPRoute               | `{}` |
-| `kubernetesGateway.tlsRoute.enabled`    | Enable TLSRoute resource (SNI passthrough)               | `false` |
-| `kubernetesGateway.tlsRoute.apiVersion`    | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1               | `gateway.networking.k8s.io/v1alpha2` |
-| `kubernetesGateway.tlsRoute.rules`    | TLSRoute rules. Each rule routes to the chart's own service               | `see values.yaml` |
-| `kubernetesGateway.tlsRoute.labels`    | Additional labels for the TLSRoute               | `{}` |
-| `kubernetesGateway.tlsRoute.annotations`    | Additional annotations for the TLSRoute               | `{}` |
-| `kubernetesGateway.backendTLSPolicy.enabled`    | Enable BackendTLSPolicy for Gateway-to-backend TLS               | `false` |
-| `kubernetesGateway.backendTLSPolicy.excludePorts`    | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName`               | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation.hostname`    | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`               | `""` |
-| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`    | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap               | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates`    | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`               | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName`    | Reference an existing kubernetes.io/tls Secret for the backend cert. When set, no secret is created               | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.bootstrap`    | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource               | `true` |
-| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap`    | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default)               | `false` |
-| `kubernetesGateway.backendTLSPolicy.labels`    | Additional labels for the BackendTLSPolicy               | `{}` |
-| `kubernetesGateway.backendTLSPolicy.annotations`    | Additional annotations for the BackendTLSPolicy               | `{}` |
-| `kubernetesGateway.labels`    | Labels applied to all Gateway API resources               | `{}` |
-| `kubernetesGateway.annotations`    | Annotations applied to all Gateway API resources               | `{}` |
-| `startupProbe.enabled`    | Enable/Disable               | `false` |
-| `startupProbe.initialDelaySeconds`    | Initial delay               | `60` |
-| `startupProbe.timeoutSeconds`    | Timeout               | `1` |
-| `startupProbe.periodSeconds`    | Frequency               | `10` |
-| `startupProbe.successThreshold`    | Success Threshold               | `1` |
-| `startupProbe.failureThreshold`    | Failure Threshold               | `10` |
-| `livenessProbe.enabled`    | Enable/Disable               | `true` |
-| `livenessProbe.initialDelaySeconds`    | Initial delay               | `60` |
-| `livenessProbe.timeoutSeconds`    | Timeout               | `1` |
-| `livenessProbe.periodSeconds`    | Frequency               | `10` |
-| `livenessProbe.successThreshold`    | Success Threshold               | `1` |
-| `livenessProbe.failureThreshold`    | Failure Threshold               | `10` |
-| `readinessProbe.enabled`    | Enable/Disable               | `true` |
-| `readinessProbe.initialDelaySeconds`    | Initial delay               | `60` |
-| `readinessProbe.timeoutSeconds`    | Timeout               | `1` |
-| `readinessProbe.periodSeconds`    | Frequency               | `10` |
-| `readinessProbe.successThreshold`    | Success Threshold               | `1` |
-| `readinessProbe.failureThreshold`    | Failure Threshold               | `10` |
-| `resources.limits`    | Resource Limits               | `{}` |
-| `resources.requests`    | Resource Requests              | `{}` |
-| `nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
-| `affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
-| `topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
-| `tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
-| `podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
-| `containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
-| `bootstrap.script.enabled`    | Enable the bootstrap script              | `false` |
+
+| Parameter                                                               | Description                                                                                                                                                                  | Default                                                                                                                                       |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nameOverride`                                                          | Name override                                                                                                                                                                | `nil`                                                                                                                                         |
+| `fullnameOverride`                                                      | Full name override                                                                                                                                                           | `nil`                                                                                                                                         |
+| `global.schedulerName`                                                  | Override the default scheduler                                                                                                                                               | `nil`                                                                                                                                         |
+| `license.value`                                                         | Gateway license file                                                                                                                                                         | `nil`                                                                                                                                         |
+| `license.accept`                                                        | Accept Gateway license EULA                                                                                                                                                  | `false`                                                                                                                                       |
+| `disklessConfig.enabled`                                                | Enable diskless configuration                                                                                                                                                | `true`                                                                                                                                        |
+| `disklessConfig.setSecretByInitContainer`                               | Fetch and mount node.properties secret by InitContainer                                                                                                                      | `false`                                                                                                                                       |
+| `disklessConfig.existingSecret`                                         | existing node.properties secret mount configuration                                                                                                                          | `{}`                                                                                                                                          |
+| `disklessConfig.existingSecret.name`                                    | existing secret containing node.properties                                                                                                                                   | `gateway-secret`                                                                                                                              |
+| `disklessConfig.existingSecret.csi`                                     | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/)                                                                           | `commented out`                                                                                                                               |
+| `image.registry`                                                        | Image Registry                                                                                                                                                               | `docker.io`                                                                                                                                   |
+| `image.repository`                                                      | Image Repository                                                                                                                                                             | `caapim/gateway`                                                                                                                              |
+| `image.tag`                                                             | Image tag                                                                                                                                                                    | `11.0.00`                                                                                                                                     |
+| `image.pullPolicy`                                                      | Image Pull Policy                                                                                                                                                            | `IfNotPresent`                                                                                                                                |
+| `imagePullSecret.enabled`                                               | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account                 | `false`                                                                                                                                       |
+| `imagePullSecret.existingSecretName`                                    | Point to an existing Image Pull Secret                                                                                                                                       | `commented out`                                                                                                                               |
+| `imagePullSecret.username`                                              | Registry Username                                                                                                                                                            | `nil`                                                                                                                                         |
+| `imagePullSecret.password`                                              | Registry Password                                                                                                                                                            | `nil`                                                                                                                                         |
+| `additionalAnnotations`                                                 | Additional Annotations apply to all deployed objects                                                                                                                         | `{}`                                                                                                                                          |
+| `additionalLabels`                                                      | Additional Labels apply to all deployed objects                                                                                                                              | `{}`                                                                                                                                          |
+| `podLabels`                                                             | Pod Labels for the Gateway Pod                                                                                                                                               | `{}`                                                                                                                                          |
+| `podAnnotations`                                                        | Pod Annotations apply to the Gateway Pod                                                                                                                                     | `{}`                                                                                                                                          |
+| `replicas`                                                              | Number of Gateway replicas                                                                                                                                                   | `1`                                                                                                                                           |
+| `updateStrategy.type`                                                   | Deployment Strategy                                                                                                                                                          | `RollingUpdate`                                                                                                                               |
+| `updateStrategy.rollingUpdate.maxSurge`                                 | Rolling Update Max Surge                                                                                                                                                     | `1`                                                                                                                                           |
+| `updateStrategy.rollingUpdate.maxUnavailable`                           | Rolling Update Max Unavailable                                                                                                                                               | `0`                                                                                                                                           |
+| `clusterHostname`                                                       | Gateway Cluster Hostname                                                                                                                                                     | `my.localdomain`                                                                                                                              |
+| `existingGatewaySecretName`                                             | Existing Secret that contains management credentials, see values.yaml for what must be included                                                                              | `commented out`                                                                                                                               |
+| `clusterPassword`                                                       | Cluster Password, used if db backed                                                                                                                                          | `mypassword`                                                                                                                                  |
+| `management.enabled`                                                    | Enable/Disable Policy Manager access                                                                                                                                         | `true`                                                                                                                                        |
+| `management.restman.enabled`                                            | Enable/Disable the Rest Management API (Restman)                                                                                                                             | `false`                                                                                                                                       |
+| `management.username`                                                   | Policy Manager Username                                                                                                                                                      | `admin`                                                                                                                                       |
+| `management.password`                                                   | Policy Manager Password                                                                                                                                                      | `mypassword`                                                                                                                                  |
+| `management.kubernetes.loadServiceAccountToken`                         | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API                                                                             | `false`                                                                                                                                       |
+| `management.service.ipFamilyPolicy`                                     | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)                                                                                  | `commented out`                                                                                                                               |
+| `management.service.ipFamilies`                                         | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)                                                                                  | `nil`                                                                                                                                         |
+| `database.enabled`                                                      | Run in DB Backed or Ephemeral Mode                                                                                                                                           | `true`                                                                                                                                        |
+| `database.create`                                                       | Deploy the MySQL stable deployment as part of this release                                                                                                                   | `true`                                                                                                                                        |
+| `database.username`                                                     | Database Username                                                                                                                                                            | `gateway`                                                                                                                                     |
+| `database.password`                                                     | Database Password                                                                                                                                                            | `mypassword`                                                                                                                                  |
+| `database.liquibaseLogLevel`                                            | Liquibase log level                                                                                                                                                          | `off`                                                                                                                                         |
+| `database.name`                                                         | Database name                                                                                                                                                                | `ssg`                                                                                                                                         |
+| `tls.useSignedCertificates`                                             | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey                                                                                   | `false`                                                                                                                                       |
+| `tls.existingSecretName`                                                | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included                                                                          | `commented out`                                                                                                                               |
+| `tls.key`                                                               | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12                                                                                                     | `nil`                                                                                                                                         |
+| `tls.pass`                                                              | p12 container password - this cannot be empty                                                                                                                                | `nil`                                                                                                                                         |
+| `config.heapSize`                                                       | Java Heap Size                                                                                                                                                               | `2g`                                                                                                                                          |
+| `config.minHeapSize`                                                    | Java Min Heap Size                                                                                                                                                           | `1g`                                                                                                                                          |
+| `config.maxHeapSize`                                                    | Java Max Heap Size                                                                                                                                                           | `3g`                                                                                                                                          |
+| `config.javaArgs`                                                       | Additional Java Args to pass to the SSG process                                                                                                                              | `see values.yaml`                                                                                                                             |
+| `config.log.override`                                                   | Override the standard log configuration                                                                                                                                      | `true`                                                                                                                                        |
+| `config.log.properties`                                                 | Custom logging properties                                                                                                                                                    | `see values.yaml`                                                                                                                             |
+| `config.cwp.enabled`                                                    | Enable/Disable settable cluster-wide properties                                                                                                                              | `false`                                                                                                                                       |
+| `config.cwp.properties`                                                 | Set name/value pairs of cluster-wide properties                                                                                                                              | `see values.yaml`                                                                                                                             |
+| `config.sytemProperties`                                                | Configure the Gateway's system.properties file                                                                                                                               | `see values.yaml`                                                                                                                             |
+| `additionalEnv`                                                         | Additional environment variables you wish to pass to the Gateway Configmap                                                                                                   | `see values.yaml`                                                                                                                             |
+| `additionalSecret`                                                      | Additional secret variables you wish to pass to the Gateway Secret                                                                                                           | `see values.yaml`                                                                                                                             |
+| `bundle.enabled`                                                        | Creates a configmap with bundles from the ./bundles folder                                                                                                                   | `false`                                                                                                                                       |
+| `bundle.path`                                                           | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files                                                                          | `"bundles/*.bundle"`                                                                                                                          |
+| `existingBundle.enabled`                                                | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info                                                              | `false`                                                                                                                                       |
+| `existingBundle.configMaps`                                             | Array of configMaps that will be mounted to the Gateway's bootstrap folder                                                                                                   | `see values.yaml`                                                                                                                             |
+| `existingBundle.secrets`                                                | Array of Secrets that will be mounted to the Gateway's bootstrap folder                                                                                                      | `see values.yaml`                                                                                                                             |
+| `customHosts.enabled`                                                   | Enable customHosts on the Gateway, this overrides /etc/hosts.                                                                                                                | `see values.yaml`                                                                                                                             |
+| `customHosts.hostAliases`                                               | Array of hostAliases to add to the Container Gateway                                                                                                                         | `see values.yaml`                                                                                                                             |
+| `service.type`                                                          | Service Type                                                                                                                                                                 | `LoadBalancer`                                                                                                                                |
+| `service.ipFamilyPolicy`                                                | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)                                                                                  | `commented out`                                                                                                                               |
+| `service.ipFamilies`                                                    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)                                                                                  | `nil`                                                                                                                                         |
+| `service.loadbalancer`                                                  | Additional Loadbalancer Configuration                                                                                                                                        | `see https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service` |
+| `service.ports`                                                         | List of http external port mappings                                                                                                                                          | https: 8443 -> 8443, management: 9443->9443                                                                                                   |
+| `service.annotations`                                                   | Additional annotations to add to the service                                                                                                                                 | {}                                                                                                                                            |
+| `service.internalTrafficPolicy`                                         | [Internal Traffic Policy](https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/#using-service-internal-traffic-policy)                             | `Cluster`                                                                                                                                     |
+| `service.externalTrafficPolicy`                                         | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)                        | `Cluster`                                                                                                                                     |
+| `ingress.enabled`                                                       | Enable/Disable an ingress or route record being created                                                                                                                      | `false`                                                                                                                                       |
+| `ingress.openshift.route.enabled`                                       | Create an Openshift Route (Requires Openshift)                                                                                                                               | `false`                                                                                                                                       |
+| `ingress.openshift.route.wildcardPolicy`                                | Openshift Route Wildcard Policy                                                                                                                                              | `None`                                                                                                                                        |
+| `ingress.openshift.route.weight`                                        | Openshift Route Weight (0-255)                                                                                                                                               | `commented`                                                                                                                                   |
+| `ingress.annotations`                                                   | ingress annotations                                                                                                                                                          | `{}`                                                                                                                                          |
+| `ingress.labels`                                                        | additional ingress labels                                                                                                                                                    | `{}`                                                                                                                                          |
+| `ingress.ingressClassName`                                              | Ingress Class Name                                                                                                                                                           | `nginx`                                                                                                                                       |
+| `ingress.tls`                                                           | Ingress TLS Configuration                                                                                                                                                    | `see values.yaml`                                                                                                                             |
+| `ingress.rules`                                                         | Ingress Rules Configuration                                                                                                                                                  | `see values.yaml`                                                                                                                             |
+| `ingress.rules[].annotations`                                           | Per-rule annotations (OpenShift Routes only). Merged with `ingress.annotations`                                                                                              | `not set`                                                                                                                                     |
+| `kubernetesGateway.enabled`                                             | Enable Kubernetes Gateway API resources (EXPERIMENTAL)                                                                                                                       | `false`                                                                                                                                       |
+| `kubernetesGateway.gateway.create`                                      | Create a new Gateway resource                                                                                                                                                | `false`                                                                                                                                       |
+| `kubernetesGateway.gateway.gatewayClassName`                            | GatewayClass name (e.g. contour, eg). Required when create: true                                                                                                             | `""`                                                                                                                                          |
+| `kubernetesGateway.gateway.addresses`                                   | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}`                                                                                               | `[]`                                                                                                                                          |
+| `kubernetesGateway.gateway.existingRef.name`                            | Name of an existing Gateway to reference                                                                                                                                     | `""`                                                                                                                                          |
+| `kubernetesGateway.gateway.existingRef.namespace`                       | Namespace of the existing Gateway                                                                                                                                            | `""`                                                                                                                                          |
+| `kubernetesGateway.gateway.tls.existingSecretName`                      | Reference an existing kubernetes.io/tls Secret for the listener. When set, no secret is created                                                                              | `""`                                                                                                                                          |
+| `kubernetesGateway.gateway.labels`                                      | Additional labels for the Gateway resource                                                                                                                                   | `{}`                                                                                                                                          |
+| `kubernetesGateway.gateway.annotations`                                 | Additional annotations for the Gateway resource                                                                                                                              | `{}`                                                                                                                                          |
+| `kubernetesGateway.httpRoute.enabled`                                   | Enable HTTPRoute resource                                                                                                                                                    | `true`                                                                                                                                        |
+| `kubernetesGateway.httpRoute.rules`                                     | HTTPRoute rules. Each rule routes to the chart's own service                                                                                                                 | `see values.yaml`                                                                                                                             |
+| `kubernetesGateway.httpRoute.labels`                                    | Additional labels for the HTTPRoute                                                                                                                                          | `{}`                                                                                                                                          |
+| `kubernetesGateway.httpRoute.annotations`                               | Additional annotations for the HTTPRoute                                                                                                                                     | `{}`                                                                                                                                          |
+| `kubernetesGateway.tlsRoute.enabled`                                    | Enable TLSRoute resource (SNI passthrough)                                                                                                                                   | `false`                                                                                                                                       |
+| `kubernetesGateway.tlsRoute.apiVersion`                                 | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1                                                                            | `gateway.networking.k8s.io/v1alpha2`                                                                                                          |
+| `kubernetesGateway.tlsRoute.rules`                                      | TLSRoute rules. Each rule routes to the chart's own service                                                                                                                  | `see values.yaml`                                                                                                                             |
+| `kubernetesGateway.tlsRoute.labels`                                     | Additional labels for the TLSRoute                                                                                                                                           | `{}`                                                                                                                                          |
+| `kubernetesGateway.tlsRoute.annotations`                                | Additional annotations for the TLSRoute                                                                                                                                      | `{}`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.enabled`                            | Enable BackendTLSPolicy for Gateway-to-backend TLS                                                                                                                           | `false`                                                                                                                                       |
+| `kubernetesGateway.backendTLSPolicy.excludePorts`                       | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName` | `[]`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname`                | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`                                                                        | `""`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`       | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap                                                                                             | `[]`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`                                                                                         | `""`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName`             | Reference an existing kubernetes.io/tls Secret for the backend cert. When set, no secret is created                                                                          | `""`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap`                      | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource                                                                          | `true`                                                                                                                                        |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap`                 | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default)                                                                          | `false`                                                                                                                                       |
+| `kubernetesGateway.backendTLSPolicy.labels`                             | Additional labels for the BackendTLSPolicy                                                                                                                                   | `{}`                                                                                                                                          |
+| `kubernetesGateway.backendTLSPolicy.annotations`                        | Additional annotations for the BackendTLSPolicy                                                                                                                              | `{}`                                                                                                                                          |
+| `kubernetesGateway.labels`                                              | Labels applied to all Gateway API resources                                                                                                                                  | `{}`                                                                                                                                          |
+| `kubernetesGateway.annotations`                                         | Annotations applied to all Gateway API resources                                                                                                                             | `{}`                                                                                                                                          |
+| `startupProbe.enabled`                                                  | Enable/Disable                                                                                                                                                               | `false`                                                                                                                                       |
+| `startupProbe.initialDelaySeconds`                                      | Initial delay                                                                                                                                                                | `60`                                                                                                                                          |
+| `startupProbe.timeoutSeconds`                                           | Timeout                                                                                                                                                                      | `1`                                                                                                                                           |
+| `startupProbe.periodSeconds`                                            | Frequency                                                                                                                                                                    | `10`                                                                                                                                          |
+| `startupProbe.successThreshold`                                         | Success Threshold                                                                                                                                                            | `1`                                                                                                                                           |
+| `startupProbe.failureThreshold`                                         | Failure Threshold                                                                                                                                                            | `10`                                                                                                                                          |
+| `livenessProbe.enabled`                                                 | Enable/Disable                                                                                                                                                               | `true`                                                                                                                                        |
+| `livenessProbe.initialDelaySeconds`                                     | Initial delay                                                                                                                                                                | `60`                                                                                                                                          |
+| `livenessProbe.timeoutSeconds`                                          | Timeout                                                                                                                                                                      | `1`                                                                                                                                           |
+| `livenessProbe.periodSeconds`                                           | Frequency                                                                                                                                                                    | `10`                                                                                                                                          |
+| `livenessProbe.successThreshold`                                        | Success Threshold                                                                                                                                                            | `1`                                                                                                                                           |
+| `livenessProbe.failureThreshold`                                        | Failure Threshold                                                                                                                                                            | `10`                                                                                                                                          |
+| `readinessProbe.enabled`                                                | Enable/Disable                                                                                                                                                               | `true`                                                                                                                                        |
+| `readinessProbe.initialDelaySeconds`                                    | Initial delay                                                                                                                                                                | `60`                                                                                                                                          |
+| `readinessProbe.timeoutSeconds`                                         | Timeout                                                                                                                                                                      | `1`                                                                                                                                           |
+| `readinessProbe.periodSeconds`                                          | Frequency                                                                                                                                                                    | `10`                                                                                                                                          |
+| `readinessProbe.successThreshold`                                       | Success Threshold                                                                                                                                                            | `1`                                                                                                                                           |
+| `readinessProbe.failureThreshold`                                       | Failure Threshold                                                                                                                                                            | `10`                                                                                                                                          |
+| `resources.limits`                                                      | Resource Limits                                                                                                                                                              | `{}`                                                                                                                                          |
+| `resources.requests`                                                    | Resource Requests                                                                                                                                                            | `{}`                                                                                                                                          |
+| `nodeSelector`                                                          | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)                                                                       | `{}`                                                                                                                                          |
+| `affinity`                                                              | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)                                                              | `{}`                                                                                                                                          |
+| `topologySpreadConstraints`                                             | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)                              | `[]`                                                                                                                                          |
+| `tolerations`                                                           | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)                                                                                       | `[]`                                                                                                                                          |
+| `podSecurityContext`                                                    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)                                        | `[]`                                                                                                                                          |
+| `containerSecurityContext`                                              | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)                            | `{}`                                                                                                                                          |
+| `bootstrap.script.enabled`                                              | Enable the bootstrap script                                                                                                                                                  | `false`                                                                                                                                       |
 
 
 [Back to Additional Guides](#additional-guides)
 
 ## Port Configuration
+
 There are two types of port configuration available in the Gateway Helm Chart that are configured in the following ways
 
 ### Container/Service Level Ports
 
 ### Default Gateway Service
+
 Sample entry that exposes 8443 which is one of the default TLS port on the API Gateway using service type LoadBalancer.
+
 ```
 service:
   type: LoadBalancer
@@ -304,6 +337,7 @@ service:
 ```
 
 ### Production Values Default
+
 Sample entry that exposes 8443 which is one of the default TLS ports on the API Gateway
 Note that the service type is ClusterIP which does not receive an external IP address. We can make this service accessible by configuring an [ingress resource](#ingress-configuration).
 
@@ -317,7 +351,9 @@ service:
       external: 8443
       protocol: TCP
 ```
+
 ### Gateway Management Service
+
 The Gateway Management Service is primarily used to expose Gateway Ports that you wish to use for Internal Management Access for tools like Policy Manager. This Service requires the [PM Tagger](#pm-tagger) to function correctly.
 
 ```
@@ -339,19 +375,22 @@ management:
 [Back to Additional Guides](#additional-guides)
 
 ### OTK Compatibility with Gateway 11.2
+
 These below information is relevant for those who are upgrading their Gateway to version 11.2 and utilizing the OAuth Toolkit (OTK)
+
 1. **OTK 4.6.4** is presently the only version that provides seamless support for Gateway 11.2
 2. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
-   * After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
-       * 4.6.0.1
-       * 4.6.1.1
-       * 4.6.2.1
-       * 4.6.3.1
-   * It has to be ensured that Evaluate JSON Path Assertion (V1) assertion is added to the GW. 
-     * This will be provided as Tactical assertion. Please find more information on how to get the assertion [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
-     * In Helm chart, this can be done using init Containers. For more information & examples refer to [Utilities](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+  - After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
+    - 4.6.0.1
+    - 4.6.1.1
+    - 4.6.2.1
+    - 4.6.3.1
+  - It has to be ensured that Evaluate JSON Path Assertion (V1) assertion is added to the GW. 
+    - This will be provided as Tactical assertion. Please find more information on how to get the assertion [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
+    - In Helm chart, this can be done using init Containers. For more information & examples refer to [Utilities](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
 
 ### OTK install or upgrade
+
 OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
 
 - On a database backed gateway, once gateway is healthy, k8s kind/job is used to install OTK using Restman ([OTK Headless installation](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/install-the-oauth-solution-kit/headless-installation-of-otk-solution-kit.html))
@@ -359,16 +398,21 @@ OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types 
 - On a Ephemeral or database backed gateway, before the start of gateway, k8s job to used to install/update the OTK database (Cassandra database is not supported and should be upgraded [manually](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database.html))
 
 ***NOTE:***
+
 1. When installing or Upgrading Gateway with OTK enabled, add timeout with the helm command to ensure OTK install job waits for Gateway to be ready
+
 ```
 Example: The timeout of 900s is recommended for helm upgrade since it takes additional time to complete
   helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
    --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 900s
 ```
-2. In dual gateway installation, restart the pods after OTK install or upgrade is required.
+
+1. In dual gateway installation, restart the pods after OTK install or upgrade is required.
 
 Prerequisites:
-* Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
+
+- Configure cluster wide property for otk.port pointing to gateway ingress port and OTK database type.
+
 ```
 config:
   cwp:
@@ -379,8 +423,10 @@ config:
       - name: otk.dbsystem
         value: mysql
 ```
-* Restman is enabled. Can be disabled once the install/upgrage is complete.
-  * This is not applicable for ephemeral GW
+
+- Restman is enabled. Can be disabled once the install/upgrage is complete.
+  - This is not applicable for ephemeral GW
+
 ```
 management:
   restman:
@@ -388,125 +434,131 @@ management:
 ```
 
 Limitations:
-* OTK Instance modifiers are not supported.
-* Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
-* The Cassandra install scripts have to executed manually for new install scenario 
-* The Cassandra upgrade & data migration scripts(if any) have to be executed manually for upgrade scenario
-* Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
-* OTK upgrade to 4.6.3 will not upgrade the DB with utf8mb4 character set. This has to be done seperately following the steps provided in upgrade section in [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database/mysql-database.html)
+
+- OTK Instance modifiers are not supported.
+- Install/Upgrade of OTK schema on cassandra database using kubernetes job is not supported.
+- The Cassandra install scripts have to executed manually for new install scenario 
+- The Cassandra upgrade & data migration scripts(if any) have to be executed manually for upgrade scenario
+- Dual gateway OTK set-up (otk.type: DMZ or INTERNAL) is not supported with ephemeral gateway.
+- OTK upgrade to 4.6.3 will not upgrade the DB with utf8mb4 character set. This has to be done seperately following the steps provided in upgrade section in [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/installation-workflow/create-or-upgrade-the-otk-database/mysql-database.html)
 
 OTK Deployment examples can be found [here](/examples/otk)
 
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `otk.enabled`                     | Enable/Disable OTK installation or upgrade | `false`  |
-| `otk.type`                        | OTK installation type - SINGLE, DMZ or INTERNAL | `SINGLE`
-| `otk.forceInstallOrUpgrade`       | Force install or upgrade by uninstalling existing otk soluction kit and install. | false
-| `otk.enablePortalIntegration`      | Not applicable for DMZ and INTERNAL OTK types | `false`
-| `otk.skipPostInstallationTasks`   | Skip post installation tasks for OTK type INTERNAL and DMZ <br/>Internal Gateway: <br/> - #OTK Client Context Variables <br/> - #OTK id_token configuration <br/>DMZ Gateway: <br/> - #OTK OVP Configuration<br/> - #OTK Storage Configuration | `false`
-| `otk.skipInternalServerTools`     | Skip installation of the optional sub soluction Kit: Internal, Server Tools.<br/> The Oauth Manager & Oauth Test Client will not be installed  | `false`
-| `otk.internalGatewayHost`         | Internal gateway host for OTK type DMZ|
-| `otk.internalGatewayPort`         | Internal gateway post for OTK type DMZ|
-| `otk.dmzGatewayHost`              | DMZ gateway host for OTK type INTERNAL|
-| `otk.networkMask`                 | Network mask used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `16` |
-| `otk.startIP`                 | Start IP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.| `240.224.2.1` |
-| `otk.cert.dmzGatewayCert`         | DMZ gateway certificate (encoded) for OTK type DMZ            |
-| `otk.cert.internalGatewayIssuer`  | DMZ gateway certificate issuer for OTK type DMZ               |
-| `otk.cert.dmzGatewaySerial`       | DMZ gateway certificate serial for OTK type DMZ               |
-| `otk.cert.dmzGatewaySubject`      | DMZ gateway certificate subject for OTK type DMZ              |
-| `otk.cert.internalGatewayCert`    | INTERNAL gateway certificate (encoded) for OTK type INTERNAL  |
-| `otk.cert.internalGatewayIssuer`  | INTERNAL gateway certificate issuer for OTK type INTERNAL     |
-| `otk.cert.internalGatewaySerial`  | INTERNAL gateway certificate serial for OTK type INTERNAL     |
-| `otk.cert.internalGatewaySubject` | INTERNAL gateway certificate subject for OTK type INTERNAL    |
-| `otk.customizations.existingBundle.enabled` | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info | `false`  |
-| `otk.dmzGatewayPort`              | DMZ gateway port for OTK type INTERNAL|
-| `otk.subSolutionKitNames`         | List of comma seperated sub soluction Kits to install or upgrade. |
-| `otk.job.image.repository`        | Image Repositor | `caapim/otk-install`
-| `otk.job.image.tag`               | Image Tag. (OTK version) | `4.6`
-| `otk.job.image.pullPolicy`        | Image Pull Policy | `IfNotPresent`
-| `otk.job.image.labels`            | Job lables | {}
-| `otk.job.image.nodeSelector`      | Job Node selector | {}
-| `otk.job.image.tolerations`       | Job tolerations | []
-| `otk.job.podLabels`               | OTK Job podLabels | {}
-| `otk.job.podAnnotations`          | OTK Job podAnnotations | {}
-| `otk.job.resources`               | OTK Job resources | {}
-| `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`| OTK db maintenance scheduled job success history limit | `1` |
-| `otk.job.scheduledTasksFailedJobsHistoryLimit`| OTK db maintenance scheduled job failed history limit | `1` |
-| `otk.bootstrapDir`| The location of OTK artifacts in the image | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
-| `otk.database.type`               | OTK database type - mysql/oracle/cassandra | `mysql`
-| `otk.database.waitTimeout`        | OTK database connection wait timeout in seconds  | `60`|
-| `otk.database.dbUpgrade`          | Enable/Disable OTK DB Upgrade| `true` |
-| `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
-| `otk.database.sql.createTestClients`   | Enable/Disable creation of demo test clients | `false` |
-| `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) Required if createTestClients is `true`  | |
-| `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
-| `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
-| `otk.database.connectionName`     | OTK database connection name | `OAuth`
-| `otk.database.existingSecretName` | Point to an existing OTK database Secret |
-| `otk.database.username`           | OTK database user name |
-| `otk.database.password`           | OTK database password |
-| `otk.database.properties`         | OTK database additional properties  | `{}`
-| `otk.database.sql.ddlUsername`        | OTK database user name used for OTK DB creation |
-| `otk.database.sql.ddlPassword`        | OTK database password used for OTK DB creation |
-| `otk.database.sql.type`           | OTK database type (mysql/oracle/cassandra) | `mysql`
-| `otk.database.sql.jdbcURL`        | OTK database sql jdbc URL (oracle/mysql) |
-| `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
-| `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
-| `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
-| `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection   | `false` |
-| `otk.database.readOnlyConnection.connectionName` | OTK read only database connection name  | `OAuth_ReadOnly` |
-| `otk.database.readOnlyConnection.existingSecretName` | Point to an existing OTK read only database Secret |
-| `otk.database.readOnlyConnection.username`  | OTK read only database user name|
-| `otk.database.readOnlyConnection.password`  | OTK read only database password |
-| `otk.database.readOnlyConnection.properties` | OTK read only database additional properties  | `{}` |
-| `otk.database.readOnlyConnection.jdbcURL`   | OTK read only database sql jdbc URL (oracle/mysql) |
-| `otk.database.readOnlyConnection.jdbcDriverClass` | OTK read only database sql driver class name (oracle/mysql)  |
-| `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
-| `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
-| `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only database connection | `false` |
-| `otk.database.clientReadConnection.connectionName` | OTK Client Read only database connection name  | `OAuth_Client_Read` |
-| `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only database Secret   |
-| `otk.database.clientReadConnection.username`  | OTK Client Read only database user name   |
-| `otk.database.clientReadConnection.password`  | OTK Client Read only database password       |
-| `otk.database.clientReadConnection.properties` | OTK Client Read only database additional properties  | `{}` |
-| `otk.database.clientReadConnection.jdbcURL`   | OTK Client Read only database sql jdbc URL (oracle/mysql)  |
-| `otk.database.clientReadConnection.jdbcDriverClass` | OTK Client Read only database sql driver class name (oracle/mysql)     |
-| `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only database mysql connection properties (oracle/mysql)   | `{}`
-| `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name   |
-| `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
-| `otk.database.cassandra.port`              | OTK database cassandra connection port  |
-| `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
-| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `false`
-| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
-| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation. | `true`
-| `otk.livenessProbe.type`                   |  | `httpGet`
-| `otk.livenessProbe.httpGet.path`           |  | `/auth/oauth/health`
-| `otk.livenessProbe.httpGet.port`           |  | `8443`
-| `otk.readinessProbe.enabled`               | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.  | `true`
-| `otk.readinessProbe.type`                  |  | `httpGet`
-| `otk.readinessProbe.httpGet.path`          |  | `/auth/oauth/health`
-| `otk.readinessProbe.httpGet.port`          |  | `8443`
+| Parameter                                                | Description                                                                                                                                                                                                                                                                       | Default                                                            |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `otk.enabled`                                            | Enable/Disable OTK installation or upgrade                                                                                                                                                                                                                                        | `false`                                                            |
+| `otk.type`                                               | OTK installation type - SINGLE, DMZ or INTERNAL                                                                                                                                                                                                                                   | `SINGLE`                                                           |
+| `otk.forceInstallOrUpgrade`                              | Force install or upgrade by uninstalling existing otk soluction kit and install.                                                                                                                                                                                                  | false                                                              |
+| `otk.enablePortalIntegration`                            | Not applicable for DMZ and INTERNAL OTK types                                                                                                                                                                                                                                     | `false`                                                            |
+| `otk.skipPostInstallationTasks`                          | Skip post installation tasks for OTK type INTERNAL and DMZ Internal Gateway: - #OTK Client Context Variables - #OTK id_token configuration DMZ Gateway: - #OTK OVP Configuration - #OTK Storage Configuration                                                                     | `false`                                                            |
+| `otk.skipInternalServerTools`                            | Skip installation of the optional sub soluction Kit: Internal, Server Tools. The Oauth Manager & Oauth Test Client will not be installed                                                                                                                                          | `false`                                                            |
+| `otk.internalGatewayHost`                                | Internal gateway host for OTK type DMZ                                                                                                                                                                                                                                            |                                                                    |
+| `otk.internalGatewayPort`                                | Internal gateway post for OTK type DMZ                                                                                                                                                                                                                                            |                                                                    |
+| `otk.dmzGatewayHost`                                     | DMZ gateway host for OTK type INTERNAL                                                                                                                                                                                                                                            |                                                                    |
+| `otk.networkMask`                                        | Network mask used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.                                                                                                                                                          | `16`                                                               |
+| `otk.startIP`                                            | Start IP used in the 'Restrict Access to IP Address Range Assertion' to protect the schedule jobs and health checks.                                                                                                                                                              | `240.224.2.1`                                                      |
+| `otk.cert.dmzGatewayCert`                                | DMZ gateway certificate (encoded) for OTK type DMZ                                                                                                                                                                                                                                |                                                                    |
+| `otk.cert.internalGatewayIssuer`                         | DMZ gateway certificate issuer for OTK type DMZ                                                                                                                                                                                                                                   |                                                                    |
+| `otk.cert.dmzGatewaySerial`                              | DMZ gateway certificate serial for OTK type DMZ                                                                                                                                                                                                                                   |                                                                    |
+| `otk.cert.dmzGatewaySubject`                             | DMZ gateway certificate subject for OTK type DMZ                                                                                                                                                                                                                                  |                                                                    |
+| `otk.cert.internalGatewayCert`                           | INTERNAL gateway certificate (encoded) for OTK type INTERNAL                                                                                                                                                                                                                      |                                                                    |
+| `otk.cert.internalGatewayIssuer`                         | INTERNAL gateway certificate issuer for OTK type INTERNAL                                                                                                                                                                                                                         |                                                                    |
+| `otk.cert.internalGatewaySerial`                         | INTERNAL gateway certificate serial for OTK type INTERNAL                                                                                                                                                                                                                         |                                                                    |
+| `otk.cert.internalGatewaySubject`                        | INTERNAL gateway certificate subject for OTK type INTERNAL                                                                                                                                                                                                                        |                                                                    |
+| `otk.customizations.existingBundle.enabled`              | Enable mounting existing configMaps/Secrets that contain OTK Bundles - see values.yaml for more info                                                                                                                                                                              | `false`                                                            |
+| `otk.dmzGatewayPort`                                     | DMZ gateway port for OTK type INTERNAL                                                                                                                                                                                                                                            |                                                                    |
+| `otk.subSolutionKitNames`                                | List of comma seperated sub soluction Kits to install or upgrade.                                                                                                                                                                                                                 |                                                                    |
+| `otk.job.image.repository`                               | Image Repositor                                                                                                                                                                                                                                                                   | `caapim/otk-install`                                               |
+| `otk.job.image.tag`                                      | Image Tag. (OTK version)                                                                                                                                                                                                                                                          | `4.6`                                                              |
+| `otk.job.image.pullPolicy`                               | Image Pull Policy                                                                                                                                                                                                                                                                 | `IfNotPresent`                                                     |
+| `otk.job.image.labels`                                   | Job lables                                                                                                                                                                                                                                                                        | {}                                                                 |
+| `otk.job.image.nodeSelector`                             | Job Node selector                                                                                                                                                                                                                                                                 | {}                                                                 |
+| `otk.job.image.tolerations`                              | Job tolerations                                                                                                                                                                                                                                                                   | []                                                                 |
+| `otk.job.podLabels`                                      | OTK Job podLabels                                                                                                                                                                                                                                                                 | {}                                                                 |
+| `otk.job.podAnnotations`                                 | OTK Job podAnnotations                                                                                                                                                                                                                                                            | {}                                                                 |
+| `otk.job.resources`                                      | OTK Job resources                                                                                                                                                                                                                                                                 | {}                                                                 |
+| `otk.job.scheduledTasksSuccessfulJobsHistoryLimit`       | OTK db maintenance scheduled job success history limit                                                                                                                                                                                                                            | `1`                                                                |
+| `otk.job.scheduledTasksFailedJobsHistoryLimit`           | OTK db maintenance scheduled job failed history limit                                                                                                                                                                                                                             | `1`                                                                |
+| `otk.bootstrapDir`                                       | The location of OTK artifacts in the image                                                                                                                                                                                                                                        | `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK` |
+| `otk.database.type`                                      | OTK database type - mysql/oracle/cassandra                                                                                                                                                                                                                                        | `mysql`                                                            |
+| `otk.database.waitTimeout`                               | OTK database connection wait timeout in seconds                                                                                                                                                                                                                                   | `60`                                                               |
+| `otk.database.dbUpgrade`                                 | Enable/Disable OTK DB Upgrade                                                                                                                                                                                                                                                     | `true`                                                             |
+| `otk.database.useDemoDb`                                 | Enable/Disable OTK Demo DB                                                                                                                                                                                                                                                        | `true`                                                             |
+| `otk.database.sql.createTestClients`                     | Enable/Disable creation of demo test clients                                                                                                                                                                                                                                      | `false`                                                            |
+| `otk.database.sql.testClientsRedirectUrlPrefix`          | The value of redirect_uri prefix (Example: [https://test.com:8443](https://test.com:8443)) Required if createTestClients is `true`                                                                                                                                                |                                                                    |
+| `otk.database.changeLogSync`                             | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`                                                            |
+| `otk.database.updateConnection`                          | Update database connection properties during helm upgrade                                                                                                                                                                                                                         | `true`                                                             |
+| `otk.database.connectionName`                            | OTK database connection name                                                                                                                                                                                                                                                      | `OAuth`                                                            |
+| `otk.database.existingSecretName`                        | Point to an existing OTK database Secret                                                                                                                                                                                                                                          |                                                                    |
+| `otk.database.username`                                  | OTK database user name                                                                                                                                                                                                                                                            |                                                                    |
+| `otk.database.password`                                  | OTK database password                                                                                                                                                                                                                                                             |                                                                    |
+| `otk.database.properties`                                | OTK database additional properties                                                                                                                                                                                                                                                | `{}`                                                               |
+| `otk.database.sql.ddlUsername`                           | OTK database user name used for OTK DB creation                                                                                                                                                                                                                                   |                                                                    |
+| `otk.database.sql.ddlPassword`                           | OTK database password used for OTK DB creation                                                                                                                                                                                                                                    |                                                                    |
+| `otk.database.sql.type`                                  | OTK database type (mysql/oracle/cassandra)                                                                                                                                                                                                                                        | `mysql`                                                            |
+| `otk.database.sql.jdbcURL`                               | OTK database sql jdbc URL (oracle/mysql)                                                                                                                                                                                                                                          |                                                                    |
+| `otk.database.sql.jdbcDriverClass`                       | OTK database sql driver class name (oracle/mysql)                                                                                                                                                                                                                                 |                                                                    |
+| `otk.database.sql.databaseName`                          | OTK database Oracle database name or Demo db name                                                                                                                                                                                                                                 |                                                                    |
+| `otk.database.sql.connectionProperties`                  | OTK database mysql connection properties (oracle/mysql)                                                                                                                                                                                                                           | `{}`                                                               |
+| `otk.database.readOnlyConnection.enabled`                | Enable/Disable OTK read only database connection                                                                                                                                                                                                                                  | `false`                                                            |
+| `otk.database.readOnlyConnection.connectionName`         | OTK read only database connection name                                                                                                                                                                                                                                            | `OAuth_ReadOnly`                                                   |
+| `otk.database.readOnlyConnection.existingSecretName`     | Point to an existing OTK read only database Secret                                                                                                                                                                                                                                |                                                                    |
+| `otk.database.readOnlyConnection.username`               | OTK read only database user name                                                                                                                                                                                                                                                  |                                                                    |
+| `otk.database.readOnlyConnection.password`               | OTK read only database password                                                                                                                                                                                                                                                   |                                                                    |
+| `otk.database.readOnlyConnection.properties`             | OTK read only database additional properties                                                                                                                                                                                                                                      | `{}`                                                               |
+| `otk.database.readOnlyConnection.jdbcURL`                | OTK read only database sql jdbc URL (oracle/mysql)                                                                                                                                                                                                                                |                                                                    |
+| `otk.database.readOnlyConnection.jdbcDriverClass`        | OTK read only database sql driver class name (oracle/mysql)                                                                                                                                                                                                                       |                                                                    |
+| `otk.database.readOnlyConnection.connectionProperties`   | OTK read only database mysql connection properties (oracle/mysql)                                                                                                                                                                                                                 | `{}`                                                               |
+| `otk.database.readOnlyConnection.databaseName`           | OTK read only Oracle database name                                                                                                                                                                                                                                                |                                                                    |
+| `otk.database.clientReadConnection.enabled`              | Enable/Disable OTK Client Read only database connection                                                                                                                                                                                                                           | `false`                                                            |
+| `otk.database.clientReadConnection.connectionName`       | OTK Client Read only database connection name                                                                                                                                                                                                                                     | `OAuth_Client_Read`                                                |
+| `otk.database.clientReadConnection.existingSecretName`   | Point to an existing OTK Client Read only database Secret                                                                                                                                                                                                                         |                                                                    |
+| `otk.database.clientReadConnection.username`             | OTK Client Read only database user name                                                                                                                                                                                                                                           |                                                                    |
+| `otk.database.clientReadConnection.password`             | OTK Client Read only database password                                                                                                                                                                                                                                            |                                                                    |
+| `otk.database.clientReadConnection.properties`           | OTK Client Read only database additional properties                                                                                                                                                                                                                               | `{}`                                                               |
+| `otk.database.clientReadConnection.jdbcURL`              | OTK Client Read only database sql jdbc URL (oracle/mysql)                                                                                                                                                                                                                         |                                                                    |
+| `otk.database.clientReadConnection.jdbcDriverClass`      | OTK Client Read only database sql driver class name (oracle/mysql)                                                                                                                                                                                                                |                                                                    |
+| `otk.database.clientReadConnection.connectionProperties` | OTK Client Read only database mysql connection properties (oracle/mysql)                                                                                                                                                                                                          | `{}`                                                               |
+| `otk.database.clientReadConnection.databaseName`         | OTK Client Read only Oracle database name                                                                                                                                                                                                                                         |                                                                    |
+| `otk.database.cassandra.connectionPoints`                | OTK database cassandra connection points (comma seperated)                                                                                                                                                                                                                        |                                                                    |
+| `otk.database.cassandra.port`                            | OTK database cassandra connection port                                                                                                                                                                                                                                            |                                                                    |
+| `otk.database.cassandra.keyspace`                        | OTK database cassandra keyspace                                                                                                                                                                                                                                                   |                                                                    |
+| `otk.database.cassandra.driverConfig`                    | OTK database cassandra driver config (Gateway 11+)                                                                                                                                                                                                                                | `{}`                                                               |
+| `otk.healthCheckBundle.enabled`                          | Enable/Disable installation of OTK health check service bundle                                                                                                                                                                                                                    | `false`                                                            |
+| `otk.healthCheckBundle.useExisting`                      | Use exising OTK health check service bundle                                                                                                                                                                                                                                       | `false`                                                            |
+| `otk.healthCheckBundle.name`                             | OTK health check service bundle name                                                                                                                                                                                                                                              | `otk-health-check-bundle-config`                                   |
+| `otk.livenessProbe.enabled`                              | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.                                                                                                                            | `true`                                                             |
+| `otk.livenessProbe.type`                                 |                                                                                                                                                                                                                                                                                   | `httpGet`                                                          |
+| `otk.livenessProbe.httpGet.path`                         |                                                                                                                                                                                                                                                                                   | `/auth/oauth/health`                                               |
+| `otk.livenessProbe.httpGet.port`                         |                                                                                                                                                                                                                                                                                   | `8443`                                                             |
+| `otk.readinessProbe.enabled`                             | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.1. Valid only for SINGLE and INTERNAL OTK type installation.                                                                                                                            | `true`                                                             |
+| `otk.readinessProbe.type`                                |                                                                                                                                                                                                                                                                                   | `httpGet`                                                          |
+| `otk.readinessProbe.httpGet.path`                        |                                                                                                                                                                                                                                                                                   | `/auth/oauth/health`                                               |
+| `otk.readinessProbe.httpGet.port`                        |                                                                                                                                                                                                                                                                                   | `8443`                                                             |
+
 
 #### Note:
-* In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
+
+- In case of ephemeral GW instances where there only updates to OTK, it should be done using Helm --force option
 
 [Back to Additional Guides](#additional-guides)
 
 ### Gateway Application Ports
+
 Once you have decided on which container ports you would like to expose, you need to create the corresponding ports on the API Gateway. *These will need match the corresponding service and management service ports above.*
 
 This configuration creates and mounts a gateway bundle,
 if you wish to maintain Gateway ports outside of the Gateway Chart you can either use Policy Manager or create and mount your own bundle in the existingBundle section.
 
 By default the following ports are created
+
 - 8080 (HTTP - disabled)
 - 8443 (HTTPS - Published service message input only)
 - 9443 (HTTPS - Published service message input only, Administrative access, Browser-based administration, Built-in services)
 
 Things to note before you get started:
+
 - If you are deploying the Gateway with a fresh MySQL database
   - This port configuration will replace the defaults.
 - If you are using an existing database
@@ -586,9 +638,11 @@ config:
 [Back to Additional Guides](#additional-guides)
 
 ### Ingress Configuration
+
 The Gateway Helm Chart allows you to configure an Ingress Resource that your central Ingress Controller can manage. You can find more information on [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) here.
 
 If your ingress controller is private and you would like to create an ingress record/route for the management service you can use the following configuration
+
 ```
  ...
   rules:
@@ -606,6 +660,7 @@ If your ingress controller is private and you would like to create an ingress re
 ```
 
 New Ingress Configuration Gateway Chart >= 3.0.31 (openshift route support)
+
 ```
 ingress:
   # Set to true to create ingress or route object
@@ -656,6 +711,7 @@ ingress:
 ```
 
 New Ingress Configuration Gateway Chart >= 3.0.0
+
 ```
 ingress:
   enabled: true
@@ -694,6 +750,7 @@ ingress:
 ```
 
 This represents the ingress configuration for Gateway Chart < 3.0.0 you need to configure an Ingress Resource for the API Gateway
+
 ```
 ingress:
   enabled: true
@@ -716,9 +773,11 @@ ingress:
 [Back to Additional Guides](#additional-guides)
 
 ### Kubernetes Gateway API Configuration
+
 The Gateway Helm Chart supports the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) as an alternative to Ingress. The implementation is controller-agnostic and has been tested with [Contour](https://projectcontour.io/) and [Envoy Gateway](https://gateway.envoyproxy.io/). See [examples/ingress](../../examples/ingress) for controller installation instructions.
 
 **Requirements:**
+
 - Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
 - A `GatewayClass` must be available on the cluster (e.g. `contour`, `envoy-gateway`)
 
@@ -729,12 +788,14 @@ The Gateway Helm Chart supports the [Kubernetes Gateway API](https://gateway-api
 **Route Modes:**
 
 The chart supports two route modes:
+
 - **HTTPRoute** (default) -- TLS is terminated at the Kubernetes Gateway and re-encrypted to the Layer7 Gateway backend. Requires `backendTLSPolicy` to be enabled so the Gateway controller can validate the backend certificate.
 - **TLSRoute** -- TLS passthrough via SNI-based routing. The Kubernetes Gateway does not terminate TLS. The Layer7 Gateway handles TLS directly.
 
 **Gateway Resource:**
 
 The chart supports two modes for the Gateway resource:
+
 - **Create a new Gateway** -- set `kubernetesGateway.gateway.create: true` with a `gatewayClassName`. The chart creates a Gateway with auto-generated listeners from route hostnames.
 - **Use an existing Gateway** -- set `kubernetesGateway.gateway.create: false` and provide `kubernetesGateway.gateway.existingRef.name` / `.namespace`. Routes attach to the existing Gateway via `parentRefs`. This is useful when sharing a Gateway across charts. See [Shared Gateway](../../examples/ingress#shared-gateway) for details.
 
@@ -745,6 +806,7 @@ When using HTTPRoute, the Layer7 Gateway backend speaks HTTPS. Since the Gateway
 **Management Service Routing:**
 
 To route management traffic through the same Gateway, set `backend: management` on a rule:
+
 ```
 kubernetesGateway:
   enabled: true
@@ -771,71 +833,78 @@ kubernetesGateway:
     enabled: true
 ```
 
-| Parameter | Description | Default |
-|---|---|---|
-| `kubernetesGateway.enabled` | Enable Kubernetes Gateway API resources | `false` |
-| `kubernetesGateway.gateway.create` | Create a new Gateway resource | `false` |
-| `kubernetesGateway.gateway.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gateway.create` is `true` | `""` |
-| `kubernetesGateway.gateway.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
-| `kubernetesGateway.gateway.existingRef.name` | Name of an existing Gateway to reference | `""` |
-| `kubernetesGateway.gateway.existingRef.namespace` | Namespace of the existing Gateway | `""` |
-| `kubernetesGateway.gateway.tls.existingSecretName` | Existing TLS Secret for the Gateway listener | `""` |
-| `kubernetesGateway.gateway.labels` | Additional labels for the Gateway resource | `{}` |
-| `kubernetesGateway.gateway.annotations` | Additional annotations for the Gateway resource | `{}` |
-| `kubernetesGateway.httpRoute.enabled` | Enable HTTPRoute resource | `true` |
-| `kubernetesGateway.httpRoute.rules` | HTTPRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
-| `kubernetesGateway.httpRoute.labels` | Additional labels for the HTTPRoute | `{}` |
-| `kubernetesGateway.httpRoute.annotations` | Additional annotations for the HTTPRoute | `{}` |
-| `kubernetesGateway.tlsRoute.enabled` | Enable TLSRoute resource (SNI passthrough) | `false` |
-| `kubernetesGateway.tlsRoute.apiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
-| `kubernetesGateway.tlsRoute.rules` | TLSRoute rules. Each rule routes to the chart's own service | `see values.yaml` |
-| `kubernetesGateway.tlsRoute.labels` | Additional labels for the TLSRoute | `{}` |
-| `kubernetesGateway.tlsRoute.annotations` | Additional annotations for the TLSRoute | `{}` |
-| `kubernetesGateway.backendTLSPolicy.enabled` | Enable BackendTLSPolicy for Gateway-to-backend TLS | `false` |
-| `kubernetesGateway.backendTLSPolicy.excludePorts` | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName` | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation.hostname` | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local` | `""` |
-| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs` | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap | `[]` |
-| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs` | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName` | Existing TLS Secret for the backend certificate | `""` |
-| `kubernetesGateway.backendTLSPolicy.tls.bootstrap` | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource | `true` |
-| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap` | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default) | `false` |
-| `kubernetesGateway.backendTLSPolicy.labels` | Additional labels for the BackendTLSPolicy | `{}` |
-| `kubernetesGateway.backendTLSPolicy.annotations` | Additional annotations for the BackendTLSPolicy | `{}` |
-| `kubernetesGateway.labels` | Labels applied to all Gateway API resources | `{}` |
-| `kubernetesGateway.annotations` | Annotations applied to all Gateway API resources | `{}` |
+
+| Parameter                                                               | Description                                                                                                                                                                  | Default                              |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `kubernetesGateway.enabled`                                             | Enable Kubernetes Gateway API resources                                                                                                                                      | `false`                              |
+| `kubernetesGateway.gateway.create`                                      | Create a new Gateway resource                                                                                                                                                | `false`                              |
+| `kubernetesGateway.gateway.gatewayClassName`                            | GatewayClass name (e.g. `contour`, `eg`). Required when `gateway.create` is `true`                                                                                           | `""`                                 |
+| `kubernetesGateway.gateway.addresses`                                   | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}`                                                                                               | `[]`                                 |
+| `kubernetesGateway.gateway.existingRef.name`                            | Name of an existing Gateway to reference                                                                                                                                     | `""`                                 |
+| `kubernetesGateway.gateway.existingRef.namespace`                       | Namespace of the existing Gateway                                                                                                                                            | `""`                                 |
+| `kubernetesGateway.gateway.tls.existingSecretName`                      | Existing TLS Secret for the Gateway listener                                                                                                                                 | `""`                                 |
+| `kubernetesGateway.gateway.labels`                                      | Additional labels for the Gateway resource                                                                                                                                   | `{}`                                 |
+| `kubernetesGateway.gateway.annotations`                                 | Additional annotations for the Gateway resource                                                                                                                              | `{}`                                 |
+| `kubernetesGateway.httpRoute.enabled`                                   | Enable HTTPRoute resource                                                                                                                                                    | `true`                               |
+| `kubernetesGateway.httpRoute.rules`                                     | HTTPRoute rules. Each rule routes to the chart's own service                                                                                                                 | `see values.yaml`                    |
+| `kubernetesGateway.httpRoute.labels`                                    | Additional labels for the HTTPRoute                                                                                                                                          | `{}`                                 |
+| `kubernetesGateway.httpRoute.annotations`                               | Additional annotations for the HTTPRoute                                                                                                                                     | `{}`                                 |
+| `kubernetesGateway.tlsRoute.enabled`                                    | Enable TLSRoute resource (SNI passthrough)                                                                                                                                   | `false`                              |
+| `kubernetesGateway.tlsRoute.apiVersion`                                 | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1                                                                            | `gateway.networking.k8s.io/v1alpha2` |
+| `kubernetesGateway.tlsRoute.rules`                                      | TLSRoute rules. Each rule routes to the chart's own service                                                                                                                  | `see values.yaml`                    |
+| `kubernetesGateway.tlsRoute.labels`                                     | Additional labels for the TLSRoute                                                                                                                                           | `{}`                                 |
+| `kubernetesGateway.tlsRoute.annotations`                                | Additional annotations for the TLSRoute                                                                                                                                      | `{}`                                 |
+| `kubernetesGateway.backendTLSPolicy.enabled`                            | Enable BackendTLSPolicy for Gateway-to-backend TLS                                                                                                                           | `false`                              |
+| `kubernetesGateway.backendTLSPolicy.excludePorts`                       | Ports to exclude from targetRefs. When empty, the policy covers all ports (no `sectionName`). When set, each non-excluded port gets an explicit targetRef with `sectionName` | `[]`                                 |
+| `kubernetesGateway.backendTLSPolicy.validation.hostname`                | Hostname for backend TLS validation. If empty, defaults to `<fullname>.<namespace>.svc.cluster.local`                                                                        | `""`                                 |
+| `kubernetesGateway.backendTLSPolicy.validation.caCertificateRefs`       | CA certificate references. If empty, defaults to the auto-generated CA ConfigMap                                                                                             | `[]`                                 |
+| `kubernetesGateway.backendTLSPolicy.validation.wellKnownCACertificates` | Use well-known CA certs (e.g. `System`). Mutually exclusive with `caCertificateRefs`                                                                                         | `""`                                 |
+| `kubernetesGateway.backendTLSPolicy.tls.existingSecretName`             | Existing TLS Secret for the backend certificate                                                                                                                              | `""`                                 |
+| `kubernetesGateway.backendTLSPolicy.tls.bootstrap`                      | Enable SSL key bootstrap into the pod. Set `false` when you only need the BackendTLSPolicy resource                                                                          | `true`                               |
+| `kubernetesGateway.backendTLSPolicy.tls.forceBootstrap`                 | Force the bootstrap script on every install/upgrade (db-backed gateways skip on upgrade by default)                                                                          | `false`                              |
+| `kubernetesGateway.backendTLSPolicy.labels`                             | Additional labels for the BackendTLSPolicy                                                                                                                                   | `{}`                                 |
+| `kubernetesGateway.backendTLSPolicy.annotations`                        | Additional annotations for the BackendTLSPolicy                                                                                                                              | `{}`                                 |
+| `kubernetesGateway.labels`                                              | Labels applied to all Gateway API resources                                                                                                                                  | `{}`                                 |
+| `kubernetesGateway.annotations`                                         | Annotations applied to all Gateway API resources                                                                                                                             | `{}`                                 |
+
 
 [Back to Additional Guides](#additional-guides)
 
 ### PM Tagger Configuration
+
 [PM (Policy Manager) Tagger](https://github.com/gvermeulen7205/pm-tagger) is a lightweight go application that works in conjunction with the management service to provide a stable connection to your container gateway via Policy Manager.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `pmtagger.enabled`          | Enable pm-tagger | `false`  |
-| `pmtagger.replicas`          | Replicas (you should never need more than one | `1`  |
-| `pmtagger.image.registry`          | Image Registry | `docker.io`  |
-| `pmtagger.image.repository`          | Image Repository | `caapim/pm-tagger`  |
-| `pmtagger.image.tag`          | Image Tag | `1.0.3`  |
-| `pmtagger.image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `pmtagger.image.imagePullSecret.enabled`                | Use Image Pull secret - this uses the image pull secret configured for the API Gateway   | `false` |
-| `pmtagger.resources`                | Resources   | `see values.yaml` |
-| `pmtagger.podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
-| `pmtagger.podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
-| `pmtagger.nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
-| `pmtagger.affinity`    | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)             | `{}` |
-| `pmtagger.topologySpreadConstraints`    | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)             | `[]` |
-| `pmtagger.tolerations`    | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)              | `[]` |
-| `pmtagger.podSecurityContext`    | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)              | `[]` |
-| `pmtagger.containerSecurityContext`    | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)          | `{}` |
+
+| Parameter                                | Description                                                                                                                                       | Default            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `pmtagger.enabled`                       | Enable pm-tagger                                                                                                                                  | `false`            |
+| `pmtagger.replicas`                      | Replicas (you should never need more than one                                                                                                     | `1`                |
+| `pmtagger.image.registry`                | Image Registry                                                                                                                                    | `docker.io`        |
+| `pmtagger.image.repository`              | Image Repository                                                                                                                                  | `caapim/pm-tagger` |
+| `pmtagger.image.tag`                     | Image Tag                                                                                                                                         | `1.0.3`            |
+| `pmtagger.image.pullPolicy`              | Image Pull Policy                                                                                                                                 | `IfNotPresent`     |
+| `pmtagger.image.imagePullSecret.enabled` | Use Image Pull secret - this uses the image pull secret configured for the API Gateway                                                            | `false`            |
+| `pmtagger.resources`                     | Resources                                                                                                                                         | `see values.yaml`  |
+| `pmtagger.podLabels`                     | Pod Labels for the Gateway Pod                                                                                                                    | `{}`               |
+| `pmtagger.podAnnotations`                | Pod Annotations apply to the Gateway Pod                                                                                                          | `{}`               |
+| `pmtagger.nodeSelector`                  | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)                                            | `{}`               |
+| `pmtagger.affinity`                      | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity)                                   | `{}`               |
+| `pmtagger.topologySpreadConstraints`     | [Topology Spread Constraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#spread-constraints-for-pods)   | `[]`               |
+| `pmtagger.tolerations`                   | [Tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/)                                                            | `[]`               |
+| `pmtagger.podSecurityContext`            | [Pod Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod)             | `[]`               |
+| `pmtagger.containerSecurityContext`      | [Container Security Context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container) | `{}`               |
+
 
 [Back to Additional Guides](#additional-guides)
 
 ### OpenTelemetry Configuration
+
 The Gateway from v11.1.00 can be configured to send telemetry to Observability backends [that support OpenTelemetry](https://opentelemetry.io/ecosystem/vendors/). Please see [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/11-1/install-configure-upgrade/configuring-opentelemetry-for-the-gateway.html) for more details about this integration.
 
 This feature is a ***preview feature*** for v11.1.00 and is ***intentionally disabled*** by default. As with any integration that generates telemetry, there is a performance drop when turning on the OpenTelemetry integration with all of the features enabled.
 
 There is an integration example available [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) that details how to deploy and configure an observability backend to use with the Gateway.
+
 - You are ***not required*** to use the observability stack that we provide as an example.
 - The observability stack that we provide ***is not*** production ready and should be used solely as an example or reference point.
 - OpenTelemetry is supported by [numerous vendors](https://opentelemetry.io/ecosystem/vendors/)
@@ -843,11 +912,13 @@ There is an integration example available [here](https://github.com/Layer7-Commu
 ***NOTE: *** In our example we inject the OpenTelemetry Java Agent to the Container Gateway, this emits additional telemetry like JVM metrics. The Gateway has the OpenTelemetry SDK built-in making the OpenTelemetry Java Agent Optional, the key difference between the built-in SDK and the OTel Agent is that the SDK only captures Gateway application level traces and metrics, things like JVM metrics will not be captured in this mode.
 
 #### Gateway OTel Configuration
+
 OpenTelemetry is configured on the Gateway in two places, system properties and cluster-wide Properties. The configuration below represents the minimal settings required to enable the built-in SDK and configure the Gateway to send telemetry to an OpenTelemetry Collector.
 
 These can be configured in values.yaml. See the section below to view examples of how and where to configure this.
 
 - config.otel
+
 ```
 config:
   ...
@@ -863,8 +934,8 @@ config:
    # - test1=someEnvValue1
 ```
 
-
 - system.properties
+
 ```
 otel.sdk.disabled=false
 otel.java.global-autoconfigure.enabled=true
@@ -874,14 +945,18 @@ otel.traces.exporter=otlp
 otel.metrics.exporter=otlp
 otel.logs.exporter=none
 ```
+
 - cluster-wide properties
+
 ```
 otel.enabled=true
 otel.serviceMetricEnabled=true
 otel.traceEnabled=true (if tracing is required)
 otel.traceConfig=(default {})
 ```
+
 example otel.traceConfig
+
 ```
 {
   "services": [
@@ -905,23 +980,29 @@ example otel.traceConfig
 [Back to Additional Guides](#additional-guides)
 
 ##### Gateway OTel Examples (with or without the Optional Agent)
+
 The integration example [here](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel) contains two Gateway examples (values.yaml overrides) that are configured to use the SDK only approach ***or*** include the Optional OTel Java Agent. There are two Grafana Dashboards included that show the differences in the telemetry that emitted from the Gateway.
+
 - [SDK only, no agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-sdk-only-values.yaml)
 - [Agent](https://github.com/Layer7-Community/Integrations/tree/main/grafana-stack-prometheus-otel/gateway-example/gateway-otel-java-agent-values.yaml)
 
 [Back to Additional Guides](#additional-guides)
 
 ### Shared State Preview Features
+
 There are two preview features that you may choose to enable with Gateway v11.1.1 onwards.
+
 - [Apply Distributed Rate Limit Assertion (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/apply-distributed-rate-limit-assertion.html)
 - [Key Value Storage Assertions (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html)
 
 To use the [Apply Distributed Rate Limit Assertion (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/apply-distributed-rate-limit-assertion.html), uncomment the following and set it to redis or externalhazelcast
+
 ```
 # com.l7tech.server.extension.sharedRateLimiterProvider=redis
 ```
 
 To use the [Key Value Storage Assertions (Preview)](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html), uncomment the following and set sharedKeyValueStoreProvider to redis or externalhazelcast
+
 ```
 # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
 # com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
@@ -930,54 +1011,63 @@ To use the [Key Value Storage Assertions (Preview)](https://techdocs.broadcom.co
 [Back to Additional Guides](#additional-guides)
 
 ### Redis Configuration
+
 This enables integration with [Redis](https://redis.io/) which is a preview feature on the Layer7 Gateway. The following sections configure a redis configuration file on the Gateway. The following properties in config.systemProperties will need to be updated.
 
 **Important Note** The latest version of this chart uses a new format for Redis configuration that will simplify configuring additional shared state providers in the future. Please view [shared state provider config](#shared-state-provider-config) for more details. This is only compatible with Gateway v11.1.1.
 
 Comment out the following
+
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
 # com.l7tech.server.extension.sharedCounterProvider=ssgdb
 ```
+
 Uncomment the following
+
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
 # com.l7tech.server.extension.sharedCounterProvider=redis
 # com.l7tech.server.extension.sharedRateLimiterProvider=redis
 ```
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.redis.enabled`          | Enable redis configuration | `false`  |
-| `config.redis.subChart.enabled`          | Deploy the redis subChart | `true`  |
-| `config.redis.additionalProviders`          | Configure additional Redis connections | `[]`  |
-| `config.redis.groupName`          | Redis Group name | `l7GW`  |
-| `config.redis.commandTimeout`          | Redis Command Timeout | `5000`  |
-| `config.redis.connectTimeout`          | Redis Connect Timeout | `10000`  |
-| `config.redis.testOnStart`          | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start | `false`  |
-| `config.redis.auth.enabled`          | Use auth for Redis | `false`  |
-| `config.redis.auth.username`          | Redis username | ``  |
-| `config.redis.auth.password.encoded`          | Password is encoded | `false`  |
-| `config.redis.auth.password.value`          | Redis password | `mypassword`  |
-| `config.redis.sentinel.enabled`                | Enable sentinel configuration   | `true` |
-| `config.redis.sentinel.masterSet`          | Redis Master set | `mymaster`  |
-| `config.redis.sentinel.nodes`          | Array of sentinel nodes host and port | `[]`  |
-| `config.redis.standalone.host`                | Redis host if sentinel is not enabled   | `redis-standalone` |
-| `config.redis.standalone.port`                | Redis port if sentinel is not enabled   | `6379` |
-| `config.redis.tls.enabled`    | Enable SSL/TLS              | `false` |
-| `config.redis.tls.existingSecret`    | Use an existing secret - must contain a key called tls.crt        | `` |
-| `config.redis.tls.verifyPeer`    | Verify Peer             | `true` |
-| `config.redis.tls.redisCrt`    | Redis Public Cert            | `` |
+
+| Parameter                            | Description                                                                                                            | Default            |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `config.redis.enabled`               | Enable redis configuration                                                                                             | `false`            |
+| `config.redis.subChart.enabled`      | Deploy the redis subChart                                                                                              | `true`             |
+| `config.redis.additionalProviders`   | Configure additional Redis connections                                                                                 | `[]`               |
+| `config.redis.groupName`             | Redis Group name                                                                                                       | `l7GW`             |
+| `config.redis.commandTimeout`        | Redis Command Timeout                                                                                                  | `5000`             |
+| `config.redis.connectTimeout`        | Redis Connect Timeout                                                                                                  | `10000`            |
+| `config.redis.testOnStart`           | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start | `false`            |
+| `config.redis.auth.enabled`          | Use auth for Redis                                                                                                     | `false`            |
+| `config.redis.auth.username`         | Redis username                                                                                                         | ``                 |
+| `config.redis.auth.password.encoded` | Password is encoded                                                                                                    | `false`            |
+| `config.redis.auth.password.value`   | Redis password                                                                                                         | `mypassword`       |
+| `config.redis.sentinel.enabled`      | Enable sentinel configuration                                                                                          | `true`             |
+| `config.redis.sentinel.masterSet`    | Redis Master set                                                                                                       | `mymaster`         |
+| `config.redis.sentinel.nodes`        | Array of sentinel nodes host and port                                                                                  | `[]`               |
+| `config.redis.standalone.host`       | Redis host if sentinel is not enabled                                                                                  | `redis-standalone` |
+| `config.redis.standalone.port`       | Redis port if sentinel is not enabled                                                                                  | `6379`             |
+| `config.redis.tls.enabled`           | Enable SSL/TLS                                                                                                         | `false`            |
+| `config.redis.tls.existingSecret`    | Use an existing secret - must contain a key called tls.crt                                                             | ``                 |
+| `config.redis.tls.verifyPeer`        | Verify Peer                                                                                                            | `true`             |
+| `config.redis.tls.redisCrt`          | Redis Public Cert                                                                                                      | ``                 |
 
 
 #### Creating your own Redis Configuration
+
 Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-11-0/install-configure-upgrade/connect-to-an-external-redis-datastore.html) for more context on the available configuration options
 
 #### Note
+
 The Gateway supports Redis master auth only. The Gateway will not be able to connect to Redis if your Sentinel nodes have passwords. Please refer to the notes in values.yaml for details on config.redis.auth and redis.auth (subChart)
 
 ##### Redis Sentinel (11.1.1)
+
 sharedstate_client.yaml
+
 ```
 redis:
   default:
@@ -1001,7 +1091,9 @@ redis:
 ```
 
 ##### Redis Standalone (11.1.1)
+
 sharedstate_client.yaml
+
 ```
 redis:
   default:
@@ -1023,7 +1115,9 @@ redis:
 ```
 
 ##### Redis Sentinel (11.0.00_CR2 and 11.1.00)
+
 redis.properties
+
 ```
 # Redis type can be sentinel or standalone
  redis.type=sentinel
@@ -1040,13 +1134,15 @@ redis.properties
 # Additional Config
  redis.key.prefix.grpname=l7GW
  redis.commandTimeout=5000
- ```
+```
 
 ##### Redis Standalone (11.1.00)
+
 **Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
 The Gateway supports SSL/TLS and Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
+
 ```
 # Redis type can be sentinel or standalone
  redis.type=standalone
@@ -1063,13 +1159,15 @@ redis.properties
 # Additional Config
  redis.key.prefix.grpname=l7GW
  redis.commandTimeout=5000
- ```
+```
 
 ##### Redis Standalone (11.0.00_CR2)
+
 **Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
 The Gateway does not support SSL/TLS or Authentication when connecting to a standalone Redis instance. This configuration should only be used for development purposes
 
 redis.properties
+
 ```
 # Redis type can be sentinel or standalone
 # standalone does not support SSL or Auth
@@ -1078,13 +1176,16 @@ redis.properties
  redis.port=6379
  redis.key.prefix.grpname=l7GW
  redis.commandTimeout=5000
- ```
+```
 
 ##### Create a secret from this configuration (11.1.1)
+
 ```
 kubectl create secret generic shared-state-provider-secret --from-file=sharedstate_client.yaml=/path/to/sharedstate_client.yaml
 ```
+
 my-values.yaml
+
 ```
 config:
   sharedStateClient:
@@ -1093,11 +1194,15 @@ config:
 ```
 
 ##### Create a secret from this configuration (11.0.00_CR2 and 11.1.00)
+
 **Gateway Chart v3.0.30 onwards only supports Gateway 11.1.1 and later for Redis** if you are not upgrading to Gateway v11.1.1 please specify the --version flag when installing or upgrading your release.
+
 ```
 kubectl create secret generic redis-config-secret --from-file=redis.properties=/path/to/redis.properties
 ```
+
 my-values.yaml
+
 ```
 redis:
     enabled: true
@@ -1107,6 +1212,7 @@ redis:
 [Back to Additional Guides](#additional-guides)
 
 ### Redis StatefulSet (Development/Testing Only)
+
 **Important Note:** This is a simple Redis StatefulSet implementation for development and testing purposes only. ***It is not supported or recommended for production use.*** For production deployments, use an external Redis server or Redis cluster.
 
 The Redis StatefulSet provides standalone Redis functionality with optional authentication and TLS support.
@@ -1115,58 +1221,61 @@ The Redis StatefulSet provides standalone Redis functionality with optional auth
 
 #### Configuration
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `redis.image.repository`         | Redis image repository | `redis`  |
-| `redis.image.tag`                | Redis image tag | `7.4-alpine`  |
-| `redis.image.pullPolicy`         | Image pull policy | `IfNotPresent`  |
-| `redis.auth.enabled`             | Enable Redis authentication | `false`  |
-| `redis.auth.username`            | Redis username (optional, for ACL-based auth) | ``  |
-| `redis.auth.password`            | Redis password | `mypassword`  |
-| `redis.auth.existingSecret`      | Use existing secret for credentials | ``  |
-| `redis.service.type`             | Redis service type | `ClusterIP`  |
-| `redis.service.port`             | Redis service port | `6379`  |
-| `redis.service.annotations`      | Annotations for the Redis service | `{}`  |
-| `redis.pdb.create`               | Create PodDisruptionBudget for Redis | `false`  |
-| `redis.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
-| `redis.pdb.minAvailable`         | Minimum available pods | ``  |
-| `redis.persistence.enabled`      | Enable persistence using PVC | `false`  |
-| `redis.persistence.storageClass` | Storage class for PVC | ``  |
-| `redis.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |
-| `redis.persistence.size`         | PVC size | `8Gi`  |
-| `redis.persistence.annotations`  | PVC annotations (can include Helm hooks) | `{}`  |
-| `redis.persistence.existingClaim`| Use existing PVC | ``  |
-| `redis.maxmemory`                | Redis max memory limit | `256mb`  |
-| `redis.maxmemoryPolicy`          | Redis eviction policy | `allkeys-lru`  |
-| `redis.appendonly`               | Enable AOF persistence | `false`  |
-| `redis.tls.enabled`              | Enable TLS | `true`  |
-| `redis.tls.autoGenerated`        | Auto-generate self-signed certificates | `true`  |
-| `redis.tls.certificatesSecret`   | Existing secret with TLS certificates | ``  |
-| `redis.configuration`            | Custom Redis configuration | ``  |
-| `redis.commonAnnotations`        | Annotations applied to all Redis resources | `{}`  |
-| `redis.resources`                | Resource requests and limits | `{}`  |
-| `redis.livenessProbe.enabled`    | Enable liveness probe | `true`  |
-| `redis.livenessProbe.initialDelaySeconds` | Liveness probe initial delay | `5`  |
-| `redis.livenessProbe.periodSeconds` | Liveness probe period | `5`  |
-| `redis.livenessProbe.timeoutSeconds` | Liveness probe timeout | `5`  |
-| `redis.livenessProbe.failureThreshold` | Liveness probe failure threshold | `5`  |
-| `redis.readinessProbe.enabled`   | Enable readiness probe | `true`  |
-| `redis.readinessProbe.initialDelaySeconds` | Readiness probe initial delay | `5`  |
-| `redis.readinessProbe.periodSeconds` | Readiness probe period | `5`  |
-| `redis.readinessProbe.timeoutSeconds` | Readiness probe timeout | `1`  |
-| `redis.readinessProbe.failureThreshold` | Readiness probe failure threshold | `5`  |
-| `redis.startupProbe.enabled`     | Enable startup probe | `false`  |
-| `redis.nodeSelector`             | Node labels for pod assignment | `{}`  |
-| `redis.affinity`                 | Affinity settings | `{}`  |
-| `redis.tolerations`              | Tolerations for pod assignment | `[]`  |
-| `redis.podSecurityContext`       | Pod security context | `{}`  |
-| `redis.containerSecurityContext` | Container security context | `{}`  |
-| `redis.podAnnotations`           | Pod annotations | `{}`  |
-| `redis.podLabels`                | Pod labels | `{}`  |
+
+| Parameter                                  | Description                                   | Default           |
+| ------------------------------------------ | --------------------------------------------- | ----------------- |
+| `redis.image.repository`                   | Redis image repository                        | `redis`           |
+| `redis.image.tag`                          | Redis image tag                               | `7.4-alpine`      |
+| `redis.image.pullPolicy`                   | Image pull policy                             | `IfNotPresent`    |
+| `redis.auth.enabled`                       | Enable Redis authentication                   | `false`           |
+| `redis.auth.username`                      | Redis username (optional, for ACL-based auth) | ``                |
+| `redis.auth.password`                      | Redis password                                | `mypassword`      |
+| `redis.auth.existingSecret`                | Use existing secret for credentials           | ``                |
+| `redis.service.type`                       | Redis service type                            | `ClusterIP`       |
+| `redis.service.port`                       | Redis service port                            | `6379`            |
+| `redis.service.annotations`                | Annotations for the Redis service             | `{}`              |
+| `redis.pdb.create`                         | Create PodDisruptionBudget for Redis          | `false`           |
+| `redis.pdb.maxUnavailable`                 | Maximum unavailable pods                      | ``                |
+| `redis.pdb.minAvailable`                   | Minimum available pods                        | ``                |
+| `redis.persistence.enabled`                | Enable persistence using PVC                  | `false`           |
+| `redis.persistence.storageClass`           | Storage class for PVC                         | ``                |
+| `redis.persistence.accessModes`            | PVC access modes                              | `[ReadWriteOnce]` |
+| `redis.persistence.size`                   | PVC size                                      | `8Gi`             |
+| `redis.persistence.annotations`            | PVC annotations (can include Helm hooks)      | `{}`              |
+| `redis.persistence.existingClaim`          | Use existing PVC                              | ``                |
+| `redis.maxmemory`                          | Redis max memory limit                        | `256mb`           |
+| `redis.maxmemoryPolicy`                    | Redis eviction policy                         | `allkeys-lru`     |
+| `redis.appendonly`                         | Enable AOF persistence                        | `false`           |
+| `redis.tls.enabled`                        | Enable TLS                                    | `true`            |
+| `redis.tls.autoGenerated`                  | Auto-generate self-signed certificates        | `true`            |
+| `redis.tls.certificatesSecret`             | Existing secret with TLS certificates         | ``                |
+| `redis.configuration`                      | Custom Redis configuration                    | ``                |
+| `redis.commonAnnotations`                  | Annotations applied to all Redis resources    | `{}`              |
+| `redis.resources`                          | Resource requests and limits                  | `{}`              |
+| `redis.livenessProbe.enabled`              | Enable liveness probe                         | `true`            |
+| `redis.livenessProbe.initialDelaySeconds`  | Liveness probe initial delay                  | `5`               |
+| `redis.livenessProbe.periodSeconds`        | Liveness probe period                         | `5`               |
+| `redis.livenessProbe.timeoutSeconds`       | Liveness probe timeout                        | `5`               |
+| `redis.livenessProbe.failureThreshold`     | Liveness probe failure threshold              | `5`               |
+| `redis.readinessProbe.enabled`             | Enable readiness probe                        | `true`            |
+| `redis.readinessProbe.initialDelaySeconds` | Readiness probe initial delay                 | `5`               |
+| `redis.readinessProbe.periodSeconds`       | Readiness probe period                        | `5`               |
+| `redis.readinessProbe.timeoutSeconds`      | Readiness probe timeout                       | `1`               |
+| `redis.readinessProbe.failureThreshold`    | Readiness probe failure threshold             | `5`               |
+| `redis.startupProbe.enabled`               | Enable startup probe                          | `false`           |
+| `redis.nodeSelector`                       | Node labels for pod assignment                | `{}`              |
+| `redis.affinity`                           | Affinity settings                             | `{}`              |
+| `redis.tolerations`                        | Tolerations for pod assignment                | `[]`              |
+| `redis.podSecurityContext`                 | Pod security context                          | `{}`              |
+| `redis.containerSecurityContext`           | Container security context                    | `{}`              |
+| `redis.podAnnotations`                     | Pod annotations                               | `{}`              |
+| `redis.podLabels`                          | Pod labels                                    | `{}`              |
+
 
 #### Example Configuration
 
 Enable Redis with basic settings (no auth, no TLS):
+
 ```yaml
 config:
   redis:
@@ -1184,6 +1293,7 @@ redis:
 ```
 
 With authentication and TLS enabled:
+
 ```yaml
 config:
   redis:
@@ -1212,6 +1322,7 @@ redis:
 ```
 
 With custom memory and eviction policy:
+
 ```yaml
 config:
   redis:
@@ -1228,12 +1339,14 @@ redis:
 #### TLS Certificates
 
 When `redis.tls.autoGenerated` is `true`, the chart automatically generates self-signed TLS certificates that include the following Subject Alternative Names (SANs):
+
 - StatefulSet pod FQDN (e.g., `ssg-gateway-redis-0.ssg-gateway-redis-headless.namespace.svc.cluster.local`)
 - Headless service names in all variations
 - Regular service names
 - `localhost` and `127.0.0.1`
 
 To use your own certificates, set `redis.tls.autoGenerated: false` and provide your own secret:
+
 ```yaml
 redis:
   tls:
@@ -1243,6 +1356,7 @@ redis:
 ```
 
 The secret must contain the following keys:
+
 - `tls.crt` - Server certificate
 - `tls.key` - Server private key
 - `ca.crt` - CA certificate
@@ -1250,17 +1364,22 @@ The secret must contain the following keys:
 [Back to Additional Guides](#additional-guides)
 
 ### GemFire Configuration (11.1.3)
+
 Gemfire as shared data provider is supported with Gateway v11.1.3 onwards.
 
 Prerequisites:
-* ClusterIssuer/Issuer in cert-manager is required to generate TLS secret automatically when TLS is enabled without providing a tls secret. See how to configure [SelfSigned](https://cert-manager.io/docs/configuration/selfsigned/) and [CA](https://cert-manager.io/docs/configuration/ca/) issuer
+
+- ClusterIssuer/Issuer in cert-manager is required to generate TLS secret automatically when TLS is enabled without providing a tls secret. See how to configure [SelfSigned](https://cert-manager.io/docs/configuration/selfsigned/) and [CA](https://cert-manager.io/docs/configuration/ca/) issuer
 
 To configure gemfire as data provider comment out existing system properties
+
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedhazelcast
 # com.l7tech.server.extension.sharedCounterProvider=ssgdb
 ```
+
 Set the following system properties as needed
+
 ```
 # com.l7tech.server.extension.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
 # com.l7tech.server.extension.sharedCounterProvider=embeddedgemfire/externalgemfire
@@ -1268,48 +1387,54 @@ Set the following system properties as needed
 # com.l7tech.server.extension.sharedSortedSetProvider=embeddedgemfire/externalgemfire
 # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=embeddedgemfire/externalgemfire
 ```
-| Parameter                                                   | Description                                                                                                                                                                                | Default                |
-|-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------|
-| `config.gemfire.acceptTerms`                                | Accepting the terms of use for VMware Tanzu GemFire.                                                                                                                                       | `true`                 |
-| `config.gemfire.auth.enabled`                               | Enable security athentication.                                                                                                                                                             | `false`                |
-| `config.gemfire.auth.username`                              | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.                                                                                      | `default`              |
-| `config.gemfire.auth.password`                              | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.                                                                                       | ''                     |
-| `config.gemfire.tls.enabled`                                | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                                                                                                        | `false`                |
-| `config.gemfire.tls.certificate.issuerRef.kind`             | Specifies cert-manager issuer type, Issuer or ClusterIssuer. <br/>Required when tls is enabled but existingSecret is not provided.                                                         | `ClusterIssuer`                |
-| `config.gemfire.tls.certificate.issuerRef.name`             | The exact name of the Issuer or ClusterIssuer. <br/>Required when tls is enabled but existingSecret is not provided.                                                                       | `myClusterIssuer`                |
-| `config.gemfire.tls.existingSecret`                         | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12 if provided. <br/>Takes priority over certificate issuer.                                         | ``                     |
-| `config.gemfire.tls.password`                               | Pasword for truststore.12 and keystore.p12 in existingSecret, can be plaintext or openssl encrypted. <br/>If existingSeret is set but password is not provided, default to clusterPassword | clusterPassword        |
-| `config.gemfire.tls.additionalProperties`                   | Additional tls related properties.                                                                                                                                                         | ``                     |
-| `config.gemfire.useExistingLocators`                        | A list of existing locators to be used by gateway.                                                                                                                                         | `[]`                   |
-| `config.gemfire.embedded.enabled`                           | Enable embedded GemFire.                                                                                                                                                                   | `false`                |
-| `config.gemfire.embedded.caches.additionalProperties`       | Additional properties for embedded GemFire caches.                                                                                                                                         | ``                     |
-| `config.gemfire.embedded.externalLocators.replicas`         | Number of GemFire locator replicas to deploy.                                                                                                                                              | `2`                    |
-| `config.gemfire.embedded.externalLocators.image.registry`   | Image Registry                                                                                                                                                                             | `docker.io`            |
-| `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                                                                                                           | `gemfire/gemfire`      |
-| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                                                                                                  | `10.2.0-jdk21`         |
-| `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                                                                                                          | `IfNotPresent`         |
-| `config.gemfire.embedded.externalLocators.resources`        | Locator pod resources                                                                                                                                                                      | {}                     |
-| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                                                                               | `2Gi`                  |
-| `config.gemfire.external.enabled`                           | Enable external GemFire.                                                                                                                                                                   | `false`                |
-| `config.gemfire.external.testOnStart`                       | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start.                                                                    | `false`                |
-| `config.gemfire.external.gwCounterRegionName`               | GemFire data region name for gateway counter provider.                                                                                                                                     | `layer7gw_counter`     |
-| `config.gemfire.external.gwRateLimiterRegionName`           | GemFire data region name for gateway rate limiter provider.                                                                                                                                | `layer7gw_ratelimiter` |
-| `config.gemfire.external.gwKeyValueRegionName`              | GemFire data region name for gateway key value store provider.                                                                                                                             | `layer7gw_keyvalue`    |
-| `config.gemfire.external.gwSortedSetRegionName`             | GemFire data region name for gateway sotred set provider.                                                                                                                                  | `layer7gw_sortedset`   |
-| `config.gemfire.external.dynamicProperties`                 | Additional GemFire properties from gemfire.properties or gfsecurity.properties.                                                                                                            | ``                     |
-| `config.gemfire.managementConsole.enabled`                  | Enable GemFire management console.                                                                                                                                                         | `false`                |
-| `config.gemfire.managementConsole.service.port`             | GemFire management console service port.                                                                                                                                                   | `8080`                 |
-| `config.gemfire.managementConsole.service.annotations`      | GemFire management console service annotations.                                                                                                                                            | `{}`                   |
-| `config.gemfire.managementConsole.image.registry`           | Image Registry                                                                                                                                                                             | `docker.io`            |
-| `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                                                                                           | `gemfire/gemfire`      |
-| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                                                                                                  | `1.4.1`                |
-| `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                                                                                          | `IfNotPresent`         |
+
+
+| Parameter                                                   | Description                                                                                                                                                                           | Default                |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `config.gemfire.acceptTerms`                                | Accepting the terms of use for VMware Tanzu GemFire.                                                                                                                                  | `true`                 |
+| `config.gemfire.auth.enabled`                               | Enable security athentication.                                                                                                                                                        | `false`                |
+| `config.gemfire.auth.username`                              | Authentication username, can be plaintext or openssl encrypted. If not provided use default username.                                                                                 | `default`              |
+| `config.gemfire.auth.password`                              | Authentication password in plaintxt or encrypted with OpenSSL. If not provided use clsuter password.                                                                                  | ''                     |
+| `config.gemfire.tls.enabled`                                | Enable SSL/TLS secure communication between gateway and gemfire cluster components.                                                                                                   | `false`                |
+| `config.gemfire.tls.certificate.issuerRef.kind`             | Specifies cert-manager issuer type, Issuer or ClusterIssuer. Required when tls is enabled but existingSecret is not provided.                                                         | `ClusterIssuer`        |
+| `config.gemfire.tls.certificate.issuerRef.name`             | The exact name of the Issuer or ClusterIssuer. Required when tls is enabled but existingSecret is not provided.                                                                       | `myClusterIssuer`      |
+| `config.gemfire.tls.existingSecret`                         | Name of an existing secret - must contain two keys named truststore.p12 and keystore.p12 if provided. Takes priority over certificate issuer.                                         | ``                     |
+| `config.gemfire.tls.password`                               | Pasword for truststore.12 and keystore.p12 in existingSecret, can be plaintext or openssl encrypted. If existingSeret is set but password is not provided, default to clusterPassword | clusterPassword        |
+| `config.gemfire.tls.additionalProperties`                   | Additional tls related properties.                                                                                                                                                    | ``                     |
+| `config.gemfire.useExistingLocators`                        | A list of existing locators to be used by gateway.                                                                                                                                    | `[]`                   |
+| `config.gemfire.embedded.enabled`                           | Enable embedded GemFire.                                                                                                                                                              | `false`                |
+| `config.gemfire.embedded.caches.additionalProperties`       | Additional properties for embedded GemFire caches.                                                                                                                                    | ``                     |
+| `config.gemfire.embedded.externalLocators.replicas`         | Number of GemFire locator replicas to deploy.                                                                                                                                         | `2`                    |
+| `config.gemfire.embedded.externalLocators.image.registry`   | Image Registry                                                                                                                                                                        | `docker.io`            |
+| `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                                                                                                      | `gemfire/gemfire`      |
+| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                                                                                             | `10.2.0-jdk21`         |
+| `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                                                                                                     | `IfNotPresent`         |
+| `config.gemfire.embedded.externalLocators.resources`        | Locator pod resources                                                                                                                                                                 | {}                     |
+| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                                                                          | `2Gi`                  |
+| `config.gemfire.external.enabled`                           | Enable external GemFire.                                                                                                                                                              | `false`                |
+| `config.gemfire.external.testOnStart`                       | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start.                                                               | `false`                |
+| `config.gemfire.external.gwCounterRegionName`               | GemFire data region name for gateway counter provider.                                                                                                                                | `layer7gw_counter`     |
+| `config.gemfire.external.gwRateLimiterRegionName`           | GemFire data region name for gateway rate limiter provider.                                                                                                                           | `layer7gw_ratelimiter` |
+| `config.gemfire.external.gwKeyValueRegionName`              | GemFire data region name for gateway key value store provider.                                                                                                                        | `layer7gw_keyvalue`    |
+| `config.gemfire.external.gwSortedSetRegionName`             | GemFire data region name for gateway sotred set provider.                                                                                                                             | `layer7gw_sortedset`   |
+| `config.gemfire.external.dynamicProperties`                 | Additional GemFire properties from gemfire.properties or gfsecurity.properties.                                                                                                       | ``                     |
+| `config.gemfire.managementConsole.enabled`                  | Enable GemFire management console.                                                                                                                                                    | `false`                |
+| `config.gemfire.managementConsole.service.port`             | GemFire management console service port.                                                                                                                                              | `8080`                 |
+| `config.gemfire.managementConsole.service.annotations`      | GemFire management console service annotations.                                                                                                                                       | `{}`                   |
+| `config.gemfire.managementConsole.image.registry`           | Image Registry                                                                                                                                                                        | `docker.io`            |
+| `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                                                                                      | `gemfire/gemfire`      |
+| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                                                                                             | `1.4.1`                |
+| `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                                                                                     | `IfNotPresent`         |
+
 
 #### Creating your own Configuration
+
 Please refer to [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/connect-to-a-gemfire-datastore.html) for more context on the available configuration options
 
 #### Embedded GemFire
+
 Embedded gemfire will have external locators but gemfire cache servers are inside gateway container.
+
 ```
 config:
   gemfire:
@@ -1320,10 +1445,13 @@ config:
     embedded:
       enabled: true
 ```
+
 #### External GemFire
+
 Gateway as client connect to external gemfire cluster. Shared State Provider Config is used to configure gemfire.
 
 External gemfire is deployed by GemFire Kubernetes Operator, override-values.yaml:
+
 ```
 config:
   gemfire:
@@ -1349,7 +1477,9 @@ config:
   sharedStateClient:
     enabled: true
 ```
+
 External gemfire, override-values.yaml:
+
 ```
 config:
   gemfire:
@@ -1373,9 +1503,11 @@ config:
   sharedStateClient:
     enabled: true
 ```
+
 Providing custom sharedstate_client.yaml from a secret
 
 override-values.yaml
+
 ```
 config:
   gemfire:
@@ -1395,7 +1527,9 @@ config:
     enabled: true
     existingConfigSecret: shared-state-client-secret
 ```
+
 sharedstate_client.yaml from secret
+
 ```
 gemfire:
   testOnStart: true
@@ -1420,18 +1554,23 @@ gemfire:
 [Back to Additional Guides](#additional-guides)
 
 ### Shared State Provider Config
+
 Shared State Providers from Gateway v11.1.1 onwards simplifies the configuration required to connect to providers like Redis. This is currently limited to Redis. In order for this configuration to take effect config.redis.enabled must also be set to true.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.sharedStateClient.enabled`          | Enable redis configuration | `true`  |
-| `config.sharedStateClient.existingConfigSecret`          | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret`  |
-| `config.sharedStateClient.additionalProviders`          | Configure additional shared state providers - example in values.yaml | `[]`  |
+
+| Parameter                                       | Description                                                                       | Default                     |
+| ----------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------- |
+| `config.sharedStateClient.enabled`              | Enable redis configuration                                                        | `true`                      |
+| `config.sharedStateClient.existingConfigSecret` | Use an existing config secret - must contain a key called sharedstate_client.yaml | `sharedstate-client-secret` |
+| `config.sharedStateClient.additionalProviders`  | Configure additional shared state providers - example in values.yaml              | `[]`                        |
+
 
 [Back to Additional Guides](#additional-guides)
 
 ### Database Configuration
+
 You can configure the deployment to use an external database (this is the recommended approach - the included MySQL SubChart is not supported). In the values.yaml file, set the create field in the database section to false, and set jdbcURL to use your own database server:
+
 ```
 database:
   enabled: true
@@ -1442,9 +1581,11 @@ database:
   liquibaseLogLevel: "off"
   name: ssg
 ```
+
 In the above example, two MySQL database servers are specified with myprimaryserver acting as the primary server and mysecondaryserver acting as the secondary server. The failOverReadOnly property is also set to false meaning that the secondary server db is also writable.
 
 When disklessConfig.enabled is false (see [Diskless Configuration](#diskless-configuration)), the following database fields will be ignored:
+
 - jdbcURL
 - username
 - password
@@ -1452,11 +1593,13 @@ When disklessConfig.enabled is false (see [Diskless Configuration](#diskless-con
 The values will come from node.properties instead. See [External MySQL](#external-mysql) section.
 
 More info on the JDBC URL:
-- Connection URL syntax: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-url-format.html
-- Failover config: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-config-failover.html
-- Configuration properties: https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html
+
+- Connection URL syntax: [https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-url-format.html](https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-url-format.html)
+- Failover config: [https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-config-failover.html](https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-config-failover.html)
+- Configuration properties: [https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html](https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html)
 
 Configuring SSL/TLS: the following parameters can be added to enable secure communication between the Gateway and an external MySQL Database
+
 - useSSL=true
 - requireSSL=true
 - verifyServerCertificate=false
@@ -1465,65 +1608,69 @@ Configuring SSL/TLS: the following parameters can be added to enable secure comm
 jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=true&requireSSL=true&verifyServerCertificate=false
 ```
 
-In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
+In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: [https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges](https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges)
 
 [Back to Additional Guides](#additional-guides)
 
 ### MySQL StatefulSet (Development/Testing Only)
+
 **Important Note:** This is a simple MySQL StatefulSet implementation for development and testing purposes only. ***It is not supported or recommended for production use.*** For production deployments, use an external MySQL database.
 
 #### Configuration
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `mysql.image.repository`         | MySQL image repository | `docker.io/mysql`  |
-| `mysql.image.tag`                | MySQL image tag | `8.4.5`  |
-| `mysql.image.pullPolicy`         | Image pull policy | `IfNotPresent`  |
-| `mysql.auth.rootPassword`        | MySQL root password | `mypassword`  |
-| `mysql.auth.database`            | Database name to create | `ssg`  |
-| `mysql.auth.username`            | MySQL user (optional) | `gateway`  |
-| `mysql.auth.password`            | MySQL user password | `mypassword`  |
-| `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
-| `mysql.service.type`             | MySQL service type | `ClusterIP`  |
-| `mysql.service.port`             | MySQL service port | `3306`  |
-| `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
-| `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL | `false`  |
-| `mysql.pdb.maxUnavailable`       | Maximum unavailable pods | ``  |
-| `mysql.pdb.minAvailable`         | Minimum available pods | ``  |
-| `mysql.persistence.enabled`      | Enable persistence using PVC | `true`  |
-| `mysql.persistence.storageClass` | Storage class for PVC | ``  |
-| `mysql.persistence.accessModes`  | PVC access modes | `[ReadWriteOnce]`  |
-| `mysql.persistence.size`         | PVC size | `8Gi`  |
-| `mysql.persistence.annotations`  | PVC annotations (can include Helm hooks) | `{}`  |
-| `mysql.persistence.existingClaim`| Use existing PVC | ``  |
-| `mysql.configuration`            | Custom MySQL configuration (my.cnf) | `see values.yaml`  |
-| `mysql.existingConfigmap`        | Use existing ConfigMap for configuration | ``  |
-| `mysql.initdbScripts`            | Init scripts as key-value pairs | `{}`  |
-| `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts | ``  |
-| `mysql.commonAnnotations`        | Annotations applied to all MySQL resources (can include Helm hooks) | `{}`  |
-| `mysql.resources`                | Resource requests and limits | `{}`  |
-| `mysql.livenessProbe.enabled`    | Enable liveness probe | `true`  |
-| `mysql.livenessProbe.initialDelaySeconds` | Liveness probe initial delay | `30`  |
-| `mysql.livenessProbe.periodSeconds` | Liveness probe period | `10`  |
-| `mysql.livenessProbe.timeoutSeconds` | Liveness probe timeout | `5`  |
-| `mysql.livenessProbe.failureThreshold` | Liveness probe failure threshold | `3`  |
-| `mysql.readinessProbe.enabled`   | Enable readiness probe | `true`  |
-| `mysql.readinessProbe.initialDelaySeconds` | Readiness probe initial delay | `5`  |
-| `mysql.readinessProbe.periodSeconds` | Readiness probe period | `5`  |
-| `mysql.readinessProbe.timeoutSeconds` | Readiness probe timeout | `1`  |
-| `mysql.readinessProbe.failureThreshold` | Readiness probe failure threshold | `3`  |
-| `mysql.startupProbe.enabled`     | Enable startup probe | `false`  |
-| `mysql.nodeSelector`             | Node labels for pod assignment | `{}`  |
-| `mysql.affinity`                 | Affinity settings | `{}`  |
-| `mysql.tolerations`              | Tolerations for pod assignment | `[]`  |
-| `mysql.podSecurityContext`       | Pod security context | `{}`  |
-| `mysql.containerSecurityContext` | Container security context | `{}`  |
-| `mysql.podAnnotations`           | Pod annotations | `{}`  |
-| `mysql.podLabels`                | Pod labels | `{}`  |
+
+| Parameter                                  | Description                                                         | Default           |
+| ------------------------------------------ | ------------------------------------------------------------------- | ----------------- |
+| `mysql.image.repository`                   | MySQL image repository                                              | `docker.io/mysql` |
+| `mysql.image.tag`                          | MySQL image tag                                                     | `8.4.5`           |
+| `mysql.image.pullPolicy`                   | Image pull policy                                                   | `IfNotPresent`    |
+| `mysql.auth.rootPassword`                  | MySQL root password                                                 | `mypassword`      |
+| `mysql.auth.database`                      | Database name to create                                             | `ssg`             |
+| `mysql.auth.username`                      | MySQL user (optional)                                               | `gateway`         |
+| `mysql.auth.password`                      | MySQL user password                                                 | `mypassword`      |
+| `mysql.auth.existingSecret`                | Use existing secret for credentials                                 | ``                |
+| `mysql.service.type`                       | MySQL service type                                                  | `ClusterIP`       |
+| `mysql.service.port`                       | MySQL service port                                                  | `3306`            |
+| `mysql.service.annotations`                | Annotations for the MySQL service                                   | `{}`              |
+| `mysql.pdb.create`                         | Create PodDisruptionBudget for MySQL                                | `false`           |
+| `mysql.pdb.maxUnavailable`                 | Maximum unavailable pods                                            | ``                |
+| `mysql.pdb.minAvailable`                   | Minimum available pods                                              | ``                |
+| `mysql.persistence.enabled`                | Enable persistence using PVC                                        | `true`            |
+| `mysql.persistence.storageClass`           | Storage class for PVC                                               | ``                |
+| `mysql.persistence.accessModes`            | PVC access modes                                                    | `[ReadWriteOnce]` |
+| `mysql.persistence.size`                   | PVC size                                                            | `8Gi`             |
+| `mysql.persistence.annotations`            | PVC annotations (can include Helm hooks)                            | `{}`              |
+| `mysql.persistence.existingClaim`          | Use existing PVC                                                    | ``                |
+| `mysql.configuration`                      | Custom MySQL configuration (my.cnf)                                 | `see values.yaml` |
+| `mysql.existingConfigmap`                  | Use existing ConfigMap for configuration                            | ``                |
+| `mysql.initdbScripts`                      | Init scripts as key-value pairs                                     | `{}`              |
+| `mysql.initdbScriptsConfigMap`             | Existing ConfigMap with init scripts                                | ``                |
+| `mysql.commonAnnotations`                  | Annotations applied to all MySQL resources (can include Helm hooks) | `{}`              |
+| `mysql.resources`                          | Resource requests and limits                                        | `{}`              |
+| `mysql.livenessProbe.enabled`              | Enable liveness probe                                               | `true`            |
+| `mysql.livenessProbe.initialDelaySeconds`  | Liveness probe initial delay                                        | `30`              |
+| `mysql.livenessProbe.periodSeconds`        | Liveness probe period                                               | `10`              |
+| `mysql.livenessProbe.timeoutSeconds`       | Liveness probe timeout                                              | `5`               |
+| `mysql.livenessProbe.failureThreshold`     | Liveness probe failure threshold                                    | `3`               |
+| `mysql.readinessProbe.enabled`             | Enable readiness probe                                              | `true`            |
+| `mysql.readinessProbe.initialDelaySeconds` | Readiness probe initial delay                                       | `5`               |
+| `mysql.readinessProbe.periodSeconds`       | Readiness probe period                                              | `5`               |
+| `mysql.readinessProbe.timeoutSeconds`      | Readiness probe timeout                                             | `1`               |
+| `mysql.readinessProbe.failureThreshold`    | Readiness probe failure threshold                                   | `3`               |
+| `mysql.startupProbe.enabled`               | Enable startup probe                                                | `false`           |
+| `mysql.nodeSelector`                       | Node labels for pod assignment                                      | `{}`              |
+| `mysql.affinity`                           | Affinity settings                                                   | `{}`              |
+| `mysql.tolerations`                        | Tolerations for pod assignment                                      | `[]`              |
+| `mysql.podSecurityContext`                 | Pod security context                                                | `{}`              |
+| `mysql.containerSecurityContext`           | Container security context                                          | `{}`              |
+| `mysql.podAnnotations`                     | Pod annotations                                                     | `{}`              |
+| `mysql.podLabels`                          | Pod labels                                                          | `{}`              |
+
 
 #### Example Configuration
 
 Enable MySQL with basic settings:
+
 ```yaml
 database:
   create: true  # Enables the MySQL StatefulSet
@@ -1540,6 +1687,7 @@ mysql:
 ```
 
 With Helm hooks for pre-install:
+
 ```yaml
 database:
   create: true
@@ -1557,6 +1705,7 @@ mysql:
 ```
 
 With custom configuration:
+
 ```yaml
 database:
   create: true
@@ -1570,6 +1719,7 @@ mysql:
 ```
 
 With init scripts:
+
 ```yaml
 database:
   create: true
@@ -1588,6 +1738,7 @@ mysql:
 #### Connecting the Gateway to MySQL
 
 When using the MySQL StatefulSet, configure the Gateway's database connection:
+
 ```yaml
 database:
   enabled: true
@@ -1602,6 +1753,7 @@ The Gateway will automatically connect to the MySQL service at `<release-name>-g
 #### OTK Demo Database Integration
 
 When `otk.database.useDemoDb` is set to `true` and `database.create` is `true`, the MySQL StatefulSet will automatically:
+
 - Apply Helm hook annotations (`helm.sh/hook: pre-install,post-upgrade`) to ensure MySQL is created before OTK installation
 - Mount the OTK database initialization scripts from the `otk-db-scripts-cm` ConfigMap
 - Initialize the OTK database schema during MySQL startup
@@ -1630,29 +1782,32 @@ mysql:
 
 ### Database Migration Job (Pre-Upgrade Schema Updates)
 
-Gateway 11.2.2 introduces an opt-in `pre-upgrade` Kubernetes Job that applies Liquibase database schema changes before the new Gateway pods roll out. This decouples the schema upgrade from the Gateway startup process, preventing stuck `DATABASECHANGELOGLOCK` entries from blocking pod startup during rolling upgrades.
+Gateway 11.2.2 introduces an opt-in `pre-upgrade` Kubernetes Job that applies Liquibase database schema changes before the new Gateway pods roll out. By running the schema update once, in a dedicated job, before any Gateway pod starts, it avoids multiple pods racing to acquire the `DATABASECHANGELOGLOCK` simultaneously — reducing the risk of contention, stuck locks, and schema update failures that can block pods from starting during a rolling upgrade. The job also supports specifying a dedicated JDBC URL (for example, a primary writer endpoint) so that schema changes are applied directly to the primary database node, bypassing read replicas or load-balancing proxies that could route writes incorrectly.
 
 > **Requirements:** Gateway must be connected to an external MySQL database. The target Gateway image must be **11.2.2 or newer**.
 
-> **Important — for upgrades only:** The `db-migration` job is a `pre-upgrade` Helm hook. It runs **only during `helm upgrade`**, never during `helm install`. Likewise, `-Dgateway.db.schema-update.mode=skip` must **not** be set during a fresh installation — if Liquibase is skipped on first install, the `ssg` database schema will never be populated and the Gateway will fail to start. Only add `skip` mode after the schema has been fully initialised by either a previous `helm install` (default mode) or a successful migration job.
+> **Important — for upgrades only:** The `db-migration` job is a `pre-upgrade` Helm hook. It runs **only during `helm upgrade`**, never during `helm install`. Likewise, `-Dgateway.db.schema-update.mode=skip (which starts up Gateway container without Liquibase` must **not** be set during a fresh installation — if Liquibase is skipped on first install, the `ssg` database schema will never be populated and the Gateway will fail to start. Only add `skip` mode after the schema has been fully initialised by either a previous `helm install` (default mode) or a successful migration job.
 
 #### How it works
 
 When `database.migrationJob.enabled: true`, a short-lived `db-migration` Job pod is created as a Helm `pre-upgrade` hook. It runs the Gateway container image configured with a special startup mode that applies all pending schema changes and then exits — without starting the Gateway JVM. Once the Job completes successfully, Helm proceeds to roll out the main Gateway Deployment.
 
-The main Gateway pods should be configured with `javaArgs: ["-Dgateway.db.schema-update.mode=skip"]` so they bypass the Liquibase check entirely and start immediately without touching the database lock.
+The main Gateway pods can be configured with `javaArgs: ["-Dgateway.db.schema-update.mode=skip"]` so they bypass the Liquibase check entirely and start immediately without touching the database lock. This feature requires 11.2.2 or newer.
 
 #### Fresh install vs upgrade
 
-| Operation | `skip` mode | Migration job | Expected behaviour |
-|---|---|---|---|
-| `helm install` (first time) | Not set (default) | Not applicable (`pre-upgrade` only) | Gateway populates the `ssg` schema on first boot — **correct** |
-| `helm install` (first time) | Set | Not applicable | Gateway skips Liquibase — **schema never populated, Gateway broken** |
-| `helm upgrade` | Set | Enabled | Migration job populates schema and exits, Gateway pods start fast — **correct** |
+
+| Operation                   | `config.javaArgs` — `-Dgateway.db.schema-update.mode` | Migration job (`database.migrationJob.enabled`) | Expected behaviour                                                              |
+| --------------------------- | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `helm install` (first time) | Not set — Gateway runs Liquibase on startup (default)  | Not applicable (`pre-upgrade` hook only)         | Gateway populates the `ssg` schema on first boot — **correct**                  |
+| `helm upgrade`              | `skip` — Gateway bypasses Liquibase on startup         | `true` — migration job applies schema changes first | Migration job populates schema and exits, Gateway pods start fast — **correct** |
+
+> **Warning:** Do not set `-Dgateway.db.schema-update.mode=skip` during `helm install`. The migration job is a `pre-upgrade` hook and does not run on install, so if Liquibase is skipped the `ssg` schema is never populated and the Gateway will fail to start.
+
 
 #### Upgrade workflow
 
-**Step 1 – Enable the migration job and run `helm upgrade`**
+Configure both the migration job and `-Dgateway.db.schema-update.mode=skip` in your `values.yaml` together, then run `helm upgrade` once. The migration job runs as a `pre-upgrade` hook — it applies all pending schema changes and exits before any Gateway pod starts. The new Gateway pods, already configured to bypass Liquibase, can then start immediately without competing for the database lock.
 
 ```yaml
 database:
@@ -1665,26 +1820,20 @@ database:
     # Optional: specify the primary writer endpoint directly.
     # If omitted, falls back to database.jdbcURL above.
     jdbcURL: "jdbc:mysql://myprimaryserver:3306/ssg"
+
+config:
+  javaArgs:
+    - "-Dgateway.db.schema-update.mode=skip"
+    # ... your other javaArgs
 ```
 
 ```bash
 helm upgrade my-release layer7/gateway -f values.yaml
 ```
 
-The `db-migration` job will run, apply the schema, and exit. Helm then rolls out the new Gateway pods.
+Helm runs the `db-migration` job first. Once it completes successfully, Helm rolls out the new Gateway pods. Because `skip` mode is already set, the pods bypass Liquibase and start immediately.
 
-**Step 2 – Configure Gateway pods to skip Liquibase**
-
-After the migration completes, add the following to ensure normal Gateway pods start fast and are immune to lock contention:
-
-```yaml
-javaArgs:
-  - "-Dgateway.db.schema-update.mode=skip"
-
-database:
-  migrationJob:
-    enabled: false   # disable now that migration is complete
-```
+Once enabled, you can leave `database.migrationJob.enabled: true` permanently. If there are no pending schema changes, the job completes in seconds and exits cleanly, so there is no harm in running it on every upgrade.
 
 #### Recovering from a stuck lock
 
@@ -1701,28 +1850,42 @@ database:
 
 #### Configuration
 
-| Parameter | Description | Default |
-|---|---|---|
-| `database.migrationJob.enabled` | Enable the pre-upgrade schema migration Job. For upgrades only — do not enable on `helm install`. | `false` |
-| `database.migrationJob.jdbcURL` | JDBC URL for the migration job. Recommended to point at the primary writer endpoint directly to bypass load balancers or proxies. Falls back to `database.jdbcURL` if not set. | `""` |
-| `database.migrationJob.clearLocks` | Forcefully release any stuck Liquibase locks before applying schema changes | `false` |
-| `database.migrationJob.activeDeadlineSeconds` | Maximum time (in seconds) the job pod is allowed to run before being terminated | `300` |
+
+| Parameter                                     | Description                                                                                                                                                                    | Default |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `database.migrationJob.enabled`               | Enable the pre-upgrade schema migration Job. For upgrades only — do not enable on `helm install`.                                                                              | `false` |
+| `database.migrationJob.jdbcURL`               | JDBC URL for the migration job. Recommended to point at the primary writer endpoint directly to bypass load balancers or proxies. Falls back to `database.jdbcURL` if not set. | `""`    |
+| `database.migrationJob.clearLocks`            | Forcefully release any stuck Liquibase locks before applying schema changes                                                                                                    | `false` |
+| `database.migrationJob.activeDeadlineSeconds` | Maximum time (in seconds) the job pod is allowed to run before being terminated                                                                                                | `300`   |
+
 
 #### Retry behaviour
 
 The Job is configured with `backoffLimit: 1`. If the first pod fails or times out, Kubernetes creates exactly one retry pod. If the retry also fails, the Job is marked `Failed` and Helm aborts the upgrade, leaving the existing Gateway pods untouched.
 
+To investigate a failed migration, retrieve the job logs to identify the failing changeset:
+
+```bash
+kubectl logs -n <namespace> -l job-name=<release-name>-db-migration --tail=200
+```
+
+Fix the root cause (for example, a missing MySQL privilege) and re-run `helm upgrade`. If the migration continues to fail, contact [Broadcom Support](https://support.broadcom.com) for assistance.
+
 [Back to Additional Guides](#additional-guides)
 
 ### Cluster Wide Properties
+
 You can specify cluster-wide properties in values.yaml, you can also use the [bundle](#bundle-configuration) to load your own Gateway Bundles.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.cwp.enabled`          | Enable the CWP functionality (mounts a volume) | `false`  |
-| `config.cwp.properties`          | Array of Key/Value pairs of cluster-wide properties | `see values.yaml`  |
+
+| Parameter               | Description                                         | Default           |
+| ----------------------- | --------------------------------------------------- | ----------------- |
+| `config.cwp.enabled`    | Enable the CWP functionality (mounts a volume)      | `false`           |
+| `config.cwp.properties` | Array of Key/Value pairs of cluster-wide properties | `see values.yaml` |
+
 
 The default cluster-wide properties are as follows
+
 ```
 config:
 ...
@@ -1745,15 +1908,17 @@ config:
 [Back to Additional Guides](#additional-guides)
 
 ### Enable DualStack(IPv4/IPv6)
+
 To enable dual stack, you need to add or uncomment the given Java arguments, which can be configured in the values.yaml file. Gateway v11.1.3 supports dual stack.
 
 -Djava.net.preferIPv4Stack=false 
 -Djava.net.preferIPv6Addresses=true
 
-| Java Argument                         | Description                                                                                                                                                                                                      | Default   |
-|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
-| `-Djava.net.preferIPv4Stack=false`    |  If IPv6 is available on the operating system, the underlying native socket will, by default, be an IPv6 socket. This allows applications to connect to, and accept connections from, both IPv4 and IPv6 hosts.  | `true`    |
-| `-Djava.net.preferIPv6Addresses=true` |  When connecting to a host that has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer IPv4 addresses over IPv6.                        | `false`   |
+
+| Java Argument                         | Description                                                                                                                                                                                                    | Default |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `-Djava.net.preferIPv4Stack=false`    | If IPv6 is available on the operating system, the underlying native socket will, by default, be an IPv6 socket. This allows applications to connect to, and accept connections from, both IPv4 and IPv6 hosts. | `true`  |
+| `-Djava.net.preferIPv6Addresses=true` | When connecting to a host that has both IPv4 and IPv6 addresses, and if IPv6 is available on the operating system, the default behavior is to prefer IPv4 addresses over IPv6.                                 | `false` |
 
 
 ```
@@ -1776,27 +1941,32 @@ config:
 
 Gateway and Management Service can optionally configure it as dual stack.
 
-| Parameter                           | Description                                                                                                          | Default         |
-|-------------------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------|
-| `service.ipFamilyPolicy`            | Gateway Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack             | `commented out` |
-| `service.ipFamilies`                | Gateway Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]        | `nil`           |
-| `management.service.ipFamilyPolicy` | PolicyManager Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack       | `commented out` |
-| `management.service.ipFamilies`     | PolicyMananger Service ipFamilies can be used to configure  ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"] | `nil`           |
+
+| Parameter                           | Description                                                                                                         | Default         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `service.ipFamilyPolicy`            | Gateway Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack            | `commented out` |
+| `service.ipFamilies`                | Gateway Service ipFamilies can be used to configure ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]        | `nil`           |
+| `management.service.ipFamilyPolicy` | PolicyManager Service ipFamilyPolicy can be used to configure SingleStack, PreferDualStack or RequireDualStack      | `commented out` |
+| `management.service.ipFamilies`     | PolicyMananger Service ipFamilies can be used to configure ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"] | `nil`           |
 
 
 [Back to Additional Guides](#additional-guides)
 
 ### Java Args
+
 Additional Java Arguments as may be recommended by support can be configured in values.yaml. Gateway v11.1.1 supports two new fields that allows a min and max heap size to be set. If these are not set config.heapSize will take precedence.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.heapSize`          | Java Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 50%, going above 75% is not recommended | `2G`  |
-| `config.minHeapSize`          | Java Min Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 25% | `1G`  |
-| `config.maxHeapSize`          | Java Max Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 75%, going above this is not recommended | `3G`  |
-| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
+
+| Parameter            | Description                                                                                                                                                                                | Default           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| `config.heapSize`    | Java Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 50%, going above 75% is not recommended      | `2G`              |
+| `config.minHeapSize` | Java Min Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 25%                                      | `1G`              |
+| `config.maxHeapSize` | Java Max Heap Size - this should be a percentage of the memory configured in resources.limits and should be updated together. The default assumes 75%, going above this is not recommended | `3G`              |
+| `config.javaArgs`    | Additional Java Args to pass to the SSG process                                                                                                                                            | `see values.yaml` |
+
 
 The default Java Args are as follows
+
 ```
 config:
   heapSize: "2g"
@@ -1816,11 +1986,14 @@ config:
 [Back to Additional Guides](#additional-guides)
 
 ### System Properties
+
 Additional System Properties as may be recommended by support can be configured in values.yaml
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `config.systemProperties`          | Gateway System Properties | `see values.yaml`  |
+
+| Parameter                 | Description               | Default           |
+| ------------------------- | ------------------------- | ----------------- |
+| `config.systemProperties` | Gateway System Properties | `see values.yaml` |
+
 
 The default systemProperties represent what is currently in the base Gateway image with one added flag
 
@@ -1830,6 +2003,7 @@ com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
 ```
 
 The full default is this
+
 ```
   systemProperties: |-
     # Default Gateway system properties
@@ -1851,13 +2025,16 @@ The full default is this
 [Back to Additional Guides](#additional-guides)
 
 ### Diskless Configuration
+
 Refer to [TechDocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/configuring-the-container-gateway/environment-variables-for-the-container-gateway.html) for more info. Running without Diskless config is supported from Gateway v11.1.1 onwards. Please make sure disklessConfig.enabled is true (default) if you are using a previous version of the Container Gateway.
 
 **DISKLESS_CONFIG** is a new environment variable that was introduced in Gateway v11.1.1, that allows switching between configuration sources.
 
 This is exposed in the Gateway Helm Chart via the disklessConfig configuration in values.yaml.
+
 - **disklessConfig.enabled: true**
   - Default, No changes.
+
 ```
 disklessConfig:
   enabled: true
@@ -1865,11 +2042,13 @@ disklessConfig:
   #   name: gateway-secret
   #   csi: {}
 ```
+
 - **disklessConfig.enabled: false**
   - The Gateway will be read its configuration from node.properties which is mounted to the container gateway.
     - This facilitates the use of the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) to mount configuration.
     - Creates a secret with node.properties by default
       - We **strongly recommend** you create your own node.properties file and make use of disklessConfig.existingSecret configuration.
+
 ```
 disklessConfig:
   enabled: false
@@ -1881,9 +2060,11 @@ disklessConfig:
 #### Creating a node.properties file
 
 ##### External MySQL
+
 - Make sure the database configuration matches what is in node.properties
 
 Example: node.properties with MySQL database configuration
+
 ```
 node.cluster.pass=mypassword
 admin.user=admin
@@ -1896,9 +2077,11 @@ l7.mysql.connection.url=jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306
 See [Techdocs](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/install-configure-upgrade/enable-ssl-connections-for-mysql.html) for more info on setting l7.mysql.connection.url. JDBC URLs like the value provided in database.jdbcUrl can be used as the value of l7.mysql.connection.url in node.properties. 
 
 ##### Gateway running in Ephemeral Mode (no external MySQL)
+
 - To run the Gateway in Ephemeral mode, ***node.db.type=derby*** needs to be added to node.properties
 
 Example: node.properties with Derby configuration
+
 ```
 node.cluster.pass=mypassword
 admin.user=admin
@@ -1906,24 +2089,31 @@ admin.pass=mypassword
 node.db.type=derby
 node.db.config.main.user=gateway
 ```
+
 Unlike interactive password changes in Policy Manager, the container startup scripts validate the following username and password against a restricted character set (for parsing/scripting safety):
+
 ```
 admin.user, admin.pass, node.db.config.main.user, node.db.config.main.pass
 ```
+
 They may contain alphanumeric ASCII characters and any of the following symbols:
 
 ! @ . = - _ ^ + ; : # , %. Do NOT use space characters. 
 
 ##### Update values.yaml
+
 Update your values file to use the new node.properties file.
 
 This command is the simplest way to create a secret with node.properties. Note that this can also be created with tools like [kustomize](https://kustomize.io/) which will be better for CI/CD pipelines. You can also take advantage of the secret [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) to mount this secret from an external KMS provider.
 
 Note that the key name is node.properties. This is required.
+
 ```
 kubectl create secret generic gateway-secret --from-file=node.properties=path/to/node.properties
 ```
+
 values.yaml
+
 ```
 disklessConfig:
   enabled: false
@@ -1935,6 +2125,7 @@ disklessConfig:
   #   volumeAttributes:
   #     secretProviderClass: "secret-provider-class-name"
 ```
+
 #### Set up node.properties secret by InitContainer
 
 From Gateway v11.2.0 onwards, node.properties support secrets provided in different format by different third party secret managers using InitContainer.
@@ -1943,6 +2134,7 @@ Gateway container mounts only /opt/docker/custom/custom-properties/node.properti
 InitContainer volumeMounts name has to be **shared-secret**
 
 values.yaml
+
 ```
 disklessConfig:
   enabled: false
@@ -1970,21 +2162,26 @@ initContainers:
         yum install -y jq
         jq -r 'to_entries | map("\(.key)=\(.value)") |.[]' /opt/docker/config/node.json > /opt/docker/config/node.properties
 ```
+
 More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
 [Back to Additional Guides](#additional-guides)
 
 ### Bundle Configuration
+
 There are a variety of ways to mount Gateway (Restman format) Bundles to the Gateway Container. The best option is making use of existingBundles where the bundle has been created ahead of deployment as a configMap or secret.
 This allows for purpose built Gateways with a guaranteed set of configuration, apis/services.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `existingBundle.enabled`          | Enable bundle mounts | `false`  |
-| `existingBundle.configMaps`          | Array of configmap configurations | `see values.yaml`  |
-| `existingBundle.secrets`          | Array of secret configurations | `see values.yaml`  |
+
+| Parameter                   | Description                       | Default           |
+| --------------------------- | --------------------------------- | ----------------- |
+| `existingBundle.enabled`    | Enable bundle mounts              | `false`           |
+| `existingBundle.configMaps` | Array of configmap configurations | `see values.yaml` |
+| `existingBundle.secrets`    | Array of secret configurations    | `see values.yaml` |
+
 
 This example shows 1 secret and 1 configmap configured - you can also use the secrets-store.csi.k8s.io driver for bundles that contain sensitive information.
+
 ```
 # Bundles that contain sensitive information can be mounted using the Kubernetes CSI Driver
 existingBundle:
@@ -2007,9 +2204,11 @@ existingBundle:
 [Back to Additional Guides](#additional-guides)
 
 ### Bootstrap Script
+
 To reduce reliance on requiring a custom gateway image for custom and modular assertions, scripts and restman bundles a bootstrap script has been introduced. The script works with the /opt/docker/custom folder. The best way to populate this folder is with an initContainer where files can be copied directly across or dynamically loaded from an external source.
 
 The following configuration enables the script
+
 ```
 bootstrap:
   script:
@@ -2017,36 +2216,37 @@ bootstrap:
   cleanup: false <== set this to true if you'd like to clear the /opt/docker/custom folder after it has run.
 ```
 
-The bootstrap script scans files in ```/opt/docker/custom```. This folder is populated by an initContainer.
+The bootstrap script scans files in `/opt/docker/custom`. This folder is populated by an initContainer.
 
 The following folder stucture must be maintained
 
 - Restman Bundles (.bundle)
-  - Source ```/opt/docker/custom/bundles```
-  - Target ```/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle```
+  - Source `/opt/docker/custom/bundles`
+  - Target `/opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle`
 - Custom Assertions (.jar)
-  - Source ```/opt/docker/custom/custom-assertions```
-  - Target ```/opt/SecureSpan/Gateway/runtime/modules/lib/```
+  - Source `/opt/docker/custom/custom-assertions`
+  - Target `/opt/SecureSpan/Gateway/runtime/modules/lib/`
 - Modular Assertions (.aar)
-  - Source ```/opt/docker/custom/modular-assertions```
-  - Target ```/opt/SecureSpan/Gateway/runtime/modules/assertions```
+  - Source `/opt/docker/custom/modular-assertions`
+  - Target `/opt/SecureSpan/Gateway/runtime/modules/assertions`
 - Properties (.properties)
-  - Source ```/opt/docker/custom/properties```
-  - Target ```/opt/SecureSpan/Gateway/node/default/etc/conf/```
-
+  - Source `/opt/docker/custom/properties`
+  - Target `/opt/SecureSpan/Gateway/node/default/etc/conf/`
 
 More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
 [Back to Additional Guides](#additional-guides)
 
 ### Custom Health Checks
-You can now specify a configMap or Secret that contains healthcheck scripts. These are mounted to ```/opt/docker/rc.d/diagnostic/health_check``` where they are run by ```/opt/docker/rc.d/diagnostic/health_check.sh```.
+
+You can now specify a configMap or Secret that contains healthcheck scripts. These are mounted to `/opt/docker/rc.d/diagnostic/health_check` where they are run by `/opt/docker/rc.d/diagnostic/health_check.sh`.
 
 - Limited to a single configmap or secret.
   - ConfigMaps and Secrets can hold multiple scripts.
   - [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
 
 ***NOTE: if you set a configMap and a Secret only one of them will be applied to your API Gateway.***
+
 ```
 existingHealthCheck:
   enabled: false
@@ -2066,9 +2266,11 @@ existingHealthCheck:
 [Back to Additional Guides](#additional-guides)
 
 ### Custom Configuration Files
+
 Certain folders on the Container Gateway are not writeable by design. This configuration allows you to mount existing configMap/Secret keys to specific paths on the Gateway without the need for a root user or a custom/derived image.
 
 - [See this example](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
+
 ```
 customConfig:
   enabled: false
@@ -2086,13 +2288,15 @@ customConfig:
 [Back to Additional Guides](#additional-guides)
 
 ### Graceful Termination
+
 During upgrades and other events where Gateway pods are replaced you may have APIs/Services that have long running connections open.
 
 This functionality delays Kubernetes sending a SIGTERM to the container gateway while connections remain open. This works in conjunction with terminationGracePeriodSeconds which should always be higher than preStopScript.timeoutSeconds. If preStopScript.timeoutSeconds is exceeded, the script will exit 0 and normal pod termination will resume.
 
-The preStop script will monitor connections to <b>inbound (not outbound)</b> Gateway Application TCP ports (i.e. inbound listener ports opened by the Gateway Application and not some other process) except those that are explicitly excluded.
+The preStop script will monitor connections to **inbound (not outbound)** Gateway Application TCP ports (i.e. inbound listener ports opened by the Gateway Application and not some other process) except those that are explicitly excluded.
 
 The following ports are excluded from monitoring by default.
+
 - 8777 (Hazelcast) - Hazelcast.
 - 2124 (Internode-Communication) - not utilised by the Container Gateway.
 
@@ -2102,32 +2306,38 @@ While there aren't any explicit limits on preStopScript.timeoutSeconds and termi
 
 The graceful termination (preStop script) is disabled by default.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `lifecycleHooks`          | Custom lifecycle hooks, takes precedence over the preStopScript | `{}`  |
-| `preStopScript.enabled`          | Enable the preStop script | `false`  |
-| `preStopScript.periodSeconds`          | The time in seconds between checks | `3`  |
-| `preStopScript.timeoutSeconds`          | Timeout - must be lower than terminationGracePeriodSeconds  | `60`  |
-| `preStopScript.excludedPorts`          | Array of ports that should be excluded from the preStop script check | `[8777, 2124]`  |
-| `terminationGracePeriodSeconds`          | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml`  |
+
+| Parameter                       | Description                                                                                    | Default           |
+| ------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------- |
+| `lifecycleHooks`                | Custom lifecycle hooks, takes precedence over the preStopScript                                | `{}`              |
+| `preStopScript.enabled`         | Enable the preStop script                                                                      | `false`           |
+| `preStopScript.periodSeconds`   | The time in seconds between checks                                                             | `3`               |
+| `preStopScript.timeoutSeconds`  | Timeout - must be lower than terminationGracePeriodSeconds                                     | `60`              |
+| `preStopScript.excludedPorts`   | Array of ports that should be excluded from the preStop script check                           | `[8777, 2124]`    |
+| `terminationGracePeriodSeconds` | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml` |
+
 
 [Back to Additional Guides](#additional-guides)
 
 ### Autoscaling
+
 Autoscaling is disabled by default, you will need [metrics server](https://github.com/kubernetes-sigs/metrics-server) in conjunction with the configuration below.
 In order for Kubernetes to determine when to scale, you will also need to configure resources
 
 We do not recommend setting MaxReplicas for a MySQL backed API Gateway above 8.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `autoscaling.enabled`          | Enable autoscaling | `false`  |
-| `autoscaling.hpa.minReplicas`          | Minimum replicas that should be available | `1`  |
-| `autoscaling.hpa.maxReplicas`          | Maximum replicas that should be available | `3`  |
-| `autoscaling.hpa.metrics`          | Metrics to scale on | `see values.yaml`  |
-| `autoscaling.hpa.behaviour`          | Scale up/down behaviour | `see values.yaml`  |
+
+| Parameter                     | Description                               | Default           |
+| ----------------------------- | ----------------------------------------- | ----------------- |
+| `autoscaling.enabled`         | Enable autoscaling                        | `false`           |
+| `autoscaling.hpa.minReplicas` | Minimum replicas that should be available | `1`               |
+| `autoscaling.hpa.maxReplicas` | Maximum replicas that should be available | `3`               |
+| `autoscaling.hpa.metrics`     | Metrics to scale on                       | `see values.yaml` |
+| `autoscaling.hpa.behaviour`   | Scale up/down behaviour                   | `see values.yaml` |
+
 
 Here is an example of a configured autoscaling section.
+
 ```
 autoscaling:
   enabled: true
@@ -2159,14 +2369,19 @@ autoscaling:
 [Back to Additional Guides](#additional-guides)
 
 ### Pod Disruption Budgets
+
 [Pod Disruption Budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) allow you to limit the number of concurrent disruptions that your application experiences, allowing for higher availability while permitting the cluster administrator to manage the clusters nodes.
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `pdb.create`    | Create a PodDisruptionBudget for your Gateway Release            | `false` |
-| `pdb.maxUnavailable`    |   number of pods from that set that can be unavailable after the eviction. It can be either an absolute number or a percentage. | `""` |
-| `pdb.minAvailable`    |  number of pods from that set that must still be available after the eviction, even in the absence of the evicted pod. minAvailable can be either an absolute number or a percentage. | `""` |
+
+
+| Parameter            | Description                                                                                                                                                                          | Default |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `pdb.create`         | Create a PodDisruptionBudget for your Gateway Release                                                                                                                                | `false` |
+| `pdb.maxUnavailable` | number of pods from that set that can be unavailable after the eviction. It can be either an absolute number or a percentage.                                                        | `""`    |
+| `pdb.minAvailable`   | number of pods from that set that must still be available after the eviction, even in the absence of the evicted pod. minAvailable can be either an absolute number or a percentage. | `""`    |
+
 
 Example - note that only ***maxUnavailable*** or ***minAvailable*** can be set - both values ***cannot*** be set at the same time.
+
 ```
 pdb:
   create: true
@@ -2177,16 +2392,20 @@ pdb:
 [Back to Additional Guides](#additional-guides)
 
 ### RBAC Parameters
+
 PM Tagger requires access to pods in the current namespace, it uses the Gateway Configured service account.
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `serviceAccount.create`          | Create a service account for the Gateway | `true`  |
-| `serviceAccount.name`          | Use an existing service account or specify the name of the service account that you would like to be created | `nil`  |
-| `rbac.create`          | Create Role and Rolebinding for Gateway Service Account | `true` |
+
+| Parameter               | Description                                                                                                  | Default |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ | ------- |
+| `serviceAccount.create` | Create a service account for the Gateway                                                                     | `true`  |
+| `serviceAccount.name`   | Use an existing service account or specify the name of the service account that you would like to be created | `nil`   |
+| `rbac.create`           | Create Role and Rolebinding for Gateway Service Account                                                      | `true`  |
+
 
 If you would like to create and use your own service account the Gateway with PM Tagger will require the following role to function correctly.
 ***This should NOT be a cluster role***
+
 ```
 rules:
 - apiGroups: [""]
@@ -2197,6 +2416,7 @@ rules:
 [Back to Additional Guides](#additional-guides)
 
 ### Logs & Audit Configuration
+
 The API Gateway containers are configured to output logs and audits as JSON events, and to never write audits to the in-memory Derby database:
 
 - System properties in the default template for the `config.javaArgs` value configure the log and audit behaviour:
@@ -2205,32 +2425,37 @@ The API Gateway containers are configured to output logs and audits as JSON even
   - Default log output configuration is overridden by specifying an alternative configuration properties file: `-Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties`
 - The alternative log configuration properties file `log-override.properties` is mounted on the container, via ConfigMap.
 - System property to include well known Certificate Authorities Trust Anchors
-    - API Gateway does not implicitly trust certificates without importing it but If you want to avoid import step then configure Gateway to accept any certificate signed by well known CA's (Certificate Authorities)
-      configure following property to true -
-      Set '-Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true' for well known Certificate Authorities be included as Trust Anchors (true/false)
+  - API Gateway does not implicitly trust certificates without importing it but If you want to avoid import step then configure Gateway to accept any certificate signed by well known CA's (Certificate Authorities)
+  configure following property to true -
+  Set '-Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true' for well known Certificate Authorities be included as Trust Anchors (true/false)
 - Allow wildcards when verifying hostnames (true/false)
-    - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
+  - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
 
 [Back to Additional Guides](#additional-guides)
 
 ## Subchart Configuration
+
 ***these do not represent production configurations***
 
 For Production implementations, please see the Chart links for recommended settings. The best approach would be deploying each independently
 
 ## Hazelcast
-The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `hazelcast.enabled`                | Enable/Disable deployment of Hazelcast   | `false` |
-| `hazelcast.external`                | Point to an external Hazelcast - set enabled to false and configure the url  | `false` |
-| `hazelcast.image.tag`                | The Gateway currently supports Hazelcast 4.x/5.x servers.  | `5.2.1` |
-| `hazelcast.url`                | External Hazelcast Url  | `hazelcast.example.com:5701` |
-| `hazelcast.cluster.memberCount`                | Number of Hazelcast Replicas you wish to deploy   | `see values.yaml` |
-| `hazelcast.hazelcast.yaml`                | Hazelcast configuration   | `see the documentation link` |
+The following table lists the configured parameters of the Hazelcast Subchart - see the following for more detail [https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml](https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml)
+
+
+| Parameter                       | Description                                                                 | Default                      |
+| ------------------------------- | --------------------------------------------------------------------------- | ---------------------------- |
+| `hazelcast.enabled`             | Enable/Disable deployment of Hazelcast                                      | `false`                      |
+| `hazelcast.external`            | Point to an external Hazelcast - set enabled to false and configure the url | `false`                      |
+| `hazelcast.image.tag`           | The Gateway currently supports Hazelcast 4.x/5.x servers.                   | `5.2.1`                      |
+| `hazelcast.url`                 | External Hazelcast Url                                                      | `hazelcast.example.com:5701` |
+| `hazelcast.cluster.memberCount` | Number of Hazelcast Replicas you wish to deploy                             | `see values.yaml`            |
+| `hazelcast.hazelcast.yaml`      | Hazelcast configuration                                                     | `see the documentation link` |
+
 
 ### Subcharts
-*  Hazelcast  (default: disabled) ==> https://github.com/helm/charts/tree/master/stable/hazelcast
+
+- Hazelcast  (default: disabled) ==> [https://github.com/helm/charts/tree/master/stable/hazelcast](https://github.com/helm/charts/tree/master/stable/hazelcast)
 
 [Back to Additional Guides](#additional-guides)
