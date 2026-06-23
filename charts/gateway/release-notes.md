@@ -7,6 +7,21 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.3 Database Migration Job (Pre-Upgrade Schema Updates)
+
+Requires Gateway image **11.2.2 or newer**.
+
+- Added an opt-in `pre-upgrade` Kubernetes Job (`database.migrationJob`) that applies Liquibase database schema changes before the new Gateway pods roll out, avoiding multiple pods racing to acquire the `DATABASECHANGELOGLOCK` simultaneously during rolling upgrades.
+- The migration job supports a dedicated `jdbcUrl` override, allowing schema changes to be applied directly to the primary writer endpoint and bypassing read replicas or load-balancing proxies.
+- Added `database.migrationJob.clearLocks` option to forcefully release a stuck `DATABASECHANGELOGLOCK` before running schema updates, enabling recovery from a previously failed migration.
+- Added four Gateway startup modes via `-Dgateway.db.schema-update.mode` in `config.javaArgs`:
+  - `default` — runs Liquibase then starts the Gateway JVM (original behaviour, unchanged)
+  - `skip` — bypasses Liquibase and starts the Gateway JVM immediately (use with the migration job on upgrade, not for helm install)
+  - `liquibase-only` — runs Liquibase and exits without starting the Gateway JVM (used by the migration job)
+  - `liquibase-only-with-unlock` — force-releases the Liquibase lock, runs Liquibase, and exits (used by `clearLocks`)
+- The migration job is disabled by default (`database.migrationJob.enabled: false`) and only takes effect during `helm upgrade` — it does not run on `helm install`.
+- See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates) for full configuration and upgrade workflow.
+
 ## 3.1.2 Sync with stable
 - Sync develop/gateway branch with stable
 
