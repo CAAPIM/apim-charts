@@ -1487,10 +1487,10 @@ The main Gateway pods can be configured with `javaArgs: ["-Dgateway.db.schema-up
 #### Fresh install vs upgrade
 
 
-| Operation                   | `config.javaArgs` — `-Dgateway.db.schema-update.mode` | Migration job (`database.migrationJob.enabled`) | Expected behaviour                                                              |
-| --------------------------- | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| `helm install` (first time) | Not set — Gateway runs Liquibase on startup (default)  | Not applicable (`pre-upgrade` hook only)         | Gateway populates the `ssg` schema on first boot — **correct**                  |
-| `helm upgrade`              | `skip` — Gateway bypasses Liquibase on startup         | `true` — migration job applies schema changes first | Migration job populates schema and exits, Gateway pods start fast — **correct** |
+| Operation                   | `config.javaArgs` — `-Dgateway.db.schema-update.mode` | Migration job (`database.migrationJob.enabled`) | Expected behaviour                                              |
+| --------------------------- | ------------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------------------- |
+| `helm install` (first time) | Not set — Gateway runs Liquibase on startup (default)  | Not applicable (`pre-upgrade` hook only)         | Gateway populates the `ssg` schema on first boot                |
+| `helm upgrade`              | `skip` — Gateway bypasses Liquibase on startup         | `true` — migration job applies schema changes first | Migration job populates schema and exits, Gateway pods start fast |
 
 > **Warning:** Do not set `-Dgateway.db.schema-update.mode=skip` during `helm install`. The migration job is a `pre-upgrade` hook and does not run on install, so if Liquibase is skipped the `ssg` schema is never populated and the Gateway will fail to start.
 
