@@ -1,4 +1,7 @@
 # Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.database.type .Values.database.enabled }}
+  {{ fail "database.type requires database.enabled: false — an embedded database cannot be used alongside an external database" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
