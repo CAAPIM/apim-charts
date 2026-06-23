@@ -7,6 +7,14 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.1 OTK 4.7.0 Released
+- The default image tag in values.yaml and production-values.yaml for OTK updated to 4.7.0.
+  - otk.job.image.tag: 4.7.0
+- Added support for SSL connection for MySQL database. The sslMode option can be used in the JDBC query
+- Upgrading to 4.7.0 should be tested & validated in a lower environment prior to production rollout
+- For OTK 4.7.0 specific features please refer to [Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-7.html)
+
+
 ## 3.1.0 Bitnami SubChart removal
 - All Bitnami SubCharts have been removed from the Gateway Helm Chart
 - Statefulsets for mysql and redis have been added to replace the subCharts
