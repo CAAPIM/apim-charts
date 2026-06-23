@@ -117,7 +117,7 @@ portal:
   # SeaweedFS object storage sub-chart gate.
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
-    enabled: false
+    enabled: true
   # Please set analytics.replicaCount to a minimum of 2
     aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value

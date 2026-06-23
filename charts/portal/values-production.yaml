@@ -92,7 +92,7 @@ portal:
   # SeaweedFS object storage sub-chart gate. 
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
-    enabled: false
+    enabled: true
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade

@@ -25,6 +25,18 @@ releases must explicitly set portal.seaweedFs.enabled=true when analytics is ena
 {{- end -}}
 
 {{/*
+Validate that portal.seaweedFs.enabled is false when neither portal.analytics.enabled
+nor portal.infrastructureManagement.enabled is true.
+SeaweedFS serves no purpose when both features are disabled — running it wastes
+resources.
+*/}}
+{{- define "portal.validateSeaweedFsUnused" -}}
+{{- if and .Values.portal.seaweedFs.enabled (not .Values.portal.analytics.enabled) (not .Values.portal.infrastructureManagement.enabled) -}}
+{{- fail "portal.seaweedFs.enabled=true requires portal.analytics.enabled=true or portal.infrastructureManagement.enabled=true. Disable seaweedFs when neither feature is active: --set portal.seaweedFs.enabled=false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "portal.name" -}}
