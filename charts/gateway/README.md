@@ -1537,7 +1537,7 @@ database:
 ```
 
 > **Warning:** Use `clearLocks: true` with caution. Forcefully releasing the lock while another process is actively updating the schema can corrupt the database.
-
+Remember not to leave this flag set to true.  Instead, pass it as a parameter to helm upgrade on demand.
 #### Configuration
 
 
