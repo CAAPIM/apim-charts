@@ -7,6 +7,12 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.4 H2 Embedded Database Support
+- Added support for the H2 embedded database as an alternative to the default Derby embedded database.
+  - Set `database.type: "h2"` in your values file to enable H2. Requires `database.enabled: false`.
+  - Leave `database.type` empty (default) to continue using Derby.
+  - The `SSG_DATABASE_TYPE` environment variable is set automatically when `database.type` is configured.
+
 ## 3.1.3 Database Migration Job (Pre-Upgrade Schema Updates)
 
 Requires Gateway image **11.2.2 or newer**.

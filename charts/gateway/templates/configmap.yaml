@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -35,7 +36,7 @@ data:
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if .Values.database.type }}
+{{- if and .Values.database.type (not .Values.database.enabled) }}
   SSG_DATABASE_TYPE: {{ .Values.database.type | lower | quote }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
