@@ -38,5 +38,6 @@ If you have Gateway version 11.2.2 or newer, you can now start your main Gateway
     - "-Dgateway.db.schema-update.mode=skip"
 
 This ensures that the Gateway will start up quickly by skipping the liquibase schema check entirely,
-regardless of whether the DATABASECHANGELOGLOCK is locked.
+regardless of whether the DATABASECHANGELOGLOCK is locked. This mode can only be used with Helm upgrades,
+not installs.
 {{- end }}
