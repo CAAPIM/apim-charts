@@ -2,6 +2,7 @@
 # AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 {{- include "portal.validateInfrastructureManagement" . }}
 {{- include "portal.validateAnalyticsSeaweedFs" . }}
+{{- include "portal.validateSeaweedFsUnused" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

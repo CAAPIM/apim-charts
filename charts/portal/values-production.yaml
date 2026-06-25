@@ -1179,7 +1179,7 @@ kafka:
   kafka:
     # Number of Kafka broker replicas
     # Set to 3 for production deployments with intelligence enabled
-    replicaCount: 1
+    replicaCount: 3
 
     # Ordinals configuration (Kubernetes 1.27+)
     # Set start ordinal for StatefulSet pods
