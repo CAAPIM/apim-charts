@@ -18,6 +18,21 @@ entries:
     version: 1.0.21
   druid:
   - apiVersion: v2
+    appVersion: 35.0.1
+    created: "2026-06-26T19:01:17.037515057Z"
+    description: Broadcom APIM Portal Analytics Chart
+    digest: e57d096f5793f16336238ba1dabe7de9ec0e7235394c9b9d2bd3ec48094c4775
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: druid
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.21/druid-1.0.21.tgz
+    version: 1.0.21
+  - apiVersion: v2
     appVersion: "31.0"
     created: "2026-02-27T21:11:23.04713197Z"
     description: Broadcom APIM Portal Analytics Chart
@@ -213,6 +228,26 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/druid-1.0.0/druid-1.0.0.tgz
     version: 1.0.0
   gateway:
+  - apiVersion: v2
+    appVersion: 11.2.1
+    created: "2026-06-26T19:01:17.233145468Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.8.14
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: 855b2a0091ff8bc8f5e990ad60040ae270e4d218eb9a5028fe80c1aa5411de37
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-3.1.2/gateway-3.1.2.tgz
+    version: 3.1.2
   - apiVersion: v2
     appVersion: 11.2.1
     created: "2026-03-24T14:36:10.874478433Z"
@@ -2490,6 +2525,21 @@ entries:
     version: 0.0.1
   kafka:
   - apiVersion: v2
+    appVersion: 4.0.2
+    created: "2026-06-26T19:01:17.420512231Z"
+    description: Apache Kafka Chart for Broadcom APIM
+    digest: e9601a25e12163c394e7299cd9707cffd56e548334082567488ccf88f518d9d7
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: kafka
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/kafka-1.0.1/kafka-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
     appVersion: 4.0.0
     created: "2026-02-27T21:11:23.225724857Z"
     description: Apache Kafka Chart for Broadcom APIM
@@ -2505,6 +2555,42 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/kafka-1.0.0/kafka-1.0.0.tgz
     version: 1.0.0
   portal:
+  - apiVersion: v2
+    appVersion: 5.4.2
+    created: "2026-06-26T19:01:17.643390965Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: ""
+      version: 12.0.3
+    - condition: portal.seaweedFs.enabled
+      name: seaweedfs
+      repository: file://../seaweedfs
+      version: ^1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: file://../kafka
+      version: ^1.0.0
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.15.1
+    description: CA API Developer Portal
+    digest: 01d567d6c9c2a25d0ae8895c673db4d08f604fe07d1961a2432a1a6629b1561b
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.4.3/portal-2.4.3.tgz
+    version: 2.4.3
   - apiVersion: v2
     appVersion: 5.4.1.3
     created: "2026-04-22T19:57:08.346812823Z"
@@ -4012,6 +4098,21 @@ entries:
   seaweedfs:
   - apiVersion: v2
     appVersion: "41.0"
+    created: "2026-06-26T19:01:17.83508293Z"
+    description: Broadcom APIM Portal SeaweedFS Chart
+    digest: 77b4b1eabf177e341b040dea4c97cba17d416c665ffbe37ea89a03ec271dcbd6
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: seaweedfs
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.5/seaweedfs-1.0.5.tgz
+    version: 1.0.5
+  - apiVersion: v2
+    appVersion: "41.0"
     created: "2026-02-27T21:11:23.758040197Z"
     description: Broadcom APIM Portal SeaweedFS Chart
     digest: 1473fb3c8216a79fd3d8c8d6ada2eac7bd0b2fc7ed0d9a22cf233dda82fa3a16
@@ -4025,4 +4126,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.4/seaweedfs-1.0.4.tgz
     version: 1.0.4
-generated: "2026-04-22T19:57:08.347228558Z"
+generated: "2026-06-26T19:01:17.835998891Z"
