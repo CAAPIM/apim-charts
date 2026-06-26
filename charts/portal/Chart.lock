@@ -1,21 +1,18 @@
 dependencies:
 - name: druid
   repository: file://../druid
-  version: 1.0.20
+  version: 1.0.21
 - name: rabbitmq
   repository: ""
   version: 12.0.3
-- name: apim-intelligence
-  repository: file://../intelligence
-  version: 1.0.21
 - name: seaweedfs
   repository: file://../seaweedfs
-  version: 1.0.4
+  version: 1.0.5
 - name: kafka
   repository: file://../kafka
-  version: 1.0.0
+  version: 1.0.1
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
-  version: 4.12.1
-digest: sha256:855a759dfaf53f78e48f0e4f3ea66bf072aeb997ab1e9a547ac6b9f58f6beb25
-generated: "2026-02-27T20:46:54.2953154+05:30"
+  version: 4.15.1
+digest: sha256:91c6b8160a0d5aeafa11bda9080c3c9a9a39d05fd3e31cea981fce07f7326a2a
+generated: "2026-06-26T19:29:09.9528309+05:30"

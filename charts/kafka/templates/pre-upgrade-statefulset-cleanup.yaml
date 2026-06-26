@@ -107,19 +107,12 @@ spec:
       {{- end }}
       containers:
       - name: sts-cleanup
-        {{- if .Values.image }}
-        {{- if .Values.image.autoDiscovery }}
-        # Use parent chart's autoDiscovery image (when kafka is a subchart)
+        {{- if and .Values.image .Values.image.autoDiscovery }}
         image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
         {{- else }}
-        # Use local discoveryImage configuration
-        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
+        image: "{{ .Values.global.portalRepository }}{{ .Values.kubectlImage.repository }}:{{ .Values.kubectlImage.tag }}"
         {{- end }}
-        {{- else }}
-        # Use local discoveryImage configuration (standalone kafka chart)
-        image: "{{ .Values.global.portalRepository }}{{ .Values.externalAccess.discoveryImage.repository }}:{{ .Values.externalAccess.discoveryImage.tag }}"
-        {{- end }}
-        imagePullPolicy: {{ .Values.externalAccess.discoveryImage.pullPolicy | default "IfNotPresent" }}
+        imagePullPolicy: {{ .Values.kubectlImage.pullPolicy | default "IfNotPresent" }}
         command:
         - /bin/sh
         - -c

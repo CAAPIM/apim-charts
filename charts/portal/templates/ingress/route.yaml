@@ -1,4 +1,5 @@
 {{- if .Values.ingress.type.openshift }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -125,4 +126,48 @@ spec:
     name: apim
     weight: 100
   wildcardPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-kafka-proxy
+  labels:
+    router: default
+spec:
+  host: {{ include "kafka-proxy-host" . | quote }}
+  port:
+    targetPort: kfk-proxy-boot
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+{{- $replicaCount := int (.Values.kafka.kafka.replicaCount | default 1) }}
+{{- $ordinalStart := 0 }}
+{{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+{{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+{{- end }}
+{{- range $i := until $replicaCount }}
+{{- $nodeId := add $ordinalStart $i }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: apim-route-kafka-broker-{{ $nodeId }}
+  labels:
+    router: default
+spec:
+  host: {{ include "kafka-proxy-broker-host" (dict "root" $ "nodeId" $nodeId) | quote }}
+  port:
+    targetPort: kfk-proxy-brk-{{ $nodeId }}
+  tls:
+    termination: passthrough
+  to:
+    kind: Service
+    name: apim
+    weight: 100
+  wildcardPolicy: None
+{{- end }}
 {{- end }}
