@@ -1,0 +1,37 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if or .Values.portal.intelligence.enabled .Values.portal.infrastructureManagement.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: intelligence-server-config
+  labels:
+    app: intelligence-server
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+{{ if .Values.global.setupDemoDatabase}}
+  DATABASE_HOST: {{ .Release.Name }}-mysql-headless
+{{ else }}
+  DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
+{{ end }}
+  DATABASE_PORT: {{ include "database-port" . | quote }}
+  DATABASE_USE_SSL: {{ .Values.global.databaseUseSSL | quote }}
+  DATABASE_REQUIRE_SSL: {{ .Values.global.databaseRequireSSL | quote }}
+  INTELLIGENCE_DATABASE_NAME: {{ include "intelligence-db-name" . | quote }}
+  KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
+  PORTAL_DATA_HOST: {{ .Values.intelligence.portalDataHost | default "portal-data:8080" | quote }}
+  DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
+  RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
+  RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  RABBITMQ_USERNAME: {{ .Values.rabbitmq.auth.username | quote }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "true"
+  {{- else }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
+  {{- end }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  S3_ENDPOINT: "http://seaweedfs-s3:8333"
+  S3_PATCH_BUCKET_NAME: {{ .Values.global.deepStorage.intelligence.bucketName | quote }}
+  {{- end }}
+{{- end }}

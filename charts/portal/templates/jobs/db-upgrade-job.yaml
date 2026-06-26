@@ -67,6 +67,10 @@ spec:
              value: "true"
            - name: TSSG_TENANT_ID
              value: {{ include "default-tenant-id" . | quote }}
+           - name: DATABASE_USE_SSL
+             value: {{ .Values.global.databaseUseSSL | quote }}
+           - name: DATABASE_REQUIRE_SSL
+             value: {{ .Values.global.databaseRequireSSL | quote }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"

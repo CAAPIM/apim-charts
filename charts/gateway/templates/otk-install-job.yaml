@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{ if and (.Values.management.restman.enabled) (.Values.otk.enabled) (.Values.database.enabled)}}
 apiVersion: batch/v1
 kind: Job
