@@ -76,6 +76,8 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+    # Please set analytics.replicaCount to a minimum of 2
+    aggregation: false
   # Kafka is the messaging backbone for Portal :
   # Kafka is always deployed and proxied through APIM
   # the kafka subchart itself is governed by kafka.enabled.
@@ -118,8 +120,6 @@ portal:
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
     enabled: true
-  # Please set analytics.replicaCount to a minimum of 2
-    aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade

@@ -1,4 +1,3 @@
-# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.filer.s3.createBuckets }}
 ---
 apiVersion: batch/v1

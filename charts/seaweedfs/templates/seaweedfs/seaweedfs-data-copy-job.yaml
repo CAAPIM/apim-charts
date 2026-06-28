@@ -1,5 +1,5 @@
-# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if eq .Values.global.deepStorage.enableDataMigration true }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 # Data Migration Job for MinIO to SeaweedFS
 #
 # This is a regular Kubernetes Job (not a Helm hook), so helm upgrade completes

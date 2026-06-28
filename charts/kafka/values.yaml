@@ -1,3 +1,4 @@
+# Global values (inherited from parent chart)
 global:
   portalRepository: ""
   storageClass: ""

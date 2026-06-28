@@ -8,7 +8,7 @@ The Bitnami subCharts have now been fully removed from the Gateway Helm Chart. P
 The included MySQL Statefulset is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.1.1
+- Current Chart Version 3.1.2
 
   - Please review release notes [here](./release-notes.md)
 
@@ -1484,8 +1484,8 @@ In order the create the database on the remote server, the provided user in the 
 | `mysql.auth.username`            | MySQL user (optional) | `gateway`  |
 | `mysql.auth.password`            | MySQL user password | `mypassword`  |
 | `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
-| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `128M` |
 | `mysql.service.type`             | MySQL service type | `ClusterIP`  |
+| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `64M` |
 | `mysql.service.port`             | MySQL service port | `3306`  |
 | `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
 | `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL | `false`  |
@@ -1566,7 +1566,7 @@ mysql:
   configuration: |-
     [mysqld]
     max_connections=200
-    max_allowed_packet=128M
+    max_allowed_packet=64M
     innodb_buffer_pool_size=256M
 ```
 

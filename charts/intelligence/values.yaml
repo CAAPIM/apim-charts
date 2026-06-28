@@ -1,0 +1,137 @@
+# Default values for intelligence.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Force redeployment of statefulsets and deployments on upgrade
+forceRedeploy: false
+
+# Image configuration
+# Note: When used as a subchart, these can be overridden by parent chart values
+image:
+  autoDiscovery: "tls-automator:latest"  # Image used for Kafka broker discovery init container
+  intelligenceServer: "intelligence-server:latest"
+  pullPolicy: IfNotPresent
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  name: ""
+  automountServiceAccountToken: true
+
+# RBAC configuration
+rbac:
+  create: true
+
+# RabbitMQ configuration
+# Note: When used as a subchart, these values are typically provided by the parent chart
+rabbitmq:
+  auth:
+    secretName: "rabbitmq"
+    username: "user"
+  service:
+    port: 5672
+
+# Kafka configuration
+# Note: When used as a subchart, kafka configuration is typically provided by the parent chart
+# This section is required for the kafka-brokers helper template
+kafka:
+  fullnameOverride: "kafka"
+
+# Global values that are typically provided by a parent chart.
+# These are included here to allow the chart to be deployed standalone.
+global:
+  portalRepository: caapim/
+  pullSecret: ""  # Name of an existing image pull secret
+  # Database settings for the intelligence service
+  databaseType: mysql
+  databaseSecret: "intelligence-db-secret"  # A secret containing the database password
+  databaseUsername: "intelligence_user"
+  databaseHost: "mysql"
+  databasePort: 3306
+  databaseUseSSL: true
+  databaseRequireSSL: false
+  # Used for constructing database names
+  legacyDatabaseNames: false
+  subdomainPrefix: "dev-portal"
+  # Pod and container security contexts
+  podSecurityContext: {}
+  # fsGroup: 1001
+  containerSecurityContext: {}
+  # runAsUser: 1001
+  # schedulerName to be applied to pods
+  schedulerName: ""
+  # Additional labels to be applied to all resources
+  additionalLabels: {}
+
+# Intelligence Server configuration
+intelligenceServer:
+  replicaCount: 1
+  kafka:
+    # Internal Kafka brokers (for intelligence-server's own consumption)
+    brokers: "kafka:9092"  # Internal PLAINTEXT connection
+
+    # Security protocol for intelligence-server's connection
+    securityProtocol: PLAINTEXT  # Intelligence connects internally without SSL
+
+    # Auto-discovery configuration (discovers EXTERNAL IPs for third-party clients)
+    autoDiscovery:
+      # When enabled, discovers external LoadBalancer IPs that intelligence-server provides to clients
+      enabled: true
+      # Resource requests and limits for the auto-discovery (no longer used)
+      # resources: {}
+
+    externalAdvertisedBrokers: ""  # Populated by auto-discovery
+
+    # Certificates that intelligence-server provides to third-party clients
+    kafkaCa:
+      caSecretName: portal-external-secret  # Certificates for clients (changed from portal-internal-secret)
+      passwordSecretName: portal-external-secret
+      passwordSecretKey: "keypass.txt"
+      # Keys in the secret for TSSG cert/key (uses apim-ssl certificate with CN=tssg)
+      # These can be overridden if using custom certificates
+      caCertKey: "apim-ssl.crt"        # Default to apim-ssl, can be overridden
+      caKeyKey: "apim-ssl.key"         # Use .key for intelligence, not .p8.key
+  # Additional labels for the intelligence deployment
+  additionalLabels: {}
+  # Pod affinity, node selector, and tolerations
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  # Security contexts for the pod and container
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  # Resource requests and limits
+  resources: {}
+    # requests:
+    #   cpu: 200m
+    #   memory: 512Mi
+    # limits:
+    #   cpu: 500m
+    #   memory: 1Gi
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8282
+    sessionAffinity: None
+    # sessionAffinityConfig:
+    #   clientIP:
+    #     timeoutSeconds: 10800
+    externalTrafficPolicy: ""
+    internalTrafficPolicy: ""
+  # The host and port for the portal data service
+  portalDataHost: "portal-data:8080"
+
+# NOTE: When this chart is used as a subchart, it requires Kafka configuration
+# for its initContainer to discover brokers. The parent chart must provide these
+# values under the 'apim-intelligence.kafka' key.
+#
+# To avoid duplication, the parent chart's `values.yaml` can use a YAML alias:
+#
+# kafka: &kafka_config
+#   #... kafka subchart values
+#
+# apim-intelligence:
+#   kafka: *kafka_config

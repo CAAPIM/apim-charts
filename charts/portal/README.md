@@ -11,9 +11,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.4.3 General Updates
 - This new version of the chart supports API Portal 5.4.2
-- Upgrade to 2.4.3 chart requires chart version 2.3.22 (per Portal compatibility requirements).
 - Ingress-NGINX Subchart is upgraded to version 4.15.1
-- `portal.intelligence.enabled` and `portal.infrastructureManagement.enabled` are now independent. The `intelligence-server` deploys when either flag is true.
+- `portal.intelligence.enabled` and `portal.infrastructureManagement.enabled` are independent. The `intelligence-server` deploys when either flag is true.
 - SeaweedFS sub-chart condition changed from `portal.analytics.enabled` to `portal.seaweedFs.enabled`. Upgrade customers with analytics enabled must explicitly set `portal.seaweedFs.enabled=true` (a helm install/upgrade guard aborts with a clear error if missing).
 - Infrastructure Management (`portal.infrastructureManagement.enabled`) now requires `portal.seaweedFs.enabled=true` but no longer requires `portal.intelligence.enabled=true`.
 - Kafka Pod will be installed by default from this release.
