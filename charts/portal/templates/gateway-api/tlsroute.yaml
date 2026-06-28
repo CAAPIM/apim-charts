@@ -1,5 +1,5 @@
-# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.ingress.type.gatewayAPI }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if $.Capabilities.APIVersions.Has .Values.ingress.gatewayAPI.tlsRouteApiVersion }}
 {{- $root := . -}}
 {{- $annotations := default (dict) .Values.ingress.gatewayAPI.annotations -}}

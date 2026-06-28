@@ -1465,7 +1465,7 @@ customHosts:
 ####################################################################################
 mysql:
   # Maximum size of one packet or any generated/string string.
-  maxAllowedPacket: 128M
+  maxAllowedPacket: 64M
   image:
     repository: docker.io/mysql
     tag: 8.4.5

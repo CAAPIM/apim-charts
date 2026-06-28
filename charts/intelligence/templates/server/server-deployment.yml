@@ -1,0 +1,415 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelligence-server
+  labels:
+    app: intelligence-server
+    chart: {{ template "intelligence.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.intelligenceServer.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: {{ .Values.intelligenceServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: intelligence-server
+  template:
+    metadata:
+      labels:
+        app: intelligence-server
+        release: {{ .Release.Name }}
+      {{- if  .Values.intelligenceServer.podAnnotations }}
+      annotations: {{- toYaml .Values.intelligenceServer.podAnnotations | nindent 8 }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.intelligenceServer.podAnnotations }}
+      {{- if .Values.intelligenceServer.forceRedeploy }}
+      annotations:
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "intelligence.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- if .Values.intelligenceServer.affinity }}
+      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.podSecurityContext }}
+      securityContext: {{- toYaml .Values.intelligenceServer.podSecurityContext | nindent 12 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 12 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+      {{ template "intelligence.validate" .}}
+      initContainers:
+        - name: kafka-broker-discovery
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.autoDiscovery }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              # This script discovers the external addresses of Kafka brokers
+              # and writes them to a shared volume for the main container to use.
+              RELEASE_NAME="{{ .Release.Name }}"
+              BROKER_LIST=""
+
+              # Function to retry a command (sh-compatible)
+              retry_while() {
+                  cmd="${1:?cmd is missing}"
+                  retries="${2:-12}"
+                  sleep_time="${3:-5}"
+                  return_value=1
+                  i=1
+                  while [ "$i" -le "$retries" ]; do
+                      if eval "$cmd"; then
+                          return_value=0
+                          break
+                      fi
+                      echo "Retrying in ${sleep_time}s... (${i}/${retries})"
+                      sleep "$sleep_time"
+                      i=$((i + 1))
+                  done
+                  return $return_value
+              }
+
+              # Function to get LoadBalancer IP or Hostname from a service (sh-compatible)
+              k8s_svc_lb_ip() {
+                  service_ip=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.status.loadBalancer.ingress[0].ip}" 2>/dev/null || echo "")
+                  service_hostname=$(kubectl get svc "$1" -n "$2" -o jsonpath="{.status.loadBalancer.ingress[0].hostname}" 2>/dev/null || echo "")
+                  if [ -n "$service_ip" ]; then 
+                      echo "$service_ip"
+                  elif [ -n "$service_hostname" ]; then 
+                      echo "$service_hostname"
+                  else 
+                      return 1
+                  fi
+              }
+
+              discover_broker() {
+                  SVC_NAME=$1
+                  BROKER_ENDPOINT=""
+
+                  echo "Discovering broker: ${SVC_NAME}"
+
+                  if ! kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" > /dev/null 2>&1; then
+                    echo "Service $SVC_NAME not found, skipping."
+                    return
+                  fi
+
+                  AUTODISCOVERY_SERVICE_TYPE=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath='{.spec.type}' 2>/dev/null || echo "")
+
+                  if [ "$AUTODISCOVERY_SERVICE_TYPE" = "LoadBalancer" ]; then
+                      if ! retry_while "kubectl get svc $SVC_NAME -n $MY_POD_NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0]}'" ; then 
+                          echo "Timed out waiting for LoadBalancer IP for service $SVC_NAME"
+                          exit 1
+                      fi
+                      EXTERNAL_ADDRESS=$(k8s_svc_lb_ip "$SVC_NAME" "$MY_POD_NAMESPACE")
+                      EXTERNAL_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].port}" 2>/dev/null || echo "")
+                      BROKER_ENDPOINT="${EXTERNAL_ADDRESS}:${EXTERNAL_PORT}"
+                  elif [ "$AUTODISCOVERY_SERVICE_TYPE" = "NodePort" ]; then
+                      NODE_PORT=$(kubectl get svc "$SVC_NAME" -n "$MY_POD_NAMESPACE" -o jsonpath="{.spec.ports[0].nodePort}" 2>/dev/null || echo "")
+                      NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}' 2>/dev/null || kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "")
+                      if [ -n "$NODE_IP" ] && [ -n "$NODE_PORT" ]; then
+                        BROKER_ENDPOINT="${NODE_IP}:${NODE_PORT}"
+                      fi
+                  fi
+
+                  if [ -n "$BROKER_ENDPOINT" ]; then
+                    if [ -z "$BROKER_LIST" ]; then 
+                        BROKER_LIST="$BROKER_ENDPOINT"
+                    else 
+                        BROKER_LIST="$BROKER_LIST,$BROKER_ENDPOINT"
+                    fi
+                  fi
+              }
+
+              # Discover Kafka broker nodes - Aligned with StatefulSet ordinals
+              # For custom Kafka subchart
+              {{- if and .Values.kafka (hasKey .Values.kafka "kafka") .Values.kafka.kafka .Values.kafka.kafka.replicaCount }}
+              BROKER_COUNT={{ .Values.kafka.kafka.replicaCount }}
+              {{- $ordinalStart := 0 }}
+              {{- if and .Values.kafka.kafka.ordinals (hasKey .Values.kafka.kafka.ordinals "start") }}
+              {{- $ordinalStart = int .Values.kafka.kafka.ordinals.start }}
+              {{- end }}
+              ORDINAL_START={{ $ordinalStart }}
+              # Use kafka.fullnameOverride if set, otherwise construct from release name
+              {{- $kafkaFullname := .Values.kafka.fullnameOverride | default (printf "%s-kafka" .Release.Name) }}
+              KAFKA_FULLNAME="{{ $kafkaFullname }}"
+              for i in $(seq $ORDINAL_START $((ORDINAL_START + BROKER_COUNT - 1))); do
+                SVC_NAME="${KAFKA_FULLNAME}-${i}-external"
+                discover_broker "$SVC_NAME"
+              done
+              {{- else if and .Values.kafka (hasKey .Values.kafka "controller") .Values.kafka.controller }}
+              # For Bitnami Kafka chart (backward compatibility)
+              {{- $kafkaFullname := .Values.kafka.fullnameOverride | default (printf "%s-kafka" .Release.Name) }}
+              KAFKA_FULLNAME="{{ $kafkaFullname }}"
+              {{- if and .Values.kafka.controller.replicaCount (not .Values.kafka.controller.controllerOnly) }}
+              CONTROLLER_BROKER_COUNT={{ .Values.kafka.controller.replicaCount }}
+              for i in $(seq 0 $((CONTROLLER_BROKER_COUNT - 1))); do
+                SVC_NAME="${KAFKA_FULLNAME}-controller-${i}-external"
+                discover_broker "$SVC_NAME"
+              done
+              {{- end }}
+
+              # Discover dedicated broker nodes
+              {{- if and (hasKey .Values.kafka "broker") .Values.kafka.broker .Values.kafka.broker.replicaCount }}
+              BROKER_COUNT={{ .Values.kafka.broker.replicaCount }}
+              if [ "$BROKER_COUNT" -gt 0 ]; then
+                for i in $(seq 0 $((BROKER_COUNT - 1))); do
+                  SVC_NAME="${KAFKA_FULLNAME}-broker-${i}-external"
+                  discover_broker "$SVC_NAME"
+                done
+              fi
+              {{- end }}
+              {{- else }}
+              # Fallback: No Kafka configuration found
+              echo "Warning: No Kafka broker configuration found"
+              {{- end }}
+
+              echo "Discovered Kafka brokers: ${BROKER_LIST}"
+
+              # Discover portal domain from portal-data ConfigMap
+              PORTAL_DOMAIN=""
+              PORTAL_CONFIGMAP="portal-data-config"
+              if kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                PORTAL_DOMAIN=$(kubectl get configmap "$PORTAL_CONFIGMAP" -n "$MY_POD_NAMESPACE" -o jsonpath='{.data.PORTAL_SUBDOMAIN}' 2>/dev/null || echo "")
+                if [ -n "$PORTAL_DOMAIN" ]; then
+                  echo "Discovered portal domain: ${PORTAL_DOMAIN}"
+                else
+                  echo "Warning: PORTAL_SUBDOMAIN not found in ${PORTAL_CONFIGMAP}, using default"
+                fi
+              else
+                echo "Warning: ConfigMap ${PORTAL_CONFIGMAP} not found, PAPI_PUBLIC_HOST may not be set correctly"
+              fi
+
+              # Construct PAPI_PUBLIC_HOST from namespace and discovered domain
+              # Format: {namespace}-ssg.{domain}
+              if [ -n "$PORTAL_DOMAIN" ]; then
+                PAPI_PUBLIC_HOST="${MY_POD_NAMESPACE}-ssg.${PORTAL_DOMAIN}"
+                echo "PAPI_PUBLIC_HOST will be set to: ${PAPI_PUBLIC_HOST}"
+              else
+                echo "ERROR: Could not discover portal domain from ${PORTAL_CONFIGMAP}"
+                echo "PAPI_PUBLIC_HOST will not be set"
+                PAPI_PUBLIC_HOST=""
+              fi
+
+              # Update ConfigMap for distroless compatibility
+              CONFIGMAP_NAME="{{ include "intelligence.fullname" . }}-kafka-discovery"
+              echo "Updating ConfigMap ${CONFIGMAP_NAME}..."
+
+              if [ -n "$PAPI_PUBLIC_HOST" ]; then
+                # Both Kafka brokers and PAPI_PUBLIC_HOST discovered
+                if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                  kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\",\"PAPI_PUBLIC_HOST\":\"${PAPI_PUBLIC_HOST}\"}}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} updated successfully"
+                else
+                  kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" \
+                    --from-literal="PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} created successfully"
+                fi
+              else
+                # Only Kafka brokers discovered (PAPI_PUBLIC_HOST discovery failed)
+                if kubectl get configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" >/dev/null 2>&1; then
+                  kubectl patch configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --patch "{\"data\":{\"KAFKA_EXTERNAL_ADVERTIZED_BROKERS\":\"${BROKER_LIST}\"}}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} updated (without PAPI_PUBLIC_HOST)"
+                else
+                  kubectl create configmap "$CONFIGMAP_NAME" -n "$MY_POD_NAMESPACE" \
+                    --from-literal="KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}"
+                  echo "ConfigMap ${CONFIGMAP_NAME} created (without PAPI_PUBLIC_HOST)"
+                fi
+              fi
+
+              # Keep file for backward compatibility
+              echo "export KAFKA_EXTERNAL_ADVERTIZED_BROKERS=${BROKER_LIST}" > /shared/kafka.env
+              if [ -n "$PAPI_PUBLIC_HOST" ]; then
+                echo "export PAPI_PUBLIC_HOST=${PAPI_PUBLIC_HOST}" >> /shared/kafka.env
+              fi
+              echo "Kafka discovery completed successfully"
+          env:
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+      {{- end }}
+      containers:
+        - name: intelligence-server
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image.intelligenceServer }}"
+          imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+          {{- if .Values.intelligenceServer.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.intelligenceServer.containerSecurityContext | nindent 12 }}
+          {{- else if .Values.global.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          # Distroless compatible: no shell, direct Java execution
+          command: ["java"]
+          args: ["-jar", "/opt/app/intelligence-server.jar"]
+          env:
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.rabbitmq.auth.secretName }}
+                  key: rabbitmq-password
+                  optional: false
+            - name: INTELLIGENCE_DATABASE_NAME
+              value: {{ template "intelligence-db-name" . }}
+            - name: DATABASE_USERNAME
+              value: {{ .Values.global.databaseUsername | quote }}
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.databaseSecret }}
+                  {{ if eq .Values.global.databaseType "mysql" }}
+                  key: mysql-password
+                  {{- end }}
+            # Internal Kafka connection (for intelligence-server's own use)
+            - name: KAFKA_BROKERS
+              value: {{ .Values.intelligenceServer.kafka.brokers | default "kafka:9092" | quote }}
+            
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: {{ .Values.intelligenceServer.kafka.securityProtocol | default "PLAINTEXT" | quote }}
+          # Certificates that intelligence-server provides to third-party clients
+          {{- if .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+            - name: KAFKA_CA_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caCertKey | default "apim-ssl.crt" }}
+                  optional: false
+            - name: KAFKA_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.caSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.caKeyKey | default "apim-ssl.key" }}
+                  optional: false
+            - name: KAFKA_CA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  optional: false
+            - name: TSSG_SSL_KEY_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretName }}
+                  key: {{ .Values.intelligenceServer.kafka.kafkaCa.passwordSecretKey | default "keypass.txt" }}
+                  optional: false
+          {{- else }}
+            # No certificates provided
+            - name: KAFKA_CA_CERTIFICATE
+              value: ""
+            - name: KAFKA_CA_KEY
+              value: ""
+            - name: KAFKA_CA_PASSWORD
+              value: ""
+            - name: TSSG_SSL_KEY_PASS
+              value: ""
+          {{- end }}
+            # Kafka External Advertised Brokers (for user-facing connections)
+          {{- if not .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+          {{- if .Values.intelligenceServer.kafka.externalAdvertisedBrokers }}
+            - name: KAFKA_EXTERNAL_ADVERTIZED_BROKERS
+              value: {{ .Values.intelligenceServer.kafka.externalAdvertisedBrokers | quote }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.env }}
+          {{- range $key, $value := .Values.intelligenceServer.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+            # Read PAPI_PUBLIC_HOST from ConfigMap populated by kafka-broker-discovery init container
+            # The init container discovers the portal domain from portal-data ConfigMap at runtime
+            # Format: {namespace}-ssg.{domain}
+            - name: PAPI_PUBLIC_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "intelligence.fullname" . }}-kafka-discovery
+                  key: PAPI_PUBLIC_HOST
+            - name: PAPI_PUBLIC_PORT
+              value: {{ include "intelligence.publicPort" . | quote }}
+          {{- end }}
+          envFrom:
+          # Always include the main intelligence-server config
+          - configMapRef:
+              name: intelligence-server-config
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+          # Include discovered Kafka broker IPs when auto-discovery is enabled
+          - configMapRef:
+              name: {{ include "intelligence.fullname" . }}-kafka-discovery
+              optional: true
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: "/health/readiness"
+              port: 8282
+            initialDelaySeconds: 90
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: "/health/liveness"
+              port: 8282
+            initialDelaySeconds: 120
+            timeoutSeconds: 1
+            periodSeconds: 15
+            successThreshold: 1
+          {{- if .Values.intelligenceServer.resources }}
+          resources: {{- toYaml .Values.intelligenceServer.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared
+          {{- end }}
+          ports:
+            - containerPort: 8282
+      volumes:
+      {{- if .Values.intelligenceServer.kafka.autoDiscovery.enabled }}
+        - name: shared-data
+          emptyDir: {}
+      {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      {{- if .Values.intelligenceServer.affinity }}
+      affinity: {{- toYaml .Values.intelligenceServer.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.intelligenceServer.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.intelligenceServer.tolerations }}
+      tolerations: {{- toYaml .Values.intelligenceServer.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.schedulerName }}
+      schedulerName: "{{ .Values.global.schedulerName }}"
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

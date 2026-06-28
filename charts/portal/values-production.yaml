@@ -71,6 +71,7 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+    # Please set analytics.replicaCount to a minimum of 2
     aggregation: true
   # Kafka is the messaging backbone for Portal 
   # Production recommendation: kafka.kafka.replicaCount: 3 (see Kafka subchart block below).

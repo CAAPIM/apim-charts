@@ -1,15 +1,15 @@
-# Kafka Subchart - KRaft Mode (Kafka 4.0.0)
+# Kafka Subchart - KRaft Mode (Kafka 4.0.2)
 
-This chart deploys Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) as a subchart for the Broadcom API Developer Portal.
+This chart deploys Apache Kafka 4.0.2 in KRaft mode (Zookeeper-less) as a subchart for the Broadcom API Developer Portal.
 
 ## Overview
 
-This Kafka subchart provides a production-ready deployment of Apache Kafka 4.0.0 using KRaft mode, which eliminates the dependency on Zookeeper. It's designed for seamless integration with the APIM Portal, particularly for the Intelligence service which requires Kafka broker autodiscovery.
+This Kafka subchart provides a production-ready deployment of Apache Kafka 4.0.2 using KRaft mode, which eliminates the dependency on Zookeeper. It's designed for seamless integration with the APIM Portal, particularly for the Intelligence service which requires Kafka broker autodiscovery.
 
 ## Features
 
 - **KRaft Mode**: Zookeeper-less Kafka using the new KRaft consensus protocol
-- **Kafka 4.0.0**: Latest stable version with improved performance and features
+- **Kafka 4.0.2**: Latest stable version with improved performance and features
 - **Multi-Listener Support**: Internal and Controller listeners with configurable security
 - **SASL Authentication**: Support for PLAIN, SCRAM-SHA-256, and SCRAM-SHA-512
 - **Flexible Deployment**: StatefulSet with configurable replicas
@@ -49,7 +49,7 @@ kafka:
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `image.kafka` | Kafka container image | `kafka:4.0.0` |
+| `image.kafka` | Kafka container image | `kafka:4.0.2` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `kafka.replicaCount` | Number of Kafka broker replicas | `1` |
 | **KRaft Configuration** |
@@ -82,7 +82,7 @@ kafka:
 
 ### What is KRaft?
 
-KRaft (Kafka Raft) is the new consensus protocol that replaces Zookeeper in Kafka 4.0.0+. Benefits include:
+KRaft (Kafka Raft) is the new consensus protocol that replaces Zookeeper in Kafka 4.0.2+. Benefits include:
 - Simplified architecture (no Zookeeper dependency)
 - Improved scalability (millions of partitions)
 - Faster controller failover
@@ -278,8 +278,8 @@ For production deployments, consider adding:
 - Grafana dashboards for visualization
 
 ## Version History
-
-- **1.1.0**: KRaft mode support, Kafka 4.0.0, multi-listener architecture
+- **1.0.2**: KRaft mode support, Kafka 4.0.2, multi-listener architecture
+- **1.1.0**: KRaft mode support, Kafka 4.0.2, multi-listener architecture
 - **1.0.0**: Initial release with Zookeeper mode
 
 ## Additional Configuration
@@ -332,7 +332,7 @@ This configuration produces the same environment variables as portal-dist `env-k
 
 - [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
 - [KRaft Mode Documentation](https://kafka.apache.org/documentation/#kraft)
-- [Kafka 4.0.0 Release Notes](https://kafka.apache.org/40/documentation.html#upgrade)
+- [Kafka 4.0.2 Release Notes](https://kafka.apache.org/40/documentation.html#upgrade)
 - **[CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md)** - Detailed configuration guide with examples
 - **[QUICK_START.md](QUICK_START.md)** - Quick start guide
 - **[../../KAFKA_ENV_COMPARISON.md](../../KAFKA_ENV_COMPARISON.md)** - Environment variables comparison
