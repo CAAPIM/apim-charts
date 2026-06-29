@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if .Values.global.deepStorage.minio }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,3 +11,4 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   SERVICE_NAME: minio
+{{- end }}

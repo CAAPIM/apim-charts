@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 set -e pipefail
 #### Pre-flight script to ensure that CAAPIM Charts have been versioned correctly before the release pipeline gets run.
 

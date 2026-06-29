@@ -1482,6 +1482,8 @@ customHosts:
 # Note: MySQL StatefulSet is enabled via database.create=true
 ####################################################################################
 mysql:
+  # Maximum size of one packet or any generated/string string.
+  maxAllowedPacket: 64M
   image:
     repository: docker.io/mysql
     tag: 8.4.5
