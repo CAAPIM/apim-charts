@@ -1,0 +1,33 @@
+{{- if or .Values.portal.intelligence.enabled .Values.portal.infrastructureManagement.enabled }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+apiVersion: v1
+kind: Service
+metadata:
+  name: intelligence-server
+  labels:
+    app: intelligence-server
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.intelligence.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.intelligence.service.port }}
+      targetPort: 8282
+  selector:
+    app: intelligence-server
+    release: {{ .Release.Name }}
+  {{- if .Values.intelligence.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.intelligence.service.sessionAffinity }}
+  {{- end }}
+  {{- if .Values.intelligence.service.sessionAffinityConfig }}
+  sessionAffinityConfig: {{- toYaml .Values.intelligence.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  {{- if .Values.intelligence.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.intelligence.service.externalTrafficPolicy }}
+  {{- end }}
+  {{- if .Values.intelligence.service.internalTrafficPolicy }}
+  internalTrafficPolicy: {{ .Values.intelligence.service.internalTrafficPolicy }}
+  {{- end }}
+{{- end }}

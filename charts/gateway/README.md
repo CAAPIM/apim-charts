@@ -1580,6 +1580,7 @@ Fix the root cause (for example, a missing MySQL privilege) and re-run `helm upg
 | `mysql.auth.password`            | MySQL user password | `mypassword`  |
 | `mysql.auth.existingSecret`      | Use existing secret for credentials | ``  |
 | `mysql.service.type`             | MySQL service type | `ClusterIP`  |
+| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `64M` |
 | `mysql.service.port`             | MySQL service port | `3306`  |
 | `mysql.service.annotations`      | Annotations for the MySQL service | `{}`  |
 | `mysql.pdb.create`               | Create PodDisruptionBudget for MySQL | `false`  |
@@ -1660,7 +1661,7 @@ mysql:
   configuration: |-
     [mysqld]
     max_connections=200
-    max_allowed_packet=32M
+    max_allowed_packet=64M
     innodb_buffer_pool_size=256M
 ```
 

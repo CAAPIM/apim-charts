@@ -22,8 +22,8 @@ Requires Gateway image **11.2.2 or newer**.
 - The migration job is disabled by default (`database.migrationJob.enabled: false`) and only takes effect during `helm upgrade` — it does not run on `helm install`.
 - See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates) for full configuration and upgrade workflow.
 
-## 3.1.2 Sync with stable
-- Sync develop/gateway branch with stable
+## 3.1.2 General Updates
+Updated the default mysql maxAllowedPacket to 64M with an option to customize from values.yaml
 
 ## 3.1.1 OTK 4.7.0 Released
 - The default image tag in values.yaml and production-values.yaml for OTK updated to 4.7.0.
