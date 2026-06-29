@@ -1,4 +1,5 @@
-{{- if .Values.minio.cloudStorage }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.minio.cloudStorage .Values.global.deepStorage.minio }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

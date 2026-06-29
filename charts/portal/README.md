@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved. -->
+<!-- AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits. -->
+
 # Layer7 API Developer Portal
 The Layer7 API Developer Portal (API Portal) is part of the Layer7 API Management solution, which consists of API Portal and API Gateway.
 
@@ -7,7 +10,12 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.4.3 General Updates
-- Sync develop/gateway branch with stable
+- This new version of the chart supports API Portal 5.4.2
+- Ingress-NGINX Subchart is upgraded to version 4.15.1
+- `portal.intelligence.enabled` and `portal.infrastructureManagement.enabled` are independent. The `intelligence-server` deploys when either flag is true.
+- SeaweedFS sub-chart condition changed from `portal.analytics.enabled` to `portal.seaweedFs.enabled`. Upgrade customers with analytics enabled must explicitly set `portal.seaweedFs.enabled=true` (a helm install/upgrade guard aborts with a clear error if missing).
+- Infrastructure Management (`portal.infrastructureManagement.enabled`) now requires `portal.seaweedFs.enabled=true` but no longer requires `portal.intelligence.enabled=true`.
+- Kafka Pod will be installed by default from this release.
 
 ## 2.4.2 General Updates
 - This new version of the chart supports API Portal 5.4.1.3
@@ -829,33 +837,60 @@ Portal Analytics
 For Production, use an external MySQL Server.
 
 ## Intelligence (APIM Intelligence)
-The Intelligence subchart provides advanced analytics and third-party agent integration capabilities.
+The Intelligence server provides advanced analytics and third-party agent integration capabilities. The `intelligence-server` pod is deployed when **either** `portal.intelligence.enabled` **or** `portal.infrastructureManagement.enabled` is true — the two flags are independent of each other.
 
 **Important Dependencies:**
-- When `portal.intelligence.enabled: true`, the following subcharts are automatically deployed:
-  - **Kafka**: Required for message streaming (should be configured with 3+ replicas for production)
+- Kafka is always deployed — intelligence consumes from the same in-cluster Kafka used by Portal deployment messaging and analytics.
+- For production with intelligence enabled, set `kafka.kafka.replicaCount: 3`.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `portal.intelligence.enabled` | Enable Intelligence service | `false` |
-| `apim-intelligence.intelligenceServer.replicaCount` | Number of intelligence server replicas | `1` |
-| `apim-intelligence.intelligenceServer.kafka.autoDiscovery.enabled` | Enable Kafka broker auto-discovery | `true` |
+| `portal.intelligence.enabled` | Enable Intelligence features (third-party agent integration). Independent of `portal.infrastructureManagement.enabled`. | `false` |
+| `portal.infrastructureManagement.enabled` | Enable Infrastructure Management (PMS). Also causes `intelligence-server` to deploy. Requires `portal.seaweedFs.enabled=true`. Independent of `portal.intelligence.enabled`. | `false` |
+| `intelligence.replicaCount` | Number of intelligence server replicas | `1` |
+| `intelligence.kafka.kafkaCa.caSecretName` | Secret containing the CA certificate for Kafka mTLS | `portal-external-secret` |
 
-For detailed Intelligence configuration, see the [Intelligence Chart README](../intelligence/README.md).
+## Infrastructure Management
+Infrastructure Management enables the Patch Management System (PMS) for gateway lifecycle operations.
+
+**Requirements:**
+- `portal.seaweedFs.enabled=true` — PMS uses SeaweedFS for object storage (enforced at install/upgrade time).
+- The `intelligence-server` is deployed automatically when this flag is true (regardless of `portal.intelligence.enabled`).
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.infrastructureManagement.enabled` | Enable Infrastructure Management (PMS) | `false` |
+| `portal.seaweedFs.enabled` | Required when infrastructure management is enabled | `true` |
+
+## Kafka and KafkaTcpProxy on APIM
+Portal 5.4.2 (rmq2kafka / F161288) uses Kafka for deployment messaging. Kafka is always deployed; the brokers' internal listener (9092) is never exposed externally. All external Kafka traffic is fronted by the `KafkaTcpProxyAssertion` on the APIM gateway, with SNI-based per-broker routing on port 443. 
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| `portal.kafka.proxy.targetBootstrapServers` | Upstream Kafka the proxy forwards to | `kafka:9092` |
+| `portal.kafka.proxy.listenPort` | APIM bootstrap listen port for Kafka clients | `9191` |
+| `portal.kafka.proxy.brokerStartPort` | Per-broker start port; per-broker port = `brokerStartPort + nodeId` | `9193` |
+| `portal.kafka.proxy.advertisedHost` | Hostname advertised to Kafka clients (defaults to `kafka-proxy-host` helper) | `""` |
+| `portal.kafka.proxy.advertisedPort` | Port advertised to Kafka clients; `443` enables SNI routing through ingress | `443` |
+| `portal.kafka.proxy.brokerAddressPattern` | Per-broker SNI hostname pattern with `$(nodeId)` (defaults to helper) | `""` |
+| `portal.kafka.proxy.configBrokerHost` | Value baked into the enrollment bundle CWP `portal.config.broker.kafka.host` | `localhost` |
 
 ## SeaweedFS
-The SeaweedFS subchart provides S3-compatible object storage for analytics data.
+The SeaweedFS subchart provides S3-compatible object storage used by analytics (Druid deep storage) and Infrastructure Management (PMS).
 
-**Automatic Deployment:**
-- Deployed when `portal.analytics.enabled: true`
-- By default, `portal.analytics.enabled: true` in values.yaml, so SeaweedFS is deployed automatically
-- SeaweedFS is ONLY deployed for analytics features
-- Intelligence features do NOT require SeaweedFS (PMS requirement postponed)
+**Deployment Gate:**
+SeaweedFS is controlled by `portal.seaweedFs.enabled`. It is required when either:
+- `portal.analytics.enabled: true` — object storage for Druid deep storage
+- `portal.infrastructureManagement.enabled: true` — object storage for PMS
+
+By default `portal.seaweedFs.enabled: true` matches the default `portal.analytics.enabled: true`.
+
+> **Upgrade note:** In earlier chart versions the seaweedfs sub-chart was gated directly on `portal.analytics.enabled`. If upgrading with analytics enabled, ensure `portal.seaweedFs.enabled: true` is explicitly set (a helm install/upgrade guard will abort with a clear error if it is not).
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `portal.analytics.enabled` | Enable analytics features (automatically deploys SeaweedFS) | `true` |
-| `portal.intelligence.enabled` | Enable intelligence features (does not require SeaweedFS) | `false` |
+| `portal.seaweedFs.enabled` | Deploy the SeaweedFS subchart. Required when analytics or infrastructure management is enabled. | `true` |
+| `portal.analytics.enabled` | Enable analytics features (Druid stack) | `true` |
 | `global.deepStorage.minio` | Use Minio instead of SeaweedFS for deep storage | `false` |
 | `global.deepStorage.enableDataMigration` | Enable data migration from Minio to SeaweedFS | `true` |
 | `global.deepStorage.analytics.bucketName` | S3 bucket name for analytics data | `api-metrics` |
@@ -864,20 +899,15 @@ The SeaweedFS subchart provides S3-compatible object storage for analytics data.
 
 For detailed SeaweedFS configuration and migration guide, see [Minio to SeaweedFS Migration Guide](../../utils/MINIO-TO-SEAWEEDFS-MIGRATION.md).
 
-## Kafka
-The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less) for message streaming.
-
-**Automatic Deployment:**
-- Deployed when `kafka.enabled: true`
-- Required for Intelligence service
+## Kafka Subchart
+The Kafka subchart provides Apache Kafka 4.0.0 in KRaft mode (Zookeeper-less). Kafka is the messaging backbone for Portal.
 
 | Parameter | Description | Default |
 | --- | --- | --- |
-| `kafka.enabled` | Enable Kafka subchart | `false` |
-| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production) | `1` |
+| `kafka.enabled` | Deploy the Kafka subchart | `true` |
+| `kafka.kafka.replicaCount` | Number of Kafka broker replicas (3+ recommended for production with intelligence) | `1` |
 | `kafka.kafka.kraft.enabled` | Enable KRaft mode (Zookeeper-less) | `true` |
-| `kafka.externalAccess.enabled` | Enable external access to Kafka brokers | `true` |
-| `kafka.externalAccess.serviceType` | Service type for external access | `LoadBalancer` |
+| `kafka.kafka.ordinals.start` | StatefulSet pod start ordinal (1 preserves KRaft nodeId across Zookeeper upgrade) | `1` |
 
 For detailed Kafka configuration, see the [Kafka Chart README](../kafka/README.md).
 
@@ -1106,6 +1136,7 @@ The Portal chart includes a standalone MySQL StatefulSet for demo/development pu
 | `mysql.readinessProbe.failureThreshold` | Failure threshold for readiness probe   | `3` |
 | `mysql.startupProbe.enabled`     | Enable startup probe   | `false` |
 | `mysql.configuration`            | MySQL configuration (my.cnf)   | `""` (uses default) |
+| `mysql.maxAllowedPacket`         | Maximum size of one packet or any generated/string string | `128M` |
 | `mysql.initdbScripts`            | Dictionary of initdb scripts   | `{}` |
 | `mysql.initdbScriptsConfigMap`   | Existing ConfigMap with init scripts   | `""` |
 | `mysql.extraEnvVars`             | Extra environment variables   | `[]` |
