@@ -1522,10 +1522,14 @@ config:
 helm upgrade my-release layer7/gateway -f values.yaml
 ```
 
-Helm runs the `db-migration` job first. Once it completes successfully, Helm rolls out the new Gateway pods. Because `skip` mode is already set, the pods bypass Liquibase and start immediately.
-Once enabled, you can leave `database.migrationJob.enabled: true` permanently. If there are no pending schema changes, the job completes in seconds and exits cleanly, so there is no harm in running it on every upgrade. 
-Other options include enabling the database migration job by setting as input parmater to helm upgrade or use a separate
-values.yaml file for upgrades.
+Helm runs the `db-migration` job first. Once it completes successfully, Helm rolls out the new Gateway pods. If `skip` mode is set, the pods bypass Liquibase and start immediately providing faster upgrade deployements - 
+more Gateways can be rolled out simultaneously. Once enabled, you can leave `database.migrationJob.enabled: true` permanently. If there are no pending schema changes, the job completes in seconds and exits cleanly, so there is no harm in running it on every upgrade. 
+The database migration job can also be enabled by passing to the helm upgrade command as an input parameter or using a separate values.yaml file for upgrades.
+
+#### Migration Job Failure
+
+If the migration Job fails, the operator blocks the Deployment until the Job succeeds. To restore the previous Gateway version while investigating the database schema update, disable the migration job and revert the image.  
+The traffic can be served while investigating.  Restoring the database can be done during scheduled downtime. 
 
 #### Recovering from a stuck lock
 
