@@ -1505,13 +1505,18 @@ database:
   enabled: true
   create: false
   jdbcURL: jdbc:mysql://myprimaryserver:3306/ssg
-
   migrationJob:
+    # Opt-in: set to true only when running helm upgrade against a Gateway 11.2.2+ image.
+    # This job does not run on helm install (it is a pre-upgrade hook only).
     enabled: true
-    # Optional: specify the primary writer endpoint directly.
+    # Optional: specify the primary writer endpoint directly to bypass load balancers or proxies.
     # If omitted, falls back to database.jdbcURL above.
     jdbcURL: "jdbc:mysql://myprimaryserver:3306/ssg"
-
+    # Set to true to force release of any stuck Liquibase lock before applying schema changes.
+    # Use with caution — do not leave permanently set to true.
+    clearLocks: false
+    # Maximum time (in seconds) the job pod is allowed to run before being terminated.
+    activeDeadlineSeconds: 300
 config:
   javaArgs:
     - "-Dgateway.db.schema-update.mode=skip"
