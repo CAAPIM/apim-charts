@@ -2556,6 +2556,42 @@ entries:
     version: 1.0.0
   portal:
   - apiVersion: v2
+    appVersion: 5.4.2.1
+    created: "2026-07-13T15:16:45.398427081Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: ""
+      version: 12.0.3
+    - condition: portal.seaweedFs.enabled
+      name: seaweedfs
+      repository: file://../seaweedfs
+      version: ^1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: file://../kafka
+      version: ^1.0.0
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.15.1
+    description: CA API Developer Portal
+    digest: 526ed84407c6c069c5475a28024cc3eb793ed79c6b175dfdbd4d45e95bf70bbd
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.4.4/portal-2.4.4.tgz
+    version: 2.4.4
+  - apiVersion: v2
     appVersion: 5.4.2
     created: "2026-06-26T19:01:17.643390965Z"
     dependencies:
@@ -4126,4 +4162,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.4/seaweedfs-1.0.4.tgz
     version: 1.0.4
-generated: "2026-06-26T19:01:17.835998891Z"
+generated: "2026-07-13T15:16:45.39907354Z"
