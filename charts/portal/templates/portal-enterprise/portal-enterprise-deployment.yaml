@@ -17,7 +17,7 @@ spec:
   {{- if .Values.portalEnterprise.strategy }}
   strategy: {{- toYaml .Values.portalEnterprise.strategy | nindent 12 }}
   {{- end }}
-  replicas: {{ .Values.portalEnterprise.replicaCount }}
+  replicas: {{ .Values.portalEnterprise.replicaConfig.count }}
   selector:
     matchLabels:
       app: portal-enterprise
