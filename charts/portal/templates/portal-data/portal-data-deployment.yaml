@@ -68,10 +68,10 @@ spec:
         - name: portal-data
           image: "{{ .Values.global.portalRepository }}{{ .Values.image.data }}"
           imagePullPolicy: "{{ .Values.portalData.image.pullPolicy }}"
-          {{- if .Values.portalData.containerSecurityContext }}
+          {{ if .Values.portalData.containerSecurityContext }}
           securityContext: {{- toYaml .Values.portalData.containerSecurityContext | nindent 12 }}
           {{- else if .Values.global.containerSecurityContext }}
-          securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
+          securityContext: {{- toYaml .Values.global.containerSecurityContext | indent 12 }}
           {{- end }}
           env:
             - name: RABBITMQ_DEFAULT_PASS
@@ -152,7 +152,7 @@ spec:
           ports:
             - containerPort: 8080
           {{- if .Values.portalData.resources }}
-          resources: {{- toYaml .Values.portalData.resources | nindent 12 }}
+          resources: {{- toYaml .Values.portalData.resources | indent 12 }}
           {{- end }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
