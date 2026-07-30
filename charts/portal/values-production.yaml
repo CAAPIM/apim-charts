@@ -612,7 +612,7 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.2
+  dispatcher: dispatcher:5.4.2.2
   apim: ingress:5.4.2
   enterprise: portal-enterprise:5.4.2
   data: portal-data:5.4.2.2
@@ -620,7 +620,7 @@ image:
   analytics: analytics-server:5.4.2.2
   authenticator: authenticator:5.4.2.2
   intelligenceServer: intelligence-server:5.4.2.2
-  dbUpgrade: db-upgrade-portal:5.4.2.2
+  dbUpgrade: db-upgrade-portal:5.4.2.1
   rbacUpgrade: db-upgrade-rbac:5.4.2
   upgradeVerify: upgrade-verify:5.4.2
   tlsManager: tls-automator:5.4.2
