@@ -18,13 +18,21 @@ metadata:
 {{- end }}
 data:
   ACCEPT_LICENSE: {{ .Values.license.accept | quote}}
+  DISKLESS_CONFIG: {{ .Values.disklessConfig.enabled | quote }}
   SSG_CLUSTER_HOST: {{ .Values.clusterHostname }}
+  LIQUIBASE_LOG_LEVEL: {{ default "off" .Values.database.liquibaseLogLevel | quote }}
   SSG_JVM_HEAP: {{ .Values.config.heapSize }}
-{{- if .Values.database.enabled }}
-  {{- if .Values.database.create }}
-  SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ .Release.Name }}-mysql:3306/{{ .Values.database.name }}
-  {{- else }}
+  {{- if and (.Values.config.minHeapSize) (.Values.config.maxHeapSize) }}
+  SSG_JVM_MIN_HEAP: {{ .Values.config.minHeapSize }}
+  SSG_JVM_MAX_HEAP: {{ .Values.config.maxHeapSize }}
+  {{- end }}
+{{- if .Values.disklessConfig.enabled }}
+  {{- if .Values.database.enabled }}
+    {{- if .Values.database.create }}
+  SSG_DATABASE_JDBC_URL: jdbc:mysql://{{ template "gateway.fullname" . }}-mysql:3306/{{ .Values.database.name }}
+    {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
+    {{- end }}
   {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
@@ -84,6 +92,20 @@ data:
 {{- if .Values.config.systemProperties }}
   system-properties: |-
 {{ .Values.config.systemProperties | indent 4 }}
+{{- end }}
+{{- if ( .Values.config.gemfire.embedded.enabled) }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.locators={{- template "embedded.gemfire.locators" . }}
+    com.l7tech.external.assertions.embeddedgemfireprovider.start.locator=false
+{{- end }}
+{{- if not .Values.config.gemfire.auth.enabled }}
+    com.l7tech.external.assertions.gemfireprovider.requireAuth=false
+{{- else }}
+    com.l7tech.external.assertions.gemfireprovider.requireAuth=true
+{{- end }}
+{{- if .Values.config.additionalSystemProperties }}
+{{- range .Values.config.additionalSystemProperties }}
+    {{ .name }}={{ .value }}
+{{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
   002-load-service-account-token: |-
@@ -159,7 +181,7 @@ data:
         echo "***************************************************************************"
         echo "scanning for $TYPE in $SOURCE_DIR"
         echo "***************************************************************************"
-        FILES=$(du -a $3 | grep -e ".\\$2$" | awk '{ print $2 }' 2>/dev/null)
+        FILES=$(du -a $3 | grep -e ".\\$2$" | sed 's/\S*\s*\(\S*\).*/\1/' 2>/dev/null)
         for file in $FILES; do
             name=$(basename "$file")
             cp $file $4/$name
@@ -174,7 +196,7 @@ data:
         echo "***************************************************************************"
         echo "scanning for $TYPE in $SOURCE_DIR"
         echo "***************************************************************************"
-        FILES=$(du -a $3 | grep -e ".\\$2$" | awk '{ print $2 }' 2>/dev/null)
+        FILES=$(du -a $3 | grep -e ".\\$2$" | sed 's/\S*\s*\(\S*\).*/\1/' 2>/dev/null)
         for file in $FILES; do
             name=$(basename "$file")
             echo -e "running $name"
@@ -202,8 +224,7 @@ data:
     CHECK_INTERVAL=$2
     EXCLUDE="${@:3}"
     
-    PORTS=$(netstat -an | awk '/LISTEN/ { n = split($4, a, ":"); print a[n] }')
-    
+    PORTS=$(netstat -an | grep LISTEN | tr -s " " | cut -d " " -f4 | cut -d ":" -f2)
     if [ -z $PERIOD_SECONDS ]; then
     PERIOD_SECONDS=30
     fi
@@ -219,7 +240,7 @@ data:
         BUSY_PORTS=0
         for p in $PORTS; do
             # Check open connections
-            CONNECTIONS=$(netstat -anp | grep ESTABLISHED | grep java | awk '{ print $4 }' | grep :$p | wc -l)
+            CONNECTIONS=$(netstat -anp | grep ESTABLISHED | grep java | tr -s " " | cut -d " " -f4 | grep :$p | wc -l)
             if [ $CONNECTIONS -gt 0 ]; then
                 let BUSY_PORTS++
                 echo Port $p has $CONNECTIONS connection open

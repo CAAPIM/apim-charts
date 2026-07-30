@@ -1,0 +1,293 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kafka.statefulsetName" . }}
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kafka.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  selector:
+    matchLabels:
+      {{- include "kafka.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "kafka.fullname" . }}
+  replicas: {{ .Values.kafka.replicaCount }}
+  {{- if .Values.kafka.ordinals }}
+  ordinals:
+    start: {{ .Values.kafka.ordinals.start }}
+  {{- end }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        {{- include "kafka.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- if .Values.kafka.forceRedeploy }}
+        timestamp: {{ now | quote }}
+        {{- end }}
+        {{- with .Values.kafka.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "kafka.serviceAccountName" . }}
+      {{- if .Values.kafka.affinity }}
+      affinity: {{- toYaml .Values.kafka.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.kafka.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.tolerations }}
+      tolerations: {{- toYaml .Values.kafka.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.kafka.podSecurityContext }}
+      securityContext: {{- toYaml .Values.kafka.podSecurityContext | nindent 8 }}
+      {{- else if .Values.global.podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- else }}
+      securityContext:
+        fsGroup: 1010
+      {{- end }}
+      {{- if .Values.kafka.kraft.enabled }}
+      initContainers:
+      {{- if false }}
+      # Discovery init container disabled due to crash loop
+      # Will use service name fallback in kafka-init container
+      {{- end }}
+      # Init container to set node ID and configure advertised listeners
+      - name: kafka-init
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        command:
+          - /bin/sh
+        args:
+          - -c
+          - |
+            set -ex
+            
+            # Create hostname command wrapper if it doesn't exist
+            if ! command -v hostname >/dev/null 2>&1; then
+              echo "hostname command not found, creating wrapper..."
+              echo '#!/bin/sh' > /tmp/hostname
+              echo 'echo $HOSTNAME' >> /tmp/hostname
+              chmod +x /tmp/hostname
+              export PATH="/tmp:$PATH"
+            fi
+            
+            echo "=== Initializing Kafka KRaft configuration ==="
+            
+            # Use POD_NAME from environment (injected via downward API)
+            echo "Pod name: $POD_NAME"
+            echo "DEBUG: POD_NAME received: $POD_NAME"
+            
+            # Extract node ID from pod name (e.g., kafka-0 -> 0)
+            # Using parameter expansion instead of rev command
+            NODE_ID="${POD_NAME##*-}"
+            echo "Node ID: $NODE_ID"
+            
+            # Validate NODE_ID is a number (using shell pattern matching, no grep needed)
+            case "$NODE_ID" in
+              ''|*[!0-9]*)
+                echo "ERROR: NODE_ID is not a valid number: $NODE_ID"
+                exit 1
+                ;;
+            esac
+            
+            # Create shared directory if it doesn't exist
+            mkdir -p /shared
+            
+            # Write node ID to shared volume
+            echo "KAFKA_CFG_NODE_ID=$NODE_ID" > /shared/node-id.env
+            echo "Wrote KAFKA_CFG_NODE_ID to /shared/node-id.env"
+            
+            echo "Building advertised listeners..."
+            INTERNAL_LISTENER="INTERNAL://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.internal.port }}"
+            echo "Internal listener: $INTERNAL_LISTENER"
+            
+            CONTROLLER_LISTENER="CONTROLLER://{{ include "kafka.statefulsetName" . }}-${NODE_ID}.{{ include "kafka.fullname" . }}:{{ .Values.kafka.listeners.controller.port }}"
+            echo "Controller listener: $CONTROLLER_LISTENER"
+            
+            echo "KAFKA_CFG_ADVERTISED_LISTENERS=$INTERNAL_LISTENER,$CONTROLLER_LISTENER" >> /shared/node-id.env
+            
+            echo "=== Configuration written to /shared/node-id.env ==="
+            cat /shared/node-id.env
+            echo "=== Init container completed successfully ==="
+        volumeMounts:
+        - name: shared-config
+          mountPath: /shared
+      {{- end }}
+      containers:
+      - name: kafka
+        image: "{{ .Values.global.portalRepository }}{{ .Values.image.kafka }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        {{- if .Values.kafka.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.kafka.containerSecurityContext | nindent 10 }}
+        {{- else if .Values.global.containerSecurityContext }}
+        securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 10 }}
+        {{- end }}
+        {{- if .Values.kafka.kraft.enabled }}
+        command:
+          - /bin/sh
+        args:
+          - -c
+          - |
+            set -e
+            
+            # Create hostname command wrapper if it doesn't exist
+            if ! command -v hostname >/dev/null 2>&1; then
+              echo "hostname command not found, creating wrapper..."
+              echo '#!/bin/sh' > /tmp/hostname
+              echo 'echo $HOSTNAME' >> /tmp/hostname
+              chmod +x /tmp/hostname
+              export PATH="/tmp:$PATH"
+            fi
+            
+            # Set HOSTNAME if not already set (for compatibility)
+            export HOSTNAME=${HOSTNAME:-$(cat /etc/hostname 2>/dev/null || echo "kafka")}
+            
+            # Source node-specific configuration from init container
+            # This MUST override the ConfigMap values
+            if [ -f /shared/node-id.env ]; then
+              echo "Loading node-specific configuration..."
+              cat /shared/node-id.env
+              # Unset ConfigMap values first to ensure our values take precedence
+              unset KAFKA_CFG_NODE_ID
+              unset KAFKA_CFG_ADVERTISED_LISTENERS
+              # Now source and export our values
+              source /shared/node-id.env
+              export KAFKA_CFG_NODE_ID
+              export KAFKA_CFG_ADVERTISED_LISTENERS
+              echo "Final KAFKA_CFG_ADVERTISED_LISTENERS: $KAFKA_CFG_ADVERTISED_LISTENERS"
+            fi
+            
+            # Check if KAFKA_CLUSTER_ID is set and format storage if needed
+            if [ -n "$KAFKA_CLUSTER_ID" ]; then
+              echo "=== Kafka KRaft Storage Formatting ==="
+              echo "Cluster ID from ConfigMap: $KAFKA_CLUSTER_ID"
+              
+              # Check if storage is already formatted
+              if [ ! -f /opt/ca/kafka/kafka-logs/meta.properties ]; then
+                echo "No meta.properties found. Formatting Kafka storage with cluster ID: $KAFKA_CLUSTER_ID"
+                /opt/ca/kafka/bin/kafka-storage.sh format \
+                  --cluster-id "$KAFKA_CLUSTER_ID" \
+                  --config /opt/ca/kafka/config/server.properties \
+                  --ignore-formatted \
+                  --standalone
+                echo "✓ Kafka storage formatted successfully"
+              else
+                # Verify existing cluster ID matches
+                echo "Found existing meta.properties, checking cluster ID..."
+                EXISTING_CLUSTER_ID=$(grep "^cluster.id=" /opt/ca/kafka/kafka-logs/meta.properties | cut -d= -f2 2>/dev/null || echo "")
+                
+                if [ -n "$EXISTING_CLUSTER_ID" ] && [ "$EXISTING_CLUSTER_ID" != "$KAFKA_CLUSTER_ID" ]; then
+                  echo "WARNING: Cluster ID mismatch!"
+                  echo "  Expected: $KAFKA_CLUSTER_ID"
+                  echo "  Found: $EXISTING_CLUSTER_ID"
+                  echo "Removing old meta.properties and reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage reformatted with correct cluster ID"
+                elif [ -n "$EXISTING_CLUSTER_ID" ]; then
+                  echo "✓ Cluster ID matches: $EXISTING_CLUSTER_ID"
+                else
+                  echo "No cluster.id found in meta.properties, reformatting..."
+                  rm -f /opt/ca/kafka/kafka-logs/meta.properties
+                  /opt/ca/kafka/bin/kafka-storage.sh format \
+                    --cluster-id "$KAFKA_CLUSTER_ID" \
+                    --config /opt/ca/kafka/config/server.properties \
+                    --ignore-formatted \
+                    --standalone
+                  echo "✓ Kafka storage formatted with cluster ID"
+                fi
+              fi
+            else
+              echo "WARNING: KAFKA_CLUSTER_ID not set in environment"
+            fi
+            
+            # Start Kafka with the original entrypoint
+            exec /opt/ca/start-kafka.sh
+        {{- end }}
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        envFrom:
+        - configMapRef:
+            name: {{ include "kafka.fullname" . }}-config
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.kafka.listeners.internal.port }}
+          initialDelaySeconds: 90
+          timeoutSeconds: 5
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.kafka.listeners.internal.port }}
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 3
+        {{- if .Values.kafka.resources }}
+        resources: {{- toYaml .Values.kafka.resources | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.kafka.listeners.internal.port }}
+          name: kafka
+        {{- if and .Values.kafka.kraft.enabled .Values.kafka.listeners.controller.enabled }}
+        - containerPort: {{ .Values.kafka.listeners.controller.port }}
+          name: controller
+        {{- end }}
+        volumeMounts:
+        - name: kafka-vol-claim
+          mountPath: /opt/ca/kafka/kafka-logs
+          subPath: data/kafka/kafka-logs
+        {{- if .Values.kafka.kraft.enabled }}
+        - name: shared-config
+          mountPath: /shared
+        {{- end }}
+      {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      volumes:
+      {{- if .Values.kafka.kraft.enabled }}
+      - name: shared-config
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-vol-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- if .Values.global.storageClass}}
+        storageClassName: "{{ .Values.global.storageClass }}"
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.storage.kafka }}

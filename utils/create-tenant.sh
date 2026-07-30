@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2025 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 
 values=(adminEmail auditLogLevel multiclusterEnabled noReplyEmail performanceLogLevel portalLogLevel portalName subdomain tenantId tenantType termOfUse)
 
@@ -30,7 +31,7 @@ function print_steps() {
 
 	The tenant has been added to the database. The tenant info can be found in the tenant_info file in the current directory.
 	Please follow the rest of the instructions at TechDocs to enroll your gateway with the portal.
-	(https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-3/install-configure-and-upgrade/post-installation-tasks/enroll-a-layer7-api-gateway.html)
+	(https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-4/install-configure-and-upgrade/post-installation-tasks/enroll-a-layer7-api-gateway.html)
 			
 	1. You will need to navigate to the portal at https://${tenant_id}.${domain} and create a new API PROXY. 
 	2. Copy the enrollment URL

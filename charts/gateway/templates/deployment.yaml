@@ -48,7 +48,7 @@ spec:
      {{- end }}
     {{- end }}
     spec:
-      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      serviceAccountName: {{ include "gateway.serviceAccountName" . | quote}}
       {{- if .Values.affinity }}
       affinity: {{- toYaml .Values.affinity | nindent 12 }}
       {{- end }}
@@ -70,7 +70,6 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{.Values.terminationGracePeriodSeconds }}
       {{- end }}
-
       initContainers:
       {{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
       - name: {{ .Chart.Name }}-otk-install-container
@@ -85,6 +84,10 @@ spec:
         - secretRef:
             name: {{ template "otk.dbSecretName.readOnly" . }}
       {{- end }}
+      {{- if and (.Values.otk.database.clientReadConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+        - secretRef:
+            name: {{ template "otk.dbSecretName.clientRead" . }}
+      {{- end }}
         - configMapRef:
             name: {{ template "gateway.fullname" . }}-otk-install-configmap
         volumeMounts:
@@ -98,15 +101,15 @@ spec:
           {{- range .Values.otk.customizations.existingBundle.secrets }}
           - name: {{ .name }}
             mountPath: /docker/custom_bundles/{{ .name }}
-            {{ if .csi }}
+            {{- if .csi }}
             readOnly: {{ .csi.readOnly }}
-            {{ end }}
+            {{- end }}
           {{- end }}
           {{- end }}
       {{- end }}
       {{- if .Values.initContainers }}
       {{toYaml .Values.initContainers | nindent 6 }}
-      {{ end }}
+      {{- end }}
 
       {{- if .Values.imagePullSecret.enabled }}
       imagePullSecrets:
@@ -124,39 +127,6 @@ spec:
           {{- end }}
           {{- if .Values.lifecycleHooks }}
           lifecycle: {{- toYaml .Values.lifecycleHooks | nindent 12 }}
-          {{- else if .Values.installSolutionKits.enabled }}
-          lifecycle:
-            {{- if .Values.preStopScript.enabled }}
-            preStop:
-              exec:
-                command:
-                - /bin/bash
-                - /opt/docker/gracefulshutdown.sh
-                - {{ .Values.preStopScript.timeoutSeconds | quote }}
-                - {{ .Values.preStopScript.periodSeconds | quote }}
-                {{- range .Values.preStopScript.excludedPorts}}
-                - {{ . | quote }}
-                {{- end }}
-            {{- end }}
-            postStart:
-              exec:
-                command:
-                  - '/bin/sh'
-                  - '-c'
-                  - |
-                    declare -i restmanReadyAttempted=0
-                    until [[ "$(curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} --silent --output /dev/null --write ''%{http_code}'' -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/doc/)" == "200" ]]; do
-                      if [ "$((++restmanReadyAttempted))" -ge {{ $.Values.installSolutionKits.restmanReadyWaitMaxAttempt }} ]; then
-                        echo "Max restman ready wait attempted (max={{ $.Values.installSolutionKits.restmanReadyWaitMaxAttempt }}, interval={{ $.Values.installSolutionKits.restmanReadyWaitInterval }} )." >&2
-                        exit 1
-                      fi
-                      sleep {{ $.Values.installSolutionKits.restmanReadyWaitInterval }}
-                    done
-                    {{- range .Values.installSolutionKits.solutionKits }}
-                    {{ .preInstallCommand }}
-                    curl --user {{ $.Values.management.username }}:{{ $.Values.management.password }} -k https://127.0.0.1:{{ $.Values.installSolutionKits.restmanPort }}/restman/1.0/solutionKitManagers {{ .param }} --form "file=@/tmp/{{ .file }}"
-                    {{ .postInstallCommand }}
-                    {{- end }}
           {{- else if .Values.preStopScript.enabled }}
           lifecycle:
             preStop:
@@ -178,13 +148,13 @@ spec:
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
-            {{ if .Values.management.service.enabled}}
+            {{- if .Values.management.service.enabled}}
             {{- range .Values.management.service.ports }}
             - name: {{ .name }} 
               containerPort: {{ .internal }}
               protocol: {{ .protocol }}
             {{- end }}
-            {{ end }}
+            {{- end }}
           volumeMounts:
             - name: {{ template "gateway.fullname" . }}-license-xml
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
@@ -192,14 +162,21 @@ spec:
             - name: {{ template "gateway.fullname" . }}-system-properties
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/system.properties
               subPath: system.properties
+{{- if (not .Values.disklessConfig.enabled) }}
+      {{- if (not .Values.disklessConfig.setSecretByInitContainer)}}
+            - name: {{ template "gateway.fullname" . }}-node-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+      {{- else }}
+            - name: shared-secret
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+      {{- end }}
+{{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}
             - name: {{ template "gateway.fullname" . }}-hazelcast-client
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/ExternalHazelcastSharedStateProviderAssertion/hazelcast-client.xml
               subPath: hazelcast-client.xml
-{{- end }}
-{{- if .Values.serviceMetrics.enabled }}
-            - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/servicemetrics
 {{- end }}
 {{- if .Values.config.log.override }}
             - name: {{ template "gateway.fullname" . }}-log-config-override
@@ -232,17 +209,59 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/services/graphman
         {{- end }}
 {{- end }}
+{{- if and (.Values.config.sharedStateClient.enabled) (or (.Values.config.redis.enabled) ( .Values.config.gemfire.external.enabled) ) }}
+            - name: {{ template "gateway.fullname" . }}-shared-state-client
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/sharedstate_client.yaml
+              subPath: sharedstate_client.yaml
+{{- end }}
 {{- if .Values.config.redis  }}
-        {{- if .Values.config.redis.enabled }}
-            - name: {{ template "gateway.fullname" . }}-redis-properties
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.properties
-              subPath: redis.properties
-        {{- if .Values.config.redis.tls.enabled }}
+        {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+        {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
             - name: {{ template "gateway.fullname" . }}-redis-crt
-              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/RedisSharedStateProviderAssertion/redis.crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/redis.crt
               subPath: redis.crt
         {{- end }}
+        {{- range .Values.config.redis.additionalProviders }}
+          {{- if .redis.tls }}
+            - name: {{ .name }}-redis-crt
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/{{ .redis.tls.path }}
+              subPath: {{ .redis.tls.path }}
+          {{- end }}
         {{- end }}
+
+        {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.external }}
+      {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.sharedStateClient.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - name: {{ $.Release.Name }}-ext-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/truststore.p12
+              subPath: truststore.p12
+            - name: {{ $.Release.Name }}-ext-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/providers/keystore.p12
+              subPath: keystore.p12
+      {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded }}
+      {{- if .Values.config.gemfire.embedded.enabled }}
+        {{- if and (index .Values.config.gemfire.embedded "caches") (index .Values.config.gemfire.embedded.caches "additionalProperties") }}
+            - name: {{ $.Release.Name }}-emb-gemfire-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gemfire.properties
+              subPath: gemfire.properties
+        {{- end }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+            - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/gfsecurity.properties
+              subPath: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.tls.enabled }}
+            - name: {{ $.Release.Name }}-emb-gemfire-truststore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/truststore.p12
+              subPath: truststore.p12
+            - name: {{ $.Release.Name }}-emb-gemfire-keystore
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/assertions/EmbeddedGemfireSharedStateProviderAssertion/keystore.p12
+              subPath: keystore.p12
+        {{- end }}
+      {{- end }}
 {{- end }}
 {{- if .Values.existingHealthCheck }}
 {{- if .Values.existingHealthCheck.enabled }}
@@ -253,9 +272,9 @@ spec:
            {{- if .Values.existingHealthCheck.secret }}
             - name: {{ .Values.existingHealthCheck.secret.name }}
               mountPath: /opt/docker/rc.d/diagnostic/health_check
-              {{ if .Values.existingHealthCheck.secret.csi }}
+              {{- if .Values.existingHealthCheck.secret.csi }}
               readOnly: {{ .Values.existingHealthCheck.secret.csi.readOnly }}
-              {{ end }}
+              {{- end }}
            {{- end }}
 {{- end }}
 {{- end }}
@@ -276,9 +295,9 @@ spec:
            {{- range .Values.existingBundle.secrets }}
             - name: {{ .name }}
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/{{ .name }}
-              {{ if .csi }}
+              {{- if .csi }}
               readOnly: {{ .csi.readOnly }}
-              {{ end }}
+              {{- end }}
            {{- end }}
 {{- end }}
 {{- if .Values.management.kubernetes.loadServiceAccountToken }}
@@ -296,6 +315,14 @@ spec:
               subPath: 003-parse-custom-files.sh
 {{- end }}
 {{- end }}
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled .Values.kubernetesGateway.backendTLSPolicy.tls.bootstrap (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
+            - name: {{ template "gateway.fullname" . }}-load-ssl-key-script
+              mountPath: /opt/docker/rc.d/010_load_default_ssl_key.sh
+              subPath: 010_load_default_ssl_key.sh
+            - name: {{ template "gateway.fullname" . }}-backend-tls-certs
+              mountPath: /opt/docker/rc.d/certs
+              readOnly: true
+{{- end }}
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
             - name: {{ template "gateway.fullname" . }}-gracefulshutdown
@@ -308,13 +335,13 @@ spec:
            {{- range .volumeMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              {{ if .subPath }}
+              {{- if .subPath }}
               subPath: {{ .subPath }}
-              {{ end }}
+              {{- end }}
            {{- end }}
            {{- end }}
 {{- end }}
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+{{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
             - name: {{ template "gateway.fullname" . }}-otk-install-container
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/bundle/000OTK
 {{- end }}
@@ -332,16 +359,37 @@ spec:
              {{- end }}
            {{- end }}
          {{- end }}
-         {{ if not $duplicate }}
+         {{- if not $duplicate }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
-              {{ if .subPath }}
+              {{- if .subPath }}
               subPath: {{ .subPath }}
-              {{ end }}
+              {{- end }}
          {{- end }}
          {{- end }}
          {{- end }}
 {{- end }}
+         {{- if .Values.config.otel.sdkOnly.enabled }}
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: CONTAINER_NAME
+            value: gateway
+          - name: OTEL_SERVICE_NAME
+            value: {{ template "gateway.fullname" . }}
+          - name: OTEL_RESOURCE_ATTRIBUTES
+            value: {{ template "gateway.otel.resource.attributes" . }}
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-configmap
@@ -463,6 +511,19 @@ spec:
             items:
             - key: license
               path: license.xml
+  {{- if and (not .Values.disklessConfig.enabled) (not .Values.disklessConfig.setSecretByInitContainer) }}
+        - name: {{ template "gateway.fullname" . }}-node-properties
+          {{- if .Values.disklessConfig.existingSecret.csi }}
+          csi: {{ toYaml .Values.disklessConfig.existingSecret.csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ template "gateway.node.properties" . }}
+            items:
+            - key: node.properties
+              path: node.properties
+          {{- end }}
+          #### add csi config if using an existingSecret
+  {{- end }}
         - name: {{ template "gateway.fullname" . }}-system-properties
           configMap:
             name: {{ template "gateway.fullname" . }}-configmap
@@ -477,15 +538,17 @@ spec:
             - key: hazelcast-xml
               path: hazelcast-client.xml
 {{- end }}
-{{- if .Values.config.redis }}
-       {{- if .Values.config.redis.enabled }}
-        - name: {{ template "gateway.fullname" . }}-redis-properties
+{{- if and (.Values.config.sharedStateClient.enabled) (or (.Values.config.redis.enabled) ( .Values.config.gemfire.external.enabled)) }}
+        - name: {{ template "gateway.fullname" . }}-shared-state-client
           secret:
-            secretName: {{ template "redisConfigSecretName" . }}
+            secretName: {{ template "sharedStateClientSecretName" . }}
             items:
-            - key: redis.properties
-              path: redis.properties
-       {{- if .Values.config.redis.tls.enabled }}
+              - key: sharedstate_client.yaml
+                path: sharedstate_client.yaml
+{{- end }}
+{{- if .Values.config.redis }}
+       {{- if and (.Values.config.redis.enabled) (.Values.config.sharedStateClient.enabled) }}
+       {{- if and (.Values.config.redis.tls.enabled) (.Values.config.redis.tls.verifyPeer) }}
         - name: {{ template "gateway.fullname" . }}-redis-crt
           secret:
             secretName: {{ template "redisTlsSecretName" . }}
@@ -493,7 +556,83 @@ spec:
             - key: tls.crt
               path: redis.crt
       {{- end }}
+      {{- range .Values.config.redis.additionalProviders }}
+      {{- if .redis.tls }}
+        - name: {{ .name }}-redis-crt
+          secret:
+            secretName: {{ .redis.tls.existingSecret }}
+            items:
+            - key: {{ .redis.tls.key }}
+              path: {{ .redis.tls.path }}
       {{- end }}
+      {{- end }}
+      {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.external }}
+    {{- if and (.Values.config.gemfire.external.enabled) (.Values.config.gemfire.tls.enabled) }}
+        - name: {{ $.Release.Name }}-ext-gemfire-keystore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: keystore.p12
+              path: keystore.p12
+        - name: {{ $.Release.Name }}-ext-gemfire-truststore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: truststore.p12
+              path: truststore.p12
+    {{- end }}
+{{- end }}
+{{- if .Values.config.gemfire.embedded }}
+    {{- if ( .Values.config.gemfire.embedded.enabled) }}
+        {{- if and (index .Values.config.gemfire.embedded "caches") (index .Values.config.gemfire.embedded.caches "additionalProperties") }}
+        - name: {{ $.Release.Name }}-emb-gemfire-properties
+          configMap:
+            name: {{ $.Release.Name }}-emb-gemfire-configmap
+            items:
+            - key: gemfire.properties
+              path: gemfire.properties
+        {{- end }}
+        {{- if or (.Values.config.gemfire.auth.enabled) (.Values.config.gemfire.tls.enabled) }}
+        - name: {{ $.Release.Name }}-emb-gemfire-security-properties
+          secret:
+            secretName: {{ $.Release.Name }}-emb-gemfire-security-properties
+            items:
+            - key: gfsecurity.properties
+              path: gfsecurity.properties
+        {{- end }}
+        {{- if .Values.config.gemfire.tls.enabled }}
+        - name: {{ $.Release.Name }}-emb-gemfire-keystore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: keystore.p12
+              path: keystore.p12
+        - name: {{ $.Release.Name }}-emb-gemfire-truststore
+          secret:
+          {{- if .Values.config.gemfire.tls.existingSecret }}
+            secretName: {{ .Values.config.gemfire.tls.existingSecret }}
+          {{- else }}
+            secretName: {{ $.Release.Name }}-gemfire-tls-cert
+          {{- end }}
+            items:
+            - key: truststore.p12
+              path: truststore.p12
+        {{- end }}
+    {{- end }}
 {{- end }}
 {{- if .Values.customConfig }}
 {{- if .Values.customConfig.enabled }}
@@ -551,13 +690,6 @@ spec:
             optional: false
             name: {{ template "gateway.fullname" . }}-{{ .Values.otk.healthCheckBundle.name }}
 {{- end }}
-{{- if .Values.serviceMetrics.enabled }}
-        - name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-          configMap:
-            defaultMode: 292
-            optional: false
-            name: {{ template "gateway.fullname" . }}-service-metrics-configmap
-{{- end }}
 {{- if .Values.management.restman.enabled }}
         - name: {{ template "gateway.fullname" . }}-restman
           emptyDir: {}
@@ -591,6 +723,18 @@ spec:
             - key: 003-parse-custom-files
               path: 003-parse-custom-files.sh
 {{- end }}
+{{- end }}
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.backendTLSPolicy.enabled .Values.kubernetesGateway.backendTLSPolicy.tls.bootstrap (or (include "kubernetesGateway.createBackendTlsSecret" .) .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) }}
+        - name: {{ template "gateway.fullname" . }}-load-ssl-key-script
+          configMap:
+            name: {{ template "gateway.fullname" . }}-script-configmap
+            defaultMode: 0755
+            items:
+            - key: 010-load-default-ssl-key
+              path: 010_load_default_ssl_key.sh
+        - name: {{ template "gateway.fullname" . }}-backend-tls-certs
+          secret:
+            secretName: {{ include "kubernetesGateway.backendTlsSecretName" . }}
 {{- end }}
 {{- if .Values.preStopScript }}
 {{- if .Values.preStopScript.enabled }}
@@ -670,7 +814,7 @@ spec:
      {{- end }}
      {{- end }}
 {{- end }}
-{{ if and (.Values.otk.enabled) (not .Values.database.enabled) }}
+{{- if and (.Values.otk.enabled) (not .Values.database.enabled) }}
         - name: {{ template "gateway.fullname" . }}-otk-install-container
           emptyDir: {}
         {{- if .Values.otk.customizations.existingBundle.enabled }}

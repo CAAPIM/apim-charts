@@ -25,9 +25,17 @@ spec:
     metadata:
       labels:
         app: dispatcher
-      {{ if .Values.dispatcher.forceRedeploy }}
+      {{- if  .Values.dispatcher.podAnnotations }}
+      annotations: {{- toYaml .Values.dispatcher.podAnnotations | nindent 8 }}
+      {{- if .Values.dispatcher.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.dispatcher.podAnnotations }}
+      {{- if .Values.dispatcher.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
@@ -75,6 +83,30 @@ spec:
               secretKeyRef:
                 name: {{ .Values.rabbitmq.auth.secretName }}
                 key: rabbitmq-password
+          {{- if and .Values.dispatcher.customUrls.enabled .Values.dispatcher.customUrls.domains }}
+          {{- range .Values.dispatcher.customUrls.domains }}
+          {{- $tenantUpper := .tenant | upper | replace "." "_" | replace "-" "_" }}
+          {{- $domainUpper := .domain | upper | replace "." "_" | replace "-" "__" }}
+          {{- $tenantNormalized := .tenant | lower | replace "." "_" | replace "-" "_" }}
+          {{- $domainNormalized := .domain | lower | replace "." "_" | replace "-" "__" }}
+          {{- if .certFile }}
+          - name: CD_{{ $tenantUpper }}_ZZ_{{ $domainUpper }}_CERT
+            valueFrom:
+              secretKeyRef:
+                name: dispatcher-custom-urls-secret
+                key: {{ $tenantNormalized }}_{{ $domainNormalized }}_cert
+                optional: false
+          {{- end }}
+          {{- if .keyFile }}
+          - name: CD_{{ $tenantUpper }}_ZZ_{{ $domainUpper }}_KEY
+            valueFrom:
+              secretKeyRef:
+                name: dispatcher-custom-urls-secret
+                key: {{ $tenantNormalized }}_{{ $domainNormalized }}_key
+                optional: false
+          {{- end }}
+          {{- end }}
+          {{- end }}
           envFrom:
           - configMapRef:
               name: dispatcher-config

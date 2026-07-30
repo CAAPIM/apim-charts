@@ -15,4 +15,4 @@ spec:
   selector:
     matchLabels:
       app: minio
-{{ end }}
+{{- end }}

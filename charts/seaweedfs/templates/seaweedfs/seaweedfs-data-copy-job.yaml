@@ -1,0 +1,255 @@
+{{- if eq .Values.global.deepStorage.enableDataMigration true }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Data Migration Job for MinIO to SeaweedFS
+#
+# This is a regular Kubernetes Job (not a Helm hook), so helm upgrade completes
+# immediately without waiting — safe for large datasets that take hours to migrate.
+#
+# Two-phase upgrade procedure:
+#   Phase 1 (keep Druid on MinIO, trigger migration):
+#     helm upgrade <release> <chart> --set global.deepStorage.minio=true \
+#       --set global.deepStorage.enableDataMigration=true
+#   Wait for job to complete before Phase 2:
+#     kubectl get job <release>-seaweedfs-s3-seaweedfs-data-copy-job -n <namespace>
+#     kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
+#   Phase 2 (switch Druid to SeaweedFS) — ONLY after job shows Complete:
+#     helm upgrade <release> <chart> --set global.deepStorage.minio=false \
+#       --set global.deepStorage.enableDataMigration=false
+#
+# WARNING: Do NOT run Phase 2 while migration job is still running.
+# Setting enableDataMigration=false removes the Job from Helm management,
+# which will terminate a running migration mid-copy.
+#
+# The Job auto-deletes 24 hours after completion (ttlSecondsAfterFinished).
+# Monitor progress:
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c wait-for-services
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "seaweedfs.fullname" . }}-seaweedfs-data-copy-job
+  labels:
+    app: {{ template "seaweedfs.name" . }}
+    chart: {{ template "seaweedfs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: data-migration
+    migration-source: minio
+    migration-target: seaweedfs
+spec:
+  ttlSecondsAfterFinished: 86400
+  backoffLimit: 5
+  suspend: false
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "seaweedfs.name" . }}
+        component: data-migration
+    spec:
+    {{- if .Values.global.pullSecret }}
+      imagePullSecrets:
+      - name: "{{ .Values.global.pullSecret }}"
+      {{- end }}
+      initContainers:
+        - name: wait-for-services
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Checking MinIO and SeaweedFS readiness..."
+
+              MAX_WAIT={{ .Values.global.deepStorage.migrationInitialDelaySeconds }}
+              RETRY_INTERVAL=10
+              ELAPSED=0
+
+              check_s3_endpoint() {
+                local endpoint=$1
+                local access_key=$2
+                local secret_key=$3
+                local service_name=$4
+
+                echo "Checking ${service_name} at ${endpoint}..."
+
+                if rclone lsd "${service_name}:" --config=/dev/null \
+                  --s3-provider="${service_name}" \
+                  --s3-endpoint="${endpoint}" \
+                  --s3-access-key-id="${access_key}" \
+                  --s3-secret-access-key="${secret_key}" \
+                  --timeout=5s >/dev/null 2>&1; then
+                  echo "✓ ${service_name} is accessible"
+                  return 0
+                else
+                  echo "✗ ${service_name} not ready yet"
+                  return 1
+                fi
+              }
+
+              while [ $ELAPSED -lt $MAX_WAIT ]; do
+                MINIO_READY=false
+                SEAWEEDFS_READY=false
+
+                if check_s3_endpoint \
+                  "http://minio:9000" \
+                  "$MINIO_ACCESS_KEY" \
+                  "$MINIO_SECRET_KEY" \
+                  "Minio"; then
+                  MINIO_READY=true
+                fi
+
+                if check_s3_endpoint \
+                  "http://seaweedfs-s3:8333" \
+                  "$SEAWEEDFS_ACCESS_KEY" \
+                  "$SEAWEEDFS_SECRET_KEY" \
+                  "SeaweedFS"; then
+                  SEAWEEDFS_READY=true
+                fi
+
+                if [ "$MINIO_READY" = true ] && [ "$SEAWEEDFS_READY" = true ]; then
+                  echo ""
+                  echo "✓✓ All services are ready. Starting data migration..."
+                  exit 0
+                fi
+
+                echo "Waiting ${RETRY_INTERVAL}s before retry... (elapsed: ${ELAPSED}s / max: ${MAX_WAIT}s)"
+                sleep $RETRY_INTERVAL
+                ELAPSED=$((ELAPSED + RETRY_INTERVAL))
+              done
+
+              echo ""
+              echo "ERROR: Services did not become ready within ${MAX_WAIT} seconds"
+              exit 1
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_SECRET_KEY
+            - name: SEAWEEDFS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: seaweedfs-s3-secret
+                  key: admin_access_key_id
+            - name: SEAWEEDFS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: seaweedfs-s3-secret
+                  key: admin_secret_access_key
+            - name: RCLONE_CONFIG_MINIO_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_MINIO_PROVIDER
+              value: Minio
+            - name: RCLONE_CONFIG_MINIO_ENDPOINT
+              value: http://minio:9000
+            - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+              value: $(MINIO_ACCESS_KEY)
+            - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+              value: $(MINIO_SECRET_KEY)
+            - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
+              value: s3
+            - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
+              value: SeaweedFS
+            - name: RCLONE_CONFIG_SEAWEEDFS_ENDPOINT
+              value: http://seaweedfs-s3:8333
+            - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
+              value: $(SEAWEEDFS_ACCESS_KEY)
+            - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
+              value: $(SEAWEEDFS_SECRET_KEY)
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+      containers:
+        - name: data-copier
+          image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "=== MinIO to SeaweedFS Data Migration ==="
+              echo ""
+
+              copy_bucket() {
+                local src_bucket=$1
+                local dst_bucket=$2
+                echo "--- Copying bucket: minio:/${src_bucket} -> seaweedfs:/${dst_bucket} ---"
+                rclone copy \
+                  --stats-one-line \
+                  --stats 30s \
+                  --retries 30 \
+                  --retries-sleep 10s \
+                  --low-level-retries 10 \
+                  -vv \
+                  --progress \
+                  "minio:/${src_bucket}" \
+                  "seaweedfs:/${dst_bucket}"
+                echo "✓ Copy complete for ${src_bucket}"
+
+                echo "--- Verifying integrity: ${src_bucket} ---"
+                rclone check \
+                  --one-way \
+                  -vv \
+                  "minio:/${src_bucket}" \
+                  "seaweedfs:/${dst_bucket}"
+                echo "✓ Integrity check passed for ${src_bucket}"
+                echo ""
+              }
+
+              copy_bucket "{{ .Values.minio.bucketName }}" "{{ .Values.global.deepStorage.analytics.bucketName }}"
+
+              echo "=== Migration complete. All buckets copied and verified. ==="
+          env:
+           - name: MINIO_ACCESS_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_ACCESS_KEY
+           - name: MINIO_SECRET_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: minio-secret
+                 key: MINIO_SECRET_KEY
+           - name: SEAWEEDFS_ACCESS_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: seaweedfs-s3-secret
+                 key: admin_access_key_id
+           - name: SEAWEEDFS_SECRET_KEY
+             valueFrom:
+               secretKeyRef:
+                 name: seaweedfs-s3-secret
+                 key: admin_secret_access_key
+           - name: RCLONE_CONFIG_MINIO_TYPE
+             value: s3
+           - name: RCLONE_CONFIG_MINIO_PROVIDER
+             value: Minio
+           - name: RCLONE_CONFIG_MINIO_ENDPOINT
+             value: http://minio:9000
+           - name: RCLONE_CONFIG_MINIO_ACCESS_KEY_ID
+             value: $(MINIO_ACCESS_KEY)
+           - name: RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY
+             value: $(MINIO_SECRET_KEY)
+           - name: RCLONE_CONFIG_SEAWEEDFS_TYPE
+             value: s3
+           - name: RCLONE_CONFIG_SEAWEEDFS_PROVIDER
+             value: SeaweedFS
+           - name: RCLONE_CONFIG_SEAWEEDFS_ENDPOINT
+             value: http://seaweedfs-s3:8333
+           - name: RCLONE_CONFIG_SEAWEEDFS_ACCESS_KEY_ID
+             value: $(SEAWEEDFS_ACCESS_KEY)
+           - name: RCLONE_CONFIG_SEAWEEDFS_SECRET_ACCESS_KEY
+             value: $(SEAWEEDFS_SECRET_KEY)
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              memory: 4Gi
+      restartPolicy: "OnFailure"
+{{- end }}

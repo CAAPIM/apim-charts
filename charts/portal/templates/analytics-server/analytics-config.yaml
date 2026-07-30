@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,7 +13,7 @@ data:
   BROKER_PORT: "8082"
   ANALYTICS_ENABLED: {{ .Values.portal.analytics.enabled | quote }}
   {{ if .Values.global.setupDemoDatabase}}
-  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  DATABASE_HOST: {{ .Release.Name }}-mysql-headless
 {{ else }}
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
 {{ end }}
@@ -27,6 +28,7 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
   PAPI_PUBLIC_HOST: {{ include "tssg-public-host" . | quote }}
   PAPI_INGRESS_TENANT: {{ include "default-tenant-id" . | quote }}
 {{ if .Values.analytics.additionalEnv }}

@@ -85,16 +85,15 @@ Create java args to apply.
 {{- end -}}
 
 {{/*
-Redis sentinel nodes
+Shared state client secret name
 */}}
-{{- define "gateway.redisSentinelNodes" -}}
-{{- if .Values.config.redis.sentinel.enabled }}
- {{- if empty .Values.config.redis.sentinel.nodes }}
-        {{- fail "config.redis.sentinel.nodes is required." }}
- {{- end }}
-  {{- join "," .Values.config.redis.sentinel.nodes }}
-{{- end  -}}
-{{- end -}}
+{{- define "sharedStateClientSecretName" }}
+{{- if not .Values.config.sharedStateClient.existingConfigSecret }}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "shared-state-client-configuration" -}}
+{{- else }}
+{{- .Values.config.sharedStateClient.existingConfigSecret }}
+{{- end }}
+{{- end }}
 
 {{/*
 Redis config secret name
@@ -111,8 +110,10 @@ Redis config secret name
 Redis TLS secret name
 */}}
 {{- define "redisTlsSecretName" }}
-{{- if not .Values.config.redis.tls.existingSecret }}
-{{- printf "%s-%s" .Release.Name "redis-crt" -}}
+{{- if .Values.config.redis.subChart.enabled }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-tls" -}}
+{{- else if not .Values.config.redis.tls.existingSecret }}
+{{- printf "%s-%s" (include "gateway.fullname" .) "redis-crt" -}}
 {{- else }}
 {{- .Values.config.redis.tls.existingSecret }}
 {{- end }}
@@ -194,6 +195,33 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
+ Define Gateway node.properties Secret Name
+ */}}
+{{- define "gateway.node.properties" -}}
+{{- if .Values.disklessConfig.existingSecret.name -}}
+    {{ .Values.disklessConfig.existingSecret.name }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "node-properties" -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+ Define OTEL_RESOURCE_ATTRIBUTES Environment variable
+ */}}
+{{- define "gateway.otel.resource.attributes" -}}
+{{- $imageTag := .Values.image.tag | quote  -}}
+{{ $resourceAttributes := printf "%s,service.version=%s" "k8s.container.name=$(CONTAINER_NAME),k8s.deployment.name=$(OTEL_SERVICE_NAME),service.name=$(OTEL_SERVICE_NAME),k8s.namespace.name=$(NAMESPACE),k8s.node.name=$(NODE_NAME),k8s.pod.name=$(POD_NAME)" $imageTag  }}
+{{- if and (.Values.config.otel.sdkOnly.enabled) (.Values.config.otel.additionalResourceAttributes) -}}
+ {{- $additionalResourceAttributes := join "," .Values.config.otel.additionalResourceAttributes }}
+ {{- printf "%s,%s" $resourceAttributes $additionalResourceAttributes -}}
+{{- else -}}
+    {{- printf "%s" $resourceAttributes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
  Validate OTK installation type (SINGLE, INTERNAL, DMZ)
 */}}
 {{- define "otk-install-type" -}}
@@ -243,6 +271,18 @@ Define OTK Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define OTK database Client Read Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.clientRead" -}}
+{{- if .Values.otk.database.clientReadConnection.existingSecretName -}}
+    {{ .Values.otk.database.clientReadConnection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "crconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
  Define OTK install image pullSecret
  */}}
@@ -274,4 +314,131 @@ Define OTK Image Pull Secret Name
 {{- else -}}
     {{- printf "%s" .Values.otk.restmanHost -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+  Check if GemFire terms are accepted
+ */}}
+{{- define "gemfire.acceptedTerms" -}}
+{{- if .Values.config.gemfire.acceptTerms -}}
+    "y"
+{{- else -}}
+    {{- fail "\nTo use GemFire, the GemFire Terms of Use must be accepted by setting config.gemfire.acceptTerms to true (boolean) in your values yaml." -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+ Define embedded gemfire external locators list
+ */}}
+{{- define "embedded.gemfire.locators" -}}
+{{- if and ( .Values.config.gemfire.embedded.enabled) (empty .Values.config.gemfire.useExistingLocators) -}}
+    {{ $locators := list }}
+    {{- range $replicas, $e := until (.Values.config.gemfire.embedded.externalLocators.replicas | int) -}}
+    {{- $locators = append $locators (printf "%s-%s-%d[%d]" $.Release.Name "gemfire-locator" . 10334) }}
+{{- end -}}
+{{- join "," $locators -}}
+{{- else -}}
+{{- join "," .Values.config.gemfire.useExistingLocators -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Kubernetes Gateway API Helpers
+*/}}
+
+{{/*
+  Resolve the Gateway name.
+  - If gateway.create is true, use the auto-generated name.
+  - If gateway.existingRef.name is set, use that.
+*/}}
+{{- define "kubernetesGateway.gatewayName" -}}
+{{- if .Values.kubernetesGateway.gateway.create -}}
+  {{- printf "%s-gateway" (include "gateway.fullname" .) -}}
+{{- else -}}
+  {{- required "kubernetesGateway.gateway.existingRef.name is required when kubernetesGateway.gateway.create is false" .Values.kubernetesGateway.gateway.existingRef.name -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway namespace for parentRefs.
+  - If gateway.create is true, use the release namespace.
+  - If gateway.existingRef.namespace is set, use that.
+  - Otherwise, use the release namespace.
+*/}}
+{{- define "kubernetesGateway.gatewayNamespace" -}}
+{{- if .Values.kubernetesGateway.gateway.create -}}
+  {{- .Release.Namespace -}}
+{{- else if .Values.kubernetesGateway.gateway.existingRef.namespace -}}
+  {{- .Values.kubernetesGateway.gateway.existingRef.namespace -}}
+{{- else -}}
+  {{- .Release.Namespace -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the Gateway listener TLS secret name.
+  Uses existingSecretName if set, otherwise auto-generates as <fullname>-gateway-tls.
+*/}}
+{{- define "kubernetesGateway.tlsSecretName" -}}
+{{- if .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+  {{- .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+{{- else -}}
+  {{- printf "%s-gateway-tls" (include "gateway.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Resolve the backend TLS secret name (Layer7 Gateway pod certificate).
+  Uses existingSecretName if set, otherwise auto-generates as <fullname>-backend-tls.
+*/}}
+{{- define "kubernetesGateway.backendTlsSecretName" -}}
+{{- if .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
+  {{- .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName -}}
+{{- else -}}
+  {{- printf "%s-backend-tls" (include "gateway.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Determine if the chart should create the Gateway listener TLS secret.
+  True when: no existingSecretName AND (crt/key provided OR both are empty for auto-generation).
+*/}}
+{{- define "kubernetesGateway.createListenerTlsSecret" -}}
+{{- if not .Values.kubernetesGateway.gateway.tls.existingSecretName -}}
+  true
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Determine if the chart should create the backend TLS secret.
+  True when: backendTLSPolicy is enabled and no existingSecretName is set.
+*/}}
+{{- define "kubernetesGateway.createBackendTlsSecret" -}}
+{{- if and .Values.kubernetesGateway.backendTLSPolicy.enabled
+          (not .Values.kubernetesGateway.backendTLSPolicy.tls.existingSecretName) -}}
+  true
+{{- end -}}
+{{- end -}}
+
+{{/*
+  Auto-generated CA ConfigMap name for BackendTLSPolicy validation.
+*/}}
+{{- define "kubernetesGateway.caCertConfigMapName" -}}
+{{- printf "%s-gateway-ca-cert" (include "gateway.fullname" .) -}}
+{{- end -}}
+
+{{/*
+  Resolve TLSRoute apiVersion from values.
+*/}}
+{{- define "kubernetesGateway.tlsRouteApiVersion" -}}
+{{- .Values.kubernetesGateway.tlsRoute.apiVersion -}}
+{{- end -}}
+
+{{/*
+  Generate auto parentRefs for routes when none are provided.
+  Produces a list with a single parentRef pointing to the chart's Gateway.
+*/}}
+{{- define "kubernetesGateway.defaultParentRefs" -}}
+- name: {{ include "kubernetesGateway.gatewayName" . }}
+  namespace: {{ include "kubernetesGateway.gatewayNamespace" . }}
 {{- end -}}

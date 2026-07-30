@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.tls.job.enabled }}
 apiVersion: batch/v1
 kind: Job
@@ -21,6 +22,10 @@ metadata:
 spec:
   backoffLimit: 0
   template:
+    metadata:
+      {{- if  .Values.jobs.podAnnotations }}
+      annotations: {{- toYaml .Values.jobs.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       restartPolicy: Never
@@ -77,12 +82,12 @@ spec:
            valueFrom:
              secretKeyRef:
                name: {{ template "portal.fullname" . }}-job-secret
-               key: INTERNAL_SECRETNAME 
+               key: INTERNAL_SECRETNAME
          - name: EXTERNAL_SECRETNAME
            valueFrom:
              secretKeyRef:
                name: {{ template "portal.fullname" . }}-job-secret
-               key: EXTERNAL_SECRETNAME 
+               key: EXTERNAL_SECRETNAME
          - name: HELM_ACTION
            value: {{ .Release.IsInstall | quote }}
          - name: ROTATE

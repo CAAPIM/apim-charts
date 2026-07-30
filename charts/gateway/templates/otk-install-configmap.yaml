@@ -49,6 +49,7 @@ data:
   OTK_CREATE_RO_DATABASE_CONN: "false"
   {{- else }}
   OTK_CREATE_RO_DATABASE_CONN: {{default false .Values.otk.database.readOnlyConnection.enabled | quote }}
+  OTK_CREATE_CLIENT_READ_DATABASE_CONN: {{default false .Values.otk.database.clientReadConnection.enabled | quote }}
   {{- end }}
   {{- if eq .Values.otk.database.type "cassandra" }}
   OTK_CASSANDRA_CONNECTION_POINTS: {{ required "Please fill in otk.database.cassandra.connectionPoints in values.yaml" .Values.otk.database.cassandra.connectionPoints | quote }}
@@ -67,12 +68,22 @@ data:
   OTK_RO_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.readOnlyConnection.properties | toJson | b64enc | quote }}
   OTK_RO_DATABASE_CONN_PROPERTIES: {{ default "na" .Values.otk.database.readOnlyConnection.connectionProperties | toJson | b64enc | quote }}
   {{- end }}
+  {{- if .Values.otk.database.clientReadConnection.enabled }}
+  OTK_CLIENT_READ_DATABASE_CONNECTION_NAME: {{ required "Please fill in otk.database.clientReadConnection.connectionName in values.yaml" .Values.otk.database.clientReadConnection.connectionName | quote }}
+  OTK_CLIENT_READ_JDBC_URL: {{ default .Values.otk.database.sql.jdbcURL .Values.otk.database.clientReadConnection.jdbcURL | quote }}
+  OTK_CLIENT_READ_JDBC_DRIVER_CLASS: {{ default .Values.otk.database.sql.jdbcDriverClass .Values.otk.database.clientReadConnection.jdbcDriverClass | quote }}
+  OTK_CLIENT_READ_DATABASE_PROPERTIES: {{ default "na" .Values.otk.database.clientReadConnection.properties | toJson | b64enc | quote }}
+  OTK_CLIENT_READ_DATABASE_CONN_PROPERTIES: {{ default "na" .Values.otk.database.clientReadConnection.connectionProperties | toJson | b64enc | quote }}
+  {{- end }}
   {{- end }}
   {{- if eq .Values.otk.database.type "oracle" }}
   OTK_JDBC_URL: {{ required "Please fill in otk.database.sql.jdbcURL in values.yaml" .Values.otk.database.sql.jdbcURL | quote }}
   OTK_DATABASE_NAME: {{ required "Please fill in otk.database.sql.databaseName in values.yaml" .Values.otk.database.sql.databaseName | quote }}
   {{- if .Values.otk.database.readOnlyConnection.enabled }}
   OTK_RO_DATABASE_NAME: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.readOnlyConnection.databaseName | quote }}
+  {{- end }}
+  {{- if .Values.otk.database.clientReadConnection.enabled }}
+  OTK_CLIENT_READ_DATABASE_NAME: {{ default .Values.otk.database.sql.databaseName .Values.otk.database.clientReadConnection.databaseName | quote }}
   {{- end }}
   {{- end }}
   {{- if eq .Values.otk.database.type "mysql" }}
@@ -88,7 +99,7 @@ data:
   OTK_SKAR_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.installBackoffFactor | quote}}
   OTK_CONNECT_BACKOFF_FACTOR: {{ default 0.1 .Values.otk.connectlBackoffFactor | quote}}
   OTK_CONNECT_RETRY_COUNT: {{ default 10 .Values.otk.connectRetry | quote}}
-  SSG_RESTMAN_PORT: {{ default .Values.installSolutionKits.restmanPort .Values.otk.restmanPort | quote}}
+  SSG_RESTMAN_PORT: {{ default 8443 .Values.otk.restmanPort | quote}}
   SSG_RESTMAN_HOST: {{ template "otk.restmanhost" . }}
   OTK_INTERNAL_GW_HOST: {{ default "" .Values.otk.internalGatewayHost | quote }}
   OTK_INTERNAL_GW_PORT: {{ default "" .Values.otk.internalGatewayPort| quote }}

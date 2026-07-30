@@ -11,11 +11,17 @@ data:
   SERVICE_NAME: {{ .Values.coordinator.hostname }}
   ZOOKEEPER_HOST: {{ .Values.zookeeper.hostname }}
   ZOOKEEPER_PORT: {{ .Values.zookeeper.port | quote }}
-  MINIO_URL: http://minio:9000
-  MINIO_BUCKET: {{ .Values.minio.bucketName }}
+{{- if .Values.global.deepStorage.minio }}
+  S3_URL: http://minio:9000
+  S3_BUCKET: {{ .Values.minio.bucketName }}
+{{ else }}
+  S3_URL: http://seaweedfs-s3:8333
+  S3_HEALTH_URL: http://seaweedfs-s3:8333/status
+  S3_BUCKET: {{ .Values.global.deepStorage.analytics.bucketName }}
+{{ end }}
   DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
 {{ if .Values.global.setupDemoDatabase}}
-  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  DATABASE_HOST: {{ .Release.Name }}-mysql-headless
 {{ else }}
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
 {{ end }}
@@ -38,4 +44,8 @@ data:
     druid.coordinator.kill.period=P1D
     druid.coordinator.kill.durationToRetain=PT1H
     druid.coordinator.kill.maxSegments=25
+{{- if .Values.global.deepStorage.minio }}
     druid.storage.bucket={{ .Values.minio.bucketName }}
+{{- else }}
+    druid.storage.bucket={{ .Values.global.deepStorage.analytics.bucketName }}
+{{- end }}

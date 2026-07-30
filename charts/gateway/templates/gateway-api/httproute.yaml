@@ -1,0 +1,81 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.kubernetesGateway.enabled .Values.kubernetesGateway.httpRoute.enabled }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+{{- $fullname := include "gateway.fullname" . -}}
+{{- $root := . -}}
+{{- $annotations := merge (default (dict) .Values.kubernetesGateway.annotations) (default (dict) .Values.kubernetesGateway.httpRoute.annotations) -}}
+{{- /*
+  Group rules by hostname. Rules with the same hostname go into one HTTPRoute.
+  Rules without a hostname are collected into a default group.
+  The hostname field on each rule maps to spec.hostnames on the HTTPRoute.
+*/ -}}
+{{- $hostnameGroups := dict -}}
+{{- range $i, $rule := .Values.kubernetesGateway.httpRoute.rules }}
+  {{- $hostname := default "__default__" $rule.hostname }}
+  {{- $existing := default list (get $hostnameGroups $hostname) }}
+  {{- $_ := set $hostnameGroups $hostname (append $existing $rule) }}
+{{- end }}
+{{- range $hostname, $rules := $hostnameGroups }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- if eq $hostname "__default__" }}
+  name: {{ $fullname }}-httproute
+  {{- else }}
+  name: {{ $fullname }}-httproute-{{ $hostname | replace "." "-" | replace "*" "wildcard" | lower | trunc 48 }}
+  {{- end }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    chart: {{ include "gateway.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+    {{- range $key, $val := $root.Values.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.kubernetesGateway.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := $root.Values.kubernetesGateway.httpRoute.labels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- if $annotations }}
+  annotations:
+    {{- range $key, $val := $annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{ include "kubernetesGateway.defaultParentRefs" $root | nindent 4 }}
+  {{- if ne $hostname "__default__" }}
+  hostnames:
+    - {{ $hostname | quote }}
+  {{- end }}
+  rules:
+  {{- range $rules }}
+    {{- if not .port }}
+      {{- fail (printf "httpRoute rule for hostname '%s' is missing a port. Set port to the Layer7 Gateway service port (e.g. 8443)." (default "__default__" .hostname)) }}
+    {{- end }}
+    - {{- if .matches }}
+      matches:
+        {{- toYaml .matches | nindent 8 }}
+      {{- end }}
+      {{- if .filters }}
+      filters:
+        {{- toYaml .filters | nindent 8 }}
+      {{- end }}
+      backendRefs:
+      {{- if and .backend (eq .backend "management") }}
+        - name: {{ $fullname }}-management
+          port: {{ .port }}
+      {{- else }}
+        - name: {{ $fullname }}
+          port: {{ .port }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+{{- else }}
+{{- fail "Gateway API CRDs (gateway.networking.k8s.io/v1) are not available on this cluster. Install Gateway API CRDs before enabling kubernetesGateway.httpRoute." }}
+{{- end }}
+{{- end }}

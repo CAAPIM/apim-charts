@@ -9,10 +9,26 @@ license:
   accept: false
   # existingSecretName: ssg-license
 
+# Diskless Configuration modes for the Gateway
+disklessConfig:
+  # true - environment variables are used for gateway configuration
+  # false - node.properties is used for gateway configuration
+  enabled: true
+  # true - node.properties is set by initContainer and bootstrap script
+  # false - node.properties is set by existingSecret
+  setSecretByInitContainer: false
+  existingSecret: {}
+  #   name: gateway-secret
+  #   csi:
+  #      driver: secrets-store.csi.k8s.io
+  #      readOnly: true
+  #      volumeAttributes:
+  #        secretProviderClass: "secret-provider-class-name"
+
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.1.00
+  tag: 11.2.1
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -67,8 +83,8 @@ pmtagger:
   replicas: 1
   image:
     registry: docker.io
-    repository: layer7api/pm-tagger
-    tag: 1.0.1
+    repository: caapim/pm-tagger
+    tag: 1.0.3
     pullPolicy: IfNotPresent
 # Uses the image pull secret configured for the Gateway.
   imagePullSecret:
@@ -169,6 +185,28 @@ config:
   # Heap Size should be a percentage of the memory configured in resource limits
   # by default it is 50% - you should not go above 75%
   heapSize: "2g"
+  # Gateway v11.1.1 provides min and max heap size options
+  # If you are using an earlier version of the Gateway, these will be ignored.
+  # minHeapSize: "1g"
+  # maxHeapSize: "3g"
+  # The OTel SDK uses the following environment variables to gather information about the container
+  # NODE_NAME - Kubernetes Node
+  # POD_NAME - Podname, also hostname
+  # NAMESPACE
+  # CONTAINER_NAME - this is always gateway
+  # OTEL_SERVICE_NAME - <release-name>-<chart-name>
+  # OTEL_RESOURCE_ATTRIBUTES
+  # When using auto-instrumentation (injecting the OTel Java Agent via the OpenTelemetryOperator) these values are automatically set
+  # When using the sdk only approach (no OTel Java Agent) we set these using built-in metadata fields
+  otel:
+    # If sdkOnly is enabled we will inject the above environment variables
+    # Note that this is container level configuration only. You will still need to set the relevant cluster-wide and system properties below
+    sdkOnly:
+      enabled: false
+    # Used to inject additional resource attributes for tracking with the sdkOnly approach
+    additionalResourceAttributes: []
+    # - test=someEnvValue
+    # - test1=someEnvValue1
   javaArgs:
     - -Dcom.l7tech.bootstrap.autoTrustSslKey=trustAnchor,TrustedFor.SSL,TrustedFor.SAML_ISSUER
     - -Dcom.l7tech.server.audit.message.saveToInternal=false
@@ -178,10 +216,11 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    # - -Djava.net.preferIPv4Stack=false
+    # - -Djava.net.preferIPv6Addresses=true
   log:
     override: true
     properties: |-
-      handlers = com.l7tech.server.log.GatewayRootLoggingHandler, com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler
       com.l7tech.server.log.GatewayRootLoggingHandler.formatter = com.l7tech.util.JsonLogFormatter
       java.util.logging.SimpleFormatter.format=
       com.l7tech.server.log.ConsoleMessageSink$L7ConsoleHandler.formatter = com.l7tech.util.JsonLogFormatter
@@ -207,6 +246,8 @@ config:
       # - name: otel.traceEnabled
       #   value: "true"
       # - name: otel.metricPrefix
+      #   value: l7_
+      # - name: otel.attributePrefix
       #   value: l7_
       # - name: otel.traceConfig
       #   value: |
@@ -235,7 +276,7 @@ config:
     com.l7tech.server.extension.sharedClusterInfoProvider=ssgdb
     # By default, FIPS module will block an RSA modulus from being used for encryption if it has been used for
     # signing, or visa-versa. Set true to disable this default behaviour and remain backwards compatible.
-    com.safelogic.cryptocomply.rsa.allow_multi_use=true
+    com.l7tech.org.bouncycastle.rsa.allow_multi_use=true
     # Specifies the type of Trust Store (JKS/PKCS12) provided by AdoptOpenJDK that is used by Gateway.
     # Must be set correctly when Gateway is running in FIPS mode. If not specified it will default to PKCS12.
     javax.net.ssl.trustStoreType=jks
@@ -245,16 +286,23 @@ config:
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
     # com.l7tech.server.extension.sharedRateLimiterProvider=redis
+    # Shared state provider preview settings
+    # com.l7tech.external.assertions.keyvaluestore.sharedKeyValueStoreProvider=redis
+    # com.l7tech.external.assertions.keyvaluestore.storeIdList=GW_STORE_ID
     # If you would like to use the built in OpenTelemetry SDK uncomment and set the following configuration
     # otel.sdk.disabled=false
     # otel.java.global-autoconfigure.enabled=true
-    # otel.service.name=ssg-gateway
     # otel.exporter.otlp.endpoint=http://localhost:4318/
     # otel.exporter.otlp.protocol=http/protobuf
     # otel.traces.exporter=otlp
     # otel.metrics.exporter=otlp
     # otel.logs.exporter=none
     # Additional properties go here
+  # Additional System properties are appended at the end of system.properties
+  # Defined as key/value pairs
+  additionalSystemProperties: []
+  # - name: test
+  #   value: test123
 
  # If enabled this will override the default listen ports and their configuration in the API Gateway
   listenPorts:
@@ -396,8 +444,10 @@ config:
           enabled: false
   redis:
     # enable or disable redis integration
-    # please uncomment the 3 redis properties in config.systemProperties
+    # please uncomment the 5 redis properties in config.systemProperties
+    # view more configurable system properties here - https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw11-1/policy-assertions/assertion-palette/service-availability-assertions/key-value-storage-assertions.html#_c8b71b7b-dd84-4ee6-9771-d0bc262c36e9_sys_prop_configs
     # Redis client properties for configuring Redis Standalone or Redis Sentinel connections
+    # This configuration is parsed into redis.default in sharedstate_client.yaml
     enabled: false
     # We recommend using an existing secret for Redis configuration in production environments
     # for separation of concerns and to better secure Redis client property secrets.
@@ -406,6 +456,8 @@ config:
     # To configure the Redis client directly in this values file uncomment and/or set the following client properties
     groupName: l7GW
     commandTimeout: 5000
+    connectTimeout: 10000
+    testOnStart: false
     # The Gateway supports Redis master auth only.
     # If trying out auth using the subChart redis.auth.enabled should be true, and redis.auth.sentinel should be false (default)
     # If redis.auth.sentinel is enabled in the redis subChart or on your External Redis Sentinel Deployment, the Gateway will fail to start.
@@ -419,13 +471,16 @@ config:
     # this is for testing only and is not supported in
     # production environments
     sentinel:
-      enabled: true
+      enabled: false
       masterSet: mymaster
       # If the subChart is not enabled sentinel nodes need to be set
       nodes:
-      - <host>:<port>
-      - <host>:<port>
-      - <host>:<port>
+      - host: <host>
+        port: <port>
+      - host: <host>
+        port: <port>
+      - host: <host>
+        port: <port>
     standalone: {}
     #  host: redis-standalone
     #  port: 6379
@@ -438,14 +493,126 @@ config:
       #   MIIEGzCCAwOgAwIBAgIRANzOj1Mgxk7VRFClPaQnUGgwDQYJKoZIhvcNAQELBQAw
       #   ....
       #   -----END CERTIFICATE-----
-    # Enable subChart to have Helm optionally deploy Redis Sentinel/Standalone with your gateways.
+    # Enable subChart to have Helm optionally deploy Redis Standalone with your gateways.
     subChart:
-      # If the subChart is enabled, configuration from redis in the subCharts section
-      # will need to match the auth and tls settings here. This is true by default so no
-      # changes will be required
-      # Using Redis as a subChart is not recommended in production, please use your own Redis for this integration.
+      # This naming convention has remained the same for continuity with previous versions of the chart.
+      # The Redis subChart has been replaced with a simple Redis StatefulSet implementation included in the Gateway Chart.
+      # Using the provided Redis StatefulSet is a test/development only example. DO NOT use in production!! You will need your own Redis server for this integration.
       enabled: false
+    additionalProviders: []
+    # - name: myRegionalRedisInstance1
+    #   redis:
+    #     tls:
+    #       existingSecret: myRegionalRedisCertSecret1
+    #       key: redis.crt
+    #       # path must match ssl.cert in your provider config
+    #       path: myRegionalRedisCert.crt
+    #   config: {}
+    #   config:
+    #     regional:
+    #       type: sentinel
+    #       keyPrefixGroupName: test
+    #       username: abc
+    #       password: "def"
+    #       commandTimeout: 5000
+    #       connectTimeout: 10000
+    #       testOnStart: false
+    #       ssl:
+    #         enabled: true
+    #         cert: myRegionalRedisCert.crt
+    #         verifyPeer: false
+    #       sentinel:
+    #         master: mymaster
+    #         nodes:
+    #         - host: 127.0.0.1
+    #           port: 26379
+    #         - host: 192.168.0.1
+    #           port: 26379
 
+  # Configuration for GemFire, a distributed data management platform.
+  gemfire:
+    # Must be set to true to enable GemFire functionality, indicating that the GemFire terms of use have been accepted.
+    acceptTerms: true
+    # Authentication configuration for the GemFire peer.
+    auth:
+      enabled: false
+    # username:
+    # password:
+    # SSL configuration for embedded GemFire.
+    tls:
+      enabled: false
+      certificate:
+        issuerRef:
+          kind: ClusterIssuer
+          name: myClusterIssuer
+    # existingSecret:
+    # password:
+      # Additional SSL properties for embedded GemFire.
+      additionalProperties: |-
+        ssl-require-authentication=true
+        ssl-ciphers=any
+        ssl-protocols=any
+        ssl-endpoint-identification-enabled=false
+        ssl-enabled-components=all
+        ssl-keystore-type=PKCS12
+        ssl-truststore-type=PKCS12
+    useExistingLocators: []
+    # - locator1[port]
+    # - locator2[port]
+    # Configuration for embedded GemFire, where GemFire caches run within the Gateway process.
+    embedded:
+      enabled: false
+      caches:
+        # Additional properties for embedded GemFire caches.
+        additionalProperties: |-
+          statistic-sampling-enabled=false
+
+      externalLocators:
+        # The number of GemFire locator replicas to deploy when using embedded GemFire.
+        replicas: 2
+        image:
+          registry: docker.io
+          repository: gemfire/gemfire
+          tag: 10.2.0-jdk21
+          pullPolicy: IfNotPresent
+        resources:
+          limits: {}
+          requests: {}
+        persistence:
+          size: 2Gi
+      # A list of existing GemFire locators to use instead of deploying new ones. Each locator should be specified in the format "locator-host[port]".
+
+    # Configuration for the Gateway's GemFire client, to connect to external GemFire caches and locators.
+    external:
+      enabled: false
+      testOnStart: false
+      gwCounterRegionName: layer7gw_counter
+      gwRateLimiterRegionName: layer7gw_ratelimiter
+      gwKeyValueRegionName: layer7gw_keyvalue
+      gwSortedSetRegionName: layer7gw_sortedset
+#      dynamicProperties: |-
+
+    managementConsole:
+      # Enable the GemFire Management Console, which provides a management dashboard.
+      enabled: false
+      service:
+        port: 8080
+        annotations: {}
+      image:
+        registry: docker.io
+        repository: gemfire/gemfire-management-console
+        tag: 1.4.1
+        pullPolicy: IfNotPresent
+
+  # In Gateway v11.1.1 shared state providers like redis (redis only currently) can be configured in a yaml file.
+  # In Gateway v11.1.3 gemfire can be configured in a yaml file
+  sharedStateClient:
+    # Note: For this configuration to take effect config.redis.enabled or config.gemfire.external.enabled must be also be true
+    enabled: true
+  # If you are using an existingConfigSecret for more than one shared state client that requires a tls cert, please use the customConfig section to mount
+  # existingConfigSecret: shared-state-client-secret
+  # reserved for future use
+    additionalProviders: []
 
 ## Reference an existing secret for sensitive Gateway fields
 ## Note that additionalSecret will no longer take effect when existingGatewaySecret is set.
@@ -474,6 +641,10 @@ database:
   # Configurable, update the mysql.auth.<settings> if you change this and would like to use the demo database server.
   username: gateway
   password: mypassword
+  # Liquibase log level can be set to one of the following.
+  # This configuration is only valid from Gateway v11.1.1 onwards.
+  # severe/warning/info/fine(debug)/off
+  liquibaseLogLevel: "off"
   name: ssg
 
 ## If loading a TLS Key/Pair
@@ -515,9 +686,22 @@ management:
     loadServiceAccountToken: false
   service:
     enabled: true
+    # Gateway Management Service ipFamilyPolicy
+    # SingleStack, PreferDualStack or RequireDualStack
+    # ipFamilyPolicy: PreferDualStack
+    # Gateway Management Service ipFamilies
+    # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ipFamilies: []
     type: LoadBalancer
     ## Load Balancer sources
     ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    # loadBalancerSourceRanges:
+    # - 10.10.10.0/24
+    ## Set the ExternalIPs
+    # externalIPs:
+    ## Set the LoadBalancerIP
+    # loadBalancerIP:
+    # loadBalancerClass: "mylbclass"
     annotations: {}
       # cloud.google.com/load-balancer-type: "Internal"
     ports:
@@ -543,6 +727,12 @@ management:
 service:
   # Service Type, ClusterIP, NodePort, LoadBalancer
   type: LoadBalancer
+  # Gateway Service ipFamilyPolicy
+  # SingleStack, PreferDualStack or RequireDualStack
+  # ipFamilyPolicy: PreferDualStack
+  # Gateway Service ipFamilies
+  # ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+  ipFamilies: []
   ## Load Balancer sources
   ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
   # loadBalancerSourceRanges:
@@ -551,7 +741,7 @@ service:
   # externalIPs:
   ## Set the LoadBalancerIP
   # loadBalancerIP:
-
+  # loadBalancerClass: "mylbclass"
   # Update this port list if additional ports need to be exposed
   ports:
     - name: https
@@ -600,7 +790,7 @@ otk:
   # Restman host and port (optional). Valid only for db backed gateways
   # Default - gateway service
   # restmanHost:
-  # Default -  installSolutionKits.restmanPort
+  # Default -  8443
   # restmanPort:
 
   # Specify internal gateway host and port for DMZ OTK type
@@ -663,7 +853,10 @@ otk:
   job:
     image:
       repository: caapim/otk-install
-      tag: 4.6.3
+      tag: 4.7.0
+      # OTK 4.6.4 & 4.7.0 are presently the only versions that provides seamless support for Gateway versions 11.2 & greater
+      # There are limitations in older versions (< OTK 4.6.4) with respect to Evaluate JSON Path Assertion (V1) assertion & other support limitations
+      # This requires specific actions as mentioned in the release notes Chart Version 3.0.41
       pullPolicy: IfNotPresent
     imagePullSecret:
       enabled: false
@@ -708,7 +901,9 @@ otk:
     # OTK database type - mysql/oracle/cassandra
     type: mysql
     connectionName: OAuth
+    # OTK database dbUpgrade - Enable/Disable auto upgrade of OTK MySQL or Oracle DB
     dbUpgrade: true
+    # OTK database useDemoDb - install/upgrade OTK DB on the gateways MySQL container for a quick test deployment. Do not use this in production deployments.
     useDemoDb: true
 
     # OTK database user name and password used to create Gateway Database/cassandra connection.
@@ -725,10 +920,6 @@ otk:
 
     # Update database connection properties during helm upgrade.
     updateConnection: true
-
-    # If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true.
-    # This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-    changeLogSync: false
 
     sql:
 
@@ -762,6 +953,21 @@ otk:
       enabled: false
       # connectionName: OAuth_ReadOnly
       # existingSecretName: otkReadOnlyDbSecret
+      # username: root
+      # password: 7layer
+      # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
+      # connectionProperties: {"c3p0.maxConnectionAge":"100","c3p0.maxIdleTime":"1000"}
+
+      jdbcURL: jdbc:mysql://<host>:<port>/<database>
+      jdbcDriverClass: com.mysql.jdbc.Driver
+      # Oracle database name
+      databaseName:
+
+    # Optionally configure Client read database connection for MySQL/Oracle.
+    clientReadConnection:
+      enabled: false
+      # connectionName: Oauth_Client_Read
+      # existingSecretName: otkClientReadSecret
       # username: root
       # password: 7layer
       # properties: {"maximumPoolSize":15, "minimumPoolSize":3}
@@ -816,19 +1022,24 @@ otk:
 # The default way to expose the Gateway is via L4 Load Balancer because it goes far beyond the HTTP(S) limitation ingress currently imposes
 # Certificates are not created here, please specify an existing cert secret to use if enabling TLS
 ingress:
-  # Set to true to create ingress object
+  # Set to true to create ingress or route object
   enabled: false
+  # Set openshift.route.enabled to true if you are using Openshift and would like to use routes
+  openshift:
+    route:
+      enabled: false
+      wildcardPolicy: None
+    # weight: 100
+
   # Ingress Class Name
   ingressClassName: nginx
-  # Ingress annotations
+  # Ingress labels (also apply to routes)
+  labels: {}
+  # Ingress annotations (also apply to routes)
   annotations: {}
-  # Ingress class
-   # kubernetes.io/ingress.class: nginx
   # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   # nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   # When the ingress is enabled, a host pointing to this will be created
-  # By default clusterHostname is used, only set this if you want to use a different host
-   ## Enable TLS configuration for the hostname defined at ingress.hostname/clusterHostname parameter
   tls:
   - hosts:
     - dev.ca.com
@@ -836,7 +1047,6 @@ ingress:
   # - hosts:
   #   - dev1.ca.com
   #   secretName: default
-
   rules:
   - host: dev.ca.com
     path: "/"
@@ -844,13 +1054,205 @@ ingress:
       port:
         name: https
       # number:
-  #  - host: dev1.ca.com
-  #    path: "/"
-  #    backend: management
-  #    service:
-  #      port:
-  #        name: management
-  #        #number:
+    # Per-rule annotations (OpenShift Routes only). Merged with ingress.annotations.
+    # annotations:
+    #   haproxy.router.openshift.io/timeout: 5m
+  # - host: dev1.ca.com
+  #   path: "/"
+  #   service:
+  #     port:
+  #       name: https
+      # number:
+  # - host: dev-pm.ca.com
+  #   path: "/"
+  #   backend: management
+  #   service:
+  #     port:
+  #       name: management
+        # number:
+
+# Kubernetes Gateway API Configuration
+# ref: https://gateway-api.sigs.k8s.io/
+# NOTE: Gateway API support is EXPERIMENTAL. Support depends on your Gateway controller.
+# Contour and EnvoyGateway examples are provided in the examples/ingress directory.
+# ref: https://gateway-api.sigs.k8s.io/implementations/
+kubernetesGateway:
+  # -- Enable Kubernetes Gateway API resources.
+  # When enabled, the chart creates routes pointing to the chart's own service.
+  # Customize each sub-section as needed.
+  enabled: false
+
+  # --- Gateway Resource (gateway.networking.k8s.io/v1) ---
+  # Controls the Kubernetes Gateway resource.
+  # Set gateway.create: true to create a new Gateway, or leave as false
+  # and provide existingRef to attach routes to an existing Gateway.
+  gateway:
+    # -- Create a new Gateway resource managed by this chart
+    create: false
+    # -- GatewayClass name (e.g. contour, eg). Required when create: true.
+    gatewayClassName: ""
+    # -- Optional addresses requested for the Gateway (e.g. static IPs).
+    # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
+    addresses: []
+    # - type: IPAddress
+    #   value: "1.2.3.4"
+    # -- Reference to an existing Gateway resource. Used when create: false.
+    # Routes will use this as their parentRef.
+    existingRef:
+      name: ""
+      namespace: ""
+
+    # -- TLS configuration for the Gateway listener(s).
+    # Part of the Gateway spec (spec.listeners[].tls).
+    # The listener TLS secret is the certificate presented to clients (frontend).
+    # Two modes:
+    #   1. Reference an existing secret: set existingSecretName
+    #   2. Auto-generate: leave existingSecretName empty
+    #      A self-signed certificate is generated using Helm built-in functions.
+    tls:
+      # -- Reference an existing kubernetes.io/tls Secret.
+      # When set, no TLS secret is created by this chart.
+      existingSecretName: ""
+
+    # -- Additional labels for the Gateway resource
+    labels: {}
+    # -- Additional annotations for the Gateway resource
+    annotations: {}
+
+  # --- HTTPRoute (gateway.networking.k8s.io/v1) ---
+  # Used for TLS termination at the Gateway with re-encryption to the backend.
+  # parentRefs are auto-resolved from gateway.create or gateway.existingRef.
+  httpRoute:
+    # -- Enable HTTPRoute resource
+    enabled: true
+    # -- HTTPRoute rules. Each rule creates a backendRef to the chart's own service.
+    # Rules are grouped by hostname - rules with the same hostname become one HTTPRoute.
+    # Set hostname on a rule to create a dedicated HTTPRoute for that host.
+    # Set backend: management to route to the management service.
+    # port is the Layer7 Gateway service port (service.ports[].external
+    # or management.service.ports[].external).
+    rules:
+    # Example: per-hostname routing with management service
+      - hostname: dev.ca.com
+        port: 8443
+        matches:
+        - path:
+            type: PathPrefix
+            value: /
+      - hostname: dev-pm.ca.com
+        port: 9443
+        backend: management
+        matches:
+        - path:
+            type: PathPrefix
+            value: /
+    # -- Additional labels for the HTTPRoute resource
+    labels: {}
+    # -- Additional annotations for the HTTPRoute resource
+    annotations: {}
+
+  # --- BackendTLSPolicy (gateway.networking.k8s.io/v1) ---
+  # Configures TLS from the Gateway to the backend (Layer7 Gateway) pod.
+  # Required when using httpRoute since the backend speaks HTTPS and the
+  # Gateway API does not support tlsSkipVerify.
+  backendTLSPolicy:
+    # -- Enable BackendTLSPolicy resource
+    enabled: true
+    # -- Ports to exclude from BackendTLSPolicy targetRefs.
+    # List of external port numbers (from service.ports[].external) that do not
+    # speak TLS. By default (empty), the policy applies to all service ports
+    # (sectionName is omitted). When set, each non-excluded port gets an
+    # explicit targetRef with sectionName.
+    excludePorts: []
+    # - 8080
+    # -- TLS validation configuration for the backend connection.
+    # Each sub-field has an intelligent default when left empty:
+    #   hostname        -- defaults to <fullname>.<namespace>.svc.cluster.local
+    #   caCertificateRefs -- defaults to the auto-generated CA ConfigMap
+    # Override individual fields without replacing the entire block.
+    validation:
+      # -- Hostname for backend TLS validation.
+      # If empty, defaults to <fullname>.<namespace>.svc.cluster.local
+      hostname: ""
+      # -- CA certificate references for backend validation.
+      # If empty, defaults to the auto-generated CA ConfigMap (created alongside
+      # the backend TLS secret). Override to reference your own ConfigMap, Secret, etc.
+      caCertificateRefs: []
+      # - name: my-ca-configmap
+      #   group: ""
+      #   kind: ConfigMap
+      # - name: my-ca-secret
+      #   group: ""
+      #   kind: Secret
+      # -- Use well-known CA certificates (e.g. "System").
+      # When set, caCertificateRefs is not rendered (they are mutually exclusive per Gateway API spec).
+      wellKnownCACertificates: ""
+
+    # -- Backend TLS certificate configuration.
+    # This is the certificate that the Layer7 Gateway pod serves to the
+    # Kubernetes Gateway controller. This is separate from the listener TLS
+    # (kubernetesGateway.gateway.tls) which is presented to clients.
+    # Two modes:
+    #   1. Auto-generate: leave existingSecretName empty (default)
+    #      A self-signed certificate + CA is generated using Helm built-in functions.
+    #      The CA is exported as a ConfigMap for BackendTLSPolicy validation.
+    #   2. Reference an existing secret: set existingSecretName
+    #      You must also set validation.caCertificateRefs or
+    #      validation.wellKnownCACertificates so the controller can verify
+    #      the backend certificate.
+
+    tls:
+      # -- Reference an existing kubernetes.io/tls Secret for the backend certificate.
+      # This configuration does not handle key rotation. Bootstrapped configurations only apply during startup.
+      # We recommend managing the Gateway's certificate chains externally and only using the validation configuration above for CA validation.
+      existingSecretName: ""
+      # -- Enable SSL key bootstrap into the Layer7 Gateway pod.
+      # When true, the backend TLS secret (auto-generated or existingSecretName) is
+      # mounted into the pod and a bootstrap script loads it as the default SSL key.
+      # Set to false when you only need the BackendTLSPolicy resource (e.g. you manage
+      # the pod's SSL key externally and only provide a CA for validation).
+      bootstrap: true
+      # -- Force the bootstrap script to run on every helm install/upgrade.
+      # By default, on a database-backed gateway the script only runs on initial install
+      # (to avoid overwriting keys rotated via Policy Manager or CI/CD).
+      # Set true to override this safety check.
+      forceBootstrap: false
+
+    # -- Additional labels for the BackendTLSPolicy resource
+    labels: {}
+    # -- Additional annotations for the BackendTLSPolicy resource
+    annotations: {}
+
+  # --- TLSRoute ---
+  # Used for TLS passthrough (SNI-based routing, no termination at Gateway).
+  # This is an alternative to httpRoute -- typically only one is enabled.
+  tlsRoute:
+    # -- Enable TLSRoute resource
+    enabled: false
+    # -- TLSRoute API version. TLSRoute is GA (v1) as of Gateway API 1.5.0.
+    # Set to gateway.networking.k8s.io/v1 when your Gateway API CRDs include
+    # TLSRoute at v1.
+    apiVersion: gateway.networking.k8s.io/v1alpha2
+    # -- TLSRoute rules. Each rule creates a backendRef to the chart's own service.
+    # Same hostname grouping as httpRoute - rules with the same hostname become one TLSRoute.
+    # port is the Layer7 Gateway service port (service.ports[].external
+    # or management.service.ports[].external).
+    rules:
+      - hostname: dev.ca.com
+        port: 8443
+      - hostname: dev-pm.ca.com
+        port: 9443
+        backend: management
+
+    # -- Additional labels for the TLSRoute resource
+    labels: {}
+    # -- Additional annotations for the TLSRoute resource
+    annotations: {}
+
+  # -- Labels applied to all Gateway API resources created by this chart
+  labels: {}
+  # -- Annotations applied to all Gateway API resources created by this chart
+  annotations: {}
 
 # Additional Environment variables to be added to the Gateway Configmap
 additionalEnv: {}
@@ -1054,156 +1456,182 @@ customHosts:
   #   - "example.ca.com"
   #   ip: "0.0.0.0"
 
-## Demo - enable/disable the background metrics processing task
-## Enabling this creates a policy on the Gateway and routes service metrics to influxDbUrl
-## Disabling on upgrade will have no effect on the deployed policy
-## To be replaced with a user defined bundle relevant to the endpoint they wish to relay service metrics to.
-## InfluxDbUrl and tags are Cluster-Wide-Properties.
-serviceMetrics:
-  enabled: false
-  ## By default influxdb is not deployed with this Chart.
-  ## Set influxdb.enabled in the subchart section to true to deploy it.
-  external: false
-  influxDbUrl: http://influxdb:8086
-  influxDbDatabase: serviceMetricsDb
-  tags: env=dev
+####################################################################################
+# UPDATED MySQL Configuration (Native StatefulSet - Development/Testing Only)
+# This replaces the MySQL subchart with a simple StatefulSet implementation
+# DO NOT USE IN PRODUCTION!! For production, use an external MySQL database.
+# See the README for full configuration options and examples.
+# Note: MySQL StatefulSet is enabled via database.create=true
+####################################################################################
+mysql:
+  # Maximum size of one packet or any generated/string string.
+  maxAllowedPacket: 64M
+  image:
+    repository: docker.io/mysql
+    tag: 8.4.5
+    pullPolicy: IfNotPresent
+  auth:
+    rootPassword: mypassword
+    database: ssg
+    username: gateway
+    password: mypassword
+    # existingSecret: ""
+  service:
+    type: ClusterIP
+    port: 3306
+    annotations: {}
+    # sessionAffinity: ""
+    # sessionAffinityConfig: {}
+    # nodePort: ""
+    # extraPorts: []
+    # externalTrafficPolicy: ""
+  # If otk.database.useDemoDb is true, the following will be set automatically:
+  initdbScriptsConfigMap: otk-db-scripts-cm
+  # commonAnnotations:
+  #   helm.sh/hook: pre-install,post-upgrade
+  #   helm.sh/hook-weight: "-10"
+  startupProbe:
+    enabled: false
+    # initialDelaySeconds: 0
+    # periodSeconds: 10
+    # timeoutSeconds: 5
+    # successThreshold: 1
+    # failureThreshold: 30
+  readinessProbe:
+    enabled: true
+    # initialDelaySeconds: 5
+    # periodSeconds: 5
+    # timeoutSeconds: 1
+    # successThreshold: 1
+    # failureThreshold: 3
+  livenessProbe:
+    enabled: true
+    # initialDelaySeconds: 30
+    # periodSeconds: 10
+    # timeoutSeconds: 5
+    # successThreshold: 1
+    # failureThreshold: 3
+  persistence:
+    enabled: true
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    # storageClass: ""
+    # existingClaim: ""
+    # subPath: ""
+    # selector: {}
+    # If otk.database.useDemoDb is true, annotations will be set automatically:
+    # annotations:
+    #   helm.sh/hook: pre-install,post-upgrade
+    #   helm.sh/hook-weight: "-10"
+  # podManagementPolicy: OrderedReady
+  # revisionHistoryLimit: 10
+  # schedulerName: ""
+  # priorityClassName: ""
+  # terminationGracePeriodSeconds: ""
+  podSecurityContext:
+    fsGroup: 1001
+  containerSecurityContext:
+    runAsUser: 1001
+    runAsGroup: 1001
+  podAnnotations: {}
+  podLabels: {}
+  # podManagementPolicy: OrderedReady
+  # revisionHistoryLimit: 10
+  # affinity: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # topologySpreadConstraints: []
+  # configuration: ""
+  # existingConfigmap: ""
+  # initdbScripts: {}
+  # initdbScriptsConfigMap: ""
+  # commonAnnotations: {}
+  # resources: {}
+  # extraEnvVars: []
+  # extraEnvVarsCM: ""
+  # extraEnvVarsSecret: ""
+  # extraVolumes: []
+  # extraVolumeMounts: []
+  # initContainers: []
+  # sidecars: []
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
-# Install Gateway solution kit(s) using restman.
-#   Prerequisites:
-#     1) restman is enabled
-#     2) .sskar file(s) exist on Gateway container image under /tmp (e.g. /tmp/OAuthSolutionKit-4.4.1-4425.sskar)
-#   Description of solution kit(s):
-#     1) OAuth Solution Kit: https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-4/installation-workflow/install-the-oauth-solution-kit.html
-installSolutionKits:
-  enabled: false
-  restmanPort: 8443
-  restmanReadyWait: 150s
-  solutionKits:
+####################################################################################
+# Redis Configuration (Standalone - Development/Testing Only)
+# This is a simple Redis StatefulSet implementation
+# DO NOT USE IN PRODUCTION!! For production, use an external Redis or Redis cluster.
+# Enable via config.redis.subChart.enabled
+####################################################################################
+redis:
+  image:
+    repository: redis
+    tag: 7.4-alpine
+    pullPolicy: IfNotPresent
+  auth:
+    enabled: false
+    username: ""
+    password: mypassword
+    # existingSecret: ""
+  service:
+    type: ClusterIP
+    port: 6379
+    annotations: {}
+  persistence:
+    enabled: false
+    size: 8Gi
+    accessModes:
+      - ReadWriteOnce
+    # storageClass: ""
+    # existingClaim: ""
+    # subPath: ""
+    # selector: {}
+    # annotations: {}
+  # maxmemory: 256mb
+  # maxmemoryPolicy: allkeys-lru
+  # appendonly: false
+  tls:
+    enabled: true
+    autoGenerated: true
+    # certificatesSecret: ""
+    # certFilename: ""
+    # certKeyFilename: ""
+    # certCAFilename: ""
+    # authClients: no
+  startupProbe:
+    enabled: false
+  readinessProbe:
+    enabled: true
+  livenessProbe:
+    enabled: true
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  podAnnotations: {}
+  podLabels: {}
+  # configuration: ""
+  # commonAnnotations: {}
+  # resources: {}
+  # nodeSelector: {}
+  # tolerations: []
+  # affinity: {}
+  # updateStrategy: {}
+  # schedulerName: ""
+  # priorityClassName: ""
+  # terminationGracePeriodSeconds: ""
+  # extraEnvVars: []
+  # extraVolumes: []
+  # extraVolumeMounts: []
+  pdb:
+    create: false
+    maxUnavailable: ""
+    minAvailable: ""
 
 ##
 ## Subchart Configuration
 ##
-
-# Settings for Redis - https://github.com/bitnami/charts/tree/master/bitnami/redis
-redis:
-  auth:
-    # The Gateway supports Redis master auth in sentinel mode only, set this value to true to enable auth.
-    enabled: false
-    # Sentinel auth which enables password authentication on sentinels too is not supported by the Gateway and should remain false
-    sentinel: false
-    password: "mypassword"
-  tls:
-    enabled: true
-    authClients: false
-    # this only applies if redis.subChart.enabled is true
-    autoGenerated: true
-  image:
-    registry: docker.io
-    repository: bitnami/redis
-    tag: 7.2.1-debian-11-r0
-    pullPolicy: IfNotPresent
-  # replication or standalone
-  architecture: replication
-  master:
-    count: 1
-    configuration: ""
-    disableCommands:
-      - FLUSHDB
-      - FLUSHALL
-    persistence:
-      enabled: false
-      size: 20Gi
-    service:
-      type: LoadBalancer
-  replica:
-    replicaCount: 3
-    containerPorts:
-      redis: 6379
-    resources:
-      limits: {}
-      requests: {}
-    persistence:
-      enabled: false
-      sizeLimit: ""
-      accessModes:
-        - ReadWriteOnce
-      size: 20Gi
-  # service:
-    # type: LoadBalancer
-    # externalTrafficPolicy: Local
-  sentinel:
-    enabled: true
-  # service:
-    # type: LoadBalancer
-    # externalTrafficPolicy: Local
-    image:
-      registry: docker.io
-      repository: bitnami/redis-sentinel
-      tag: 7.2.1-debian-11-r0
-      digest: ""
-      pullPolicy: IfNotPresent
-    masterSet: mymaster
-    quorum: 2
-    resources:
-      limits: {}
-      requests: {}
-
-# MySQL Bitnami chart - https://github.com/bitnami/charts/tree/master/bitnami/mysql (DO NOT USE IN PRODUCTION!!)
-mysql:
-  image:
-    registry: docker.io
-    repository: bitnami/mysql
-    tag: 8.0.22-debian-10-r75
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    # - myRegistryKeySecretName
-  auth:
-    username: gateway
-    password: mypassword
-    database: ssg
-    rootPassword: mypassword
-  initdbScriptsConfigMap: otk-db-scripts-cm
-  primary:
-    # persistence:
-    #   enabled: true
-    #   size: 8Gi
-    configuration: |-
-      [client]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8
-      plugin_dir=/opt/bitnami/mysql/plugin
-      [mysqld]
-      default_authentication_plugin=mysql_native_password
-      log-bin-trust-function-creators=1
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/plugin
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      collation-server=utf8_general_ci
-      character-set-server=UTF8
-      innodb_log_buffer_size=32M
-      innodb_log_file_size=80M
-      max_allowed_packet=20M
-      sql_mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-      bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    persistence:
-      annotations:
-        helm.sh/hook: pre-install,post-upgrade
-        helm.sh/hook-weight: "-10"
-  commonAnnotations:
-    helm.sh/hook: pre-install,post-upgrade
-    helm.sh/hook-weight: "-10"
 
 # Settings for Hazelcast - https://github.com/hazelcast/charts/blob/master/stable/hazelcast/values.yaml
 # The Gateway currently supports Hazelcast 4.x & 5.x servers
@@ -1239,47 +1667,3 @@ hazelcast:
               service-name: ${serviceName}
               namespace: ${namespace}
               resolve-not-ready-addresses: true
-
-# Settings for InfluxDB - https://github.com/influxdata/helm-charts/tree/master/charts/influxdb
-# This is not a production implementation!
-influxdb:
-  enabled: false
-  image:
-    repository: "influxdb"
-    tag: "1.8.10-alpine"
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    #   - registry-secret
-  service:
-    port: 8086
-  persistence:
-    enabled: true
-   # storageClass:
-    size: 8Gi
-  env:
-    - name: INFLUXDB_DB
-      value: "serviceMetricsDb"
-
-# Settings for Grafana - https://github.com/bitnami/charts/tree/master/bitnami/grafana
-grafana:
-  enabled: false
-  image:
-    registry: docker.io
-    repository: bitnami/grafana
-    tag: 9.0.7-debian-11-r0
-    pullPolicy: IfNotPresent
-    # pullSecrets:
-    # - myRegistryKeySecretName
-  # Change this to update the UI Password
-  admin:
-    user: admin
-    password: password
-  dashboardsProvider:
-    enabled: true
-  customDashboard:
-    value:
-  dashboardsConfigMaps:
-    - configMapName: grafana-configmap
-      fileName: gateway-service-metrics.json
-  datasources:
-    secretName: grafana-secret

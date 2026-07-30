@@ -28,7 +28,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ template "gateway.fullname" . }}
+        app: {{ template "gateway.fullname" . }}-otk-install
         release: {{ .Release.Name }}
     {{- if  .Values.otk.job.podLabels }}
         {{- toYaml .Values.otk.job.podLabels | nindent 8 }}
@@ -72,6 +72,10 @@ spec:
             {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
             - secretRef:
                 name: {{ template "otk.dbSecretName.readOnly" . }}
+            {{ end }}
+            {{- if and (.Values.otk.database.clientReadConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
+            - secretRef:
+                name: {{ template "otk.dbSecretName.clientRead" . }}
             {{ end }}
             - configMapRef:
                 name: {{ template "gateway.fullname" . }}-otk-install-configmap

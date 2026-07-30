@@ -26,9 +26,17 @@ spec:
     metadata:
       labels:
         app: coordinator
-      {{ if .Values.forceRedeploy }}
+      {{- if  .Values.coordinator.podAnnotations }}
+      annotations: {{- toYaml .Values.coordinator.podAnnotations | nindent 8 }}
+      {{- if .Values.coordinator.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.coordinator.podAnnotations }}
+      {{- if .Values.coordinator.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "druid.serviceAccountName" . }}
@@ -56,16 +64,29 @@ spec:
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
           env:
-            - name: MINIO_ACCESS_KEY
+          {{- if .Values.global.deepStorage.minio }} 
+            - name: S3_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.minio.auth.secretName }}
                   key: MINIO_ACCESS_KEY
-            - name: MINIO_SECRET_KEY
+            - name: S3_SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.minio.auth.secretName }}
                   key: MINIO_SECRET_KEY
+          {{- else }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_access_key_id
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.deepStorage.auth.secretName }}
+                  key: admin_secret_access_key
+          {{- end }}
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:

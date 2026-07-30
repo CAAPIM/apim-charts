@@ -20,6 +20,10 @@ metadata:
 spec:
   backoffLimit: 2
   template:
+    metadata:
+      {{- if  .Values.jobs.podAnnotations }}
+      annotations: {{- toYaml .Values.jobs.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.global.podSecurityContext }}
@@ -32,10 +36,13 @@ spec:
           {{- if .Values.global.containerSecurityContext }}
           securityContext: {{- toYaml .Values.global.containerSecurityContext | nindent 12 }}
           {{- end }}
+          {{- if .Values.jobs.dbUpgradeRbac.resources }}
+          resources: {{- toYaml .Values.jobs.dbUpgradeRbac.resources | nindent 12 }}
+          {{- end }}
           env:
            - name: HOST
          {{ if .Values.global.setupDemoDatabase }}
-             value: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+             value: {{ .Release.Name }}-mysql-headless
         {{ else }}
              value: {{ .Values.global.databaseHost | quote }}
         {{ end }}
@@ -58,6 +65,10 @@ spec:
              value: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
            - name: CREATE_DATABASE
              value: "true"
+           - name: DATABASE_USE_SSL
+             value: {{ .Values.global.databaseUseSSL | quote }}
+           - name: DATABASE_REQUIRE_SSL
+             value: {{ .Values.global.databaseRequireSSL | quote }}
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"

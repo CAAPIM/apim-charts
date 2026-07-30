@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kafka.fullname" . }}-config
+  labels:
+    {{- include "kafka.labels" . | nindent 4 }}
+    {{- range $key, $val := .Values.global.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- range $key, $val := .Values.kafka.additionalLabels }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+data:
+  SERVICE_NAME: {{ include "kafka.fullname" . }}
+
+  # Portal subdomain
+  {{- if .Values.global.subdomainPrefix }}
+  APIM_PORTAL_SUBDOMAIN: {{ .Values.global.subdomainPrefix | quote }}
+  {{- end }}
+  
+  {{- if .Values.kafka.kraft.enabled }}
+  # ============================================
+  # KRaft Mode Configuration (Kafka 4.0.0+)
+  # ============================================
+  
+  # KRaft cluster ID (must be consistent across all brokers)
+  # The startup script checks for KAFKA_CLUSTER_ID (not KAFKA_KRAFT_CLUSTER_ID)
+  {{- if .Values.kafka.kraft.clusterId }}
+  KAFKA_CLUSTER_ID: {{ .Values.kafka.kraft.clusterId | quote }}
+  {{- else }}
+  # Generate a deterministic cluster ID based on subdomain or use a fixed one
+  # Using a hash of the subdomain to generate a consistent cluster ID
+  {{- $clusterName := .Values.global.subdomainPrefix | default "kafka-cluster" }}
+  {{- $hash := sha256sum $clusterName }}
+  {{- $clusterId := $hash | substr 0 22 }}
+  KAFKA_CLUSTER_ID: {{ $clusterId | quote }}
+  {{- end }}
+  
+  # Node ID (uses pod ordinal from hostname if not explicitly set)
+  {{- if .Values.kafka.kraft.nodeId }}
+  KAFKA_CFG_NODE_ID: {{ .Values.kafka.kraft.nodeId | quote }}
+  {{- else }}
+  # Node ID will be extracted from pod hostname (e.g., kafka-0 -> 0)
+  KAFKA_CFG_NODE_ID_COMMAND: echo $HOSTNAME | rev | cut -d "-" -f 1
+  {{- end }}
+  
+  # Process roles (broker, controller, or both)
+  KAFKA_CFG_PROCESS_ROLES: {{ .Values.kafka.kraft.processRoles | quote }}
+  
+  # Controller listener names
+  KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+  
+  # Controller quorum voters
+  {{- if .Values.kafka.kraft.controllerQuorumVoters }}
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ .Values.kafka.kraft.controllerQuorumVoters | quote }}
+  {{- else }}
+  # Auto-generate controller quorum voters based on replica count and ordinals.start
+  {{- $statefulsetName := include "kafka.statefulsetName" . }}
+  {{- $serviceName := include "kafka.fullname" . }}
+  {{- $replicaCount := int .Values.kafka.replicaCount }}
+  {{- $controllerPort := int .Values.kafka.listeners.controller.port }}
+  {{- $startOrdinal := 0 }}
+  {{- if .Values.kafka.ordinals }}
+  {{- $startOrdinal = int .Values.kafka.ordinals.start }}
+  {{- end }}
+  {{- $voters := list }}
+  {{- range $i := until $replicaCount }}
+  {{- $ordinal := add $i $startOrdinal }}
+  {{- $voters = append $voters (printf "%d@%s-%d.%s:%d" $ordinal $statefulsetName $ordinal $serviceName $controllerPort) }}
+  {{- end }}
+  KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: {{ join "," $voters | quote }}
+  {{- end }}
+  
+  {{- else }}
+  # ============================================
+  # Zookeeper Mode Configuration (Legacy)
+  # ============================================
+  KAFKA_ZOOKEEPER_CONNECT: {{ .Values.zookeeper.hostname }}:{{ .Values.zookeeper.port }}
+  KAFKA_ADVERTISED_HOST_NAME: {{ include "kafka.fullname" . }}
+  BROKER_ID_COMMAND: echo $HOSTNAME | rev | cut -d "-" -f 1
+  {{- end }}
+  
+  # ============================================
+  # Listener Configuration
+  # ============================================
+  
+  {{- if .Values.kafka.kraft.enabled }}
+  # Build listeners string
+  {{- $listeners := list }}
+  {{- if .Values.kafka.listeners.internal.enabled }}
+  {{- $listeners = append $listeners (printf "INTERNAL://0.0.0.0:%d" (int .Values.kafka.listeners.internal.port)) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- $listeners = append $listeners (printf "CONTROLLER://0.0.0.0:%d" (int .Values.kafka.listeners.controller.port)) }}
+  {{- end }}
+  KAFKA_CFG_LISTENERS: {{ join "," $listeners | quote }}
+  
+  # Build listener security protocol map
+  {{- $protocolMap := list }}
+  {{- if .Values.kafka.listeners.internal.enabled }}
+  {{- $protocolMap = append $protocolMap (printf "INTERNAL:%s" .Values.kafka.listeners.internal.protocol) }}
+  {{- end }}
+  {{- if .Values.kafka.listeners.controller.enabled }}
+  {{- $protocolMap = append $protocolMap (printf "CONTROLLER:%s" .Values.kafka.listeners.controller.protocol) }}
+  {{- end }}
+  KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: {{ join "," $protocolMap | quote }}
+  
+  # Inter-broker listener name
+  KAFKA_CFG_INTER_BROKER_LISTENER_NAME: {{ .Values.kafka.listeners.interBrokerListenerName | quote }}
+  
+  # Advertised listeners
+  {{- if .Values.kafka.advertisedListeners }}
+  # Custom advertised listeners
+  KAFKA_CFG_ADVERTISED_LISTENERS: {{ .Values.kafka.advertisedListeners | quote }}
+  {{- else }}
+  # Will be set at runtime by init container from /shared/node-id.env
+  {{- end }}
+  
+  {{- else }}
+  # Legacy listener configuration
+  KAFKA_PORT: {{ .Values.kafka.listeners.internal.port | default "9092" | quote }}
+  KAFKA_LISTENERS: PLAINTEXT://:{{ .Values.kafka.listeners.internal.port | default "9092" }}
+  KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://:{{ .Values.kafka.listeners.internal.port | default "9092" }}
+  {{- end }}
+  
+  # ============================================
+  # Log Retention Configuration
+  # ============================================
+  KAFKA_CFG_LOG_RETENTION_HOURS: {{ .Values.kafka.logRetentionHours | quote }}
+  
+  # ============================================
+  # Topic Replication Configuration
+  # ============================================
+  # Auto-calculate replication factors: use configured value, or min(replicaCount, 3) when 0
+  {{- $replicaCount := int .Values.kafka.replicaCount }}
+  {{- $maxReplication := 3 }}
+  {{- $autoRF := min $replicaCount $maxReplication }}
+
+  {{- $defaultRF := int .Values.kafka.defaultReplicationFactor }}
+  {{- if eq $defaultRF 0 }}
+  {{- $defaultRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: {{ $defaultRF | quote }}
+
+  KAFKA_CFG_MIN_INSYNC_REPLICAS: {{ .Values.kafka.minInsyncReplicas | quote }}
+
+  {{- $offsetsRF := int .Values.kafka.offsetsTopicReplicationFactor }}
+  {{- if eq $offsetsRF 0 }}
+  {{- $offsetsRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: {{ $offsetsRF | quote }}
+
+  {{- $txnRF := int .Values.kafka.transactionStateLogReplicationFactor }}
+  {{- if eq $txnRF 0 }}
+  {{- $txnRF = $autoRF }}
+  {{- end }}
+  KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: {{ $txnRF | quote }}
+  KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: {{ .Values.kafka.transactionStateLogMinIsr | quote }}
+  
+  # ============================================
+  # SASL Authentication Configuration
+  # ============================================
+  {{- if .Values.kafka.sasl.enabled }}
+  KAFKA_CFG_SASL_ENABLED_MECHANISMS: {{ .Values.kafka.sasl.mechanisms | quote }}
+  KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL: {{ .Values.kafka.sasl.interBrokerProtocol | quote }}
+  KAFKA_CFG_OPTS: "-Djava.security.auth.login.config={{ .Values.kafka.sasl.jaasConfigPath }}"
+  {{- end }}

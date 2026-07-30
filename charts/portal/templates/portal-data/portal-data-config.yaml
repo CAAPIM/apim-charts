@@ -1,3 +1,8 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
+{{- include "portal.validateInfrastructureManagement" . }}
+{{- include "portal.validateAnalyticsSeaweedFs" . }}
+{{- include "portal.validateSeaweedFsUnused" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -9,8 +14,8 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
 {{ if .Values.global.setupDemoDatabase}}
-  DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
-  RBAC_DATABASE_HOST: {{ .Release.Name }}-{{ .Values.global.databaseHost }}
+  DATABASE_HOST: {{ .Release.Name }}-mysql-headless
+  RBAC_DATABASE_HOST: {{ .Release.Name }}-mysql-headless
 {{ else }}
   DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
   RBAC_DATABASE_HOST: {{ .Values.global.databaseHost | quote }}
@@ -34,6 +39,10 @@ data:
   PORTAL_VERSION: {{ .Chart.AppVersion | quote }}
   RABBITMQ_HOST: {{ .Values.rabbitmq.host | quote }}
   RABBITMQ_PORT: {{ .Values.rabbitmq.service.port | quote }}
+  KAFKA_BROKERS: {{ include "kafka.brokers" . | quote }}
+  KAFKA_PROXY_ADVERTISED_HOST: {{ default (include "kafka-proxy-host" .) .Values.portal.kafka.proxy.advertisedHost | quote }}
+  KAFKA_PROXY_ADVERTISED_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
+  CONFIG_BROKER_KAFKA_PORT: {{ default 443 .Values.portal.kafka.proxy.advertisedPort | quote }}
   RBAC_DATABASE_NAME: {{ include "rbac-db-name" . | quote }}
   RBAC_DATABASE_PORT: {{ include "database-port" . | quote }}
   RBAC_DATABASE_TYPE: {{ required "Please fill in databaseType in values.yaml" .Values.global.databaseType | quote }}
@@ -44,14 +53,24 @@ data:
   CONFIG_APIM_PORT: {{ .Values.portal.otk.port | quote }}
   CONFIG_BROKER_HOST: {{ include "broker-host" . | quote }}
   CONFIG_BROKER_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
-  CONFIG_PSSG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
-  CONFIG_PSSG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
-  CONFIG_PSSG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
-  CONFIG_PSSG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_ENROLL_HOST: {{ include "pssg-enroll-host" . | quote }}
+  CONFIG_ENROLL_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_SSO_HOST: {{ include "pssg-sso-host" . | quote }}
+  CONFIG_SSO_PORT: {{ .Values.portal.otk.port | quote }}
+  CONFIG_SYNC_HOST: {{ include "pssg-sync-host" . | quote }}
+  CONFIG_SYNC_PORT: {{ .Values.portal.otk.port | quote }}
   {{- if .Values.portal.hostnameWhitelist }}
   HOSTNAME_WHITELIST: {{ .Values.portal.hostnameWhitelist}}
+  {{- end }}
+  {{- if .Values.portal.infrastructureManagement.enabled }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "true"
+  {{- else }}
+  INFRASTRUCTURE_MANAGEMENT_ENABLED: "false"
+  {{- end }}
+  {{- if .Values.portal.intelligence.enabled }}
+  INTELLIGENCE_ENABLED: "true"
+  {{- else }}
+  INTELLIGENCE_ENABLED: "false"
   {{- end }}
   {{- if .Values.telemetry.plaEnabled}}
   TELEMETRY_PLA_ENABLED: {{ .Values.telemetry.plaEnabled | quote }}

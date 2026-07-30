@@ -1,0 +1,159 @@
+# Global values (inherited from parent chart)
+global:
+  portalRepository: ""
+  storageClass: ""
+  pullSecret: ""
+  podSecurityContext: {}
+  containerSecurityContext: {}
+  additionalLabels: {}
+  # Portal subdomain (used for advertised listeners)
+  subdomainPrefix: ""
+
+# Kafka image configuration
+image:
+  kafka: kafka:latest
+  pullPolicy: IfNotPresent
+
+# Override the full name to make Kafka accessible as 'kafka' instead of '<release>-kafka'
+fullnameOverride: kafka
+
+# Kafka deployment configuration
+kafka:
+  # Number of Kafka broker replicas
+  replicaCount: 1
+  # Ordinals configuration (Kubernetes 1.27+)
+  # Set start ordinal for StatefulSet pods
+  # Useful for upgrades from Kafka 3.x (Zookeeper) to 4.0 (KRaft)
+  # where old meta.properties had broker.id=1
+  ordinals:
+    # Start ordinal (default: 0, set to 1 for upgrades from single-pod Zookeeper mode)
+    start: 1
+
+  # Additional labels for Kafka pods
+  additionalLabels: {}
+
+  # Pod annotations
+  podAnnotations: {}
+
+  # Force redeploy by adding timestamp annotation
+  forceRedeploy: false
+
+  # Pod affinity rules
+  affinity: {}
+
+  # Node selector
+  nodeSelector: {}
+
+  # Tolerations
+  tolerations: []
+
+  # Pod security context
+  podSecurityContext: {}
+
+  # Container security context
+  containerSecurityContext: {}
+
+  # Resource requests and limits
+  resources: {}
+    # requests:
+    #   cpu: 100m
+    #   memory: 750Mi
+    # limits:
+    #   cpu: 1000m
+    #   memory: 1.5Gi
+
+  # KRaft Mode Configuration (Kafka 4.0.0+)
+  kraft:
+    # Enable KRaft mode (Zookeeper-less)
+    enabled: true
+    # Cluster ID for KRaft (must be consistent across all brokers)
+    # Set to a fixed value or leave empty to auto-generate based on subdomain
+    clusterId: ""
+    # Node ID (will be set based on pod ordinal if empty)
+    # IMPORTANT: Leave empty to use pod ordinal (0, 1, 2) for StatefulSet
+    nodeId: ""
+    # Process roles (broker, controller, or both)
+    processRoles: "broker,controller"
+    # Controller quorum voters format: id@host:port
+    # For StatefulSet with 3 replicas: "0@kafka-0.kafka:9093,1@kafka-1.kafka:9093,2@kafka-2.kafka:9093"
+    controllerQuorumVoters: ""
+
+  # Listener Configuration
+  listeners:
+    # Internal listener for inter-broker and client communication within cluster
+    internal:
+      enabled: true
+      port: 9092
+      protocol: PLAINTEXT
+    # Controller listener for KRaft mode
+    controller:
+      enabled: true
+      port: 9093
+      protocol: PLAINTEXT
+    # Inter-broker listener name
+    interBrokerListenerName: INTERNAL
+
+  # Advertised Listeners Configuration
+  # Custom advertised listeners (portal-dist style)
+  # Format: "INTERNAL://kafka:9092"
+  # Leave empty to auto-generate
+  advertisedListeners: ""
+
+  # Log retention configuration
+  logRetentionHours: 6
+
+  # Topic replication configuration
+  # default.replication.factor: applied to auto-created topics
+  # Set to min(replicaCount, 3) by default for resilience during scale-down
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  defaultReplicationFactor: 0
+  # min.insync.replicas: minimum replicas that must acknowledge a write
+  # Must be <= replicaCount. Set to 1 to allow single-broker operation.
+  minInsyncReplicas: 1
+  # offsets.topic.replication.factor: replication for __consumer_offsets
+  # When set to 0 (default), the chart auto-calculates: min(replicaCount, 3)
+  offsetsTopicReplicationFactor: 0
+  # transaction.state.log.replication.factor
+  transactionStateLogReplicationFactor: 0
+  # transaction.state.log.min.isr
+  transactionStateLogMinIsr: 1
+
+  # SASL Authentication Configuration
+  sasl:
+    # Enable SASL authentication
+    enabled: false
+    # SASL mechanisms (PLAIN, SCRAM-SHA-256, SCRAM-SHA-512)
+    mechanisms: PLAIN
+    # Inter-broker SASL mechanism
+    interBrokerProtocol: PLAIN
+    # JAAS configuration file path
+    jaasConfigPath: /opt/ca/kafka/config/kafka_server_jaas.conf
+
+# Zookeeper configuration
+zookeeper:
+  hostname: zookeeper
+  port: 2181
+
+# Persistence configuration
+persistence:
+  storage:
+    kafka: 10Gi
+
+# Service Account
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # Automount service account token
+  automountServiceAccountToken: true
+
+# kubectl image for pre-upgrade cleanup jobs
+# Note: When used as a subchart, image.autoDiscovery should be provided by parent chart
+kubectlImage:
+  repository: "tls-automator"
+  tag: "latest"
+  pullPolicy: IfNotPresent
