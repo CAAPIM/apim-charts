@@ -613,7 +613,7 @@ tenantProvisioner:
 
 image:
   dispatcher: dispatcher:5.4.2.2
-  apim: ingress:5.4.2
+  apim: ingress:5.4.2.2
   enterprise: portal-enterprise:5.4.2.2
   data: portal-data:5.4.2.2
   tps: tenant-provisioning-service:5.4.2.2
