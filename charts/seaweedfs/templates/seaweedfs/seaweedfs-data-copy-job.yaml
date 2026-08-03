@@ -1,21 +1,29 @@
-{{- if (eq .Values.global.deepStorage.enableDataMigration true) }}
-# Data Migration Job for Minio to SeaweedFS
+{{- if eq .Values.global.deepStorage.enableDataMigration true }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# Data Migration Job for MinIO to SeaweedFS
 #
-# This is a regular Kubernetes Job (not a Helm hook), so:
-# - Helm upgrade completes immediately without waiting
-# - Job is created/deleted based on enableDataMigration flag
-# - InitContainer actively checks for service readiness before starting migration
-# - Rclone handles retries if connection issues occur during migration
+# This is a regular Kubernetes Job (not a Helm hook), so helm upgrade completes
+# immediately without waiting — safe for large datasets that take hours to migrate.
 #
-# Usage:
-#   1. Enable migration: --set global.deepStorage.enableDataMigration=true
-#   2. Run helm upgrade (completes immediately)
-#   3. Monitor: kubectl get job <release>-seaweedfs-data-copy-job -n <namespace>
-#   4. Check logs: kubectl logs job/<release>-seaweedfs-data-copy-job -n <namespace> -c wait-for-services
-#   5. Check migration logs: kubectl logs job/<release>-seaweedfs-data-copy-job -n <namespace> -c data-copier
-#   6. For subsequent upgrades: --set global.deepStorage.enableDataMigration=false
+# Two-phase upgrade procedure:
+#   Phase 1 (keep Druid on MinIO, trigger migration):
+#     helm upgrade <release> <chart> --set global.deepStorage.minio=true \
+#       --set global.deepStorage.enableDataMigration=true
+#   Wait for job to complete before Phase 2:
+#     kubectl get job <release>-seaweedfs-s3-seaweedfs-data-copy-job -n <namespace>
+#     kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
+#   Phase 2 (switch Druid to SeaweedFS) — ONLY after job shows Complete:
+#     helm upgrade <release> <chart> --set global.deepStorage.minio=false \
+#       --set global.deepStorage.enableDataMigration=false
 #
-# The initContainer will check Minio and SeaweedFS every 10s until both are accessible.
+# WARNING: Do NOT run Phase 2 while migration job is still running.
+# Setting enableDataMigration=false removes the Job from Helm management,
+# which will terminate a running migration mid-copy.
+#
+# The Job auto-deletes 24 hours after completion (ttlSecondsAfterFinished).
+# Monitor progress:
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c wait-for-services
+#   kubectl logs -n <namespace> -f job/<release>-seaweedfs-s3-seaweedfs-data-copy-job -c data-copier
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -29,12 +37,15 @@ metadata:
     migration-source: minio
     migration-target: seaweedfs
 spec:
-  ttlSecondsAfterFinished: 86400  # Keep Job for 24 hours for inspection
-  backoffLimit: 5  # Allow 5 pod restarts on failure
+  ttlSecondsAfterFinished: 86400
+  backoffLimit: 5
   suspend: false
   parallelism: 1
   template:
     metadata:
+      labels:
+        app: {{ template "seaweedfs.name" . }}
+        component: data-migration
     spec:
     {{- if .Values.global.pullSecret }}
       imagePullSecrets:
@@ -47,13 +58,12 @@ spec:
             - /bin/bash
             - -c
             - |
-              echo "Checking Minio and SeaweedFS readiness..."
+              echo "Checking MinIO and SeaweedFS readiness..."
 
               MAX_WAIT={{ .Values.global.deepStorage.migrationInitialDelaySeconds }}
               RETRY_INTERVAL=10
               ELAPSED=0
 
-              # Function to check S3 endpoint
               check_s3_endpoint() {
                 local endpoint=$1
                 local access_key=$2
@@ -62,7 +72,6 @@ spec:
 
                 echo "Checking ${service_name} at ${endpoint}..."
 
-                # Use rclone to test connectivity
                 if rclone lsd "${service_name}:" --config=/dev/null \
                   --s3-provider="${service_name}" \
                   --s3-endpoint="${endpoint}" \
@@ -77,12 +86,10 @@ spec:
                 fi
               }
 
-              # Wait for both services
               while [ $ELAPSED -lt $MAX_WAIT ]; do
                 MINIO_READY=false
                 SEAWEEDFS_READY=false
 
-                # Check Minio
                 if check_s3_endpoint \
                   "http://minio:9000" \
                   "$MINIO_ACCESS_KEY" \
@@ -91,7 +98,6 @@ spec:
                   MINIO_READY=true
                 fi
 
-                # Check SeaweedFS
                 if check_s3_endpoint \
                   "http://seaweedfs-s3:8333" \
                   "$SEAWEEDFS_ACCESS_KEY" \
@@ -100,14 +106,12 @@ spec:
                   SEAWEEDFS_READY=true
                 fi
 
-                # Both ready?
                 if [ "$MINIO_READY" = true ] && [ "$SEAWEEDFS_READY" = true ]; then
                   echo ""
-                  echo "✓✓ All services are ready! Starting data migration..."
+                  echo "✓✓ All services are ready. Starting data migration..."
                   exit 0
                 fi
 
-                # Wait and retry
                 echo "Waiting ${RETRY_INTERVAL}s before retry... (elapsed: ${ELAPSED}s / max: ${MAX_WAIT}s)"
                 sleep $RETRY_INTERVAL
                 ELAPSED=$((ELAPSED + RETRY_INTERVAL))
@@ -164,21 +168,43 @@ spec:
         - name: data-copier
           image: "{{ .Values.global.portalRepository }}{{ .Values.image }}"
           command:
-            - rclone
-            - --stats-one-line
-            - --stats
-            - "2s"
-            - --retries
-            - "30"
-            - --retries-sleep
-            - "10s"
-            - --low-level-retries
-            - "10"
-            - -vv
-            - --progress
-            - copy
-            - "minio:/{{ .Values.minio.bucketName }}"
-            - "seaweedfs:/{{ .Values.global.deepStorage.analytics.bucketName }}"
+            - /bin/bash
+            - -c
+            - |
+              set -e
+
+              echo "=== MinIO to SeaweedFS Data Migration ==="
+              echo ""
+
+              copy_bucket() {
+                local src_bucket=$1
+                local dst_bucket=$2
+                echo "--- Copying bucket: minio:/${src_bucket} -> seaweedfs:/${dst_bucket} ---"
+                rclone copy \
+                  --stats-one-line \
+                  --stats 30s \
+                  --retries 30 \
+                  --retries-sleep 10s \
+                  --low-level-retries 10 \
+                  -vv \
+                  --progress \
+                  "minio:/${src_bucket}" \
+                  "seaweedfs:/${dst_bucket}"
+                echo "✓ Copy complete for ${src_bucket}"
+
+                echo "--- Verifying integrity: ${src_bucket} ---"
+                rclone check \
+                  --one-way \
+                  -vv \
+                  "minio:/${src_bucket}" \
+                  "seaweedfs:/${dst_bucket}"
+                echo "✓ Integrity check passed for ${src_bucket}"
+                echo ""
+              }
+
+              copy_bucket "{{ .Values.minio.bucketName }}" "{{ .Values.global.deepStorage.analytics.bucketName }}"
+
+              echo "=== Migration complete. All buckets copied and verified. ==="
           env:
            - name: MINIO_ACCESS_KEY
              valueFrom:
@@ -226,4 +252,4 @@ spec:
             requests:
               memory: 4Gi
       restartPolicy: "OnFailure"
-{{ end }}
+{{- end }}

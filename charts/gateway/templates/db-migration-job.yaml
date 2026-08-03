@@ -1,0 +1,103 @@
+{{- if .Values.database.migrationJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "gateway.fullname" . }}-db-migration
+  annotations:
+    chartversion: {{ .Chart.AppVersion | quote }}
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    {{- if .Values.database.migrationJob.annotations }}
+    {{- range $key, $val := .Values.database.migrationJob.annotations }}
+    {{ $key }}: "{{ $val }}"
+    {{- end }}
+    {{- end }}
+  labels:
+    app: {{ template "gateway.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "gateway.fullname" . }}-db-migration
+        release: {{ .Release.Name }}
+      {{- if .Values.database.migrationJob.podAnnotations }}
+      annotations: {{- toYaml .Values.database.migrationJob.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.database.migrationJob.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.database.migrationJob.activeDeadlineSeconds }}
+      {{- end }}
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.imagePullSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ template "gateway.imagePullSecret" . }}
+      {{- end }}
+      containers:
+        - name: db-migration
+          image: {{.Values.image.registry}}/{{.Values.image.repository}}:{{.Values.image.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ template "gateway.fullname" . }}-configmap
+            - secretRef:
+                name: {{ template "gateway.secretName" . }}
+          env:
+            {{- if .Values.database.migrationJob.jdbcUrl }}
+            - name: SSG_DATABASE_JDBC_URL
+              value: {{ .Values.database.migrationJob.jdbcUrl | quote }}
+            {{- else if .Values.database.jdbcURL }}
+            - name: SSG_DATABASE_JDBC_URL
+              value: {{ .Values.database.jdbcURL | quote }}
+            {{- end }}
+            - name: EXTRA_JAVA_ARGS
+              {{- if .Values.database.migrationJob.clearLocks }}
+              value: "-Dgateway.db.schema-update.mode=liquibase-only-with-unlock"
+              {{- else }}
+              value: "-Dgateway.db.schema-update.mode=liquibase-only"
+              {{- end }}
+          volumeMounts:
+            - name: {{ template "gateway.fullname" . }}-license-xml
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/bootstrap/license/license.xml
+              subPath: license.xml
+            {{- if (not .Values.disklessConfig.enabled) }}
+            {{- if (not .Values.disklessConfig.setSecretByInitContainer) }}
+            - name: {{ template "gateway.fullname" . }}-node-properties
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+            {{- else }}
+            - name: shared-secret
+              mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/node.properties
+              subPath: node.properties
+            {{- end }}
+            {{- end }}
+      volumes:
+        - name: {{ template "gateway.fullname" . }}-license-xml
+          secret:
+            secretName: {{ template "gateway.license" . }}
+            items:
+            - key: license
+              path: license.xml
+      {{- if and (not .Values.disklessConfig.enabled) (not .Values.disklessConfig.setSecretByInitContainer) }}
+        - name: {{ template "gateway.fullname" . }}-node-properties
+          {{- if .Values.disklessConfig.existingSecret.csi }}
+          csi: {{ toYaml .Values.disklessConfig.existingSecret.csi | nindent 12 }}
+          {{- else }}
+          secret:
+            secretName: {{ template "gateway.node.properties" . }}
+            items:
+            - key: node.properties
+              path: node.properties
+          {{- end }}
+      {{- end }}
+      restartPolicy: "Never"
+{{- end }}

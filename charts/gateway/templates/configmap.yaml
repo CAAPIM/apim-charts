@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.database.type .Values.database.enabled }}
+  {{ fail "database.type requires database.enabled: false — an embedded database cannot be used alongside an external database" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,6 +37,9 @@ data:
     {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
     {{- end }}
+  {{- end }}
+  {{- if .Values.database.type }}
+  SSG_DATABASE_TYPE: {{ .Values.database.type | lower | quote }}
   {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}

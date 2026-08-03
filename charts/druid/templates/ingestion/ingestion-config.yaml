@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -17,7 +18,7 @@ data:
   COORDINATOR_PORT: {{ .Values.coordinator.port | quote }}
 {{- if .Values.global.deepStorage.minio }}
   S3_URL: http://minio:9000
-  S3_HEALTH_URL: http://minio:9000/health/live
+  S3_HEALTH_URL: http://minio:9000/minio/health/live
   S3_BUCKET: {{ .Values.minio.bucketName }}
 {{ else }}
   S3_URL: http://seaweedfs-s3:8333

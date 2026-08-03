@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
 {{- if .Values.tls.job.enabled }}
 apiVersion: batch/v1
 kind: Job
@@ -82,16 +83,6 @@ spec:
              secretKeyRef:
                name: {{ template "portal.fullname" . }}-job-secret
                key: INTERNAL_SECRETNAME
-         - name: KAFKA_SECRETNAME
-           valueFrom:
-             secretKeyRef:
-               name: {{ template "portal.fullname" . }}-job-secret
-               key: KAFKA_SECRETNAME
-         - name: CA_SECRETNAME
-           valueFrom:
-             secretKeyRef:
-               name: {{ template "portal.fullname" . }}-job-secret
-               key: CA_SECRETNAME
          - name: EXTERNAL_SECRETNAME
            valueFrom:
              secretKeyRef:

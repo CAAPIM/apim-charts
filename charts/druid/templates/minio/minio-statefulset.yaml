@@ -1,4 +1,5 @@
-{{- if not .Values.minio.cloudStorage }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.global.deepStorage.minio (not .Values.minio.cloudStorage) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
