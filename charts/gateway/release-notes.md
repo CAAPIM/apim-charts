@@ -7,6 +7,13 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.5 MySQL TLS Environment Variables
+- Added discrete `database.ssl*` values (`sslMode`, `sslTrustKeystoreUrl`, `sslTrustKeystorePassword`, `sslTrustKeystoreType`, `sslClientKeystoreUrl`, `sslClientKeystorePassword`, `sslClientKeystoreType`, `sslExtraParams`) as an alternative to embedding TLS parameters in `database.jdbcURL`.
+  - All are optional and commented out by default in values.yaml — leaving them unset preserves existing behaviour.
+  - Only used when `disklessConfig.enabled: true`; mapped to the `SSG_DATABASE_MYSQL_*` environment variables.
+  - Ignored when `database.jdbcURL` already carries its own SSL parameters — an explicit `jdbcURL` always takes precedence.
+  - See [Database Configuration](./README.md#database-configuration) for details.
+
 ## 3.1.4 H2 Embedded Database Support
 - Added support for the H2 embedded database as an alternative to the default Derby embedded database.
   - Set `database.type: "h2"` in your values file to enable H2. Requires `database.enabled: false`.

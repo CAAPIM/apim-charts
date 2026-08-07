@@ -37,6 +37,24 @@ data:
     {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
     {{- end }}
+    {{- if .Values.database.sslMode }}
+  SSG_DATABASE_MYSQL_SSL_MODE: {{ .Values.database.sslMode | quote }}
+    {{- end }}
+    {{- if .Values.database.sslTrustKeystoreUrl }}
+  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_URL: {{ .Values.database.sslTrustKeystoreUrl | quote }}
+    {{- end }}
+    {{- if .Values.database.sslTrustKeystoreType }}
+  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_TYPE: {{ .Values.database.sslTrustKeystoreType | quote }}
+    {{- end }}
+    {{- if .Values.database.sslClientKeystoreUrl }}
+  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_URL: {{ .Values.database.sslClientKeystoreUrl | quote }}
+    {{- end }}
+    {{- if .Values.database.sslClientKeystoreType }}
+  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_TYPE: {{ .Values.database.sslClientKeystoreType | quote }}
+    {{- end }}
+    {{- if .Values.database.sslExtraParams }}
+  SSG_DATABASE_MYSQL_EXTRA_PARAMS: {{ .Values.database.sslExtraParams | quote }}
+    {{- end }}
   {{- end }}
   {{- if .Values.database.type }}
   SSG_DATABASE_TYPE: {{ .Values.database.type | lower | quote }}

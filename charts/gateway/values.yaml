@@ -668,6 +668,18 @@ database:
   # Set to "h2" to use the H2 embedded database. Requires database.enabled: false.
   # type: "h2"
   type: ""
+  # Optional MySQL TLS/SSL settings for connecting to an external MySQL database, used only when
+  # disklessConfig.enabled: true. These map to the SSG_DATABASE_MYSQL_* environment variables and take
+  # effect only when database.jdbcURL does not already carry SSL parameters of its own; an explicit
+  # jdbcURL always takes precedence. See "Database Configuration" for details on precedence.
+  # sslMode: "VERIFY_CA"
+  # sslTrustKeystoreUrl: "file:/path/to/truststore.p12"
+  # sslTrustKeystorePassword: "changeit"
+  # sslTrustKeystoreType: "PKCS12"
+  # sslClientKeystoreUrl: "file:/path/to/keystore.p12"
+  # sslClientKeystorePassword: "changeit"
+  # sslClientKeystoreType: "PKCS12"
+  # sslExtraParams: ""
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.

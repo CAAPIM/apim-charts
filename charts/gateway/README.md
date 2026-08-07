@@ -185,6 +185,14 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
 | `database.name`          | Database name | `ssg`  |
 | `database.type`          | Embedded database type (`h2` or empty for Derby). Only used when `database.enabled: false`. | `""`  |
+| `database.sslMode`          | Optional MySQL SSL mode (e.g. `VERIFY_CA`) for an external database. Only used when `disklessConfig.enabled: true` and `database.jdbcURL` carries no SSL parameters of its own. | `commented out` |
+| `database.sslTrustKeystoreUrl`          | Optional truststore URL (e.g. `file:/path/to/truststore.p12`) for verifying the MySQL server certificate | `commented out` |
+| `database.sslTrustKeystorePassword`          | Optional truststore password | `commented out` |
+| `database.sslTrustKeystoreType`          | Optional truststore type (e.g. `PKCS12`) | `commented out` |
+| `database.sslClientKeystoreUrl`          | Optional client keystore URL for mutual TLS with MySQL | `commented out` |
+| `database.sslClientKeystorePassword`          | Optional client keystore password | `commented out` |
+| `database.sslClientKeystoreType`          | Optional client keystore type (e.g. `PKCS12`) | `commented out` |
+| `database.sslExtraParams`          | Optional extra MySQL Connector/J parameters to append alongside the TLS settings above | `commented out` |
 | `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false` |
 | `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out` |
 | `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
@@ -1465,6 +1473,23 @@ Configuring SSL/TLS: the following parameters can be added to enable secure comm
 
 ```
 jdbcURL: jdbc:mysql://myprimaryserver:3306,mysecondaryserver:3306/ssg?useSSL=true&requireSSL=true&verifyServerCertificate=false
+```
+
+Alternatively, when `disklessConfig.enabled: true`, the same TLS settings can be provided as discrete `database.ssl*` fields instead of embedding them in `jdbcURL`. These map to the `SSG_DATABASE_MYSQL_*` environment variables, are all optional (commented out by default in values.yaml), and are ignored if `jdbcURL` already carries its own SSL parameters — an explicit `jdbcURL` always takes precedence:
+
+```yaml
+database:
+  enabled: true
+  create: false
+  jdbcURL: jdbc:mysql://myprimaryserver:3306/ssg
+  sslMode: "VERIFY_CA"
+  sslTrustKeystoreUrl: "file:/path/to/truststore.p12"
+  sslTrustKeystorePassword: "changeit"
+  sslTrustKeystoreType: "PKCS12"
+  sslClientKeystoreUrl: "file:/path/to/keystore.p12"
+  sslClientKeystorePassword: "changeit"
+  sslClientKeystoreType: "PKCS12"
+  sslExtraParams: ""
 ```
 
 In order the create the database on the remote server, the provided user in the username field must have write privilege on the database. See GRANT statement usage: https://dev.mysql.com/doc/refman/8.0/en/grant.html#grant-database-privileges
