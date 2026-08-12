@@ -40,14 +40,14 @@ data:
     {{- if .Values.database.sslMode }}
   SSG_DATABASE_MYSQL_SSL_MODE: {{ .Values.database.sslMode | quote }}
     {{- end }}
-    {{- if .Values.database.sslTrustKeystoreUrl }}
-  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_URL: {{ .Values.database.sslTrustKeystoreUrl | quote }}
+    {{- if .Values.database.sslTrustKeystorePath }}
+  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_URL: {{ include "gateway.keystoreFilePath" .Values.database.sslTrustKeystorePath | quote }}
     {{- end }}
     {{- if .Values.database.sslTrustKeystoreType }}
   SSG_DATABASE_MYSQL_TRUST_KEYSTORE_TYPE: {{ .Values.database.sslTrustKeystoreType | quote }}
     {{- end }}
-    {{- if .Values.database.sslClientKeystoreUrl }}
-  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_URL: {{ .Values.database.sslClientKeystoreUrl | quote }}
+    {{- if .Values.database.sslClientKeystorePath }}
+  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_URL: {{ include "gateway.keystoreFilePath" .Values.database.sslClientKeystorePath | quote }}
     {{- end }}
     {{- if .Values.database.sslClientKeystoreType }}
   SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_TYPE: {{ .Values.database.sslClientKeystoreType | quote }}

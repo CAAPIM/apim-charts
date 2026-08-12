@@ -673,10 +673,13 @@ database:
   # effect only when database.jdbcURL does not already carry SSL parameters of its own; an explicit
   # jdbcURL always takes precedence. See "Database Configuration" for details on precedence.
   # sslMode: "VERIFY_CA"
-  # sslTrustKeystoreUrl: "file:/path/to/truststore.p12"
+  # A plain filesystem path is fine here -- the chart adds the required "file:" prefix
+  # automatically if it's missing. An already-prefixed value (file:/path/to/truststore.p12) is
+  # also accepted, for backwards compatibility.
+  # sslTrustKeystorePath: "/path/to/truststore.p12"
   # sslTrustKeystorePassword: "changeit"
   # sslTrustKeystoreType: "PKCS12"
-  # sslClientKeystoreUrl: "file:/path/to/keystore.p12"
+  # sslClientKeystorePath: "/path/to/keystore.p12"
   # sslClientKeystorePassword: "changeit"
   # sslClientKeystoreType: "PKCS12"
   # sslExtraParams: ""

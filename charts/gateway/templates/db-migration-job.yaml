@@ -63,17 +63,17 @@ spec:
             - name: SSG_DATABASE_MYSQL_SSL_MODE
               value: {{ .Values.database.sslMode | quote }}
             {{- end }}
-            {{- if .Values.database.sslTrustKeystoreUrl }}
+            {{- if .Values.database.sslTrustKeystorePath }}
             - name: SSG_DATABASE_MYSQL_TRUST_KEYSTORE_URL
-              value: {{ .Values.database.sslTrustKeystoreUrl | quote }}
+              value: {{ include "gateway.keystoreFilePath" .Values.database.sslTrustKeystorePath | quote }}
             {{- end }}
             {{- if .Values.database.sslTrustKeystoreType }}
             - name: SSG_DATABASE_MYSQL_TRUST_KEYSTORE_TYPE
               value: {{ .Values.database.sslTrustKeystoreType | quote }}
             {{- end }}
-            {{- if .Values.database.sslClientKeystoreUrl }}
+            {{- if .Values.database.sslClientKeystorePath }}
             - name: SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_URL
-              value: {{ .Values.database.sslClientKeystoreUrl | quote }}
+              value: {{ include "gateway.keystoreFilePath" .Values.database.sslClientKeystorePath | quote }}
             {{- end }}
             {{- if .Values.database.sslClientKeystoreType }}
             - name: SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_TYPE

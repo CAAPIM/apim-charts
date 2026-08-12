@@ -85,6 +85,24 @@ Create java args to apply.
 {{- end -}}
 
 {{/*
+Normalize a MySQL keystore path (database.sslTrustKeystorePath / sslClientKeystorePath) into the
+"file:" URL form the Gateway's SSG_DATABASE_MYSQL_*_KEYSTORE_URL environment variables expect.
+Accepts either a plain filesystem path (e.g. /opt/docker/tls/truststore.p12) or an already-prefixed
+value (file:/opt/docker/tls/truststore.p12, for backwards compatibility) and always returns the
+"file:" form, so users are not required to know about or type the prefix themselves.
+*/}}
+{{- define "gateway.keystoreFilePath" -}}
+{{- $path := . -}}
+{{- if not (hasPrefix "file:" $path) -}}
+{{- if not (hasPrefix "/" $path) -}}
+{{- $path = printf "/%s" $path -}}
+{{- end -}}
+{{- $path = printf "file:%s" $path -}}
+{{- end -}}
+{{- $path -}}
+{{- end -}}
+
+{{/*
 Shared state client secret name
 */}}
 {{- define "sharedStateClientSecretName" }}
