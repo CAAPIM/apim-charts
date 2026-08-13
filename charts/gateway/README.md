@@ -1492,6 +1492,8 @@ database:
   sslExtraParams: ""
 ```
 
+`sslTrustKeystorePassword`/`sslClientKeystorePassword` are sensitive and, like `database.password`, can instead be supplied through [`existingGatewaySecretName`](#configuration) by including `SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD`/`SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_PASSWORD` in that Secret instead of setting the plaintext values above.
+
 `sslTrustKeystorePath`/`sslClientKeystorePath` only tell the Gateway where to *look* for the keystore file inside the pod — the file itself still needs to be mounted. Use `customConfig.mounts` to mount an existing Secret (or ConfigMap) containing the keystore at that same path, keeping `mountPath` in sync with the `sslTrustKeystorePath`/`sslClientKeystorePath` value above:
 
 ```yaml

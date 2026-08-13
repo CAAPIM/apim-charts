@@ -626,6 +626,9 @@ config:
 ## If using a Database
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
+## If using database.ssl* to connect to an external MySQL Database (disklessConfig.enabled: true)
+  # SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD
+  # SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_PASSWORD
 
 # Cluster Hostname
 clusterHostname: my.localdomain

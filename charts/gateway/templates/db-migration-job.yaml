@@ -87,15 +87,18 @@ spec:
                    db-migration-secret.yaml) rather than the main release Secret, which Helm does not
                    update until after pre-upgrade hooks have run. These explicit env entries override
                    the same keys supplied via envFrom above. Conditions must stay in sync with
-                   db-migration-secret.yaml so this never references a Secret that was not created. */}}
-            {{- if and .Values.database.enabled .Values.disklessConfig.enabled .Values.database.sslTrustKeystorePassword }}
+                   db-migration-secret.yaml so this never references a Secret that was not created.
+                   When existingGatewaySecretName is set, db-migration-secret.yaml is not rendered at
+                   all -- that Secret is user-managed and already live, so envFrom above already has
+                   current values and these overrides must be skipped too. */}}
+            {{- if and .Values.database.enabled .Values.disklessConfig.enabled .Values.database.sslTrustKeystorePassword (not .Values.existingGatewaySecretName) }}
             - name: SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "gateway.fullname" . }}-db-migration-secret
                   key: SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD
             {{- end }}
-            {{- if and .Values.database.enabled .Values.disklessConfig.enabled .Values.database.sslClientKeystorePassword }}
+            {{- if and .Values.database.enabled .Values.disklessConfig.enabled .Values.database.sslClientKeystorePassword (not .Values.existingGatewaySecretName) }}
             - name: SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_PASSWORD
               valueFrom:
                 secretKeyRef:
