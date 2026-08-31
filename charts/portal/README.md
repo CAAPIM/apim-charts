@@ -9,6 +9,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.6 General Updates
+- Kafka sub-chart dependency updated to 1.0.2.
+
 ## 2.4.5 General Updates
 - This new version of the chart supports API Portal 5.4.2.2
 
