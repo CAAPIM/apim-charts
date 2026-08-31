@@ -284,6 +284,16 @@ Define OTK Image Pull Secret Name
 {{- end -}}
 
 {{/*
+ Fixed mount root for OTK secret files when otk.mountBasedSecrets.enabled is true.
+ Mirrors Gateway's own disklessConfig fixed-path convention: one hardcoded path, no
+ separate "which path" value. Each mounted file's basename matches the env var name
+ it replaces, so app code (OtkSecrets.read(name)) needs no path-construction logic.
+ */}}
+{{- define "otk.secretsMountPath" -}}
+/opt/SecureSpan/Gateway/node/default/etc/conf/otk/secrets
+{{- end -}}
+
+{{/*
  Define OTK install image pullSecret
  */}}
 {{- define "otk.imagePullSecret" -}}
