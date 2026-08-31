@@ -28,7 +28,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.2.1
+  tag: 11.2.2
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -216,6 +216,7 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    - --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
     - -Dgateway.db.schema-update.mode=default
     # - -Djava.net.preferIPv4Stack=false
     # - -Djava.net.preferIPv6Addresses=true
@@ -629,6 +630,9 @@ config:
 ## If using a Database
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
+## If using database.ssl* to connect to an external MySQL Database (disklessConfig.enabled: true)
+  # SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD
+  # SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_PASSWORD
 
 # Cluster Hostname
 clusterHostname: my.localdomain
@@ -671,6 +675,21 @@ database:
   # Set to "h2" to use the H2 embedded database. Requires database.enabled: false.
   # type: "h2"
   type: ""
+  # Optional MySQL TLS/SSL settings for connecting to an external MySQL database, used only when
+  # disklessConfig.enabled: true. These map to the SSG_DATABASE_MYSQL_* environment variables and take
+  # effect only when database.jdbcURL does not already carry SSL parameters of its own; an explicit
+  # jdbcURL always takes precedence. See "Database Configuration" for details on precedence.
+  # sslMode: "VERIFY_CA"
+  # A plain filesystem path is fine here -- the chart adds the required "file:" prefix
+  # automatically if it's missing. An already-prefixed value (file:/path/to/truststore.p12) is
+  # also accepted, for backwards compatibility.
+  # sslTrustKeystorePath: "/path/to/truststore.p12"
+  # sslTrustKeystorePassword: "changeit"
+  # sslTrustKeystoreType: "PKCS12"
+  # sslClientKeystorePath: "/path/to/keystore.p12"
+  # sslClientKeystorePassword: "changeit"
+  # sslClientKeystoreType: "PKCS12"
+  # sslExtraParams: ""
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
