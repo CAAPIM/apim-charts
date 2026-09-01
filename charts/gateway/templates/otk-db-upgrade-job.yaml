@@ -55,9 +55,35 @@ spec:
               mountPath: /opt/SecureSpan/Gateway/node/default/etc/conf/otk/jks
               readOnly: true
           {{- end }}
+          {{- if .Values.otk.mountBasedSecrets.enabled }}
+            - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+              mountPath: {{ include "otk.secretsMountPath" . }}/OTK_DATABASE_USERNAME
+              subPath: OTK_DATABASE_USERNAME
+              readOnly: true
+            - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+              mountPath: {{ include "otk.secretsMountPath" . }}/OTK_DATABASE_PASSWORD
+              subPath: OTK_DATABASE_PASSWORD
+              readOnly: true
+            - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+              mountPath: {{ include "otk.secretsMountPath" . }}/OTK_DATABASE_DDL_USERNAME
+              subPath: OTK_DATABASE_DDL_USERNAME
+              readOnly: true
+            - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+              mountPath: {{ include "otk.secretsMountPath" . }}/OTK_DATABASE_DDL_PASSWORD
+              subPath: OTK_DATABASE_DDL_PASSWORD
+              readOnly: true
+            {{- if and (eq .Values.otk.database.type "oracle") (.Values.otk.database.sql.oracleSsl.enabled) .Values.otk.database.sql.oracleSsl.trustStorePassword }}
+            - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+              mountPath: {{ include "otk.secretsMountPath" . }}/OTK_ORACLE_TRUST_STORE_PASSWORD
+              subPath: OTK_ORACLE_TRUST_STORE_PASSWORD
+              readOnly: true
+            {{- end }}
+          {{- end }}
           envFrom:
+          {{- if not .Values.otk.mountBasedSecrets.enabled }}
             - secretRef:
                 name: {{ template "otk.dbSecretName" . }}
+          {{- end }}
           env:
            - name: OTK_TYPE
              value: {{ template "otk-install-type" .}}
@@ -101,6 +127,11 @@ spec:
         - name: {{ template "gateway.fullname" . }}-otk-secret-jks
           secret:
             secretName: {{ .Values.otk.database.sql.oracleTruststore.name }}
+        {{- end }}
+        {{- if .Values.otk.mountBasedSecrets.enabled }}
+        - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
+          secret:
+            secretName: {{ template "otk.dbSecretName" . }}
         {{- end }}
       {{- if or (.Values.imagePullSecret.enabled) (.Values.otk.job.imagePullSecret.enabled) }}
       imagePullSecrets:

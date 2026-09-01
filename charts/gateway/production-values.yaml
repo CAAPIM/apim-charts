@@ -848,6 +848,14 @@ otk:
   # List of comma separated sub solution Kits to install or upgrade.
   # subSolutionKitNames:
 
+  # When enabled, OTK DB/admin credentials are delivered to the otk-install and otk-db-upgrade
+  # Jobs via a mounted file per secret key (under otk.secretsMountPath) instead of envFrom:
+  # secretRef, so `kubectl exec <pod> -- env` / `kubectl describe pod` never expose the values
+  # in cleartext. Requires an otk-install/otk-db-upgrade image built with OtkSecrets.read()'s
+  # mount-first fallback (see F166450 Phase 1, docker/install repo).
+  mountBasedSecrets:
+    enabled: true
+
   customizations:
 
     # This mounts one or more bundles that exist as secrets or configmaps in your Kubernetes Cluster.
