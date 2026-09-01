@@ -7,6 +7,11 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.3 General Updates
+- Added an opt-in pre-upgrade Database Migration Job (`database.migrationJob`) that applies Liquibase schema changes before new Gateway pods roll out, avoiding lock contention during rolling upgrades. Requires Gateway image 11.2.2 or newer. See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates).
+- Added support for the H2 embedded database as an alternative to the default Derby embedded database. Set `database.type: "h2"` to enable (requires `database.enabled: false`).
+- Added discrete `database.ssl*` values as an alternative to embedding MySQL TLS parameters in `database.jdbcURL`. See [Database Configuration](./README.md#database-configuration).
+
 ## 3.1.2 General Updates
 Updated the default mysql maxAllowedPacket to 64M with an option to customize from values.yaml
 
@@ -16,6 +21,7 @@ Updated the default mysql maxAllowedPacket to 64M with an option to customize fr
 - Added support for SSL connection for MySQL database. The sslMode option can be used in the JDBC query
 - Upgrading to 4.7.0 should be tested & validated in a lower environment prior to production rollout
 - For OTK 4.7.0 specific features please refer to [Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-7.html)
+
 
 ## 3.1.0 Bitnami SubChart removal
 - All Bitnami SubCharts have been removed from the Gateway Helm Chart

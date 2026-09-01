@@ -28,7 +28,7 @@ disklessConfig:
 image:
   registry: docker.io
   repository: caapim/gateway
-  tag: 11.2.1
+  tag: 11.2.2
   pullPolicy: IfNotPresent
 
 # If you are using a Hazelcast 3.x server then you need to set hazelcast.legacy.enabled=true
@@ -216,6 +216,9 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
+    # --add-opens=java.base/sun.security.ssl=ALL-UNNAMED exposes internal SSL internals via reflection, which is a security risk.
+    # It is disabled by default as recommended. Uncomment only if you need full SSL/TLS handshake debug information.
+    # - --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
     # - -Djava.net.preferIPv4Stack=false
     # - -Djava.net.preferIPv6Addresses=true
   log:
@@ -626,6 +629,9 @@ config:
 ## If using a Database
   # SSG_DATABASE_USER
   # SSG_DATABASE_PASSWORD
+## If using database.ssl* to connect to an external MySQL Database (disklessConfig.enabled: true)
+  # SSG_DATABASE_MYSQL_TRUST_KEYSTORE_PASSWORD
+  # SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_PASSWORD
 
 # Cluster Hostname
 clusterHostname: my.localdomain
@@ -646,6 +652,43 @@ database:
   # severe/warning/info/fine(debug)/off
   liquibaseLogLevel: "off"
   name: ssg
+  # This pre-upgrade job executes any pending database schema updates and exits. The job executes before the rollout of new Gateways.
+  # Ensure the requirements are met before enabling.
+  # Requirement: The Gateway must be 11.2.2 or newer which supports applying db schema changes and exiting without starting Gateway.
+  # Warning, if this job fails, it may leave the DATABASECHANGELOGLOCK locked in which case
+  # the lock must be manually removed before a retry can be attempted.
+  migrationJob:
+    # Opt-in: set to true only when running helm upgrade against a Gateway 11.2.2+ image.
+    # This job does not run on helm install (it is a pre-upgrade hook only).
+    enabled: false
+    # Optional: Override the JDBC URL used by the migration job. Recommended to specify the primary writer endpoint
+    # to avoid routing through a load balancer or proxy during schema updates. If not set, falls back to database.jdbcURL.
+    jdbcUrl: ""
+
+    # Set to true to force release of any stuck Liquibase db schema locks before running the schema updates.
+    # Warning: use with caution as another simultaneous db schema update may corrupt the db schema.
+    clearLocks: false
+    # The maximum duration (in seconds) the job is allowed to run before being terminated.
+    activeDeadlineSeconds: 300
+  # Embedded database type selection. Leave empty to use the default (derby).
+  # Set to "h2" to use the H2 embedded database. Requires database.enabled: false.
+  # type: "h2"
+  type: ""
+  # Optional MySQL TLS/SSL settings for connecting to an external MySQL database, used only when
+  # disklessConfig.enabled: true. These map to the SSG_DATABASE_MYSQL_* environment variables and take
+  # effect only when database.jdbcURL does not already carry SSL parameters of its own; an explicit
+  # jdbcURL always takes precedence. See "Database Configuration" for details on precedence.
+  # sslMode: "VERIFY_CA"
+  # A plain filesystem path is fine here -- the chart adds the required "file:" prefix
+  # automatically if it's missing. An already-prefixed value (file:/path/to/truststore.p12) is
+  # also accepted, for backwards compatibility.
+  # sslTrustKeystorePath: "/path/to/truststore.p12"
+  # sslTrustKeystorePassword: "changeit"
+  # sslTrustKeystoreType: "PKCS12"
+  # sslClientKeystorePath: "/path/to/keystore.p12"
+  # sslClientKeystorePassword: "changeit"
+  # sslClientKeystoreType: "PKCS12"
+  # sslExtraParams: ""
 
 ## If loading a TLS Key/Pair
 # This key will become the default ssl key. Can only have one.
