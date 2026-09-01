@@ -216,7 +216,9 @@ config:
     - -Djava.util.logging.config.file=/opt/SecureSpan/Gateway/node/default/etc/conf/log-override.properties
     - -Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true
     - -Dcom.l7tech.security.ssl.hostAllowWildcard=true
-    - --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
+    # --add-opens=java.base/sun.security.ssl=ALL-UNNAMED exposes internal SSL internals via reflection, which is a security risk.
+    # It is disabled by default as recommended. Uncomment only if you need full SSL/TLS handshake debug information.
+    # - --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
     # - -Djava.net.preferIPv4Stack=false
     # - -Djava.net.preferIPv6Addresses=true
   log:

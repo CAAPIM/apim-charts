@@ -2302,6 +2302,9 @@ The API Gateway containers are configured to output logs and audits as JSON even
       Set '-Dcom.l7tech.server.pkix.useDefaultTrustAnchors=true' for well known Certificate Authorities be included as Trust Anchors (true/false)
 - Allow wildcards when verifying hostnames (true/false)
     - Set '-Dcom.l7tech.security.ssl.hostAllowWildcard=true' to allow wildcards when verifying hostnames (true/false)
+- Full SSL/TLS handshake information for debugging
+    - The `--add-opens=java.base/sun.security.ssl=ALL-UNNAMED` argument is **commented out by default** in `config.javaArgs`, since it opens internal JDK SSL internals via reflection, which is a security risk.
+    - Only uncomment this argument if you need full SSL/TLS handshake information for troubleshooting, and disable it again once debugging is complete.
 
 [Back to Additional Guides](#additional-guides)
 
