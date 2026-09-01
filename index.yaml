@@ -229,6 +229,26 @@ entries:
     version: 1.0.0
   gateway:
   - apiVersion: v2
+    appVersion: 11.2.2
+    created: "2026-09-01T10:10:39.318744444Z"
+    dependencies:
+    - condition: hazelcast.enabled
+      name: hazelcast
+      repository: https://hazelcast-charts.s3.amazonaws.com/
+      version: 5.8.14
+    description: This Helm Chart deploys the Layer7 Gateway in Kubernetes.
+    digest: d99cce1e7fbdaaa69d81e806097a42996029333f4ea825d3b401e7ff012f630f
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: gateway
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/gateway-3.1.3/gateway-3.1.3.tgz
+    version: 3.1.3
+  - apiVersion: v2
     appVersion: 11.2.1
     created: "2026-06-26T19:01:17.233145468Z"
     dependencies:
@@ -4198,4 +4218,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.4/seaweedfs-1.0.4.tgz
     version: 1.0.4
-generated: "2026-08-03T10:30:46.197757995Z"
+generated: "2026-09-01T10:10:39.318989084Z"
