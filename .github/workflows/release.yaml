@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     branches:
-      - stable
+      - satkon-5332
 jobs:
   release-charts:
     runs-on: ubuntu-latest
