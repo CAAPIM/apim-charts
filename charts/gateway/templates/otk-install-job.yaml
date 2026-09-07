@@ -86,11 +86,11 @@ spec:
               readOnly: true
             {{- end }}
             {{- if .Values.disklessConfig.enabled }}
-            - name: {{ template "gateway.fullname" . }}-gateway-admin-secret-mount
+            - name: {{ template "gateway.fullname" . }}-admin-secret-mount
               mountPath: {{ include "otk.secretsMountPath" . }}/SSG_ADMIN_USERNAME
               subPath: SSG_ADMIN_USERNAME
               readOnly: true
-            - name: {{ template "gateway.fullname" . }}-gateway-admin-secret-mount
+            - name: {{ template "gateway.fullname" . }}-admin-secret-mount
               mountPath: {{ include "otk.secretsMountPath" . }}/SSG_ADMIN_PASSWORD
               subPath: SSG_ADMIN_PASSWORD
               readOnly: true
@@ -164,7 +164,7 @@ spec:
           secret:
             secretName: {{ template "otk.dbSecretName" . }}
         {{- if .Values.disklessConfig.enabled }}
-        - name: {{ template "gateway.fullname" . }}-gateway-admin-secret-mount
+        - name: {{ template "gateway.fullname" . }}-admin-secret-mount
           secret:
             secretName: {{ template "gateway.secretName" . }}
         {{- end }}
