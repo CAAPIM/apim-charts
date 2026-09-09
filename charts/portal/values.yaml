@@ -1,3 +1,5 @@
+# Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
+# //AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 # Global values
 global:
   portalRepository: caapim/
@@ -453,7 +455,7 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.3
+  dispatcher: dispatcher:5.3.0.1
   pssg: pssg:5.3
   apim: ingress:5.3
   enterprise: portal-enterprise:5.3
