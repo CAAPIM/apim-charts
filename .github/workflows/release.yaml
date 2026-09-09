@@ -1,9 +1,11 @@
+# Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
+# //AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 name: Release Charts
 
 on:
   push:
     branches:
-      - stable
+      - portal-5312
 jobs:
   release-charts:
     runs-on: ubuntu-latest
