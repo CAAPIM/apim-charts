@@ -5,14 +5,25 @@ pipeline {
   }
   environment {
     ARTIFACTORY_CREDS = credentials("ARTIFACTORY_USERNAME_TOKEN")
-    GITHUB_CREDS = credentials("GITHUB_CAAPIM_TOKEN")
-    GITHUB_TOKEN = "${GITHUB_CREDS_PSW}"
   }
   stages {
     stage('Push Helm Charts') {
       steps {
-        sh("pip3 install requests ruamel.yaml")
-        sh("python3 push_helm_charts.py --release")
+        script {
+          // PR branches only ever push to dev-local (usw1 Artifactory blocks
+          // promoting dev-local to layer7.packages.broadcom.com, so there's
+          // nothing further to do for a PR build). Pushing to stable pushes
+          // to release-local; a separate promotion job pushes from there to
+          // layer7.packages.broadcom.com. Direct pushes to develop/gateway
+          // or develop/portal publish nothing.
+          if (env.CHANGE_ID) {
+            sh "python3 push_helm_charts.py --check-changed ${env.CHANGE_TARGET}"
+          } else if (env.BRANCH_NAME == 'stable') {
+            sh 'python3 push_helm_charts.py --release'
+          } else {
+            echo "not a PR and not stable - skipping chart publish for branch ${env.BRANCH_NAME}"
+          }
+        }
       }
     }
   }

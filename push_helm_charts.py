@@ -1,78 +1,99 @@
-# Download latest released apim helm charts from github.com and push to artifactory
+# Package this repo's helm charts from the workspace and push them to
+# Artifactory as OCI artifacts - but only charts that are actually new
+# versions.
 #
 # Pre-requisite:
-# - The gh-pages index.yaml file available
 # - Artifactory credentials set in environment: ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW
-# - GitHub access token set in environment: GITHUB_TOKEN
+# - `ct` (chart-testing) on PATH if --check-changed is used
 #
 # command examples:
-# python3 push_helm_charts.py --index index.yaml
+# python3 push_helm_charts.py
+# python3 push_helm_charts.py --release
+# python3 push_helm_charts.py --check-changed stable
 
 import argparse
 import os
-import requests
 import subprocess
-from pathlib import Path
-from ruamel.yaml import YAML
+import sys
+import tempfile
 
-parser = argparse.ArgumentParser(description='Push apim helm charts to artifactory')
-parser.add_argument('--index', default='index.yaml', help='index file to read for chart releases')
+# apim-intelligence was a separate chart/dependency at one point but is now
+# built directly into the portal chart's own templates - no source left to
+# package. gateway-otk was deprecated last year and was never in this list.
+CHARTS = ["druid", "gateway", "portal", "seaweedfs", "kafka"]
+
+parser = argparse.ArgumentParser(description="Package and push this repo's helm charts to artifactory, for versions that are new")
+parser.add_argument('--charts-dir', default='charts', help='directory containing the charts to package')
 parser.add_argument('--release', action='store_true', help='flag to push to release repo instead of dev')
+parser.add_argument('--check-changed', metavar='TARGET_BRANCH', default=None,
+                     help='only publish charts `ct list-changed --target-branch TARGET_BRANCH` reports as '
+                          'changed (cheap short-circuit for PR builds; meaningless when already on the target '
+                          'branch itself, so omit it there)')
 
 args = parser.parse_args()
 username = os.getenv('ARTIFACTORY_CREDS_USR')
 password = os.getenv('ARTIFACTORY_CREDS_PSW')
-token = os.getenv('GITHUB_TOKEN')
-if not username or not password or not token:
-    sys.exit("please set env for ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW, and GITHUB_TOKEN")
+if not username or not password:
+    sys.exit("please set env for ARTIFACTORY_CREDS_USR and ARTIFACTORY_CREDS_PSW")
 helm_stage = "release" if args.release else "dev"
 helm_repo = f"apim-docker-{helm_stage}-local.usw1.packages.broadcom.com"
-subprocess.run(['docker', 'login', helm_repo, '-u', username, '-p', password], check=True, text=True)
 
-def download_chart(url):
-    local_filename = url.split("/")[-1]
-    headers = {'Authorization': f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
+def changed_charts(charts_dir, target_branch):
+    result = subprocess.run(['ct', 'list-changed', '--target-branch', target_branch],
+                             check=True, text=True, capture_output=True)
+    changed_dirs = {line.strip() for line in result.stdout.splitlines()}
+    return [c for c in CHARTS if f"{charts_dir}/{c}" in changed_dirs]
 
-    # download file
-    with requests.get(url, stream=True, headers=headers) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=32768):
-                f.write(chunk)
-    print(f"downloaded {local_filename}")
-    return local_filename
+def chart_metadata(chart_dir):
+    name = version = None
+    with open(os.path.join(chart_dir, "Chart.yaml")) as f:
+        for line in f:
+            if line.startswith("name:"):
+                name = line.split(":", 1)[1].strip()
+            elif line.startswith("version:"):
+                version = line.split(":", 1)[1].strip()
+    if not name or not version:
+        sys.exit(f"could not read name/version from {chart_dir}/Chart.yaml")
+    return name, version
+
+def version_exists(chart_name, version):
+    # Mirrors chart-releaser's own "don't recreate an existing release" check,
+    # just against the Artifactory OCI repo instead of GitHub Releases.
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = subprocess.run(
+            ['helm', 'pull', f"oci://{helm_repo}/{chart_name}", '--version', version, '-d', tmpdir],
+            text=True, capture_output=True)
+        return result.returncode == 0
+
+def package_chart(chart_dir):
+    result = subprocess.run(['helm', 'package', chart_dir], check=True, text=True, capture_output=True)
+    print(result.stdout)
+    # `helm package` prints "Successfully packaged chart and saved it to: <path>"
+    return result.stdout.strip().rsplit(": ", 1)[-1]
+
+def publish_chart(chart_dir):
+    chart_name, version = chart_metadata(chart_dir)
+    if version_exists(chart_name, version):
+        print(f"{chart_name} {version} already published to {helm_repo} - skipping")
+        return
+    print(f"working on {chart_name} {version} from {chart_dir}")
+    packaged_chart = package_chart(chart_dir)
+    subprocess.run(['helm', 'push', packaged_chart, f"oci://{helm_repo}"], check=True, text=True)
 
 def main():
-    path = Path(args.index)
-    yaml = YAML(typ='safe')
-    data = yaml.load(path)
-    druid_url = data["entries"]["druid"][0]["urls"][0]
-    gateway_url = data["entries"]["gateway"][0]["urls"][0]
-    portal_url = data["entries"]["portal"][0]["urls"][0]
-    apim_intelligence_url = data["entries"]["apim-intelligence"][0]["urls"][0]
-    seaweedfs_url = data["entries"]["seaweedfs"][0]["urls"][0]
-    kafka_url = data["entries"]["kafka"][0]["urls"][0]
+    charts_to_publish = CHARTS
+    if args.check_changed:
+        charts_to_publish = changed_charts(args.charts_dir, args.check_changed)
+        if not charts_to_publish:
+            print(f"no chart changes vs {args.check_changed} - skipping publish")
+            return
 
-    print(f"working on druid: {druid_url}")
-    druid_chart = download_chart(druid_url)
-    subprocess.run(['helm', 'push', druid_chart, f"oci://{helm_repo}"], check=True, text=True)
-    print(f"working on gateway: {gateway_url}")
-    gateway_chart = download_chart(gateway_url)
-    subprocess.run(['helm', 'push', gateway_chart, f"oci://{helm_repo}"], check=True, text=True)
-    print(f"working on portal: {portal_url}")
-    portal_chart = download_chart(portal_url)
-    subprocess.run(['helm', 'push', portal_chart, f"oci://{helm_repo}"], check=True, text=True)
-
-    apim_intelligence_chart = download_chart(apim_intelligence_url)
-    subprocess.run(['helm', 'push', apim_intelligence_chart, f"oci://{helm_repo}"], check=True, text=True)
-
-    seaweedfs_chart = download_chart(seaweedfs_url)
-    subprocess.run(['helm', 'push', seaweedfs_chart, f"oci://{helm_repo}"], check=True, text=True)
-
-    kafka_chart = download_chart(kafka_url)
-    subprocess.run(['helm', 'push', kafka_chart, f"oci://{helm_repo}"], check=True, text=True)
-    
-    subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
+    subprocess.run(['docker', 'login', helm_repo, '-u', username, '-p', password], check=True, text=True)
+    try:
+        for chart in charts_to_publish:
+            publish_chart(os.path.join(args.charts_dir, chart))
+    finally:
+        subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
 
 if __name__ == "__main__":
     main()
