@@ -25,10 +25,18 @@ spec:
     metadata:
       labels:
         app: apim
+      {{- if  .Values.apim.podAnnotations }}
+      annotations: {{- toYaml .Values.apim.podAnnotations | nindent 8 }}
+      {{- if .Values.apim.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.apim.podAnnotations }}
       {{ if .Values.apim.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
       {{- end }}
+      {{- end }}   
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.apim.affinity }}
