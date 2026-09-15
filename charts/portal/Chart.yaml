@@ -1,8 +1,10 @@
+# Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
+# //AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 apiVersion: v2
-appVersion: "5.4"
+appVersion: "5.4.0.2"
 description: CA API Developer Portal
 name: portal
-version: 2.3.21
+version: 2.3.21+patch.1
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
