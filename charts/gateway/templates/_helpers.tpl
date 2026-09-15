@@ -268,6 +268,18 @@ Define OTK Image Pull Secret Name
     {{- printf "%s-%s" (include "gateway.fullname" .) "rconn-otkdb-secret" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+ Define OTK database Client Read Connection Secret Name
+ */}}
+{{- define "otk.dbSecretName.clientRead" -}}
+{{- if .Values.otk.database.clientReadConnection.existingSecretName -}}
+    {{ .Values.otk.database.clientReadConnection.existingSecretName }}
+{{- else -}}
+    {{- printf "%s-%s" (include "gateway.fullname" .) "crconn-otkdb-secret" -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
  Define OTK install image pullSecret
  */}}

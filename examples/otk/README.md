@@ -59,8 +59,8 @@ The sub solution kits that are used in the installation or upgrade process are d
 ### MySQL or Oracle database (`otk.database.type:mysql/oracle`) 
 OTK MySQL or Oracle can be auto upgraded using the kubernetes job by setting `otk.database.dbUpgrade` to `true`. 
 > :information_source: **Important** <br>
-> If using existing non liquibase OTK DB, then perform manual OTK DB upgrade and set `otk.database.changeLogSync` to true. </br>This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
-
+> Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB, then perform manual OTK DB upgrade and set `otk.database.changeLogSync` to true. </br>This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade.
+> For OTK version 4.6.4 this is not necessary. The installation & upgrade process takes care of detecting this.
 Properties related to OTK database install/Upgrade.
 
 | Parameter                        | Description                               | Default                                                      |
@@ -70,7 +70,7 @@ Properties related to OTK database install/Upgrade.
 | `otk.database.useDemoDb`          | Enable/Disable OTK Demo DB | `true` |
 | `otk.database.sql.createTestClients`   | Enable/Disable creation of test clients | `true` |
 | `otk.database.sql.testClientsRedirectUrlPrefix`   | The value of redirect_uri prefix (Example: https://test.com:8443) required for demo test clients  | `true`  |
-| `otk.database.changeLogSync`      | If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
+| `otk.database.changeLogSync`      | Applicable for OTK versions 4.6.3 & older only. If using existing non liquibase OTK DB then perform manual OTK DB upgrade and set 'changeLogSync' to true. <br/> This is a onetime activity to initialize liquibase related tables on OTK DB. Set to false for successive helm upgrade. | `false`|
 
 To configure external mysql/oracle database as OTK db, configure properties in below table.
 
@@ -105,6 +105,25 @@ Optionally, OTK also supports read only database connection for MySQL and Oracle
 | `otk.database.readOnlyConnection.connectionProperties`| OTK read only database mysql connection properties (oracle/mysql)  | `{}`
 | `otk.database.readOnlyConnection.databaseName` | OTK read only Oracle database name |
 
+Optionally, OTK also supports database connection for Client Reads only for MySQL and Oracle. This will also be helpful when cross region active active DBs are used.
+For more information please refer to [OTK Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
+
+| Parameter                        | Description                               | Default                                                      |
+| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
+| `otk.database.clientReadConnection.enabled`   | Enable/Disable OTK Client Read only  database connection   | `false` |
+| `otk.database.clientReadConnection.connectionName` | OTK Client Read only  database connection name  | `OAuth_Client_Read` |
+| `otk.database.clientReadConnection.existingSecretName` | Point to an existing OTK Client Read only  database Secret |
+| `otk.database.clientReadConnection.username`  | OTK Client Read only  database user name|
+| `otk.database.clientReadConnection.password`  | OTK Client Read only  database password |
+| `otk.database.clientReadConnection.properties` | OTK Client Read only  database additional properties  | `{}` |
+| `otk.database.clientReadConnection.jdbcURL`   | OTK Client Read only  database sql jdbc URL (oracle/mysql) |
+| `otk.database.clientReadConnection.jdbcDriverClass` | OTK Client Read only  database sql driver class name (oracle/mysql)  |
+| `otk.database.clientReadConnection.connectionProperties`| OTK Client Read only  database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.database.clientReadConnection.databaseName` | OTK Client Read only Oracle database name |
+
+
+The Gateways MySQL demo container can be used to install OTK DB by setting `otk.database.useDemoDb` to `true` which is the default setting in values.yaml and this needs to be disabled for production(production-values.yaml).
+
 ```
 otk:
   ....
@@ -124,11 +143,14 @@ otk:
 ....
 .....
 ```
-### Cassandra database  (`otk.database.type:mysql/oracle`) 
+### Cassandra database  (`otk.database.type:cassandra`) 
 > :information_source: **Important** <br>
-> Install or Upgrade of OTK database on Cassandra is not supported.
+> - Install or Upgrade of OTK database on Cassandra is not supported.
+> - The Cassandra install scripts have to executed manually for new install scenario
+> - The Cassandra upgrade & data migration scripts(if any) have to be executed manually for upgrade scenario
 
 Configure cassandra connection properties
+
 | Parameter                        | Description                               | Default                                                      |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `otk.database.updateConnection`   | Update database connection properties during helm upgrade | `true`|
@@ -139,11 +161,11 @@ Configure cassandra connection properties
 | `otk.database.cassandra.connectionPoints`  | OTK database cassandra connection points (comma seperated)  |
 | `otk.database.cassandra.port`              | OTK database cassandra connection port  |
 | `otk.database.cassandra.keyspace`          | OTK database cassandra keyspace |
-| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}`
-| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true`
-| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false`
-| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config`
-| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6.
+| `otk.database.cassandra.driverConfig`      | OTK database cassandra driver config (Gateway 11+) | `{}` |
+| `otk.healthCheckBundle.enabled`            | Enable/Disable installation of OTK health check service bundle | `true` |
+| `otk.healthCheckBundle.useExisting`        | Use exising OTK health check service bundle | `false` |
+| `otk.healthCheckBundle.name`               | OTK health check service bundle name | `otk-health-check-bundle-config` |
+| `otk.livenessProbe.enabled`                | Enable/Disable. Requires otk.healthCheckBundle.enabled set to true and OTK version >= 4.6 |
 
 ```
 otk:

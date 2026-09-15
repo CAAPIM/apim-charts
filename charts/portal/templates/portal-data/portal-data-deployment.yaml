@@ -25,9 +25,17 @@ spec:
     metadata:
       labels:
         app: portal-data
-      {{ if .Values.portalData.forceRedeploy }}
+      {{- if  .Values.portalData.podAnnotations }}
+      annotations: {{- toYaml .Values.portalData.podAnnotations | nindent 8 }}
+      {{- if .Values.portalData.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.portalData.podAnnotations }}
+      {{- if .Values.portalData.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}

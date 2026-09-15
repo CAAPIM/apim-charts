@@ -192,6 +192,8 @@ analytics:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -226,6 +228,8 @@ apim:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -257,6 +261,8 @@ authenticator:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -287,6 +293,8 @@ dispatcher:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -346,6 +354,8 @@ portalData:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -377,6 +387,8 @@ portalEnterprise:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -408,6 +420,8 @@ tenantProvisioner:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
   podSecurityContext: {}
   # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -444,7 +458,6 @@ image:
 # Settings for Druid - this is a local sub chart
 druid:
   enabled: true
-  forceRedeploy: false
   # Service Account for Druid services
   serviceAccount:
     create: true
@@ -457,6 +470,7 @@ druid:
       zookeeper: 10Gi
 
   minio:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -464,6 +478,8 @@ druid:
     # consider changing to mode... standalone/distributed.
     # Once Portal is installed, minio can not be scaled up or down.
     replicaCount: 1
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -510,6 +526,7 @@ druid:
   # affinity: {}
 
   zookeeper:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -517,6 +534,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -531,6 +550,7 @@ druid:
   # affinity: {}
 
   coordinator:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -538,6 +558,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -552,6 +574,7 @@ druid:
   # affinity: {}
 
   kafka:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -559,6 +582,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -575,6 +600,7 @@ druid:
   # affinity: {}
 
   broker:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -582,6 +608,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -596,6 +624,7 @@ druid:
   # affinity: {}
 
   historical:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -603,6 +632,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -617,6 +648,7 @@ druid:
   # affinity: {}
 
   ingestion:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -625,6 +657,8 @@ druid:
     image:
       pullPolicy: IfNotPresent
     portName: ingestion-svc
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -641,6 +675,7 @@ druid:
   # affinity: {}
 
   middlemanager:
+    forceRedeploy: false
     pdb:
       create: false
       maxUnavailable: ""
@@ -648,6 +683,8 @@ druid:
     replicaCount: 1
     image:
       pullPolicy: IfNotPresent
+    # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+    podAnnotations: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
     podSecurityContext: {}
     # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
@@ -782,6 +819,8 @@ ingress-nginx:
 
 # Settings for portal jobs
 jobs:
+  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  podAnnotations: {}
   labels: {}
   # nodeSelector: {}
   # tolerations: []

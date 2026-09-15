@@ -25,9 +25,17 @@ spec:
     metadata:
       labels:
         app: authenticator
-      {{ if .Values.authenticator.forceRedeploy }}
+      {{- if  .Values.authenticator.podAnnotations }}
+      annotations: {{- toYaml .Values.authenticator.podAnnotations | nindent 8 }}
+      {{- if .Values.authenticator.forceRedeploy }}
+        timestamp: {{ now | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if not .Values.authenticator.podAnnotations }}
+      {{- if .Values.authenticator.forceRedeploy }}
       annotations:
         timestamp: {{ now | quote }}
+      {{- end }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
