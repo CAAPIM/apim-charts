@@ -5,7 +5,7 @@ name: Release Charts
 on:
   push:
     branches:
-      - portal-5402
+      - portal-5402-final
 jobs:
   release-charts:
     runs-on: ubuntu-latest

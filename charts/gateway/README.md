@@ -8,7 +8,7 @@ In preparation for the [Bitnami public catalog deletion](https://community.broad
 The included MySQL subChart is enabled by default to make trying this chart out easier. ***It is not supported or recommended for production.*** Layer7 assumes that you are deploying a Gateway solution to a Kubernetes environment with an external MySQL database.
 
 ## Release notes
-- Current Chart Version 3.0.37
+- Current Chart Version 3.0.41
   - Please review release notes [here](./release-notes.md)
 
 ## Prerequisites
@@ -73,6 +73,7 @@ Helm Version    Supported Kubernetes Versions
 * [Service Configuration](#port-configuration)
 * [Gateway Application Ports](#gateway-application-ports)
 * [OTK Install or Upgrade](#otk-install-or-upgrade)
+* [OTK Compatibility with Gateway 11.2](#otk-compatibility-with-gateway-112)
 * [Ingress Configuration](#ingress-configuration)
 * [PM Tagger Configuration](#pm-tagger-configuration)
 * [Shared State Preview Features](#shared-state-preview-features)
@@ -135,71 +136,72 @@ database:
 ## Configuration
 The following table lists the configurable parameters of the Gateway chart and their default values. See values.yaml for additional parameters and info
 
-| Parameter                        | Description                               | Default                                                      |
+| Parameter                        | Description                               | Default                                                    |
 | -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
 | `nameOverride`                | Name override   | `nil` |
-| `fullnameOverride`                      | Full name override                       | `nil`                                                     |
-| `global.schedulerName`                      | Override the default scheduler | `nil` |
+| `fullnameOverride`                      | Full name override                       | `nil`                                                   |
+| `global.schedulerName`                    | Override the default scheduler | `nil` |
 | `license.value`          | Gateway license file | `nil`  |
-| `license.accept`          | Accept Gateway license EULA | `false`  |
+| `license.accept`          | Accept Gateway license EULA | `false` |
 | `disklessConfig.enabled` | Enable diskless configuration | `true` |
+| `disklessConfig.setSecretByInitContainer` | Fetch and mount node.properties secret by InitContainer | `false` |
 | `disklessConfig.existingSecret` | existing node.properties secret mount configuration | `{}` |
 | `disklessConfig.existingSecret.name` | existing secret containing node.properties | `gateway-secret` |
 | `disklessConfig.existingSecret.csi` | csi configuration for the [secret store csi driver](https://secrets-store-csi-driver.sigs.k8s.io/) | `commented out` |
 | `image.registry`    | Image Registry               | `docker.io` |
-| `image.repository`          | Image Repository  | `caapim/gateway`  |
-| `image.tag`          | Image tag | `11.0.00`  |
-| `image.pullPolicy`          | Image Pull Policy | `IfNotPresent`  |
-| `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false`  |
-| `imagePullSecret.existingSecretName`          | Point to an existing Image Pull Secret | `commented out`  |
+| `image.repository`          | Image Repository  | `caapim/gateway` |
+| `image.tag`          | Image tag | `11.0.00` |
+| `image.pullPolicy`          | Image Pull Policy | `IfNotPresent` |
+| `imagePullSecret.enabled`          | Configures Gateway Deployment to use imagePullSecret, you can also leave this disabled and associate an image pull secret with the Gateway's Service Account | `false` |
+| `imagePullSecret.existingSecretName`        | Point to an existing Image Pull Secret | `commented out` |
 | `imagePullSecret.username`          | Registry Username | `nil`  |
 | `imagePullSecret.password`          | Registry Password | `nil`  |
 | `additionalAnnotations`          | Additional Annotations apply to all deployed objects | `{}`  |
 | `additionalLabels`          | Additional Labels apply to all deployed objects | `{}`  |
 | `podLabels`          | Pod Labels for the Gateway Pod | `{}`  |
 | `podAnnotations`          | Pod Annotations apply to the Gateway Pod | `{}`  |
-| `replicas`                   | Number of Gateway replicas        | `1`                                                          |
-| `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                              |
-| `updateStrategy.rollingUpdate.maxSurge`             | Rolling Update Max Surge                       | `1`                                              |
-| `updateStrategy.rollingUpdate.maxUnavailable`             | Rolling Update Max Unavailable                       | `0`                                              |
-| `clusterHostname`          | Gateway Cluster Hostname  | `my.localdomain`  |
-| `existingGatewaySecretName`          | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out`  |
-| `clusterPassword`          | Cluster Password, used if db backed  | `mypassword`  |
-| `management.enabled`          | Enable/Disable Policy Manager access | `true`  |
-| `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false`  |
-| `management.username`          | Policy Manager Username | `admin`  |
-| `management.password`          | Policy Manager Password | `mypassword`  |
-| `management.kubernetes.loadServiceAccountToken`    | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false`  |
-| `management.service.ipFamilyPolicy`   | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `commented out`  |
+| `replicas`                   | Number of Gateway replicas        | `1`                                                        |
+| `updateStrategy.type`             | Deployment Strategy                       | `RollingUpdate`                                            |
+| `updateStrategy.rollingUpdate.maxSurge`           | Rolling Update Max Surge                       | `1`                                            |
+| `updateStrategy.rollingUpdate.maxUnavailable`           | Rolling Update Max Unavailable                       | `0`                                            |
+| `clusterHostname`          | Gateway Cluster Hostname  | `my.localdomain` |
+| `existingGatewaySecretName`          | Existing Secret that contains management credentials, see values.yaml for what must be included  | `commented out` |
+| `clusterPassword`          | Cluster Password, used if db backed  | `mypassword` |
+| `management.enabled`          | Enable/Disable Policy Manager access | `true` |
+| `management.restman.enabled`          | Enable/Disable the Rest Management API (Restman) | `false` |
+| `management.username`          | Policy Manager Username | `admin` |
+| `management.password`          | Policy Manager Password | `mypassword` |
+| `management.kubernetes.loadServiceAccountToken`  | Automatically load the Gateway Deployment's ServiceAccount Token for querying the Kubernetes API | `false` |
+| `management.service.ipFamilyPolicy`   | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `commented out` |
 | `management.service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)  | `nil`  |
-| `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true`  |
-| `database.create`          | Deploy the MySQL stable deployment as part of this release | `true`  |
-| `database.username`          | Database Username | `gateway`  |
-| `database.password`          | Database Password | `mypassword`  |
+| `database.enabled`          | Run in DB Backed or Ephemeral Mode | `true` |
+| `database.create`          | Deploy the MySQL stable deployment as part of this release | `true` |
+| `database.username`          | Database Username | `gateway` |
+| `database.password`          | Database Password | `mypassword` |
 | `database.liquibaseLogLevel`          | Liquibase log level | `off`  |
 | `database.name`          | Database name | `ssg`  |
-| `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false`  |
-| `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out`  |
+| `tls.useSignedCertificates`          | Enable/Disable use of your own TLS Certificate, this ovverides the Gateway's defaultSSLKey | `false` |
+| `tls.existingSecretName`          | Existing Secret that contains TLS p12 container and pass, see values.yaml for what must be included | `commented out` |
 | `tls.key`          | p12 container - this can be set with --set-file tls.key=/path/to/tls.p12 | `nil`  |
 | `tls.pass`          | p12 container password - this cannot be empty | `nil`  |
 | `config.heapSize`          | Java Heap Size | `2g`  |
 | `config.minHeapSize`          | Java Min Heap Size | `1g`  |
 | `config.maxHeapSize`          | Java Max Heap Size | `3g`  |
-| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml`  |
-| `config.log.override`          | Override the standard log configuration | `true`  |
-| `config.log.properties`          | Custom logging properties | `see values.yaml`  |
-| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false`  |
-| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml`  |
-| `config.sytemProperties`          | Configure the Gateway's system.properties file | `see values.yaml`  |
-| `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml`  |
-| `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml`  |
-| `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false`  |
-| `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"`  |
-| `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false`  |
-| `existingBundle.configMaps`          | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml`  |
-| `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml`  |
-| `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml`  |
-| `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml`  |
+| `config.javaArgs`          | Additional Java Args to pass to the SSG process | `see values.yaml` |
+| `config.log.override`          | Override the standard log configuration | `true` |
+| `config.log.properties`          | Custom logging properties | `see values.yaml` |
+| `config.cwp.enabled`          | Enable/Disable settable cluster-wide properties | `false` |
+| `config.cwp.properties`          | Set name/value pairs of cluster-wide properties | `see values.yaml` |
+| `config.sytemProperties`          | Configure the Gateway's system.properties file | `see values.yaml` |
+| `additionalEnv`          | Additional environment variables you wish to pass to the Gateway Configmap | `see values.yaml` |
+| `additionalSecret`          | Additional secret variables you wish to pass to the Gateway Secret | `see values.yaml` |
+| `bundle.enabled`          | Creates a configmap with bundles from the ./bundles folder | `false` |
+| `bundle.path`          | Specify the path to the bundle files. The bundles folder in this repo has some example bundle files | `"bundles/*.bundle"` |
+| `existingBundle.enabled`          | Enable mounting existing configMaps/Secrets that contain Layer7 Gateway Bundles - see values.yaml for more info | `false` |
+| `existingBundle.configMaps`          | Array of configMaps that will be mounted to the Gateway's bootstrap folder | `see values.yaml` |
+| `existingBundle.secrets`          | Array of Secrets that will be mounted to the Gateway's bootstrap folder  | `see values.yaml` |
+| `customHosts.enabled`          | Enable customHosts on the Gateway, this overrides /etc/hosts.  | `see values.yaml` |
+| `customHosts.hostAliases`          | Array of hostAliases to add to the Container Gateway  | `see values.yaml` |
 | `service.type`    | Service Type               | `LoadBalancer` |
 | `service.ipFamilyPolicy`      | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `commented out` |
 | `service.ipFamilies`    | [IPv4/IPv6 dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/)               | `nil`  |
@@ -210,7 +212,7 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `service.externalTrafficPolicy`    | [External Traffic Policy](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)               | `Cluster` |
 | `ingress.enabled`    | Enable/Disable an ingress or route record being created               | `false` |
 | `ingress.openshift.route.enabled`    | Create an Openshift Route (Requires Openshift)               | `false` |
-| `ingress.openshift.route.wildcardPolicy`    | Openshift Route Wildcard Policy               | `None` |
+| `ingress.openshift.route.wildcardPolicy`  | Openshift Route Wildcard Policy               | `None` |
 | `ingress.openshift.route.weight`    | Openshift Route Weight (0-255)               | `commented` |
 | `ingress.annotations`    | ingress annotations               | `{}` |
 | `ingress.labels`    | additional ingress labels               | `{}` |
@@ -300,6 +302,19 @@ management:
 ```
 
 [Back to Additional Guides](#additional-guides)
+
+### OTK Compatibility with Gateway 11.2
+These below information is relevant for those who are upgrading their Gateway to version 11.2 and utilizing the OAuth Toolkit (OTK)
+1. **OTK 4.6.4** is presently the only version that provides seamless support for Gateway 11.2
+2. For older versions (< OTK 4.6.4), the below steps have to be followed to ensure smooth transition to Gateway 11.2
+   * After upgrading Gateway to 11.2 If there is a necessity to install or upgrade to OTK version 4.6.3, 4.6.2, 4.6.1, or 4.6.0, please ensure to update the OTK image tag to use one of the below tags corresponding to the specific version being deployed:
+       * 4.6.0.1
+       * 4.6.1.1
+       * 4.6.2.1
+       * 4.6.3.1
+   * It has to be ensured that Evaluate JSON Path Assertion (V1) assertion is added to the GW. 
+     * This will be provided as Tactical assertion. Please find more information on how to get the assertion [here](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-6/release-notes.html)
+     * In Helm chart, this can be done using init Containers. For more information & examples refer to [Utilities](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples)
 
 ### OTK install or upgrade
 OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types of OTK installations on db backed gateway. On ephermal gateway only SINGLE mode is supported.
@@ -996,10 +1011,10 @@ Set the following system properties as needed
 | `config.gemfire.embedded.externalLocators.replicas`         | Number of GemFire locator replicas to deploy.                                                                           | `2`                                                                     |
 | `config.gemfire.embedded.externalLocators.image.registry`   | Image Registry                                                                                                          | `docker.io`                                                             |
 | `config.gemfire.embedded.externalLocators.image.repository` | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
-| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                               | `10.1.3-jdk17`                                                          |
+| `config.gemfire.embedded.externalLocators.image.tag`        | Image Tag                                                                                                               | `10.2.0-jdk21`                                                          |
 | `config.gemfire.embedded.externalLocators.image.pullPolicy` | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
 | `config.gemfire.embedded.externalLocators.resources`        | Locator pod resources                                                                                                   | {}                                                                      |
-| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                    | `2Gi`                                                          |
+| `config.gemfire.embedded.externalLocators.persistence.size` | Persistent Volume Claim Size                                                                                                    | `2Gi`                                                                   |
 | `config.gemfire.external.enabled`                           | Enable external GemFire.                                                                                                | `false`                                                                 |
 | `config.gemfire.external.testOnStart`                       | Test the connection to Redis during Gateway start. If the conection fails and this is true, the Gateway will not start. | `false`                                                                 |
 | `config.gemfire.external.gwCounterRegionName`               | GemFire data region name for gateway counter provider.                                                                  | `layer7gw_counter`                                                      |
@@ -1012,7 +1027,7 @@ Set the following system properties as needed
 | `config.gemfire.managementConsole.service.annotations`      | GemFire management console service annotations.                                                                         | `{}`                                                                    |
 | `config.gemfire.managementConsole.image.registry`           | Image Registry                                                                                                          | `docker.io`                                                             |
 | `config.gemfire.managementConsole.image.repository`         | Image Repository                                                                                                        | `gemfire/gemfire`                                                       |
-| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                               | `1.3.1`                                                                 |
+| `config.gemfire.managementConsole.image.tag`                | Image Tag                                                                                                               | `1.4.1`                                                                 |
 | `config.gemfire.managementConsole.image.pullPolicy`         | Image Pull Policy                                                                                                       | `IfNotPresent`                                                          |
 
 #### Creating your own Configuration
@@ -1346,6 +1361,13 @@ admin.pass=mypassword
 node.db.type=derby
 node.db.config.main.user=gateway
 ```
+Unlike interactive password changes in Policy Manager, the container startup scripts validate the following username and password against a restricted character set (for parsing/scripting safety):
+```
+admin.user, admin.pass, node.db.config.main.user, node.db.config.main.pass
+```
+They may contain alphanumeric ASCII characters and any of the following symbols:
+
+! @ . = - _ ^ + ; : # , %. Do NOT use space characters. 
 
 ##### Update values.yaml
 Update your values file to use the new node.properties file.
@@ -1368,6 +1390,42 @@ disklessConfig:
   #   volumeAttributes:
   #     secretProviderClass: "secret-provider-class-name"
 ```
+#### Set up node.properties secret by InitContainer
+
+From Gateway v11.2.0 onwards, node.properties support secrets provided in different format by different third party secret managers using InitContainer.
+InitContainer can be used to fetch the secret from a secure source and format and mount node.properties to shared volume /opt/docker/custom/custom-properties.
+Gateway container mounts only /opt/docker/custom/custom-properties/node.properties to /opt/SecureSpan/Gateway/node/default/etc/conf using subPath.
+InitContainer volumeMounts name has to be **shared-secret**
+
+values.yaml
+```
+disklessConfig:
+  enabled: false
+  setSecretByInitContainer: true
+  existingSecret: {}
+    
+initContainers:
+  - name: aws-init
+    image: amazon/aws-cli:latest # or your selected version
+    env:
+      - name: AWS_REGION
+        value: us-west-2 # or your-aws-region
+    volumeMounts:
+      - name: shared-secret
+        mountPath: /opt/docker/config
+    command: ["sh", "-c"]
+    args:
+      - |
+        set -e
+        # Fetch secret from AWS, replace secret-id with your node.properties secret name
+        aws secretsmanager get-secret-value --secret-id gateway.node.properties --query SecretString \
+          --output text > /opt/docker/config/node.json
+
+        # Parse JSON into .properties format
+        yum install -y jq
+        jq -r 'to_entries | map("\(.key)=\(.value)") |.[]' /opt/docker/config/node.json > /opt/docker/config/node.properties
+```
+More information on how to use initContainers with examples can be found on the [Layer7 Community Github Utilities Repository](https://github.com/Layer7-Community/Utilities/tree/main/gateway-init-container-examples).
 
 [Back to Additional Guides](#additional-guides)
 
