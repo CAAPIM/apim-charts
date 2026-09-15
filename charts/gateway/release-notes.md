@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.4 Minor Fix
+- Fixed OTK_JDBC_URL generation when using Demo DB
+
 ## 3.1.3 General Updates
 - Added an opt-in pre-upgrade Database Migration Job (`database.migrationJob`) that applies Liquibase schema changes before new Gateway pods roll out, avoiding lock contention during rolling upgrades. Requires Gateway image 11.2.2 or newer. See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates).
 - Added support for the H2 embedded database as an alternative to the default Derby embedded database. Set `database.type: "h2"` to enable (requires `database.enabled: false`).
