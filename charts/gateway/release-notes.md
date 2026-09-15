@@ -7,6 +7,10 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.5 Graceful Shutdown
+- Added `ssg.preShutdownDelay`, `ssg.shutdownGracePeriod` and `ssg.shutdownDelay` to the default `config.systemProperties` in both `values.yaml` and `production-values.yaml`, coordinating pod termination with the Gateway's own shutdown sequence. Requires a Gateway image that supports these properties; they are otherwise ignored.
+- `production-values.yaml` now targets `readinessProbe` at `/ssg/health/healthz` (`periodSeconds: 5`, `failureThreshold: 1`) instead of the exec-based health check, and sets `terminationGracePeriodSeconds: 45` by default, so pods are removed from Service endpoints promptly during shutdown. `values.yaml`'s defaults are unchanged for backward compatibility - see [Graceful Termination](./README.md#graceful-termination) to opt in.
+
 ## 3.1.3 General Updates
 - Added an opt-in pre-upgrade Database Migration Job (`database.migrationJob`) that applies Liquibase schema changes before new Gateway pods roll out, avoiding lock contention during rolling upgrades. Requires Gateway image 11.2.2 or newer. See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates).
 - Added support for the H2 embedded database as an alternative to the default Derby embedded database. Set `database.type: "h2"` to enable (requires `database.enabled: false`).
