@@ -6,6 +6,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.3.12+patch.2 General Updates
+- This new version of the chart supports API Portal 5.3.2.2
+
 ## 2.3.12 General Updates
 - This new version of the chart supports API Portal 5.2.3
 - Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
@@ -674,7 +677,7 @@ Portal Analytics
 | `image.dispatcher` | dispatcher image | `dispatcher:5.3.2` |
 | `image.apim` | APIM ingress image | `ingress:5.3.2` |
 | `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.2` |
-| `image.data` | portal-data image | `portal-data:5.3.2` |
+| `image.data` | portal-data image | `portal-data:5.3.2.2` |
 | `image.tps` | tenant provisioner image | `tenant-provisioning-service:5.3.2` |
 | `image.analytics` | Analytics image | `analytics-server:5.3.2` |
 | `image.authenticator` | Authenticator image | `authenticator:5.3.2` |
@@ -1055,6 +1058,6 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2025 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
