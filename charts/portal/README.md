@@ -656,7 +656,7 @@ Portal Analytics
 ### Portal Images
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `image.dispatcher` | dispatcher image | `dispatcher:5.3.1` |
+| `image.dispatcher` | dispatcher image | `dispatcher:5.3.1.2` |
 | `image.apim` | APIM ingress image | `ingress:5.3.1` |
 | `image.enterprise` | portal-enterprise image | `portal-enterprise:5.3.1` |
 | `image.data` | portal-data image | `portal-data:5.3.1` |
@@ -1038,6 +1038,7 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2024 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
+//AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
