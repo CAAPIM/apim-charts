@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     branches:
-      - stable
+      - portal-5402-final
 jobs:
   release-charts:
     runs-on: ubuntu-latest
