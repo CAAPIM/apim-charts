@@ -285,6 +285,17 @@ config:
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Graceful shutdown timing (Kubernetes/Container profile).
+    # ssg.preShutdownDelay: seconds to wait before shutdown begins, allowing Kubernetes to remove this pod
+    #   from Service endpoints and load balancers to drain in-flight connections.
+    # ssg.shutdownGracePeriod: seconds allotted for Gateway components to stop (awaitTermination) on the
+    #   concurrent stop path.
+    # ssg.shutdownDelay: seconds of post-stop buffer before the JVM exits.
+    # The pod/Deployment terminationGracePeriodSeconds must be >=
+    #   preShutdownDelay + shutdownGracePeriod + shutdownDelay + 5s buffer.
+    ssg.preShutdownDelay=5
+    ssg.shutdownGracePeriod=20
+    ssg.shutdownDelay=3
     # Redis configuration - uncomment to use Redis
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
