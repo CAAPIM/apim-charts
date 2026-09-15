@@ -136,8 +136,9 @@ preStopScript:
   - 8777
 
 ## terminationGracePeriodSeconds default duration in seconds kubernetes waits for container to exit before sending kill signal.
-## Defaults to 30 if not set
-# terminationGracePeriodSeconds: 90
+## Defaults to 30 if not set. Must be >= config.systemProperties ssg.preShutdownDelay + ssg.shutdownGracePeriod +
+## ssg.shutdownDelay + a 5s buffer: 45 >= 5 + 20 + 3 + 5 (12s margin).
+terminationGracePeriodSeconds: 45
 
 # Configure autoscaling
 # this makes use of autoscaling/v2beta2 and autoscaling/v2 for v1.23 and later
@@ -286,6 +287,17 @@ config:
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Graceful shutdown timing (Kubernetes/Container profile).
+    # ssg.preShutdownDelay: seconds to wait before shutdown begins, allowing Kubernetes to remove this pod
+    #   from Service endpoints and load balancers to drain in-flight connections.
+    # ssg.shutdownGracePeriod: seconds allotted for Gateway components to stop (awaitTermination) on the
+    #   concurrent stop path.
+    # ssg.shutdownDelay: seconds of post-stop buffer before the JVM exits.
+    # The pod/Deployment terminationGracePeriodSeconds must be >=
+    #   preShutdownDelay + shutdownGracePeriod + shutdownDelay + 5s buffer.
+    ssg.preShutdownDelay=5
+    ssg.shutdownGracePeriod=20
+    ssg.shutdownDelay=3
     # Redis configuration - uncomment to use Redis
     # com.l7tech.server.extension.sharedKeyValueStoreProvider=redis
     # com.l7tech.server.extension.sharedCounterProvider=redis
@@ -1404,20 +1416,27 @@ livenessProbe:
   successThreshold: 1
   failureThreshold: 15
 
+# readinessProbe targets /ssg/health/healthz - an unauthenticated, JSON, port-bound health endpoint that
+# aggregates Gateway health signals (heap, listen ports) and is Kubernetes-readiness aware: it short-circuits
+# to a 503 while the Gateway is shutting down (see config.systemProperties ssg.preShutdownDelay/
+# shutdownGracePeriod/shutdownDelay above), so Kubernetes removes the pod from Service endpoints promptly.
+# Do not point this at /ssg/ping - that endpoint requires HTTP Basic auth by default, returns HTML, and is
+# intended for admin/diagnostic use, not as a K8s probe target.
+# Port 9443 is used (not 8443) because config.listenPorts.custom.ports below only enables the
+# "Built-in services" management feature (which serves /ssg/ping and /ssg/health/healthz) on port 9443 -
+# port 8443 in this file is traffic-only. This matches the healthServletBindPort default of 9443.
 readinessProbe:
   enabled: true
-  type: command
-  command: /opt/docker/rc.d/diagnostic/health_check.sh
-# type: httpGet
-# path: /ssg/ping
-# port: 8443
-# scheme: HTTPS
-# httpHeaders: []
+  type: httpGet
+  path: /ssg/health/healthz
+  port: 9443
+  scheme: HTTPS
+  httpHeaders: []
   initialDelaySeconds: 40
   timeoutSeconds: 1
-  periodSeconds: 15
+  periodSeconds: 5
   successThreshold: 1
-  failureThreshold: 15
+  failureThreshold: 1
 
 # nodeSelector: {}
 # affinity: {}

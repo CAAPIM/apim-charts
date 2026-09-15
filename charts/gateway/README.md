@@ -281,6 +281,9 @@ The following table lists the configurable parameters of the Gateway chart and t
 | `readinessProbe.periodSeconds`    | Frequency               | `10` |
 | `readinessProbe.successThreshold`    | Success Threshold               | `1` |
 | `readinessProbe.failureThreshold`    | Failure Threshold               | `10` |
+
+For Kubernetes deployments, `production-values.yaml` overrides `readinessProbe` to target `/ssg/health/healthz` with `periodSeconds: 5` and `failureThreshold: 1` so the pod is removed from Service endpoints promptly on shutdown. See [Graceful Termination](#graceful-termination).
+
 | `resources.limits`    | Resource Limits               | `{}` |
 | `resources.requests`    | Resource Requests              | `{}` |
 | `nodeSelector`    | [Node Selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)              | `{}` |
@@ -1922,8 +1925,14 @@ The full default is this
     javax.net.ssl.trustStoreType=jks
     # Period of time before the Gateway removes inactive nodes.
     com.l7tech.server.clusterStaleNodeCleanupTimeoutSeconds=86400
+    # Graceful shutdown timing - see Graceful Termination below.
+    ssg.preShutdownDelay=5
+    ssg.shutdownGracePeriod=20
+    ssg.shutdownDelay=3
     # Additional properties go here
 ```
+
+See [Graceful Termination](#graceful-termination) for how `ssg.preShutdownDelay`, `ssg.shutdownGracePeriod` and `ssg.shutdownDelay` relate to `terminationGracePeriodSeconds` and the readiness probe.
 
 [Back to Additional Guides](#additional-guides)
 
@@ -2202,6 +2211,29 @@ The graceful termination (preStop script) is disabled by default.
 | `preStopScript.timeoutSeconds`          | Timeout - must be lower than terminationGracePeriodSeconds  | `60`  |
 | `preStopScript.excludedPorts`          | Array of ports that should be excluded from the preStop script check | `[8777, 2124]`  |
 | `terminationGracePeriodSeconds`          | Default duration in seconds kubernetes waits for container to exit before sending kill signal. | `see values.yaml`  |
+
+#### Readiness-aware shutdown
+
+The Gateway's `/ssg/health/healthz` endpoint (the same endpoint used for `readinessProbe`) is shutdown-aware: once the Gateway begins shutting down it immediately starts returning `503 Service Unavailable`, so Kubernetes removes the pod from Service endpoints without waiting for a failed probe to age out. `/ssg/ping` is not suitable as a readiness target - it requires HTTP Basic auth by default, returns HTML rather than JSON, and exists for admin/diagnostic use, not cluster health.
+
+This is paired with three Gateway system properties (set via `config.systemProperties`, see [System Properties](#system-properties)) that control the shutdown sequence itself:
+
+| Property                        | Description                               | Container profile default |
+| -----------------------------    | -----------------------------------       | -------------------------- |
+| `ssg.preShutdownDelay`          | Seconds to wait before shutdown begins, allowing Kubernetes to remove the pod from Service endpoints and load balancers to drain in-flight connections. | `5`  |
+| `ssg.shutdownGracePeriod`          | Seconds allotted for Gateway components to stop (`awaitTermination`) on the concurrent stop path. | `20`  |
+| `ssg.shutdownDelay`          | Seconds of post-stop buffer before the JVM exits. | `3`  |
+
+`terminationGracePeriodSeconds` must be greater than or equal to `ssg.preShutdownDelay + ssg.shutdownGracePeriod + ssg.shutdownDelay` plus a safety buffer, otherwise Kubernetes will send `SIGKILL` before the Gateway finishes shutting down cleanly:
+
+```
+terminationGracePeriodSeconds >= preShutdownDelay + shutdownGracePeriod + shutdownDelay + 5s buffer
+Container default: 45 >= 5 + 20 + 3 + 5   (12s margin)
+```
+
+`production-values.yaml` sets `readinessProbe` to `httpGet` `/ssg/health/healthz` with `periodSeconds: 5` / `failureThreshold: 1`, and `terminationGracePeriodSeconds: 45`, matching this budget. The base `values.yaml` keeps its existing exec-based probe for backward compatibility - to adopt readiness-aware shutdown on top of `values.yaml`, override the same fields shown in `production-values.yaml`.
+
+The preStop script (connection draining) above and readiness-aware shutdown are complementary: the preStop script keeps the pod alive while connections drain, while `ssg.preShutdownDelay` gives Kubernetes' own endpoint controller time to stop routing new traffic to the pod before the Gateway proceeds with its own shutdown sequence.
 
 [Back to Additional Guides](#additional-guides)
 
