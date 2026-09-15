@@ -1,8 +1,9 @@
+# Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
 apiVersion: v2
-appVersion: "5.3.2"
+appVersion: "5.3.2.2"
 description: CA API Developer Portal
 name: portal
-version: 2.3.15
+version: 2.3.15+patch.2
 type: application
 home: https://github.com/CAAPIM/apim-charts
 maintainers:
