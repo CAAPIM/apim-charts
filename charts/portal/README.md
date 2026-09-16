@@ -26,6 +26,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Infrastructure Management (`portal.infrastructureManagement.enabled`) now requires `portal.seaweedFs.enabled=true` but no longer requires `portal.intelligence.enabled=true`.
 - Kafka Pod will be installed by default from this release.
 
+## 2.4.2+patch.1 General Updates
+- This new version of the chart supports API Portal 5.4.1.4
+  - Security Vulnerabilities fixed
+
 ## 2.4.2 General Updates
 - This new version of the chart supports API Portal 5.4.1.3
 
@@ -53,6 +57,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Data will be migrated from minio by default when upgrading.
 - Updated OpenShift example values (examples/portal/openshift) to support portal 5.4.1.
 
+## 2.3.21+patch.1 General Updates
+- This new version of the chart supports API Portal 5.4.0.2
+  - Security Vulnerabilities fixed
+
 ## 2.3.21 General Updates
 - Temporary switch of bitnamilegacy/mysql to caapim/mysql.
 
@@ -69,6 +77,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## 2.3.18 General Updates
 - Switch bitnami/mysql to bitnamilegacy/mysql.
 
+## 2.3.17-patch.1 General Updates
+- This new version of the chart supports API Portal 5.3.3.2
+  - Security Vulnerabilities fixed
+
 ## 2.3.17 General Updates
 - This new version of the chart supports API Portal 5.3.3.1
 
@@ -76,6 +88,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - This new version of the chart supports API Portal 5.3.3
 - Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
 - Updated the Openshift installation procedure through an example. Refer examples/portal folder.
+
+## 2.3.15+patch.2 General Updates
+- This new version of the chart supports API Portal 5.3.2.3
+  - Security Vulnerabilities fixed
 
 ## 2.3.15 General Updates
 - Adding pod annotations to all the jobs in portal.
@@ -94,6 +110,11 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Upgrade to 2.3.12 is only supported from 2.3.9 chart version as per the Portal version.
 - Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
 - DB container(for testing) upgraded to support 8.4.4 MySQL version.
+
+## 2.3.11+patch.1 General Updates
+- This new version of the chart supports API Portal 5.3.1.2
+  - Security Vulnerabilities fixed
+
 ## 2.3.11 General Updates
 - Added a preflight check (initContainer) for the core apim/ingress deployment
   - This resolves a race condition that occurs on slower hardware where apim/ingress starts before other dependent services are ready. 
@@ -114,6 +135,11 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - This new version of the chart supports API Portal 5.3.1
 - Removed PSSG container
 - Upgrade to 2.3.10 is only supported from 2.3.8 chart version as per the Portal version.
+
+## 2.3.9+patch.1 General Updates
+- This new version of the chart supports API Portal 5.3.0.1
+  - Security Vulnerabilities fixed
+
 ## 2.3.9 General Updates
 - This new version of the chart supports API Portal 5.3
 - Upgrade to 2.3.9 is only supported from 2.3.4 chart version as per the Portal version.
@@ -1346,6 +1372,7 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 ```
 
 ## License
-Copyright (c) 2025 CA, A Broadcom Company. All rights reserved.
+Copyright (c) 2026 CA, A Broadcom Company. All rights reserved.
+//AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
