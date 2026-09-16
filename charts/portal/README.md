@@ -6,8 +6,8 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.3.15+patch.2 General Updates
-- This new version of the chart supports API Portal 5.3.2.3
+## 2.3.15+patch.1 General Updates
+- This new version of the chart supports API Portal 5.3.2.2
 
 ## 2.3.15 General Updates
 - Adding pod annotations to all the jobs in portal.
