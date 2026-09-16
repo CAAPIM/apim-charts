@@ -11,11 +11,27 @@ set -euo pipefail
 # branch, if its current Chart.yaml version already exists at the
 # destination, that means the version wasn't bumped.
 #
-# Usage: version-check.sh <target-branch> <helm-repo-host>
+# Usage: version-check.sh [target-branch] [helm-repo-host]
 # Example: version-check.sh stable apim-docker-release-local.usw1.packages.broadcom.com
+#
+# Both arguments are optional: without a helm-repo-host there's nothing to
+# check against (no OCI equivalent of the old public gh-pages lookup this
+# replaced), so this exits 0 without doing anything - a caller that hasn't
+# been wired up with Artifactory access (e.g. GitHub Actions, which has no
+# Artifactory credentials configured) gets a no-op instead of a crash.
 
-TARGET_BRANCH=${1:?"Usage: $0 <target-branch> <helm-repo-host>"}
-HELM_REPO=${2:?"Usage: $0 <target-branch> <helm-repo-host>"}
+TARGET_BRANCH=${1:-}
+HELM_REPO=${2:-}
+
+if [[ -z "${HELM_REPO}" ]]; then
+  echo "no helm-repo-host given - skipping version check (nothing to check against)"
+  exit 0
+fi
+
+if [[ -z "${TARGET_BRANCH}" ]]; then
+  echo "Usage: $0 <target-branch> <helm-repo-host>" >&2
+  exit 1
+fi
 
 charts=(gateway portal druid seaweedfs kafka)
 err=()
