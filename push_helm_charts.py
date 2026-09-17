@@ -1,77 +1,88 @@
-# Download latest released apim helm charts from github.com and push to artifactory
-#
-# Pre-requisite:
-# - The gh-pages index.yaml file available
-# - Artifactory credentials set in environment: ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW
-# - GitHub access token set in environment: GITHUB_TOKEN
-#
-# command examples:
-# python3 push_helm_charts.py --index index.yaml
-
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# //AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 import argparse
 import os
+import sys
 import requests
 import subprocess
+import tempfile
 from pathlib import Path
 from ruamel.yaml import YAML
 
 parser = argparse.ArgumentParser(description='Push apim helm charts to artifactory')
 parser.add_argument('--index', default='index.yaml', help='index file to read for chart releases')
 parser.add_argument('--release', action='store_true', help='flag to push to release repo instead of dev')
+parser.add_argument('--chart', default=None, help='optional specific chart name to push')
+parser.add_argument('--version', default=None, help='optional specific chart version to push')
 
 args = parser.parse_args()
 username = os.getenv('ARTIFACTORY_CREDS_USR')
 password = os.getenv('ARTIFACTORY_CREDS_PSW')
 token = os.getenv('GITHUB_TOKEN')
+
 if not username or not password or not token:
     sys.exit("please set env for ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW, and GITHUB_TOKEN")
+
 helm_stage = "release" if args.release else "dev"
 helm_repo = f"apim-docker-{helm_stage}-local.usw1.packages.broadcom.com"
 subprocess.run(['docker', 'login', helm_repo, '-u', username, '-p', password], check=True, text=True)
 
-def download_chart(url):
-    local_filename = url.split("/")[-1]
+def download_chart(url, target_dir):
+    local_filename = os.path.join(target_dir, url.split("/")[-1])
     headers = {'Authorization': f"Bearer {token}", 'Accept': 'application/vnd.github+json'}
 
-    # download file
     with requests.get(url, stream=True, headers=headers) as r:
         r.raise_for_status()
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=32768):
                 f.write(chunk)
-    print(f"downloaded {local_filename}")
+    print(f"Downloaded {local_filename}")
     return local_filename
+
+def chart_exists_in_artifactory(chart_name, version, tmp_dir):
+    """Checks if oci://helm_repo/chart_name:version already exists."""
+    dest_ref = f"oci://{helm_repo}/{chart_name}"
+    check_dir = os.path.join(tmp_dir, "check")
+    os.makedirs(check_dir, exist_ok=True)
+    res = subprocess.run(
+        ['helm', 'pull', dest_ref, '--version', version, '-d', check_dir],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+    return res.returncode == 0
 
 def main():
     path = Path(args.index)
     yaml = YAML(typ='safe')
     data = yaml.load(path)
-    druid_url = data["entries"]["druid"][0]["urls"][0]
-    gateway_url = data["entries"]["gateway"][0]["urls"][0]
-    portal_url = data["entries"]["portal"][0]["urls"][0]
-    apim_intelligence_url = data["entries"]["apim-intelligence"][0]["urls"][0]
-    seaweedfs_url = data["entries"]["seaweedfs"][0]["urls"][0]
-    kafka_url = data["entries"]["kafka"][0]["urls"][0]
 
-    print(f"working on druid: {druid_url}")
-    druid_chart = download_chart(druid_url)
-    subprocess.run(['helm', 'push', druid_chart, f"oci://{helm_repo}"], check=True, text=True)
-    print(f"working on gateway: {gateway_url}")
-    gateway_chart = download_chart(gateway_url)
-    subprocess.run(['helm', 'push', gateway_chart, f"oci://{helm_repo}"], check=True, text=True)
-    print(f"working on portal: {portal_url}")
-    portal_chart = download_chart(portal_url)
-    subprocess.run(['helm', 'push', portal_chart, f"oci://{helm_repo}"], check=True, text=True)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        for chart_name, chart_versions in data.get("entries", {}).items():
+            if args.chart and chart_name != args.chart:
+                continue
 
-    apim_intelligence_chart = download_chart(apim_intelligence_url)
-    subprocess.run(['helm', 'push', apim_intelligence_chart, f"oci://{helm_repo}"], check=True, text=True)
+            for entry in chart_versions:
+                version = entry.get("version")
+                if args.version and version != args.version:
+                    continue
 
-    seaweedfs_chart = download_chart(seaweedfs_url)
-    subprocess.run(['helm', 'push', seaweedfs_chart, f"oci://{helm_repo}"], check=True, text=True)
+                urls = entry.get("urls", [])
+                if not urls:
+                    continue
 
-    kafka_chart = download_chart(kafka_url)
-    subprocess.run(['helm', 'push', kafka_chart, f"oci://{helm_repo}"], check=True, text=True)
-    
+                url = urls[0]
+                print(f"\nChecking {chart_name}:{version}...")
+
+                if chart_exists_in_artifactory(chart_name, version, tmp_dir):
+                    print(f"-> {chart_name}:{version} already exists in {helm_repo}. Skipping.")
+                    continue
+
+                print(f"-> Missing in {helm_repo}. Downloading from {url}...")
+                chart_file = download_chart(url, tmp_dir)
+
+                print(f"-> Pushing {chart_file} to oci://{helm_repo}")
+                subprocess.run(['helm', 'push', chart_file, f"oci://{helm_repo}"], check=True, text=True)
+
     subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
 
 if __name__ == "__main__":
