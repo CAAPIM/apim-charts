@@ -3260,6 +3260,38 @@ entries:
     - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.15/portal-2.3.15.tgz
     version: 2.3.15
   - apiVersion: v2
+    appVersion: 5.3.2.3
+    created: "2026-09-17T10:52:24.392521728Z"
+    dependencies:
+    - condition: portal.analytics.enabled
+      name: druid
+      repository: file://../druid
+      version: ^1.0.0
+    - condition: global.setupDemoDatabase
+      name: mysql
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.2.2
+    - condition: rabbitmq.enabled
+      name: rabbitmq
+      repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+      version: 12.0.3
+    - condition: ingress.create
+      name: ingress-nginx
+      repository: https://kubernetes.github.io/ingress-nginx/
+      version: 4.12.1
+    description: CA API Developer Portal
+    digest: 05952648c6341d93009b19011b3d12e971e0621d3b2b496b81748021c9713d0a
+    home: https://github.com/CAAPIM/apim-charts
+    maintainers:
+    - name: Gazza7205
+    name: portal
+    sources:
+    - https://github.com/CAAPIM/apim-charts
+    type: application
+    urls:
+    - https://github.com/CAAPIM/apim-charts/releases/download/portal-2.3.15-patch.2/portal-2.3.15-patch.2.tgz
+    version: 2.3.15-patch.2
+  - apiVersion: v2
     appVersion: 5.3.2
     created: "2025-03-28T13:08:03.677975504Z"
     dependencies:
@@ -4378,4 +4410,4 @@ entries:
     urls:
     - https://github.com/CAAPIM/apim-charts/releases/download/seaweedfs-1.0.4/seaweedfs-1.0.4.tgz
     version: 1.0.4
-generated: "2026-09-17T09:57:13.733953422Z"
+generated: "2026-09-17T10:52:24.393006029Z"
