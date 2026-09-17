@@ -9,10 +9,20 @@ import tempfile
 from pathlib import Path
 from ruamel.yaml import YAML
 
-parser = argparse.ArgumentParser(description='Push apim helm charts to artifactory')
+TARGET_CHART = "portal"
+ALLOWED_VERSIONS = [
+    "2.4.2-patch.1",
+    "2.3.21-patch.1",
+    "2.3.17-patch.1",
+    "2.3.15-patch.2",
+    "2.3.11-patch.1",
+    "2.3.9-patch.1",
+]
+
+parser = argparse.ArgumentParser(description='Push apim portal helm charts to artifactory')
 parser.add_argument('--index', default='index.yaml', help='index file to read for chart releases')
 parser.add_argument('--release', action='store_true', help='flag to push to release repo instead of dev')
-parser.add_argument('--chart', default=None, help='optional specific chart name to push')
+parser.add_argument('--chart', default=TARGET_CHART, help='specific chart name to push (default: portal)')
 parser.add_argument('--version', default=None, help='optional specific chart version to push')
 
 args = parser.parse_args()
@@ -56,32 +66,36 @@ def main():
     yaml = YAML(typ='safe')
     data = yaml.load(path)
 
+    target_versions = [args.version] if args.version else ALLOWED_VERSIONS
+    chart_name = args.chart
+
+    portal_entries = data.get("entries", {}).get(chart_name, [])
+    if not portal_entries:
+        print(f"No entries found for chart '{chart_name}' in {args.index}")
+        return
+
     with tempfile.TemporaryDirectory() as tmp_dir:
-        for chart_name, chart_versions in data.get("entries", {}).items():
-            if args.chart and chart_name != args.chart:
+        for entry in portal_entries:
+            version = entry.get("version")
+            if version not in target_versions:
                 continue
 
-            for entry in chart_versions:
-                version = entry.get("version")
-                if args.version and version != args.version:
-                    continue
+            urls = entry.get("urls", [])
+            if not urls:
+                continue
 
-                urls = entry.get("urls", [])
-                if not urls:
-                    continue
+            url = urls[0]
+            print(f"\nChecking {chart_name}:{version}...")
 
-                url = urls[0]
-                print(f"\nChecking {chart_name}:{version}...")
+            if chart_exists_in_artifactory(chart_name, version, tmp_dir):
+                print(f"-> {chart_name}:{version} already exists in {helm_repo}. Skipping.")
+                continue
 
-                if chart_exists_in_artifactory(chart_name, version, tmp_dir):
-                    print(f"-> {chart_name}:{version} already exists in {helm_repo}. Skipping.")
-                    continue
+            print(f"-> Missing in {helm_repo}. Downloading from {url}...")
+            chart_file = download_chart(url, tmp_dir)
 
-                print(f"-> Missing in {helm_repo}. Downloading from {url}...")
-                chart_file = download_chart(url, tmp_dir)
-
-                print(f"-> Pushing {chart_file} to oci://{helm_repo}")
-                subprocess.run(['helm', 'push', chart_file, f"oci://{helm_repo}"], check=True, text=True)
+            print(f"-> Pushing {chart_file} to oci://{helm_repo}")
+            subprocess.run(['helm', 'push', chart_file, f"oci://{helm_repo}"], check=True, text=True)
 
     subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
 
