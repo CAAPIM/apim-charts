@@ -35,7 +35,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Infrastructure Management (`portal.infrastructureManagement.enabled`) now requires `portal.seaweedFs.enabled=true` but no longer requires `portal.intelligence.enabled=true`.
 - Kafka Pod will be installed by default from this release.
 
-## 2.4.2+patch.1 General Updates
+## 2.4.2-patch.1 General Updates
 - This new version of the chart supports API Portal 5.4.1.4
   - Security Vulnerabilities fixed
 
@@ -66,7 +66,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Data will be migrated from minio by default when upgrading.
 - Updated OpenShift example values (examples/portal/openshift) to support portal 5.4.1.
 
-## 2.3.21+patch.1 General Updates
+## 2.3.21-patch.1 General Updates
 - This new version of the chart supports API Portal 5.4.0.2
   - Security Vulnerabilities fixed
 
@@ -98,7 +98,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Upgrade to 2.3.17 is only supported from 2.3.10 chart version as per the Portal version.
 - Updated the Openshift installation procedure through an example. Refer examples/portal folder.
 
-## 2.3.15+patch.2 General Updates
+## 2.3.15-patch.2 General Updates
 - This new version of the chart supports API Portal 5.3.2.3
   - Security Vulnerabilities fixed
 
@@ -120,7 +120,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Ingress-NGINX Subchart is upgraded to version 4.12.0 to support K8s 1.29 version.
 - DB container(for testing) upgraded to support 8.4.4 MySQL version.
 
-## 2.3.11+patch.1 General Updates
+## 2.3.11-patch.1 General Updates
 - This new version of the chart supports API Portal 5.3.1.2
   - Security Vulnerabilities fixed
 
@@ -145,7 +145,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Removed PSSG container
 - Upgrade to 2.3.10 is only supported from 2.3.8 chart version as per the Portal version.
 
-## 2.3.9+patch.1 General Updates
+## 2.3.9-patch.1 General Updates
 - This new version of the chart supports API Portal 5.3.0.1
   - Security Vulnerabilities fixed
 
