@@ -11,12 +11,12 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## 2.4.7 General Updates
 - Included updates for the following security patch releases:
-  - 2.4.2+patch.1 (API Portal 5.4.1.4)
-  - 2.3.21+patch.1 (API Portal 5.4.0.2)
+  - 2.4.2-patch.1 (API Portal 5.4.1.4)
+  - 2.3.21-patch.1 (API Portal 5.4.0.2)
   - 2.3.17-patch.1 (API Portal 5.3.3.2)
-  - 2.3.15+patch.2 (API Portal 5.3.2.3)
-  - 2.3.11+patch.1 (API Portal 5.3.1.2)
-  - 2.3.9+patch.1 (API Portal 5.3.0.1)
+  - 2.3.15-patch.2 (API Portal 5.3.2.3)
+  - 2.3.11-patch.1 (API Portal 5.3.1.2)
+  - 2.3.9-patch.1 (API Portal 5.3.0.1)
 
 ## 2.4.6 General Updates
 - This new version of the chart supports API Portal 5.4.2.3
