@@ -11,9 +11,13 @@ from ruamel.yaml import YAML
 
 TARGET_CHART = "portal"
 ALLOWED_VERSIONS = [
+    "2.4.2-patch.1",
+    "2.3.21-patch.1",
+    "2.3.17-patch.1",
     "2.3.15-patch.2",
-    "2.3.15-patch.1"
-    
+    "2.3.15-patch.1",
+    "2.3.11-patch.1",
+    "2.3.9-patch.1"
 ]
 
 parser = argparse.ArgumentParser(description='Push apim portal helm charts to artifactory')
@@ -71,14 +75,18 @@ def main():
         print(f"No entries found for chart '{chart_name}' in {args.index}")
         return
 
+    processed_versions = set()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         for entry in portal_entries:
             version = entry.get("version")
             if version not in target_versions:
                 continue
 
+            processed_versions.add(version)
             urls = entry.get("urls", [])
             if not urls:
+                print(f"\n[WARNING] No URLs found for {chart_name}:{version} in {args.index}!")
                 continue
 
             url = urls[0]
@@ -93,6 +101,11 @@ def main():
 
             print(f"-> Pushing {chart_file} to oci://{helm_repo}")
             subprocess.run(['helm', 'push', chart_file, f"oci://{helm_repo}"], check=True, text=True)
+
+    missing_from_index = set(target_versions) - processed_versions
+    if missing_from_index:
+        for missing in sorted(missing_from_index):
+            print(f"\n[WARNING] Version '{missing}' is in target versions list but was NOT found in {args.index}!")
 
     subprocess.run(['docker', 'logout', helm_repo], check=True, text=True)
 
