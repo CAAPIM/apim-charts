@@ -11,12 +11,7 @@ from ruamel.yaml import YAML
 
 TARGET_CHART = "portal"
 ALLOWED_VERSIONS = [
-    "2.4.2-patch.1",
-    "2.3.21-patch.1",
-    "2.3.17-patch.1",
-    "2.3.15-patch.2",
-    "2.3.11-patch.1",
-    "2.3.9-patch.1",
+    "2.3.15-patch.1"
 ]
 
 parser = argparse.ArgumentParser(description='Push apim portal helm charts to artifactory')
