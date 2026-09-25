@@ -1,0 +1,2 @@
+# For scripts that need YAML parsing (e.g. extract-portal-images.py, used by pull-portal-images.sh)
+pyyaml>=5.4
