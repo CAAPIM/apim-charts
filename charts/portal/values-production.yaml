@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 # Global values
 global:
   portalRepository: caapim/
@@ -527,48 +529,6 @@ portalData:
 #       topologyKey: "kubernetes.io/hostname"
   additionalEnv:
 
-portalEnterprise:
-  forceRedeploy: false
-  replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
-  image:
-    pullPolicy: IfNotPresent
-  pdb:
-    create: false
-    maxUnavailable: ""
-    minAvailable: ""
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: {}
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext: {}
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext: {}
-  resources:
-    requests:
-      cpu: 250m
-      memory: 2300Mi
-    limits:
-      cpu: 2000m
-      memory: 3072Mi
-# nodeSelector: {}
-# tolerations: []
-# affinity:
-#   podAntiAffinity:
-#     requiredDuringSchedulingIgnoredDuringExecution:
-#     - labelSelector:
-#         matchExpressions:
-#         - key: app
-#           operator: In
-#           values:
-#           - portal-enterprise
-#       topologyKey: "kubernetes.io/hostname"
-  additionalEnv:
-
 tenantProvisioner:
   forceRedeploy: false
   replicaCount: 1
@@ -612,14 +572,13 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.2.3
+  dispatcher: dispatcher:US1093311-migrate-sso-and-saml
   apim: ingress:5.4.2.3
-  enterprise: portal-enterprise:5.4.2.3
-  data: portal-data:5.4.2.3
+  data: portal-data:DE670626-saml-callback
   tps: tenant-provisioning-service:5.4.2.3
   analytics: analytics-server:5.4.2.3
-  authenticator: authenticator:5.4.2.3
-  intelligenceServer: intelligence-server:5.4.2.3
+  authenticator: authenticator:mr_adding_rbac_service
+  intelligenceServer: intelligence-server:mr_rbac_client_upgrade
   dbUpgrade: db-upgrade-portal:5.4.2.3
   rbacUpgrade: db-upgrade-rbac:5.4.2.3
   upgradeVerify: upgrade-verify:5.4.2.3
