@@ -123,6 +123,7 @@ spec:
           {{- end }}
           ports:
             - containerPort: 9081
+            - containerPort: 8081
       {{- if .Values.global.pullSecret }}
       imagePullSecrets:
       - name: "{{ .Values.global.pullSecret }}"
