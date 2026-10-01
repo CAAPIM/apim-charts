@@ -456,11 +456,12 @@ OTK Deployment examples can be found [here](/examples/otk)
 | `otk.database.sql.jdbcDriverClass`| OTK database sql driver class name (oracle/mysql) |
 | `otk.database.sql.databaseName`   | OTK database Oracle database name or Demo db name |
 | `otk.database.sql.connectionProperties`| OTK database mysql connection properties (oracle/mysql)  | `{}`
+| `otk.mountBasedSecrets.enabled` | When `true`, OTK DB/admin credentials reach the `otk-install` and `otk-db-upgrade` Jobs as files mounted under `/opt/SecureSpan/Gateway/node/default/etc/conf/otk/secrets/` (one file per Secret key, mode `0444`) instead of `envFrom` env vars, so `kubectl exec ... -- env` and `kubectl describe pod` don't expose them. Requires an `otk-install` image with mount-first secret reading (`OtkSecrets`); an older image fails fast on missing credentials. Every mounted key must exist in its Secret, or the pod won't start | `false` |
 | `otk.database.sql.oracleTruststore.enabled` | Enable/Disable mounting a JKS truststore Kubernetes secret into the OTK database upgrade job. Required when `oracleSsl.enabled` is `true` | `false` |
 | `otk.database.sql.oracleTruststore.name`    | Name of the Kubernetes Secret containing the JKS truststore file for Oracle SSL | |
 | `otk.database.sql.oracleSsl.enabled`        | Enable/Disable Oracle SSL (TCPS) for the OTK database upgrade job | `false` |
 | `otk.database.sql.oracleSsl.trustStoreFileName` | Filename of the JKS truststore file within the `oracleTruststore` Kubernetes secret | |
-| `otk.database.sql.oracleSsl.trustStorePassword` | Password for the JKS truststore. Stored in `otk-db-secret` | |
+| `otk.database.sql.oracleSsl.trustStorePassword` | Password for the JKS truststore. Stored in `otk-db-secret`. With `mountBasedSecrets.enabled`, the `OTK_ORACLE_TRUST_STORE_PASSWORD` key is mounted when this is set **or** `otk.database.existingSecretName` is set (in which case that Secret must contain the key) | |
 | `otk.database.sql.oracleSsl.trustStoreType` | Keystore type of the truststore file (`JKS` or `PKCS12`) | `JKS` |
 | `otk.database.sql.oracleSsl.sslServerDnMatch` | Enable/Disable Oracle server DN verification during SSL handshake | `true` |
 | `otk.database.readOnlyConnection.enabled`   | Enable/Disable OTK read only database connection   | `false` |

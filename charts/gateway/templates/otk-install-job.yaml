@@ -79,7 +79,7 @@ spec:
               mountPath: {{ include "otk.secretsMountPath" . }}/OTK_DATABASE_DDL_PASSWORD
               subPath: OTK_DATABASE_DDL_PASSWORD
               readOnly: true
-            {{- if and (eq .Values.otk.database.type "oracle") (.Values.otk.database.sql.oracleSsl.enabled) .Values.otk.database.sql.oracleSsl.trustStorePassword }}
+            {{- if and (eq .Values.otk.database.type "oracle") (.Values.otk.database.sql.oracleSsl.enabled) (or .Values.otk.database.sql.oracleSsl.trustStorePassword .Values.otk.database.existingSecretName) }}
             - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
               mountPath: {{ include "otk.secretsMountPath" . }}/OTK_ORACLE_TRUST_STORE_PASSWORD
               subPath: OTK_ORACLE_TRUST_STORE_PASSWORD
@@ -162,6 +162,7 @@ spec:
         {{- if .Values.otk.mountBasedSecrets.enabled }}
         - name: {{ template "gateway.fullname" . }}-otk-db-secret-mount
           secret:
+            defaultMode: 292
             secretName: {{ template "otk.dbSecretName" . }}
         {{- if .Values.disklessConfig.enabled }}
         - name: {{ template "gateway.fullname" . }}-admin-secret-mount
@@ -171,11 +172,13 @@ spec:
         {{- if and (.Values.otk.database.readOnlyConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
         - name: {{ template "gateway.fullname" . }}-otk-ro-db-secret-mount
           secret:
+            defaultMode: 292
             secretName: {{ template "otk.dbSecretName.readOnly" . }}
         {{- end }}
         {{- if and (.Values.otk.database.clientReadConnection.enabled) (ne .Values.otk.database.type "cassandra") }}
         - name: {{ template "gateway.fullname" . }}-otk-cr-db-secret-mount
           secret:
+            defaultMode: 292
             secretName: {{ template "otk.dbSecretName.clientRead" . }}
         {{- end }}
         {{- end }}
