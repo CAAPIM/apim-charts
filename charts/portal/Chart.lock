@@ -14,5 +14,8 @@ dependencies:
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx/
   version: 4.15.1
-digest: sha256:91c6b8160a0d5aeafa11bda9080c3c9a9a39d05fd3e31cea981fce07f7326a2a
-generated: "2026-09-30T14:41:00.7997118+05:30"
+- name: contour
+  repository: https://projectcontour.github.io/helm-charts/
+  version: 0.7.0
+digest: sha256:f1f825c9d2fd7baa1dd300bb7da07f31b543760bee5a048d0fb7498eb6a58ae5
+generated: "2026-10-05T11:59:01.999731+05:30"

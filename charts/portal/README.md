@@ -9,6 +9,14 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.8 General Updates
+- Added optional Contour ingress controller subchart (Contour chart 0.7.0) as an alternative to the Ingress-NGINX subchart
+  - Set `ingress.createContour=true` together with `ingress.create=false` and `ingress.type.contour=true` to deploy Contour with the Portal
+  - Contour `HTTPProxy` resources are now rendered when `ingress.createContour=true`, even if the Contour CRDs are not yet installed on the cluster
+  - Contour can also be used with the Kubernetes Gateway API: set `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName` and `ingress.createContour=true`. The chart then creates the GatewayClass and Gateway for the bundled Contour
+  - New `ingress.gatewayAPI.name` parameter to override the Gateway name
+  - [configuration](#contour-httpproxy)
+
 ## 2.4.7 General Updates
 - This new version of the chart supports API Portal 5.4.2.4
 
@@ -379,6 +387,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
+| `ingress.createContour` | Deploy the Contour ingress controller subchart as part of this deployment (alternative to the Nginx subchart). Use together with `ingress.create=false`, `ingress.type.contour=true`. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -390,9 +399,41 @@ This section describes configurable parameters in **values.yaml**, there is also
 ### Contour HTTPProxy
 When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific `HTTPProxy` resources using TLS passthrough (`tcpproxy`) for all fixed portal routes, dynamic `ingress.tenantIds`, and `ingress.customRoutes`. The `projectcontour.io/v1` CRDs must be available on the cluster.
 
+To install Contour together with the Portal (instead of the Nginx subchart):
+
+```
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
+     --set ingress.create=false \
+     --set ingress.createContour=true \
+     --set ingress.type.contour=true \
+     --set ingress.type.kubernetes=false \
+     layer7/portal
+```
+
+Contour settings can be overridden under the `contour:` key in values.yaml. Get the external address with `kubectl get svc -n <namespace> | grep envoy`. If you use your own Contour installation, leave `ingress.createContour=false`.
+
 `ingress.type.contour` and `ingress.type.kubernetes` can both be `true` simultaneously, allowing a gradual migration from standard Ingress to Contour HTTPProxy without a hard DNS cutover.
 
 You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
+
+### Contour with Kubernetes Gateway API
+To deploy Contour together with the Portal and route traffic with Gateway API `TLSRoute` resources (instead of HTTPProxy):
+
+```
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
+     --set ingress.create=false \
+     --set ingress.createContour=true \
+     --set ingress.type.kubernetes=false \
+     --set ingress.type.gatewayAPI=true \
+     --set ingress.gatewayAPI.create=true \
+     --set ingress.gatewayAPI.gatewayClassName=contour \
+     --set contour.gatewayAPI.manageCRDs=true \
+     layer7/portal
+```
+
+- `contour.gatewayAPI.manageCRDs=true` installs the Gateway API CRDs. Leave it `false` if they are already on the cluster.
+- The chart creates a `GatewayClass`, a `Gateway` (named `portal-gateway` unless `ingress.gatewayAPI.name` is set) and the `TLSRoute` resources. Contour is configured to serve that Gateway through `contour.configInline.gateway.gatewayRef`; if you change the Gateway name, update the `gatewayRef` name too.
+- The Contour subchart installs the CRDs as part of the release, so on a first install the chart does not wait for them to be detected.
 
 ### Kubernetes Gateway API Configuration
 When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
@@ -434,6 +475,7 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 |---|---|---|
 | `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `false` |
 | `ingress.gatewayAPI.tlsRouteApiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
+| `ingress.gatewayAPI.name` | Gateway name override. Defaults to `<fullname>-gateway`, or `portal-gateway` when `ingress.createContour` is `true` | `""` |
 | `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `false` |
 | `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `""` |
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |

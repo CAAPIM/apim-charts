@@ -1,0 +1,15 @@
+{{- if and .Values.ingress.type.gatewayAPI .Values.ingress.gatewayAPI.create .Values.ingress.createContour }}
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# GatewayClass for the Contour controller deployed by this chart (static provisioning).
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: {{ required "ingress.gatewayAPI.gatewayClassName is required when ingress.gatewayAPI.create is true" .Values.ingress.gatewayAPI.gatewayClassName }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  controllerName: projectcontour.io/{{ .Release.Namespace }}/contour
+{{- end }}
