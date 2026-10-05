@@ -23,12 +23,25 @@ def GCP_SCHEDULE = 'always-on' // VM is destroyed explicitly in post{cleanup}; t
 def VM_CPU = '2'
 def VM_MEM = '4096'
 
+// These checks exist to gate pull requests, not every branch push - on a
+// plain branch build they do nothing by default (see the `when`s below).
+// Flip this to true (and set TARGET_BRANCH_WHEN_TESTING below) to run them
+// anyway on a branch build, e.g. to validate your changes before opening a
+// PR. Revert both back before merging - they're a manual escape hatch for
+// local/branch testing, not something a real PR build should ever need.
+def RUN_CHECKS_WITHOUT_PR = false
+// Branch to diff changed charts against when RUN_CHECKS_WITHOUT_PR is true
+// (stands in for the PR's target branch, which only exists on a real PR
+// build). Ignored on real PR builds - env.CHANGE_TARGET is used instead.
+def TARGET_BRANCH_WHEN_TESTING = 'stable'
+
 def remoteHostInstanceName = ''
 def remoteHostIP = ''
 def remoteSSH = [:]
 def remoteUser = ''
 def remoteDir = ''
-def prCommit = ''
+def builtCommit = ''
+def targetBranch = ''
 
 pipeline {
     agent { label "default" }
@@ -37,12 +50,13 @@ pipeline {
     }
     stages {
         stage('Deploy remote VM') {
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 script {
                     // Jenkins already ran its implicit SCM checkout for this build
                     // (the merge commit under test) before any stage's steps run.
-                    prCommit = env.GIT_COMMIT
+                    builtCommit = env.GIT_COMMIT
+                    targetBranch = env.CHANGE_ID ? env.CHANGE_TARGET : TARGET_BRANCH_WHEN_TESTING
 
                     remoteHostInstanceName = "apimcharts-${today}-${BUILD_NUMBER}"
                     withCredentials([
@@ -84,22 +98,30 @@ pipeline {
         }
 
         stage('Fetch source') {
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 script {
                     // Public repo - no credentials needed. A full (non-single-branch)
                     // clone leaves origin/<branch> refs for every branch, which ct
-                    // lint and version-check.sh need to diff against
-                    // env.CHANGE_TARGET. The PR's own commits aren't reachable from
-                    // that plain clone, so they're fetched separately by PR number,
-                    // then checked out by the exact commit Jenkins already resolved
-                    // (env.GIT_COMMIT, captured above as prCommit).
-                    sshCommand remote: remoteSSH, command:
-                        "rmdir ${remoteDir} 2>/dev/null; " +
-                        "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
-                        "cd ${remoteDir} && " +
-                        "git fetch origin \"+refs/pull/${env.CHANGE_ID}/*:refs/remotes/origin/pr/${env.CHANGE_ID}/*\" && " +
-                        "git checkout ${prCommit}"
+                    // lint and version-check.sh need to diff against targetBranch.
+                    if (env.CHANGE_ID) {
+                        // The PR's own commits aren't reachable from a plain clone, so
+                        // they're fetched separately by PR number, then checked out by
+                        // the exact commit Jenkins already resolved (builtCommit).
+                        sshCommand remote: remoteSSH, command:
+                            "rmdir ${remoteDir} 2>/dev/null; " +
+                            "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
+                            "cd ${remoteDir} && " +
+                            "git fetch origin \"+refs/pull/${env.CHANGE_ID}/*:refs/remotes/origin/pr/${env.CHANGE_ID}/*\" && " +
+                            "git checkout ${builtCommit}"
+                    } else {
+                        // Plain branch build (RUN_CHECKS_WITHOUT_PR) - builtCommit is
+                        // just this branch's own tip, already reachable from the clone.
+                        sshCommand remote: remoteSSH, command:
+                            "rmdir ${remoteDir} 2>/dev/null; " +
+                            "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
+                            "cd ${remoteDir} && git checkout ${builtCommit}"
+                    }
                 }
             }
         }
@@ -113,7 +135,7 @@ pipeline {
             // stage's git diff -- charts/<chart> relies on, producing a false
             // "changes detected" for any chart with local-path deps. Running this
             // first, against the untouched clone, avoids that entirely.
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 withCredentials([
                     usernamePassword(credentialsId: 'ARTIFACTORY_USERNAME_TOKEN', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_APIKEY')
@@ -121,14 +143,14 @@ pipeline {
                     sshCommand remote: remoteSSH, command:
                         "cd ${remoteDir} && " +
                         "docker login ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} -u \"${ARTIFACTORY_USER}\" -p \"${ARTIFACTORY_APIKEY}\" && " +
-                        "bash .github/version-check.sh ${env.CHANGE_TARGET} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
+                        "bash .github/version-check.sh ${targetBranch} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
                         "docker logout ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST}"
                 }
             }
         }
 
         stage('Add helm repos') {
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/helm-repo.sh"
             }
@@ -138,9 +160,9 @@ pipeline {
             // PR-only, matching lint-test.yaml's original scope (it never
             // ran on push - only release.yaml's chart-releaser did, and
             // that's a separate publish concern handled by Jenkinsfile-charts).
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
-                // check-version-increment is handled separately below (ct's
+                // check-version-increment is handled separately above (ct's
                 // own built-in version-increment check has the same
                 // classic-repo-only limitation version-check.sh had).
                 //
@@ -163,12 +185,12 @@ pipeline {
                     "mkdir -p /tmp/ct-config && tar -xzf /tmp/ct.tgz -C /tmp/ct-config etc/chart_schema.yaml etc/lintconf.yaml && " +
                     "ct lint --config .github/ct-lint.yaml " +
                     "--chart-yaml-schema /tmp/ct-config/etc/chart_schema.yaml --lint-conf /tmp/ct-config/etc/lintconf.yaml " +
-                    "--check-version-increment=false --target-branch ${env.CHANGE_TARGET}"
+                    "--check-version-increment=false --target-branch ${targetBranch}"
             }
         }
 
         stage('Kubeconform') {
-            when { expression { env.CHANGE_ID } }
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/kubeconform.sh"
             }
