@@ -8,14 +8,12 @@
 // to supply it. Once validated, this file goes away and Jenkinsfile-pr moves
 // back to being Jenkinsfile.
 //
-// ct, kubeconform and helm aren't installed on the "default" agent, so every
-// real check below runs over SSH on a short-lived GCP VM instead - same
-// deploy/destroy pattern as layer7-operator-test-automation's Jenkinsfile
-// (releng/Self-Service/deploy-gcp-instance, SSH in as the automation-key
-// user, tear the VM down in post{cleanup} regardless of outcome).
-// debian12-template already has ct + helm baked in (see that repo's
-// hack/install-tools.sh); kubeconform.sh downloads its own binary, so no
-// extra tool provisioning is needed here.
+// ct, kubeconform and helm aren't installed on the "default" agent (it's a
+// container, so no docker-in-docker option either), so every real check
+// below runs over SSH on a short-lived GCP VM instead
+// (releng/Self-Service/deploy-gcp-instance, debian12-template, SSH in as the
+// automation-key user, tear the VM down in post{cleanup} regardless of
+// outcome).
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -116,8 +114,26 @@ pipeline {
 
         stage('Chart Lint') {
             steps {
+                // ct's chart_schema.yaml/lintconf.yaml defaults aren't bundled with
+                // whatever installed the `ct` binary already on this VM, so ct fails
+                // with "neither specified nor found in default locations" without
+                // them. GH Actions' chart-testing-action never hits this because it
+                // installs ct from its official release tarball, which DOES bundle
+                // etc/chart_schema.yaml + etc/lintconf.yaml alongside the binary. Doing
+                // the same thing here: ask the VM's own `ct version` which release to
+                // fetch, pull just those two files from that same public tarball, and
+                // point ct at them explicitly - no files added to this repo.
                 sshCommand remote: remoteSSH, command:
-                    "cd ${remoteDir} && ct lint --config .github/ct-lint.yaml --check-version-increment=false --target-branch ${params.TARGET_BRANCH}"
+                    "cd ${remoteDir} && " +
+                    "CT_TAG=\$(ct version | awk '/^Version:/{print \$2}') && " +
+                    "CT_VER=\${CT_TAG#v} && " +
+                    "ARCH=\$(uname -m) && " +
+                    "case \"\$ARCH\" in x86_64) CTARCH=amd64 ;; aarch64|arm64) CTARCH=arm64 ;; *) CTARCH=\$ARCH ;; esac && " +
+                    "curl -fsSL -o /tmp/ct.tgz \"https://github.com/helm/chart-testing/releases/download/\${CT_TAG}/chart-testing_\${CT_VER}_linux_\${CTARCH}.tar.gz\" && " +
+                    "mkdir -p /tmp/ct-config && tar -xzf /tmp/ct.tgz -C /tmp/ct-config etc/chart_schema.yaml etc/lintconf.yaml && " +
+                    "ct lint --config .github/ct-lint.yaml " +
+                    "--chart-yaml-schema /tmp/ct-config/etc/chart_schema.yaml --lint-conf /tmp/ct-config/etc/lintconf.yaml " +
+                    "--check-version-increment=false --target-branch ${params.TARGET_BRANCH}"
             }
         }
 
