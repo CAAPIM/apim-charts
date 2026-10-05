@@ -1,13 +1,5 @@
 @Library('apim-jenkins-lib@master') _
 
-// TEMPORARY test-only copy of Jenkinsfile-pr, for validating the remote-VM
-// mechanics (deploy/SSH/destroy) directly on this branch before opening a PR.
-// All `when { expression { env.CHANGE_ID } }` guards are removed so every
-// stage runs on a plain branch build. TARGET_BRANCH replaces env.CHANGE_TARGET
-// for the diff-based checks (ct lint / version-check.sh), since there's no PR
-// to supply it. Once validated, this file goes away and Jenkinsfile-pr moves
-// back to being Jenkinsfile.
-//
 // ct, kubeconform and helm aren't installed on the "default" agent, so every
 // real check below runs over SSH on a short-lived GCP VM instead - same
 // deploy/destroy pattern as layer7-operator-test-automation's Jenkinsfile
@@ -35,24 +27,21 @@ def remoteHostIP = ''
 def remoteSSH = [:]
 def remoteUser = ''
 def remoteDir = ''
-def builtCommit = ''
+def prCommit = ''
 
 pipeline {
     agent { label "default" }
-    parameters {
-        string(name: 'TARGET_BRANCH', defaultValue: 'stable',
-               description: 'Branch to diff changed charts against for ct lint / version-check.sh (stands in for env.CHANGE_TARGET, which only exists on PR builds)')
-    }
     environment {
         ARTIFACTORY_RELEASE_LOCAL_REG_HOST = "apim-docker-release-local.usw1.packages.broadcom.com"
     }
     stages {
         stage('Deploy remote VM') {
+            when { expression { env.CHANGE_ID } }
             steps {
                 script {
                     // Jenkins already ran its implicit SCM checkout for this build
-                    // before any stage's steps run.
-                    builtCommit = env.GIT_COMMIT
+                    // (the merge commit under test) before any stage's steps run.
+                    prCommit = env.GIT_COMMIT
 
                     remoteHostInstanceName = "apimcharts-${today}-${BUILD_NUMBER}"
                     withCredentials([
@@ -94,34 +83,49 @@ pipeline {
         }
 
         stage('Fetch source') {
+            when { expression { env.CHANGE_ID } }
             steps {
                 script {
-                    // Public repo - no credentials needed. Full (non-single-branch)
-                    // clone so origin/${TARGET_BRANCH} exists locally for ct lint's
-                    // and version-check.sh's diff-against-target-branch checks, then
-                    // check out the exact commit this build is running against.
+                    // Public repo - no credentials needed. A full (non-single-branch)
+                    // clone leaves origin/<branch> refs for every branch, which ct
+                    // lint and version-check.sh need to diff against
+                    // env.CHANGE_TARGET. The PR's own commits aren't reachable from
+                    // that plain clone, so they're fetched separately by PR number,
+                    // then checked out by the exact commit Jenkins already resolved
+                    // (env.GIT_COMMIT, captured above as prCommit).
                     sshCommand remote: remoteSSH, command:
                         "rmdir ${remoteDir} 2>/dev/null; " +
                         "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
-                        "cd ${remoteDir} && git checkout ${builtCommit}"
+                        "cd ${remoteDir} && " +
+                        "git fetch origin \"+refs/pull/${env.CHANGE_ID}/*:refs/remotes/origin/pr/${env.CHANGE_ID}/*\" && " +
+                        "git checkout ${prCommit}"
                 }
             }
         }
 
         stage('Add helm repos') {
+            when { expression { env.CHANGE_ID } }
             steps {
                 sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/helm-repo.sh"
             }
         }
 
         stage('Chart Lint') {
+            // PR-only, matching lint-test.yaml's original scope (it never
+            // ran on push - only release.yaml's chart-releaser did, and
+            // that's a separate publish concern handled by Jenkinsfile-charts).
+            when { expression { env.CHANGE_ID } }
             steps {
+                // check-version-increment is handled separately below (ct's
+                // own built-in version-increment check has the same
+                // classic-repo-only limitation version-check.sh had).
                 sshCommand remote: remoteSSH, command:
-                    "cd ${remoteDir} && ct lint --config .github/ct-lint.yaml --check-version-increment=false --target-branch ${params.TARGET_BRANCH}"
+                    "cd ${remoteDir} && ct lint --config .github/ct-lint.yaml --check-version-increment=false --target-branch ${env.CHANGE_TARGET}"
             }
         }
 
         stage('Version Check') {
+            when { expression { env.CHANGE_ID } }
             steps {
                 withCredentials([
                     usernamePassword(credentialsId: 'ARTIFACTORY_USERNAME_TOKEN', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_APIKEY')
@@ -129,13 +133,14 @@ pipeline {
                     sshCommand remote: remoteSSH, command:
                         "cd ${remoteDir} && " +
                         "docker login ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} -u \"${ARTIFACTORY_USER}\" -p \"${ARTIFACTORY_APIKEY}\" && " +
-                        "bash .github/version-check.sh ${params.TARGET_BRANCH} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
+                        "bash .github/version-check.sh ${env.CHANGE_TARGET} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
                         "docker logout ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST}"
                 }
             }
         }
 
         stage('Kubeconform') {
+            when { expression { env.CHANGE_ID } }
             steps {
                 sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/kubeconform.sh"
             }
