@@ -7,9 +7,9 @@
 # - `ct` (chart-testing) on PATH if --check-changed is used
 #
 # command examples:
-# python3 push_helm_charts.py
-# python3 push_helm_charts.py --release
-# python3 push_helm_charts.py --check-changed stable
+# python3 package_push_helm_charts.py
+# python3 package_push_helm_charts.py --release
+# python3 package_push_helm_charts.py --check-changed stable
 
 import argparse
 import os
