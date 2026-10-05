@@ -106,6 +106,28 @@ pipeline {
             }
         }
 
+        stage('Version Check') {
+            // Runs BEFORE Chart Lint, not after: ct lint's `helm dependency build`
+            // repackages any chart's local file://-path dependencies (e.g. portal's
+            // druid/seaweedfs/kafka) from scratch, and that repackaged .tgz is never
+            // byte-identical to the one committed in git (tar/gzip embed timestamps),
+            // even when the source is unchanged. That dirties the working tree this
+            // stage's git diff -- charts/<chart> relies on, producing a false
+            // "changes detected" for any chart with local-path deps. Running this
+            // first, against the untouched clone, avoids that entirely.
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'ARTIFACTORY_USERNAME_TOKEN', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_APIKEY')
+                ]) {
+                    sshCommand remote: remoteSSH, command:
+                        "cd ${remoteDir} && " +
+                        "docker login ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} -u \"${ARTIFACTORY_USER}\" -p \"${ARTIFACTORY_APIKEY}\" && " +
+                        "bash .github/version-check.sh ${params.TARGET_BRANCH} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
+                        "docker logout ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST}"
+                }
+            }
+        }
+
         stage('Add helm repos') {
             steps {
                 sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/helm-repo.sh"
@@ -134,20 +156,6 @@ pipeline {
                     "ct lint --config .github/ct-lint.yaml " +
                     "--chart-yaml-schema /tmp/ct-config/etc/chart_schema.yaml --lint-conf /tmp/ct-config/etc/lintconf.yaml " +
                     "--check-version-increment=false --target-branch ${params.TARGET_BRANCH}"
-            }
-        }
-
-        stage('Version Check') {
-            steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'ARTIFACTORY_USERNAME_TOKEN', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_APIKEY')
-                ]) {
-                    sshCommand remote: remoteSSH, command:
-                        "cd ${remoteDir} && " +
-                        "docker login ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} -u \"${ARTIFACTORY_USER}\" -p \"${ARTIFACTORY_APIKEY}\" && " +
-                        "bash .github/version-check.sh ${params.TARGET_BRANCH} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
-                        "docker logout ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST}"
-                }
             }
         }
 
