@@ -21,7 +21,7 @@ pipeline {
                 script {
                     def run = build job: VALIDATION_JOB,
                         parameters: [
-                            string(name: 'REF', value: env.CHANGE_ID ?: env.BRANCH_NAME),
+                            string(name: 'REF', value: env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME),
                             string(name: 'TARGET_BRANCH', value: env.CHANGE_ID ? env.CHANGE_TARGET : TARGET_BRANCH_WHEN_TESTING)
                         ],
                         wait: true, propagate: false
