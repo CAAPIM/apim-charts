@@ -1,198 +1,35 @@
 @Library('apim-jenkins-lib@master') _
 
-// ct, kubeconform and helm aren't installed on the "default" agent (it's a
-// container, so no docker-in-docker option either), so every real check
-// below runs over SSH on a short-lived GCP VM instead - same deploy/destroy
-// pattern as layer7-operator-test-automation's Jenkinsfile
-// (releng/Self-Service/deploy-gcp-instance, debian12-template, SSH in as the
-// automation-key user, tear the VM down in post{cleanup} regardless of
-// outcome). debian12-template is a separate, plain VM image with the
-// required software already installed; kubeconform.sh downloads its own
-// binary regardless.
+// Triggers the chart validation checks (lint, kubeconform, version check)
+// and reports the result back to this PR.
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Calendar
-
-DateFormat dateFormat = new SimpleDateFormat("yyMMdd")
-Calendar calendar = Calendar.getInstance()
-def today = dateFormat.format(calendar.getTime())
-
-def GCP_TEMPLATE = 'debian12-template'
-def GCP_SCHEDULE = 'always-on' // VM is destroyed explicitly in post{cleanup}; the schedule is not relied on for teardown
-def VM_CPU = '2'
-def VM_MEM = '4096'
-
-// These checks exist to gate pull requests, not every branch push - on a
-// plain branch build they do nothing by default (see the `when`s below).
-// Flip this to true (and set TARGET_BRANCH_WHEN_TESTING below) to run them
-// anyway on a branch build, e.g. to validate your changes before opening a
-// PR. Revert both back before merging - they're a manual escape hatch for
-// local/branch testing, not something a real PR build should ever need.
+// These checks gate pull requests, not every branch push - a plain branch
+// build does nothing by default. Flip this to true (and set
+// TARGET_BRANCH_WHEN_TESTING below) to validate a branch before opening a PR;
+// revert both before merging.
 def RUN_CHECKS_WITHOUT_PR = false
-// Branch to diff changed charts against when RUN_CHECKS_WITHOUT_PR is true
-// (stands in for the PR's target branch, which only exists on a real PR
-// build). Ignored on real PR builds - env.CHANGE_TARGET is used instead.
 def TARGET_BRANCH_WHEN_TESTING = 'stable'
 
-def remoteHostInstanceName = ''
-def remoteHostIP = ''
-def remoteSSH = [:]
-def remoteUser = ''
-def remoteDir = ''
-def builtCommit = ''
-def targetBranch = ''
+def VALIDATION_JOB = 'apim-charts/apim-charts_test_automation'
 
 pipeline {
-    agent { label "default" }
-    environment {
-        ARTIFACTORY_RELEASE_LOCAL_REG_HOST = "apim-docker-release-local.usw1.packages.broadcom.com"
-    }
+    agent { label 'default' }
     stages {
-        stage('Deploy remote VM') {
+        stage('Run chart validation') {
             when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
             steps {
                 script {
-                    // Jenkins already ran its implicit SCM checkout for this build
-                    // (the merge commit under test) before any stage's steps run.
-                    builtCommit = env.GIT_COMMIT
-                    targetBranch = env.CHANGE_ID ? env.CHANGE_TARGET : TARGET_BRANCH_WHEN_TESTING
-
-                    remoteHostInstanceName = "apimcharts-${today}-${BUILD_NUMBER}"
-                    withCredentials([
-                        sshUserPrivateKey(credentialsId: 'AUTOMATION_SSH_KEY', keyFileVariable: 'automationKey',
-                                           passphraseVariable: '', usernameVariable: 'automationUser'),
-                        string(credentialsId: 'AUTOMATION_SSH_PUBLIC_KEY', variable: 'sshPubKey')
-                    ]) {
-                        remoteUser = "${automationUser}"
-                        // Persist a copy of the private key for the rest of the build — the
-                        // withCredentials-bound file is deleted as soon as this block exits.
-                        sh "install -m 600 ${automationKey} ${WORKSPACE}/automation_key"
-
-                        built = build job: 'releng/Self-Service/deploy-gcp-instance/develop',
-                            parameters: [
-                                string(name: 'vm_name', value: "${remoteHostInstanceName}"),
-                                string(name: 'vm_cpu', value: VM_CPU),
-                                string(name: 'vm_mem', value: VM_MEM),
-                                string(name: 'gcp_machine_image', value: GCP_TEMPLATE),
-                                string(name: 'gcp_instance_schedule', value: GCP_SCHEDULE),
-                                string(name: 'ssh_user', value: "${automationUser}"),
-                                base64File(name: 'ssh_public_key', base64: sshPubKey.bytes.encodeBase64().toString())
-                            ]
-                    }
-                    copyArtifacts(projectName: 'releng/Self-Service/deploy-gcp-instance/develop', selector: specific("${built.number}"))
-                    remoteHostIP = sh(script: "ls -af|grep 10.|tr -d '\n'", returnStdout: true).trim()
-                    echo "remote host: ${remoteHostInstanceName} (${remoteHostIP})"
-                    sh 'sleep 20' // let sshd come up
-
-                    remoteSSH.name = 'apim-charts-lint'
-                    remoteSSH.host = "${remoteHostIP}"
-                    remoteSSH.allowAnyHosts = true
-                    remoteSSH.user = remoteUser
-                    remoteSSH.identityFile = "${WORKSPACE}/automation_key"
-
-                    remoteDir = "/home/${remoteUser}/apim-charts-${BUILD_NUMBER}"
-                    sshCommand remote: remoteSSH, command: "mkdir -p ${remoteDir}" // connectivity smoke test
-                }
-            }
-        }
-
-        stage('Fetch source') {
-            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
-            steps {
-                script {
-                    // Public repo - no credentials needed. A full (non-single-branch)
-                    // clone leaves origin/<branch> refs for every branch, which ct
-                    // lint and version-check.sh need to diff against targetBranch.
-                    if (env.CHANGE_ID) {
-                        // The PR's own commits aren't reachable from a plain clone, so
-                        // they're fetched separately by PR number, then checked out by
-                        // the exact commit Jenkins already resolved (builtCommit).
-                        sshCommand remote: remoteSSH, command:
-                            "rmdir ${remoteDir} 2>/dev/null; " +
-                            "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
-                            "cd ${remoteDir} && " +
-                            "git fetch origin \"+refs/pull/${env.CHANGE_ID}/*:refs/remotes/origin/pr/${env.CHANGE_ID}/*\" && " +
-                            "git checkout ${builtCommit}"
-                    } else {
-                        // Plain branch build (RUN_CHECKS_WITHOUT_PR) - builtCommit is
-                        // just this branch's own tip, already reachable from the clone.
-                        sshCommand remote: remoteSSH, command:
-                            "rmdir ${remoteDir} 2>/dev/null; " +
-                            "git clone https://github.com/CAAPIM/apim-charts.git ${remoteDir} && " +
-                            "cd ${remoteDir} && git checkout ${builtCommit}"
+                    def run = build job: VALIDATION_JOB,
+                        parameters: [
+                            string(name: 'REF', value: env.CHANGE_ID ?: env.BRANCH_NAME),
+                            string(name: 'TARGET_BRANCH', value: env.CHANGE_ID ? env.CHANGE_TARGET : TARGET_BRANCH_WHEN_TESTING)
+                        ],
+                        wait: true, propagate: false
+                    env.VALIDATION_URL = run.absoluteUrl
+                    if (run.result != 'SUCCESS') {
+                        error("chart validation failed: ${run.absoluteUrl}")
                     }
                 }
-            }
-        }
-
-        stage('Version Check') {
-            // Runs BEFORE Chart Lint, not after: ct lint's `helm dependency build`
-            // repackages any chart's local file://-path dependencies (e.g. portal's
-            // druid/seaweedfs/kafka) from scratch, and that repackaged .tgz is never
-            // byte-identical to the one committed in git (tar/gzip embed timestamps),
-            // even when the source is unchanged. That dirties the working tree this
-            // stage's git diff -- charts/<chart> relies on, producing a false
-            // "changes detected" for any chart with local-path deps. Running this
-            // first, against the untouched clone, avoids that entirely.
-            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
-            steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'ARTIFACTORY_USERNAME_TOKEN', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_APIKEY')
-                ]) {
-                    sshCommand remote: remoteSSH, command:
-                        "cd ${remoteDir} && " +
-                        "docker login ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} -u \"${ARTIFACTORY_USER}\" -p \"${ARTIFACTORY_APIKEY}\" && " +
-                        "bash .github/version-check.sh ${targetBranch} ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST} && " +
-                        "docker logout ${env.ARTIFACTORY_RELEASE_LOCAL_REG_HOST}"
-                }
-            }
-        }
-
-        stage('Add helm repos') {
-            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
-            steps {
-                sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/helm-repo.sh"
-            }
-        }
-
-        stage('Chart Lint') {
-            // PR-only, matching lint-test.yaml's original scope (it never
-            // ran on push - only release.yaml's chart-releaser did, and
-            // that's a separate publish concern handled by Jenkinsfile-charts).
-            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
-            steps {
-                // check-version-increment is handled separately above (ct's
-                // own built-in version-increment check has the same
-                // classic-repo-only limitation version-check.sh had).
-                //
-                // ct's chart_schema.yaml/lintconf.yaml defaults aren't bundled with
-                // whatever installed the `ct` binary already on this VM, so ct fails
-                // with "neither specified nor found in default locations" without
-                // them. GH Actions' chart-testing-action never hits this because it
-                // installs ct from its official release tarball, which DOES bundle
-                // etc/chart_schema.yaml + etc/lintconf.yaml alongside the binary. Do
-                // the same thing here: ask the VM's own `ct version` which release to
-                // fetch, pull just those two files from that same public tarball, and
-                // point ct at them explicitly - no files added to this repo.
-                sshCommand remote: remoteSSH, command:
-                    "cd ${remoteDir} && " +
-                    "CT_TAG=\$(ct version | awk '/^Version:/{print \$2}') && " +
-                    "CT_VER=\${CT_TAG#v} && " +
-                    "ARCH=\$(uname -m) && " +
-                    "case \"\$ARCH\" in x86_64) CTARCH=amd64 ;; aarch64|arm64) CTARCH=arm64 ;; *) CTARCH=\$ARCH ;; esac && " +
-                    "curl -fsSL -o /tmp/ct.tgz \"https://github.com/helm/chart-testing/releases/download/\${CT_TAG}/chart-testing_\${CT_VER}_linux_\${CTARCH}.tar.gz\" && " +
-                    "mkdir -p /tmp/ct-config && tar -xzf /tmp/ct.tgz -C /tmp/ct-config etc/chart_schema.yaml etc/lintconf.yaml && " +
-                    "ct lint --config .github/ct-lint.yaml " +
-                    "--chart-yaml-schema /tmp/ct-config/etc/chart_schema.yaml --lint-conf /tmp/ct-config/etc/lintconf.yaml " +
-                    "--check-version-increment=false --target-branch ${targetBranch}"
-            }
-        }
-
-        stage('Kubeconform') {
-            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
-            steps {
-                sshCommand remote: remoteSSH, command: "cd ${remoteDir} && bash .github/kubeconform.sh"
             }
         }
     }
@@ -205,7 +42,7 @@ pipeline {
                     pullRequest.createStatus(status: 'success',
                             context: 'continuous-integration/jenkins/pr-merge',
                             description: 'Build Success',
-                            targetUrl: "${env.JOB_URL}/testResults")
+                            targetUrl: env.VALIDATION_URL ?: env.JOB_URL)
                 }
             }
         }
@@ -215,31 +52,7 @@ pipeline {
                     pullRequest.createStatus(status: 'failure',
                             context: 'continuous-integration/jenkins/pr-merge',
                             description: 'Build Failed',
-                            targetUrl: "${env.JOB_URL}/testResults")
-                }
-            }
-        }
-        always {
-            script {
-                try { sh "rm -f ${WORKSPACE}/automation_key" } catch (Exception e) { echo "key cleanup failed: ${e}" }
-            }
-        }
-        cleanup {
-            script {
-                // cleanup runs after every other post condition, regardless of pipeline/stage/post result,
-                // so the GCP VM teardown can't be skipped by an earlier failure.
-                if (remoteHostInstanceName) {
-                    try {
-                        build job: 'releng/Self-Service/destroy-gcp-instance/develop',
-                                propagate: false,
-                                wait: true,
-                                parameters: [
-                                        string(name: 'INSTANCE_NAME', value: "${remoteHostInstanceName}")
-                                ]
-                        echo "${remoteHostInstanceName}* is destroyed..."
-                    } catch (Exception e) {
-                        echo "Deleting ${remoteHostInstanceName} gcp VM failed. Exception: ${e}"
-                    }
+                            targetUrl: env.VALIDATION_URL ?: env.JOB_URL)
                 }
             }
         }
