@@ -380,7 +380,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `true` |
+| `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `false` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.contour` | Create Contour HTTPProxy resources (TLS passthrough). Requires `projectcontour.io/v1` CRDs | `false` |
 | `ingress.type.gatewayAPI` | Create Kubernetes Gateway API resources (TLSRoute, optionally Gateway). Requires Gateway API CRDs | `false` |

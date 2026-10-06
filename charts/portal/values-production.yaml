@@ -183,7 +183,7 @@ ingress:
     name: nginx
     enabled: true
   type:
-    kubernetes: true
+    kubernetes: false
     openshift: false
     contour: false
     gatewayAPI: false
