@@ -212,7 +212,7 @@ ingress:
     kubernetes: false
     openshift: false
     contour: false
-    gatewayAPI: false
+    gatewayAPI: true
   # enable/disable tls on ingress rule
   tls: true
 # existingSecret:
@@ -222,7 +222,7 @@ ingress:
   create: false
   ## Deploy the Contour ingress controller as part of this deployment (alternative to nginx).
   ## Set ingress.create=false, ingress.type.contour=true and ingress.type.kubernetes=false when using this.
-  createContour: false
+  createContour: true
 # Configure additional ingress controller specific annotations
   annotations:
     # kubernetes.io/ingress.class: nginx
@@ -247,11 +247,11 @@ ingress:
     # TLSRoute at v1.
     tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
     # -- Create a new Gateway resource managed by this chart
-    create: false
+    create: true
     # -- Gateway name override. Defaults to "<fullname>-gateway", or "portal-gateway" when ingress.createContour is true.
     name: ""
     # -- GatewayClass name (e.g. contour, eg). Required when create: true.
-    gatewayClassName: ""
+    gatewayClassName: "contour"
     # -- Optional addresses requested for the Gateway (e.g. static IPs).
     # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
     addresses: []

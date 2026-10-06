@@ -383,11 +383,11 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `false` |
 | `ingress.type.openshift` | Create Openshift Services | `false` |
 | `ingress.type.contour` | Create Contour HTTPProxy resources (TLS passthrough). Requires `projectcontour.io/v1` CRDs | `false` |
-| `ingress.type.gatewayAPI` | Create Kubernetes Gateway API resources (TLSRoute, optionally Gateway). Requires Gateway API CRDs | `false` |
+| `ingress.type.gatewayAPI` | Create Kubernetes Gateway API resources (TLSRoute, optionally Gateway). Requires Gateway API CRDs | `true` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
-| `ingress.createContour` | Deploy the Contour ingress controller subchart as part of this deployment (alternative to the Nginx subchart). Use together with `ingress.create=false`, `ingress.type.contour=true`. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
+| `ingress.createContour` | Deploy the Contour ingress controller subchart as part of this deployment (alternative to the Nginx subchart). Use together with `ingress.create=false`, `ingress.type.contour=true`. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `true` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -419,14 +419,10 @@ You can read more about Contour [here](https://projectcontour.io/) and view exam
 ### Contour with Kubernetes Gateway API
 To deploy Contour together with the Portal and route traffic with Gateway API `TLSRoute` resources (instead of HTTPProxy):
 
+The chart defaults deploy Contour and route traffic with Gateway API (`ingress.create=false`, `ingress.createContour=true`, `ingress.type.kubernetes=false`, `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName=contour`), so no ingress flags are needed:
+
 ```
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
-     --set ingress.create=false \
-     --set ingress.createContour=true \
-     --set ingress.type.kubernetes=false \
-     --set ingress.type.gatewayAPI=true \
-     --set ingress.gatewayAPI.create=true \
-     --set ingress.gatewayAPI.gatewayClassName=contour \
      --set contour.gatewayAPI.manageCRDs=true \
      layer7/portal
 ```
@@ -434,6 +430,18 @@ To deploy Contour together with the Portal and route traffic with Gateway API `T
 - `contour.gatewayAPI.manageCRDs=true` installs the Gateway API CRDs. Leave it `false` if they are already on the cluster.
 - The chart creates a `GatewayClass`, a `Gateway` (named `portal-gateway` unless `ingress.gatewayAPI.name` is set) and the `TLSRoute` resources. Contour is configured to serve that Gateway through `contour.configInline.gateway.gatewayRef`; if you change the Gateway name, update the `gatewayRef` name too.
 - The Contour subchart installs the CRDs as part of the release, so on a first install the chart does not wait for them to be detected.
+
+#### Using your own Contour installation
+If Contour is already installed on the cluster, do not deploy the bundled one. The chart then does not create a `GatewayClass`, so `ingress.gatewayAPI.gatewayClassName` must match the name of the `GatewayClass` that already exists on the cluster (check with `kubectl get gatewayclass`). It is not necessarily `contour`.
+
+```
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
+     --set ingress.createContour=false \
+     --set ingress.gatewayAPI.gatewayClassName=<your-gatewayclass> \
+     layer7/portal
+```
+
+If you also have your own `Gateway`, set `ingress.gatewayAPI.create=false` and `ingress.gatewayAPI.existingRef.name=<your-gateway>` (and `existingRef.namespace` if it is in another namespace) instead.
 
 ### Kubernetes Gateway API Configuration
 When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
@@ -473,11 +481,11 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 
 | Parameter | Description | Default |
 |---|---|---|
-| `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `false` |
+| `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `true` |
 | `ingress.gatewayAPI.tlsRouteApiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
 | `ingress.gatewayAPI.name` | Gateway name override. Defaults to `<fullname>-gateway`, or `portal-gateway` when `ingress.createContour` is `true` | `""` |
-| `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `false` |
-| `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `""` |
+| `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `true` |
+| `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `contour` |
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
 | `ingress.gatewayAPI.existingRef.name` | Name of an existing Gateway resource to attach routes to. Required when `gatewayAPI.create` is `false` | `""` |
 | `ingress.gatewayAPI.existingRef.namespace` | Namespace of the existing Gateway resource | `""` |
