@@ -15,7 +15,7 @@ pipeline {
           // layer7.packages.broadcom.com); develop/gateway, develop/portal
           // and develop/otk publish to dev-local; every other branch
           // publishes nothing.
-          def DEV_LOCAL_BRANCHES = ['develop/gateway', 'develop/portal', 'develop/otk']
+          def DEV_LOCAL_BRANCHES = ['develop/gateway', 'develop/portal']
           if (env.BRANCH_NAME == 'stable') {
             sh 'python3 package_push_helm_charts.py --release'
           } else if (DEV_LOCAL_BRANCHES.contains(env.BRANCH_NAME)) {
