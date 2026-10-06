@@ -10,7 +10,7 @@
 def RUN_CHECKS_WITHOUT_PR = false
 def TARGET_BRANCH_WHEN_TESTING = 'stable'
 
-def VALIDATION_JOB = 'apim-charts/apim-charts_test_automation'
+def VALIDATION_JOB = 'apim-charts/apim-charts_test_automation/develop'
 
 pipeline {
     agent { label 'default' }
