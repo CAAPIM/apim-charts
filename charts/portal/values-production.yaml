@@ -1641,9 +1641,21 @@ contour:
   gatewayAPI:
     manageCRDs: false
   contour:
+    image:
+      registry: apim-docker-dev-local.usw1.packages.broadcom.com
+      repository: apim-portal/contour
+      tag: v1.33.6
+      pullSecrets:
+        - broadcom-apim
     ingressClass:
       name: contour
       create: true
   envoy:
+    image:
+      registry: apim-docker-dev-local.usw1.packages.broadcom.com
+      repository: apim-portal/contour-envoy
+      tag: v1.38.3
+      pullSecrets:
+        - broadcom-apim
     service:
       type: LoadBalancer
