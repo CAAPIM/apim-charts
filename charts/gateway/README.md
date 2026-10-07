@@ -107,15 +107,16 @@ Helm Version    Supported Kubernetes Versions
 
 ## Installing the Chart
 Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
+
+Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use)
 ```
-$ helm repo add layer7 https://caapim.github.io/apim-charts/
-$ helm repo update
-$ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
+$ helm registry login layer7.packages.broadcom.com -u <email> -p <registry-token>
+$ helm install my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" oci://layer7.packages.broadcom.com/gateway
 ```
 ## Upgrading the Chart
 To upgrade your Gateway Release
 ```
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" oci://layer7.packages.broadcom.com/gateway
 ```
 ## Uninstalling the Chart
 To uninstall the Gateway Chart
@@ -372,7 +373,7 @@ OTK can be install or upgrade gateway.  Supports SINGLE, INTERNAL and DMZ types 
 1. When installing or Upgrading Gateway with OTK enabled, add timeout with the helm command to ensure OTK install job waits for Gateway to be ready
 ```
 Example: The timeout of 900s is recommended for helm upgrade since it takes additional time to complete
-  helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+  helm install otk oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/license.xml" \
    --set "license.accept=true,management.restman.enabled=true,otk.enabled=true" --timeout 900s
 ```
 2. In dual gateway installation, restart the pods after OTK install or upgrade is required.
@@ -1576,7 +1577,7 @@ config:
 ```
 
 ```bash
-helm upgrade my-release layer7/gateway -f values.yaml
+helm upgrade my-release oci://layer7.packages.broadcom.com/gateway -f values.yaml
 ```
 
 Helm runs the `db-migration` job first. Once it completes successfully, Helm rolls out the new Gateway pods. If `skip` mode is set, the pods bypass Liquibase and start immediately providing faster upgrade deployements - 
