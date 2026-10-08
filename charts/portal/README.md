@@ -9,6 +9,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.8 Documentation
+- Replaced gh-pages Helm install instructions (`helm repo add .../caapim.github.io/...`) with Artifactory OCI (`helm registry login` + `oci://layer7-portal.packages.broadcom.com/portal`)
+
 ## 2.4.7 General Updates
 - This new version of the chart supports API Portal 5.4.2.4
 
