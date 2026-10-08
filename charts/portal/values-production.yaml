@@ -1649,7 +1649,7 @@ contour:
         - broadcom-apim
     ingressClass:
       name: contour
-      create: true
+      create: false
   envoy:
     image:
       registry: apim-docker-dev-local.usw1.packages.broadcom.com
