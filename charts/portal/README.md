@@ -9,6 +9,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.8 Documentation
+- Replaced gh-pages Helm install instructions (`helm repo add .../caapim.github.io/...`) with Artifactory OCI (`helm registry login` + `oci://layer7-portal.packages.broadcom.com/portal`)
+
 ## 2.4.7 General Updates
 - This new version of the chart supports API Portal 5.4.2.4
 
@@ -207,10 +210,10 @@ Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommende
 When using this chart in Production, save value-production.yaml as ***<my-values.yaml>*** and use this as your starting point.
 Adding ```-f <my-values.yaml>``` to the following commands below will apply your configuration to the chart. For details on what you can change, see [configuration](#configuration).
 
+Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use)
 ```
- $ helm repo add layer7 https://caapim.github.io/apim-charts/
- $ helm repo update
- $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+ $ helm registry login layer7-portal.packages.broadcom.com -u <email> -p <registry-token>
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" oci://layer7-portal.packages.broadcom.com/portal
 ```
 
 > :information_source: **Important** <br>
@@ -229,8 +232,7 @@ $ kubectl get secret rabbitmq-secret -o 'go-template={{index .data "rabbitmq-pas
 
 To upgrade API Portal deployment, run the following commands:
 ```
- $ helm repo update
- $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal
+ $ helm upgrade <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" oci://layer7-portal.packages.broadcom.com/portal
 ```
 ## Delete the Chart
 To delete API Portal installation, run the following command:
@@ -1307,7 +1309,7 @@ If the RabbitMQ cluster is stopped or removed out of order, there is a chance th
 
 2. Upgrade the chart:
 ```
-$ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> layer7/portal
+$ helm upgrade <release-name> --set-file <values-from-install> --set <values-from-install> -f <my-values.yaml> oci://layer7-portal.packages.broadcom.com/portal
 ```
 
 ### Helm UPGRADE FAILED: cannot patch "db-upgrade" and "rbac-upgrade"

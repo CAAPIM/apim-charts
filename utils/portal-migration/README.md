@@ -116,9 +116,8 @@ $ kubectl delete pvc historical-vol-claim-historical-0 -n <namespace>
 
 6. Install the new Chart (using Helm3)
 ```
-$ helm repo add portal https://caapim.github.io/apim-charts/
-$ helm repo update
-$ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml> -n <namespace>
+$ helm registry login layer7-portal.packages.broadcom.com -u <email> -p <registry-token>
+$ helm install <release-name> oci://layer7-portal.packages.broadcom.com/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml> -n <namespace>
 ```
 
 7. [Update Portal DNS records](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html) to point at the Kubernetes Portal
@@ -143,9 +142,8 @@ From your docker swarm node, run the following and copy to a machine ***that has
    
 3. Proceed with Portal Installation
    ```
-   $ helm repo add portal https://caapim.github.io/apim-charts/
-   $ helm repo update
-   $ helm install <release-name> portal/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml
+   $ helm registry login layer7-portal.packages.broadcom.com -u <email> -p <registry-token>
+   $ helm install <release-name> oci://layer7-portal.packages.broadcom.com/portal --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" -f <your-values-production.yaml
    ```
 4. [Update Portal DNS records](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-developer-portal/5-0/install-configure-and-upgrade/install-portal-on-docker-swarm/configure-your-dns-server.html) to point at the Kubernetes Portal (the output of the install/upgrade will display the Portal Hostnames you'll need to add)
 

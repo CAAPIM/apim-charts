@@ -7,6 +7,9 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.5 Documentation
+- Replaced gh-pages Helm install instructions (`helm repo add .../caapim.github.io/...`) with Artifactory OCI (`helm registry login` + `oci://layer7.packages.broadcom.com/gateway`)
+
 ## 3.1.4 Minor Fix
 - Fixed OTK_JDBC_URL generation when using Demo DB
 
@@ -350,8 +353,8 @@ config:
 > - To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install.
 > - When upgrading OTK 4.6.2 on a db backed gateway, the gateway will restart as there is a change related to OTK health check bundle in gateway deployment. This can lead to failure of OTK upgrade. To circumvent this, please perform a helm upgrade `otk.healthCheckBundle.enabled` set to `false` and then upgrade to the 3.0.17.
 > ```
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" layer7/gateway --version 3.0.16 -f ./values-production.yaml
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway --version 3.0.17 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" oci://layer7.packages.broadcom.com/gateway --version 3.0.16 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" oci://layer7.packages.broadcom.com/gateway --version 3.0.17 -f ./values-production.yaml
 > ```
 
 
@@ -543,10 +546,9 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 ## Upgrading to 2.0.2
 ***If you are using the demo database in a previous version of this Chart this upgrade will remove it. If you wish to keep your data you will need to perform a backup.***
 ```
-$ helm repo update
-$ helm show values layer7/gateway > gateway-values.yaml
+$ helm show values oci://layer7.packages.broadcom.com/gateway > gateway-values.yaml
 
 Inspect and update the new gateway-values.yaml
 
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  oci://layer7.packages.broadcom.com/gateway
 ```

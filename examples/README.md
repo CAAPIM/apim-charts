@@ -15,11 +15,9 @@ Start by cloning [values.yaml](../charts/gateway/values.yaml) onto a machine tha
 
 ```$ curl https://raw.githubusercontent.com/CAAPIM/apim-charts/stable/charts/gateway/values.yaml > my-values.yaml```
 
-Next add the layer7 Helm Chart Repository if you haven't already
+Next, login to the Broadcom Artifactory Helm registry if you haven't already. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use)
 
-``` $ helm repo add layer7 https://caapim.github.io/apim-charts/```
-
-``` $ helm repo update ```
+``` $ helm registry login layer7.packages.broadcom.com -u <email> -p <registry-token>```
 
 * [Gateway with Sub-Charts](#gateway-with-subcharts)
 * [Gateway with Ingress Controller (nginx)](#gateway-with-ingress-controller)
@@ -43,7 +41,7 @@ Here we'll enable all of the Gateway sub-charts, you can pick and choose which y
       grafana.customDashboard.value     ==> use --set-file to specify your own grafana dashboard (optional)
      ```
 2. Install the Gateway Chart
-   - ```$ helm install <release-name> --set license.accept=true --set-file license.value=/path/to/license.xml -f /path/to/my-values.yaml -n <namespace> layer7/gateway```
+   - ```$ helm install <release-name> --set license.accept=true --set-file license.value=/path/to/license.xml -f /path/to/my-values.yaml -n <namespace> oci://layer7.packages.broadcom.com/gateway```
 
 3. Get the Gateway IP Address for Policy Manager (admin/mypassword are the default login credentials)
    - ```$ kubectl get svc -n <namespace> | grep <release-name>``` ==> you should see an EXTERNAL-IP (if using minikube see ingress settings or use minikube proxy)

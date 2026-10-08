@@ -25,19 +25,18 @@ OTK installation involves
 
 OTK can be installed by otk.enabled=true. This will create OTK database using MySQL subchart and then bootstraps the OTK bundles on to the gateway (type SINGLE). The usage of MySQL subchart for OTK database do not represent production configuration.
 
-Add the layer7 repository:
+Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use):
 
-    helm repo add layer7 https://caapim.github.io/apim-charts/
-    helm repo update
+    helm registry login layer7.packages.broadcom.com -u <email> -p <registry-token>
 
 Then, you can install OTK on ephemeral gateway:
 
-    helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+    helm install otk oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/license.xml" \
     --set "license.accept=true,database.enabled=false,otk.enabled=true"
 
 Or, install OTK on db backed gateway:
 
-    helm install otk layer7/gateway --set-file "license.value=path/license.xml" \
+    helm install otk oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/license.xml" \
     --set "license.accept=true,management.restman.enabled=true,otk.enabled=true"
 
 # High Level

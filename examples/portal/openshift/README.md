@@ -50,7 +50,8 @@ $ oc apply -f ./scc
 6. Next is to use the service-account created in the Step 3 to refer in the Portal values.yaml. Refer sample [oc-portal-values.yaml](oc-portal-values.yaml).
 
 ```
-$ helm install  <release-name>   --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" layer7/portal -f oc-portal-values.yaml
+$ helm registry login layer7-portal.packages.broadcom.com -u <email> -p <registry-token>
+$ helm install  <release-name>   --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" oci://layer7-portal.packages.broadcom.com/portal -f oc-portal-values.yaml
 
 ```
 
