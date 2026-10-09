@@ -1,5 +1,3 @@
-@Library('apim-jenkins-lib@master') _
-
 // Triggers the chart validation checks (lint, kubeconform, version check)
 // and reports the result back to this PR.
 

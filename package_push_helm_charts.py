@@ -4,6 +4,7 @@
 #
 # Pre-requisite:
 # - Artifactory credentials set in environment: ARTIFACTORY_CREDS_USR, ARTIFACTORY_CREDS_PSW
+# - Artifactory hosts set in environment: DOCKER_SNAPSHOT_REG (dev), DOCKER_RELEASE_REG (release)
 # - `ct` (chart-testing) on PATH if --check-changed is used
 #
 # command examples:
@@ -35,8 +36,9 @@ username = os.getenv('ARTIFACTORY_CREDS_USR')
 password = os.getenv('ARTIFACTORY_CREDS_PSW')
 if not username or not password:
     sys.exit("please set env for ARTIFACTORY_CREDS_USR and ARTIFACTORY_CREDS_PSW")
-helm_stage = "release" if args.release else "dev"
-helm_repo = f"apim-docker-{helm_stage}-local.usw1.packages.broadcom.com"
+helm_repo = os.getenv('DOCKER_RELEASE_REG') if args.release else os.getenv('DOCKER_SNAPSHOT_REG')
+if not helm_repo:
+    sys.exit("please set env for DOCKER_RELEASE_REG and DOCKER_SNAPSHOT_REG")
 
 def changed_charts(charts_dir, target_branch):
     result = subprocess.run(['ct', 'list-changed', '--target-branch', target_branch],

@@ -12,7 +12,7 @@ set -euo pipefail
 # destination, that means the version wasn't bumped.
 #
 # Usage: version-check.sh [target-branch] [helm-repo-host]
-# Example: version-check.sh stable apim-docker-release-local.usw1.packages.broadcom.com
+# Example: version-check.sh stable <helm-repo-host>
 #
 # Both arguments are optional: without a helm-repo-host there's nothing to
 # check against (no OCI equivalent of the old public gh-pages lookup this
