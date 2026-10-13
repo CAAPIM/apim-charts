@@ -10,7 +10,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.4.8 General Updates
-- F164641: Retire Portal Enterprise Container. All remaining capabilities migrated to portal-data and authenticator (RBAC port 8081).
+- Retire Portal Enterprise Container. All remaining capabilities migrated to portal-data and authenticator (RBAC port 8081).
 - Removed portalEnterprise configuration and deployment templates.
 
 ## 2.4.3 General Updates
