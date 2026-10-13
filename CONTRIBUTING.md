@@ -29,7 +29,7 @@ When submitting a PR make sure that it:
 2. Changes are manually reviewed by Broadcom APIM team members.
 3. Once the changes are accepted, the PR is tested (if needed) into the Broadcom CI pipeline, the chart is installed and tested (verification and functional tests).
 4. When the PR passes all tests, the PR is merged by the reviewer(s) in the GitHub `master` branch.
-5. On merge, the Chart is pushed to the layer7 Chart Repository
+5. On merge, the Chart is pushed to the Broadcom Artifactory OCI registry
 
 **Tips:**
 * A description. What did you expect to happen? What actually happened? Why do you think the behavior was incorrect?
