@@ -15,7 +15,7 @@ Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts
 
 Then, you can install the charts by:
 
-    $ helm install my-ssg oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true"
+    $ helm install my-ssg oci://layer7.packages.broadcom.com/charts/gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true"
 
 ## Helm Charts
 

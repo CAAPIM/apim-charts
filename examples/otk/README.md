@@ -31,12 +31,12 @@ Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts
 
 Then, you can install OTK on ephemeral gateway:
 
-    helm install otk oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/license.xml" \
+    helm install otk oci://layer7.packages.broadcom.com/charts/gateway --set-file "license.value=path/license.xml" \
     --set "license.accept=true,database.enabled=false,otk.enabled=true"
 
 Or, install OTK on db backed gateway:
 
-    helm install otk oci://layer7.packages.broadcom.com/gateway --set-file "license.value=path/license.xml" \
+    helm install otk oci://layer7.packages.broadcom.com/charts/gateway --set-file "license.value=path/license.xml" \
     --set "license.accept=true,management.restman.enabled=true,otk.enabled=true"
 
 # High Level

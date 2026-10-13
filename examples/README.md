@@ -41,7 +41,7 @@ Here we'll enable all of the Gateway sub-charts, you can pick and choose which y
       grafana.customDashboard.value     ==> use --set-file to specify your own grafana dashboard (optional)
      ```
 2. Install the Gateway Chart
-   - ```$ helm install <release-name> --set license.accept=true --set-file license.value=/path/to/license.xml -f /path/to/my-values.yaml -n <namespace> oci://layer7.packages.broadcom.com/gateway```
+   - ```$ helm install <release-name> --set license.accept=true --set-file license.value=/path/to/license.xml -f /path/to/my-values.yaml -n <namespace> oci://layer7.packages.broadcom.com/charts/gateway```
 
 3. Get the Gateway IP Address for Policy Manager (admin/mypassword are the default login credentials)
    - ```$ kubectl get svc -n <namespace> | grep <release-name>``` ==> you should see an EXTERNAL-IP (if using minikube see ingress settings or use minikube proxy)
