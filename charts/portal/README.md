@@ -15,6 +15,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
   - Contour `HTTPProxy` resources are now rendered when `ingress.createContour=true`, even if the Contour CRDs are not yet installed on the cluster
   - Contour can also be used with the Kubernetes Gateway API: set `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName` and `ingress.createContour=true`. The chart then creates the GatewayClass and Gateway for the bundled Contour
   - New `ingress.gatewayAPI.name` parameter to override the Gateway name
+  - Envoy runs as a DaemonSet by default. It can optionally be changed to a Deployment with a set number of replicas (`contour.envoy.kind`, `contour.envoy.replicaCount`)
   - [configuration](#contour-httpproxy)
 
 ## 2.4.7 General Updates
@@ -424,12 +425,29 @@ The chart defaults deploy Contour and route traffic with Gateway API (`ingress.c
 ```
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
      --set contour.gatewayAPI.manageCRDs=true \
+     --set contour.contour.manageCRDs=true \
      layer7/portal
 ```
 
 - `contour.gatewayAPI.manageCRDs=true` installs the Gateway API CRDs. Leave it `false` if they are already on the cluster.
+- `contour.contour.manageCRDs=true` installs the Contour CRDs (`projectcontour.io`). It defaults to `false`. The CRDs are cluster-wide, so set it to `true` only on the first install on a cluster and leave it `false` for every other install. A release that installs the CRDs owns them, and uninstalling that release removes them for every other Contour install on the cluster.
 - The chart creates a `GatewayClass`, a `Gateway` (named `portal-gateway` unless `ingress.gatewayAPI.name` is set) and the `TLSRoute` resources. Contour is configured to serve that Gateway through `contour.configInline.gateway.gatewayRef`; if you change the Gateway name, update the `gatewayRef` name too.
 - The Contour subchart installs the CRDs as part of the release, so on a first install the chart does not wait for them to be detected.
+
+#### Envoy as a DaemonSet or a Deployment
+By default Envoy runs as a DaemonSet, which places one Envoy pod on every node. On clusters with many nodes you can run Envoy as a Deployment with a fixed number of replicas instead:
+
+```
+ $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
+     --set contour.envoy.kind=deployment \
+     --set contour.envoy.replicaCount=3 \
+     layer7/portal
+```
+
+- `contour.envoy.kind` is `daemonset` (default) or `deployment`.
+- `contour.envoy.replicaCount` (default `2`) is used only when `contour.envoy.kind=deployment`.
+- `contour.envoy.podAntiAffinityPreset` (default `soft`) spreads the Envoy pods across nodes. Use `hard` to require different nodes.
+- In Deployment mode the Envoy service keeps `externalTrafficPolicy: Local`, so the load balancer sends traffic only to nodes that run an Envoy pod.
 
 #### Using your own Contour installation
 If Contour is already installed on the cluster, do not deploy the bundled one. The chart then does not create a `GatewayClass`, so `ingress.gatewayAPI.gatewayClassName` must match the name of the `GatewayClass` that already exists on the cluster (check with `kubectl get gatewayclass`). It is not necessarily `contour`.
@@ -486,6 +504,10 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 | `ingress.gatewayAPI.name` | Gateway name override. Defaults to `<fullname>-gateway`, or `portal-gateway` when `ingress.createContour` is `true` | `""` |
 | `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `true` |
 | `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `contour` |
+| `contour.contour.manageCRDs` | Install the Contour CRDs (`projectcontour.io`) with this release. Cluster-wide: `true` only on the first install on a cluster | `false` |
+| `contour.envoy.kind` | Run the bundled Envoy as a `daemonset` (one pod per node) or a `deployment` | `daemonset` |
+| `contour.envoy.replicaCount` | Number of Envoy pods. Used only when `contour.envoy.kind` is `deployment` | `2` |
+| `contour.envoy.podAntiAffinityPreset` | Spread Envoy pods across nodes: `soft` or `hard`. No effect on a DaemonSet | `soft` |
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
 | `ingress.gatewayAPI.existingRef.name` | Name of an existing Gateway resource to attach routes to. Required when `gatewayAPI.create` is `false` | `""` |
 | `ingress.gatewayAPI.existingRef.namespace` | Namespace of the existing Gateway resource | `""` |

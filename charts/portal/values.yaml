@@ -1511,6 +1511,9 @@ contour:
   gatewayAPI:
     manageCRDs: false
   contour:
+    # Installs the Contour CRDs (projectcontour.io) as part of this release. Defaults to false because the CRDs are cluster-wide:
+    # install them once per cluster (set true on the first install, or apply them separately) and keep false for any other install.
+    manageCRDs: false
     image:
       registry: apim-docker-dev-local.usw1.packages.broadcom.com
       repository: apim-portal/contour
@@ -1521,6 +1524,13 @@ contour:
       name: contour
       create: false
   envoy:
+    # Envoy runs as a DaemonSet (one pod on every node) by default.
+    # Set kind to "deployment" to run a fixed number of Envoy pods instead (see replicaCount).
+    kind: daemonset
+    # Number of Envoy pods. Used only when kind is "deployment"; ignored for a DaemonSet.
+    replicaCount: 2
+    # Spread Envoy pods across nodes ("soft" or "hard"). Useful when kind is "deployment"; no effect on a DaemonSet.
+    podAntiAffinityPreset: soft
     image:
       registry: apim-docker-dev-local.usw1.packages.broadcom.com
       repository: apim-portal/contour-envoy
