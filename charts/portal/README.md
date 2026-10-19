@@ -10,12 +10,14 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.4.8 General Updates
-- Added optional Contour ingress controller subchart (Contour chart 0.7.0) as an alternative to the Ingress-NGINX subchart
-  - Set `ingress.createContour=true` together with `ingress.create=false` and `ingress.type.contour=true` to deploy Contour with the Portal
-  - Contour `HTTPProxy` resources are now rendered when `ingress.createContour=true`, even if the Contour CRDs are not yet installed on the cluster
-  - Contour can also be used with the Kubernetes Gateway API: set `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName` and `ingress.createContour=true`. The chart then creates the GatewayClass and Gateway for the bundled Contour
+- **Breaking:** Contour is now the supported ingress controller and Ingress-NGINX is removed from this chart
+  - Removed the Ingress-NGINX subchart, the Kubernetes `Ingress` template, `ingress.create`, `ingress.type.kubernetes`, `ingress.class.*`, `ingress.annotations`, `ingress.apiVersion` and the `ingress-nginx.*` settings
+  - Added the Contour subchart (Contour chart 0.7.0), deployed by default (`ingress.createContour=true`). Set `ingress.createContour=false` to use your own Contour installation
+  - Traffic is routed with the Kubernetes Gateway API by default (`ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName=contour`). Contour `HTTPProxy` resources (`ingress.type.contour=true`) are the alternative, and the OpenShift Route (`ingress.type.openshift=true`) is unchanged
+  - The `GatewayClass`, `Gateway` and `TLSRoute`/`HTTPProxy` resources render even if the CRDs are not yet on the cluster, because the CRDs can be installed by the same release
   - New `ingress.gatewayAPI.name` parameter to override the Gateway name
   - Envoy runs as a DaemonSet by default. It can optionally be changed to a Deployment with a set number of replicas (`contour.envoy.kind`, `contour.envoy.replicaCount`)
+  - Upgrading from a release that used Ingress-NGINX is a hard cutover: the nginx controller, its load balancer and its Ingress are removed and Contour/Envoy get a new load balancer. Do not use `--reuse-values`, plan the DNS update, and see [Migration](../../examples/ingress#migration)
   - [configuration](#contour-httpproxy)
 
 ## 2.4.7 General Updates
@@ -202,7 +204,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 - Kubernetes 1.22.x
 - Helm v3.7.x
 - Persistent Volume Provisioner (if using PVC for RabbitMQ/Analytics)
-- An Ingress Controller that supports SSL Passthrough (i.e. Nginx)
+- Contour (deployed by this chart, or your own installation) and the Kubernetes Gateway API CRDs
 - ***docker secret.yaml*** available on the [CA API Developer Portal
 Solutions & Patches](https://techdocs.broadcom.com/us/product-content/recommended-reading/technical-document-index/ca-api-developer-portal-solutions-and-patches.html) page.
 
@@ -381,46 +383,37 @@ This section describes configurable parameters in **values.yaml**, there is also
 
 | Parameter                                 | Description                                                                                                          | Default                                                      |
 |-------------------------------------------|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `ingress.type.kubernetes` | Create a Kubernetes Ingress Object | `false` |
-| `ingress.type.openshift` | Create Openshift Services | `false` |
+| `ingress.type.openshift` | Create OpenShift Routes | `false` |
 | `ingress.type.contour` | Create Contour HTTPProxy resources (TLS passthrough). Requires `projectcontour.io/v1` CRDs | `false` |
 | `ingress.type.gatewayAPI` | Create Kubernetes Gateway API resources (TLSRoute, optionally Gateway). Requires Gateway API CRDs | `true` |
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
-| `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
-| `ingress.createContour` | Deploy the Contour ingress controller subchart as part of this deployment (alternative to the Nginx subchart). Use together with `ingress.create=false`, `ingress.type.contour=true`. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `true` |
-| `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
-| `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
-| `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
+| `ingress.createContour` | Deploy the Contour ingress controller subchart as part of this deployment. Set to `false` to use your own Contour installation. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7 | `true` |
 | `ingress.tenantIds` | A list of tenantIds that you plan to create on the Portal. | `[] - see values.yaml` |
-| `ingress.apiVersion` | added for future compatibility, extensions/v1beta1 will soon be deprecated, if you're running 1.18 this will be `networking.k8s.io/v1beta1`  | `extensions/v1beta1` |
 | `ingress.additionalLabels` | A list of custom key: value labels | `not set` |
 
 
 ### Contour HTTPProxy
 When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific `HTTPProxy` resources using TLS passthrough (`tcpproxy`) for all fixed portal routes, dynamic `ingress.tenantIds`, and `ingress.customRoutes`. The `projectcontour.io/v1` CRDs must be available on the cluster.
 
-To install Contour together with the Portal (instead of the Nginx subchart):
+To install Contour together with the Portal and route with `HTTPProxy` resources:
 
 ```
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
-     --set ingress.create=false \
-     --set ingress.createContour=true \
      --set ingress.type.contour=true \
-     --set ingress.type.kubernetes=false \
+     --set ingress.type.gatewayAPI=false \
      layer7/portal
 ```
 
 Contour settings can be overridden under the `contour:` key in values.yaml. Get the external address with `kubectl get svc -n <namespace> | grep envoy`. If you use your own Contour installation, leave `ingress.createContour=false`.
 
-`ingress.type.contour` and `ingress.type.kubernetes` can both be `true` simultaneously, allowing a gradual migration from standard Ingress to Contour HTTPProxy without a hard DNS cutover.
 
 You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
 
 ### Contour with Kubernetes Gateway API
 To deploy Contour together with the Portal and route traffic with Gateway API `TLSRoute` resources (instead of HTTPProxy):
 
-The chart defaults deploy Contour and route traffic with Gateway API (`ingress.create=false`, `ingress.createContour=true`, `ingress.type.kubernetes=false`, `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName=contour`), so no ingress flags are needed:
+The chart defaults deploy Contour and route traffic with Gateway API (`ingress.createContour=true`, `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName=contour`), so no ingress flags are needed:
 
 ```
  $ helm install <release-name> --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
@@ -464,9 +457,9 @@ If you also have your own `Gateway`, set `ingress.gatewayAPI.create=false` and `
 ### Kubernetes Gateway API Configuration
 When `ingress.type.gatewayAPI` is set to `true`, the chart auto-generates `TLSRoute` resources for all portal services. All routes use TLS passthrough since portal backends terminate TLS themselves. No manual route configuration is needed -- routes are derived from the existing hostname helpers, `ingress.tenantIds`, and `ingress.customRoutes`.
 
-All ingress types (`ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI`) can coexist, allowing a gradual migration between approaches without a hard DNS cutover. Each enabled type creates its own independent resources and load balancer endpoint.
+The ingress types `ingress.type.contour` (HTTPProxy) and `ingress.type.gatewayAPI` can coexist, allowing a gradual migration between approaches without a hard DNS cutover. Each enabled type creates its own independent resources.
 
-> **Note:** Switching ingress controllers (changing `ingressClassName`, e.g. from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type, changing the ingress class is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
+> **Note:** Moving from a release that used Ingress-NGINX to Contour uses a different load balancer with a different address. It is a hard cutover that requires DNS updates and should be planned for a maintenance window. See [Migration](../../examples/ingress#migration) for more detail.
 
 **Requirements:**
 - Gateway API CRDs must be installed. These are typically bundled with your Gateway controller (e.g. Contour, Envoy Gateway). To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
@@ -820,10 +813,6 @@ this feature.
 | `rabbitmq.volumePermissions.enabled` | Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`. After enabling set the appropriate runAsUser and fsGroup values |`false`|
 | `rabbitmq.podSecurityContext.fsGroup` | Set RabbitMQ pod's Security Context fsGroup | `1001` |
 | `rabbitmq.containerSecurityContext.runAsUser` | Set RabbitMQ containers' Security Context runAsUser | `1001` |
-| `ingress-nginx.podSecurityPolicy.enabled`| Enable Pod Security Policy for Nginx |`true`|
-| `ingress-nginx.serviceAccount.create`| Enable creation of ServiceAccount for Nginx |`true`|
-| `ingress-nginx.serviceAccount.name`| Name of the created serviceAccount | Generated using the `portal.fullname` template |
-| `ingress-nginx.rbac.create`| Create & use RBAC resources |`true`|
 
 
 #### Roles Required
@@ -1239,26 +1228,6 @@ MySQL authentication is configured via global values:
 - `global.databasePassword`: MySQL password (auto-generated if not set)
 - `global.demoDatabaseRootPassword`: MySQL root password (auto-generated if not set)
 - `global.databaseName`: Database name (default: `portal`)
-
-## Ingress-Nginx
-
-***NOTE:- This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample.***
-
-The following table lists the configured parameters of the Ingress-Nginx Subchart - https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
-
-This represents minimal configuration of the chart that can be disabled in favor of your own ingress controller in the ingress settings.
-IngressClass resources are supported since k8s >= 1.18 and required since k8s >= 1.19
-
-| Parameter                        | Description                               | Default                                                      |
-| -----------------------------    | -----------------------------------       | -----------------------------------------------------------  |
-| `ingress-nginx.podSecurityPolicy.enabled`                | Tell Nginx to read PSP   | `true` |
-| `ingress-nginx.rbac.create`                | Create & use RBAC resources   | `true` |
-| `ingress-nginx.controller.publishService.enabled`                | Enable Publish Service   | `true` |
-| `ingress-nginx.controller.extraArgs.enable-ssl-passthrough`                | Enable SSL Passthrough   | `true` |
-| `ingress-nginx.controller.ingressClassResource.name` | Creation of the IngressClass- with the name | `nginx` |
-| `ingress-nginx.controller.ingressClassResource.enabled` | Creating the IngressClass- with the name specified, if this flag is enabled | `true` |
-| `ingress-nginx.controller.ingressClassResource.default` | true value will make this the default ingressClass for the cluster | `false` |
-| `ingress-nginx.controller.ingressClassResource.controllerValue` | value of the controller that is processing this ingressClass | `k8s.io/ingress-nginx` |
 
 ## DNS Configuration
 To access API Portal, configure the hostname resolution on your corporate DNS server.

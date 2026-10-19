@@ -202,14 +202,11 @@ tls:
 # Default 3 years
   expiryInDays: 1095
 
-# Kubernetes Ingress
+# Ingress (Contour)
 ingress:
-# Use a kubernetes/openshift ingress
-  class:
-    name: nginx
-    enabled: true
+# Contour is the supported ingress controller. Traffic is routed with the Kubernetes Gateway API (default)
+# or with Contour HTTPProxy resources. An OpenShift Route can be used on OpenShift.
   type:
-    kubernetes: false
     openshift: false
     contour: false
     gatewayAPI: true
@@ -217,24 +214,14 @@ ingress:
   tls: true
 # existingSecret:
   secretName: dispatcher-tls
-  ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
-  ## Using other ingress controllers will work as long as they support SSL Passthrough
-  create: false
-  ## Deploy the Contour ingress controller as part of this deployment (alternative to nginx).
-  ## Set ingress.create=false, ingress.type.contour=true and ingress.type.kubernetes=false when using this.
+  ## Deploy the Contour ingress controller as part of this deployment (Contour subchart).
+  ## Set to false to use your own Contour installation.
   createContour: true
-# Configure additional ingress controller specific annotations
-  annotations:
-    # kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 # A list of tenants that you have/will create.
 # This is for the ingress controller, it does not automatically create tenants
   tenantIds:
     - tenant1
 #   - tenant2
-# Added for backwards compatibility pre deprecation of this API in 1.18
-#  apiVersion: networking.k8s.io/v1beta1
   additionalLabels: {}
   # Kubernetes Gateway API Configuration
   # ref: https://gateway-api.sigs.k8s.io/
@@ -1287,29 +1274,6 @@ intelligence:
   affinity: {}
   nodeSelector: {}
   tolerations: []
-
-# Settings for Nginx-Ingress - https://github.com/kubernetes/ingress-nginx/tree/master/charts/ingress-nginx
-ingress-nginx:
-  podSecurityPolicy:
-    enabled: true
-  serviceAccount:
-    create: true
-  # name:
-  rbac:
-    create: true
-  controller:
-    config:
-      # 30MB is the max file size we allow for the custom pages and 15MB for GW Bundle.so max is set to 32
-      proxy-body-size: "32m"
-    publishService:
-      enabled: true
-    extraArgs:
-      enable-ssl-passthrough: true
-   # ingressClassResource:
-   #  name: nginx
-   #  enabled: true
-   #  default: false
-   #  controllerValue: "k8s.io/ingress-nginx"
 
 # Settings for portal jobs
 jobs:

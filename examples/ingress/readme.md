@@ -23,7 +23,7 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
 | Chart | Coexistence flags |
 |---|---|
 | **Gateway chart** | `ingress.enabled: true` + `kubernetesGateway.enabled: true` |
-| **Portal chart** | `ingress.type.kubernetes`, `ingress.type.contour`, and `ingress.type.gatewayAPI` can all be `true` simultaneously |
+| **Portal chart** | `ingress.type.contour` (HTTPProxy) and `ingress.type.gatewayAPI` can both be `true` simultaneously |
 
 **Switching ingress controllers (ingress classes) causes an address change.** Changing `ingressClassName` (e.g. from `nginx` to `contour`) provisions a new load balancer with a different IP/hostname. The old address becomes unavailable immediately. Unlike enabling an additional ingress type, changing the ingress class is a **hard cutover** that requires DNS updates and should be planned for a maintenance window.
 
@@ -33,7 +33,6 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
   - [Ingress v1 examples](./gateway-chart/ingress/) -- default configuration, Contour as an ingress controller, management routing, OpenShift routes
   - [Gateway API examples](./gateway-chart/gateway/) -- Contour/Envoy Gateway controllers, HTTPRoute and TLSRoute modes, TLS certificate management, existing Gateway references
 - **Portal Chart**
-  - [Ingress v1 examples](./portal-chart/ingress/) -- standard Ingress and Contour HTTPProxy resources
   - [Gateway API examples](./portal-chart/gateway/) -- TLSRoute (TLS passthrough) with auto-generated routes
 
 ### Chart Configuration
