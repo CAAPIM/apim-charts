@@ -160,30 +160,35 @@ This creates an additional TLSRoute for `custom-app.<portal.domain>` routing to 
 
 ## Example 6: Coexistence During Migration
 
-`ingress.type.contour` (HTTPProxy) and `ingress.type.gatewayAPI` can be enabled simultaneously. This allows a gradual DNS migration without a hard cutover:
+All ingress types can be enabled simultaneously. This allows a gradual DNS migration without a hard cutover:
 
 ```yaml
 ingress:
   type:
+    kubernetes: true
     contour: true
     gatewayAPI: true
   tenantIds:
     - tenant1
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
   gatewayAPI:
     create: true
     gatewayClassName: contour
 ```
 
-Once DNS has been migrated to the Gateway API endpoints, disable the HTTPProxy resources:
+Once DNS has been migrated to the Gateway API endpoints, disable the old ingress types:
 
 ```yaml
 ingress:
   type:
+    kubernetes: false
     contour: false
     gatewayAPI: true
 ```
 
-> **Note:** Moving from a release that used Ingress-NGINX to Contour uses a different load balancer with a different address. Unlike enabling an additional ingress type (which coexists), it is a hard cutover. Plan this change for a maintenance window and update DNS records accordingly. See [Migration](../../readme.md#migration) for details.
+> **Note:** Switching between ingress controllers (e.g. changing `ingressClassName` from `nginx` to `contour`) uses a different load balancer with a different address. Unlike enabling an additional ingress type (which coexists), changing the `ingressClassName` is a hard cutover. Plan this change for a maintenance window and update DNS records accordingly. See [Migration](../../readme.md#migration) for details.
 
 ---
 

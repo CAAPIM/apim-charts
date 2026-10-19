@@ -61,7 +61,11 @@ $ ./migrate-certificates.sh -n <kubernetes-namespace>
       ingress.tenantIds <list of existing tenants> default tenant1
       portal.otk.port: 9443 default 443
       ```
-  - make sure port 9443 is reachable through your ingress (Contour) with SSL/TLS passthrough enabled.
+  - uncomment and fill namespace in ingress-nginx (if using your own Ingress Controller, then make sure 9443 is open with SSL Passthrough enabled.)
+     ```
+     #  tcp:
+        # 9443: "<namespace>/dispatcher:9443"
+     ```
    - Update any other values that you'd like to set (i.e. SMTP settings) [link](../../charts/portal/README.md)
  
 
@@ -257,6 +261,10 @@ druid.serviceAccount.name: <serviceAccountName>
 rabbitmq.serviceAccount.create: <true|false>
 rabbitmq.serviceAccount.name: <serviceAccountName>
 rabbitmq.rbac.create: <true|false>
+ingress-nginx.podSecurityPolicy.enabled: <true|false>
+ingress-nginx.serviceAccount.create: <true|false>
+ingress-nginx.serviceAccount.name: <true|false>
+ingress-nginx.rbac.create: <true|false>
 ```
 
 ## Steps to Update Enrolled Gateways
