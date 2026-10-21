@@ -427,8 +427,10 @@ Create Image Pull Secret
   - Otherwise, use the existingRef.name.
 */}}
 {{- define "portal.gatewayAPI.gatewayName" -}}
-{{- if .Values.ingress.gatewayAPI.create -}}
-  {{- printf "%s-gateway" (include "portal.fullname" .) -}}
+{{- if and .Values.ingress.gatewayAPI.create .Values.ingress.createContour -}}
+  {{- default "portal-gateway" .Values.ingress.gatewayAPI.name -}}
+{{- else if .Values.ingress.gatewayAPI.create -}}
+  {{- default (printf "%s-gateway" (include "portal.fullname" .)) .Values.ingress.gatewayAPI.name -}}
 {{- else -}}
   {{- required "ingress.gatewayAPI.existingRef.name is required when ingress.type.gatewayAPI is true and ingress.gatewayAPI.create is false" .Values.ingress.gatewayAPI.existingRef.name -}}
 {{- end -}}

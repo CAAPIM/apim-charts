@@ -7,12 +7,12 @@ To learn more about the release, try:
 If this domain is not in your DNS records please add the following domains to your
 hosts file or DNS server.
 
-{{- if .Values.ingress.create }}
-Because you deployed an ingress controller as part of this Chart you can get the EXTERNAL-IP with the command below
+{{- if .Values.ingress.createContour }}
+Because you deployed the Contour ingress controller as part of this Chart you can get the EXTERNAL-IP with the command below
 
-  $ kubectl get svc -n {{ .Release.Namespace }} | grep nginx
+  $ kubectl get svc -n {{ .Release.Namespace }} | grep envoy
 {{- else}}
-  $ kubectl get svc -n <ingress-controller-namespace>
+  $ kubectl get svc -n <contour-namespace> | grep envoy
 {{- end }}
 
 After the all pods are successfully running you can access the portal at:
