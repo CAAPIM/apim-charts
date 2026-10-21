@@ -1481,7 +1481,7 @@ contour:
     image:
       registry: apim-docker-dev-local.usw1.packages.broadcom.com
       repository: apim-portal/contour
-      tag: v1.33.6
+      tag: v1.33.7
       pullSecrets:
         - broadcom-apim
     ingressClass:
@@ -1498,7 +1498,7 @@ contour:
     image:
       registry: apim-docker-dev-local.usw1.packages.broadcom.com
       repository: apim-portal/contour-envoy
-      tag: v1.38.3
+      tag: v1.38.4
       pullSecrets:
         - broadcom-apim
     service:
