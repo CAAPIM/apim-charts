@@ -13,6 +13,6 @@ dependencies:
   version: 1.0.1
 - name: contour
   repository: https://projectcontour.github.io/helm-charts/
-  version: 0.7.0
-digest: sha256:fb31a2c73c4f6c5cc0be6b58f7b18083f9520c2eb4e296810acfe289a647b6a8
-generated: "2026-10-19T11:47:43.506135+05:30"
+  version: 0.8.0
+digest: sha256:f7c1106a60518c8590260564acfe1588717f104c7adf81be12453b14eef3342a
+generated: "2026-10-21T13:52:20.482701+05:30"

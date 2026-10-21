@@ -27,5 +27,5 @@ dependencies:
   repository: "file://../kafka"
 - name: contour
   repository: "https://projectcontour.github.io/helm-charts/"
-  version: 0.7.0
+  version: 0.8.0
   condition: ingress.createContour

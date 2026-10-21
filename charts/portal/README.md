@@ -12,7 +12,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## 2.4.8 General Updates
 - **Breaking:** Contour is now the supported ingress controller and Ingress-NGINX is removed from this chart
   - Removed the Ingress-NGINX subchart, the Kubernetes `Ingress` template, `ingress.create`, `ingress.type.kubernetes`, `ingress.class.*`, `ingress.annotations`, `ingress.apiVersion` and the `ingress-nginx.*` settings
-  - Added the Contour subchart (Contour chart 0.7.0), deployed by default (`ingress.createContour=true`). Set `ingress.createContour=false` to use your own Contour installation
+  - Added the Contour subchart (Contour chart 0.8.0), deployed by default (`ingress.createContour=true`). Set `ingress.createContour=false` to use your own Contour installation
   - Traffic is routed with the Kubernetes Gateway API by default (`ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName=contour`). Contour `HTTPProxy` resources (`ingress.type.contour=true`) are the alternative, and the OpenShift Route (`ingress.type.openshift=true`) is unchanged
   - The `GatewayClass`, `Gateway` and `TLSRoute`/`HTTPProxy` resources render even if the CRDs are not yet on the cluster, because the CRDs can be installed by the same release
   - New `ingress.gatewayAPI.name` parameter to override the Gateway name
