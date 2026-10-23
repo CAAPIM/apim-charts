@@ -183,10 +183,10 @@ ingress:
     name: nginx
     enabled: true
   type:
-    kubernetes: true
+    kubernetes: false
     openshift: false
     contour: false
-    gatewayAPI: false
+    gatewayAPI: true
   # enable/disable tls on ingress rule
   tls: true
 # existingSecret:
@@ -194,6 +194,9 @@ ingress:
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
   create: false
+  ## Deploy the Contour ingress controller as part of this deployment (alternative to nginx).
+  ## Set ingress.create=false, ingress.type.contour=true and ingress.type.kubernetes=false when using this.
+  createContour: true
 # Configure additional ingress controller specific annotations
   annotations:
     # kubernetes.io/ingress.class: nginx
@@ -213,10 +216,16 @@ ingress:
   # (fixed routes and dynamic tenantIds/customRoutes). All routes use TLS passthrough
   # since portal backends terminate TLS themselves.
   gatewayAPI:
+    # -- TLSRoute API version. TLSRoute is GA (v1) as of Gateway API 1.5.0.
+    # Set to gateway.networking.k8s.io/v1 when your Gateway API CRDs include
+    # TLSRoute at v1.
+    tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
     # -- Create a new Gateway resource managed by this chart
-    create: false
+    create: true
+    # -- Gateway name override. Defaults to "<fullname>-gateway", or "portal-gateway" when ingress.createContour is true.
+    name: ""
     # -- GatewayClass name (e.g. contour, eg). Required when create: true.
-    gatewayClassName: ""
+    gatewayClassName: "contour"
     # -- Optional addresses requested for the Gateway (e.g. static IPs).
     # ref: https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GatewayAddress
     addresses: []
@@ -1617,3 +1626,50 @@ mysql:
   commonAnnotations:
     helm.sh/hook: pre-install
     helm.sh/hook-weight: "-10"
+
+# Settings for Contour - https://github.com/projectcontour/helm-charts/tree/main/charts/contour
+# Only deployed when ingress.createContour=true
+contour:
+  # Contour reads this to serve the Gateway created by this chart (ingress.gatewayAPI.create=true).
+  # Only used with ingress.type.gatewayAPI=true. The name must match the Gateway name.
+  configInline:
+    disablePermitInsecure: false
+    tls:
+      fallback-certificate: {}
+    accesslog-format: envoy
+    gateway:
+      gatewayRef:
+        name: portal-gateway
+        namespace: "{{ .Release.Namespace }}"
+  # Installs the Gateway API CRDs (needed for ingress.type.gatewayAPI=true if not already on the cluster)
+  gatewayAPI:
+    manageCRDs: false
+  contour:
+    # Installs the Contour CRDs (projectcontour.io) as part of this release. Defaults to false because the CRDs are cluster-wide:
+    # install them once per cluster (set true on the first install, or apply them separately) and keep false for any other install.
+    manageCRDs: false
+    image:
+      registry: docker.io
+      repository: caapim/contour
+      tag: v1.33.7
+      pullSecrets:
+        - broadcom-apim
+    ingressClass:
+      name: contour
+      create: false
+  envoy:
+    # Envoy runs as a DaemonSet (one pod on every node) by default.
+    # Set kind to "deployment" to run a fixed number of Envoy pods instead (see replicaCount).
+    kind: daemonset
+    # Number of Envoy pods. Used only when kind is "deployment"; ignored for a DaemonSet.
+    replicaCount: 2
+    # Spread Envoy pods across nodes ("soft" or "hard"). Useful when kind is "deployment"; no effect on a DaemonSet.
+    podAntiAffinityPreset: soft
+    image:
+      registry: docker.io
+      repository: caapim/contour-envoy
+      tag: v1.38.4
+      pullSecrets:
+        - broadcom-apim
+    service:
+      type: LoadBalancer
