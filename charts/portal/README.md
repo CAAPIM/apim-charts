@@ -10,7 +10,7 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 ## Release Notes
 
 ## 2.4.8 General Updates
-- Added optional Contour ingress controller subchart (Contour chart 0.7.0) as an alternative to the Ingress-NGINX subchart
+- Added optional Contour ingress controller subchart (Contour chart 0.8.0) as an alternative to the Ingress-NGINX subchart
   - Set `ingress.createContour=true` together with `ingress.create=false` and `ingress.type.contour=true` to deploy Contour with the Portal
   - Contour `HTTPProxy` resources are now rendered when `ingress.createContour=true`, even if the Contour CRDs are not yet installed on the cluster
   - Contour can also be used with the Kubernetes Gateway API: set `ingress.type.gatewayAPI=true`, `ingress.gatewayAPI.create=true`, `ingress.gatewayAPI.gatewayClassName` and `ingress.createContour=true`. The chart then creates the GatewayClass and Gateway for the bundled Contour
