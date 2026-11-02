@@ -401,6 +401,8 @@ authenticator:
 #           - authenticator
 #       topologyKey: "kubernetes.io/hostname"
   additionalEnv:
+    # Empty by default. Comma-separated RFC1918/CGNAT/ULA CIDRs; use an override file.
+    SSRF_ALLOWED_CIDRS: ""
 
 dispatcher:
   forceRedeploy: false
