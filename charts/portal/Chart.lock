@@ -16,6 +16,6 @@ dependencies:
   version: 4.15.1
 - name: contour
   repository: file://../contour
-  version: 1.0.0
-digest: sha256:81819b9ee1450c4986825c269ae8b8aeeef7b74c6320b34475d10906d059eebf
-generated: "2026-11-02T14:40:45.708712+05:30"
+  version: 0.8.0
+digest: sha256:a2598afa5278c895ec8e9e8c5fe96fce0f15eff375f8a0ac3c0d204d99177944
+generated: "2026-11-02T15:44:26.530552+05:30"
