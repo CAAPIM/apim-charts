@@ -296,10 +296,10 @@ If image tag and digest are not defined, termination fallbacks to chart appVersi
     {{- $separator = "@" -}}
     {{- $termination = .imageRoot.digest | toString -}}
 {{- end -}}
-{{- if (.global).portalRepository }}
-    {{- printf "%s%s%s%s" .global.portalRepository $repositoryName $separator $termination -}}
-{{- else if $registryName }}
+{{- if $registryName }}
     {{- printf "%s/%s%s%s" $registryName $repositoryName $separator $termination -}}
+{{- else if (.global).portalRepository }}
+    {{- printf "%s%s%s%s" .global.portalRepository $repositoryName $separator $termination -}}
 {{- else -}}
     {{- printf "%s%s%s"  $repositoryName $separator $termination -}}
 {{- end -}}
