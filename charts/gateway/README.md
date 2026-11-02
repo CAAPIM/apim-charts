@@ -106,7 +106,7 @@ Helm Version    Supported Kubernetes Versions
 
 
 ## Installing the Chart
-Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
+Check out [this guide](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/ContainerGateway11-2/learning-center/thinking-in-kubernetes/hands-on-gateway-deployment-in-kubernetes.html) for more in-depth instruction
 
 Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use)
 ```
