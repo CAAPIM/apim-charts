@@ -1,0 +1,58 @@
+// Triggers the chart validation checks (lint, kubeconform, version check)
+// and reports the result back to this PR.
+
+// These checks gate pull requests, not every branch push - a plain branch
+// build does nothing by default. Flip this to true (and set
+// TARGET_BRANCH_WHEN_TESTING below) to validate a branch before opening a PR;
+// revert both before merging.
+def RUN_CHECKS_WITHOUT_PR = false
+def TARGET_BRANCH_WHEN_TESTING = 'stable'
+
+def VALIDATION_JOB = 'apim-charts/apim-charts_test_automation/develop'
+
+pipeline {
+    agent { label 'default' }
+    stages {
+        stage('Run chart validation') {
+            when { expression { env.CHANGE_ID || RUN_CHECKS_WITHOUT_PR } }
+            steps {
+                script {
+                    def run = build job: VALIDATION_JOB,
+                        parameters: [
+                            string(name: 'REF', value: env.CHANGE_ID ? "PR-${env.CHANGE_ID}" : env.BRANCH_NAME),
+                            string(name: 'TARGET_BRANCH', value: env.CHANGE_ID ? env.CHANGE_TARGET : TARGET_BRANCH_WHEN_TESTING)
+                        ],
+                        wait: true, propagate: false
+                    env.VALIDATION_URL = run.absoluteUrl
+                    if (run.result != 'SUCCESS') {
+                        error("chart validation failed: ${run.absoluteUrl}")
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                // send commit status to repo when the build is a pull request
+                if (env.CHANGE_ID) {
+                    pullRequest.createStatus(status: 'success',
+                            context: 'continuous-integration/jenkins/pr-merge',
+                            description: 'Build Success',
+                            targetUrl: env.VALIDATION_URL ?: env.JOB_URL)
+                }
+            }
+        }
+        failure {
+            script {
+                if (env.CHANGE_ID) {
+                    pullRequest.createStatus(status: 'failure',
+                            context: 'continuous-integration/jenkins/pr-merge',
+                            description: 'Build Failed',
+                            targetUrl: env.VALIDATION_URL ?: env.JOB_URL)
+                }
+            }
+        }
+    }
+}
