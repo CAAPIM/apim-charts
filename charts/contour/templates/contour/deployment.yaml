@@ -236,7 +236,9 @@ spec:
         {{- end }}
       dnsPolicy: ClusterFirst
       serviceAccountName: {{ include "contour.contourServiceAccountName" . }}
-      {{- if .Values.contour.podSecurityContext.enabled }}
+      {{- if (.Values.global).podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- else if .Values.contour.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.contour.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
       volumes:

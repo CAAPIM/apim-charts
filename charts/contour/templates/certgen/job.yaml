@@ -36,7 +36,9 @@ spec:
       {{- if .Values.contour.tolerations }}
       tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.contour.tolerations "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.contour.podSecurityContext.enabled }}
+      {{- if (.Values.global).podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- else if .Values.contour.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.contour.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
       containers:

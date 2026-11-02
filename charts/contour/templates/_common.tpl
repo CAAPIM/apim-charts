@@ -91,7 +91,7 @@ Kubernetes standard labels
 {{- with .context.Chart.AppVersion -}}
 {{- $_ := set $default "app.kubernetes.io/version" . -}}
 {{- end -}}
-{{ template "common.tplvalues.merge" (dict "values" (list .customLabels $default) "context" .context) }}
+{{ template "common.tplvalues.merge" (dict "values" (list .customLabels ((.context.Values.global).additionalLabels | default dict) $default) "context" .context) }}
 {{- else -}}
 app.kubernetes.io/name: {{ include "common.names.name" . }}
 helm.sh/chart: {{ include "common.names.chart" . }}
@@ -155,6 +155,10 @@ Return the proper Docker Image Registry Secret Names (deprecated: use common.ima
     {{- else -}}
       {{- $pullSecrets = append $pullSecrets . -}}
     {{- end }}
+  {{- end -}}
+
+  {{- if (.global).pullSecret -}}
+    {{- $pullSecrets = append $pullSecrets .global.pullSecret -}}
   {{- end -}}
 
   {{- range .images -}}
@@ -292,7 +296,9 @@ If image tag and digest are not defined, termination fallbacks to chart appVersi
     {{- $separator = "@" -}}
     {{- $termination = .imageRoot.digest | toString -}}
 {{- end -}}
-{{- if $registryName }}
+{{- if (.global).portalRepository }}
+    {{- printf "%s%s%s%s" .global.portalRepository $repositoryName $separator $termination -}}
+{{- else if $registryName }}
     {{- printf "%s/%s%s%s" $registryName $repositoryName $separator $termination -}}
 {{- else -}}
     {{- printf "%s%s%s"  $repositoryName $separator $termination -}}

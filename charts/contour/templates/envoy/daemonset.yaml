@@ -58,7 +58,9 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.envoy.terminationGracePeriodSeconds }}
       hostNetwork: {{ .Values.envoy.hostNetwork }}
       dnsPolicy: {{ .Values.envoy.dnsPolicy }}
-      {{- if .Values.envoy.podSecurityContext.enabled }}
+      {{- if (.Values.global).podSecurityContext }}
+      securityContext: {{- toYaml .Values.global.podSecurityContext | nindent 8 }}
+      {{- else if .Values.envoy.podSecurityContext.enabled }}
       securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.envoy.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
       containers:

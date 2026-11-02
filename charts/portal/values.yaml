@@ -1483,11 +1483,8 @@ contour:
     # install them once per cluster (set true on the first install, or apply them separately) and keep false for any other install.
     manageCRDs: false
     image:
-      registry: docker.io
-      repository: caapim/contour
+      repository: contour
       tag: v1.33.7
-      pullSecrets:
-        - broadcom-apim
     ingressClass:
       name: contour
       create: false
@@ -1500,10 +1497,7 @@ contour:
     # Spread Envoy pods across nodes ("soft" or "hard"). Useful when kind is "deployment"; no effect on a DaemonSet.
     podAntiAffinityPreset: soft
     image:
-      registry: docker.io
-      repository: caapim/contour-envoy
+      repository: contour-envoy
       tag: v1.38.4
-      pullSecrets:
-        - broadcom-apim
     service:
       type: LoadBalancer
