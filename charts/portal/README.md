@@ -1327,3 +1327,35 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 Copyright (c) 2025 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
+
+
+## Private identity providers
+
+With an authenticator build containing the DE686037 deployment policy, use a values override file:
+
+```yaml
+authenticator:
+  additionalEnv:
+    SSRF_ALLOWED_CIDRS: "10.20.30.15/32,fd12:3456::/32"
+```
+
+Both values files default this setting to `""`. Only literal RFC1918, CGNAT and ULA CIDRs are
+eligible; broad ranges containing other address classes, nonzero host bits and malformed/empty
+list entries fail authenticator startup. HTTPS and trusted certificates remain mandatory.
+The setting does not bypass TLS trust or egress rules. Prefer narrow exceptions for actual IdPs.
+
+Set `image.authenticator` to the compatible approved build; the setting is not implemented by
+older images. Coordinate the companion Portal error-mapping build as well. This chart change
+does not invent or publish new application image tags. Contributions target the repository's
+`unstable` branch as described in CONTRIBUTING.md.
+
+The authenticator Pod template includes `checksum/authenticator-config`, derived from its rendered
+ConfigMap. A configuration change therefore triggers rollout; an unchanged render has an unchanged
+checksum. Existing user annotations and `forceRedeploy` behavior are retained. The checksum annotation
+is reserved. Do not put `SSRF_ALLOWED_CIDRS` in `authenticator.additionalSecret`; rendering rejects that
+conflict. Remove any competing JVM/command-line property override as well.
+
+Revoke an exception by explicitly setting `SSRF_ALLOWED_CIDRS: ""` in the effective override file.
+Deleting the key alone can retain the previous value with `--reuse-values` or pipeline deep merges.
+Inspect the rendered upgrade and wait for all replicas to adopt the new policy. Existing sessions
+are not revoked. Use a file for comma-separated CIDRs rather than unescaped Helm `--set` values.
