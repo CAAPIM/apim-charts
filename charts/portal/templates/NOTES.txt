@@ -11,6 +11,10 @@ hosts file or DNS server.
 Because you deployed an ingress controller as part of this Chart you can get the EXTERNAL-IP with the command below
 
   $ kubectl get svc -n {{ .Release.Namespace }} | grep nginx
+{{- else if .Values.ingress.createContour }}
+Because you deployed the Contour ingress controller as part of this Chart you can get the EXTERNAL-IP with the command below
+
+  $ kubectl get svc -n {{ .Release.Namespace }} | grep envoy
 {{- else}}
   $ kubectl get svc -n <ingress-controller-namespace>
 {{- end }}
