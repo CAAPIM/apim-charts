@@ -1483,6 +1483,8 @@ contour:
     # install them once per cluster (set true on the first install, or apply them separately) and keep false for any other install.
     manageCRDs: false
     image:
+      # Empty so the image is built from global.portalRepository; set to override (e.g. an internal registry host).
+      registry: ""
       repository: contour
       tag: v1.33.7
     ingressClass:
@@ -1497,6 +1499,8 @@ contour:
     # Spread Envoy pods across nodes ("soft" or "hard"). Useful when kind is "deployment"; no effect on a DaemonSet.
     podAntiAffinityPreset: soft
     image:
+      # Empty so the image is built from global.portalRepository; set to override (e.g. an internal registry host).
+      registry: ""
       repository: contour-envoy
       tag: v1.38.4
     service:
