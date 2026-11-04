@@ -27,18 +27,19 @@ spec:
     metadata:
       labels:
         app: authenticator
-      {{- if  .Values.authenticator.podAnnotations }}
-      annotations: {{- toYaml .Values.authenticator.podAnnotations | nindent 8 }}
-      {{- if .Values.authenticator.forceRedeploy }}
-        timestamp: {{ now | quote }}
+      {{- if hasKey (.Values.authenticator.podAnnotations | default dict) "checksum/authenticator-config" }}
+      {{- fail "authenticator.podAnnotations must not override checksum/authenticator-config" }}
       {{- end }}
-      {{- end }}
-      {{- if not .Values.authenticator.podAnnotations }}
-      {{- if .Values.authenticator.forceRedeploy }}
       annotations:
+        {{- with omit (.Values.authenticator.podAnnotations | default dict) "timestamp" }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/authenticator-config: {{ include (print $.Template.BasePath "/authenticator/authenticator-config.yaml") . | sha256sum | quote }}
+        {{- if .Values.authenticator.forceRedeploy }}
         timestamp: {{ now | quote }}
-      {{- end }}
-      {{- end }}
+        {{- else if hasKey (.Values.authenticator.podAnnotations | default dict) "timestamp" }}
+        timestamp: {{ index .Values.authenticator.podAnnotations "timestamp" | quote }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "portal.serviceAccountName" . }}
       {{- if .Values.authenticator.affinity }}
