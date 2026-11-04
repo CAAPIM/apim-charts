@@ -1,0 +1,8 @@
+# Apply once per cluster. controllerName must match the Contour install:
+# projectcontour.io/<contour-namespace>/contour
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: contour
+spec:
+  controllerName: projectcontour.io/portal/contour

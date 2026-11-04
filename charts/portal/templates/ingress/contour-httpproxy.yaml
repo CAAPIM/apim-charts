@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
-{{ if and (.Values.ingress.type.contour) (or .Values.ingress.createContour ($.Capabilities.APIVersions.Has "projectcontour.io/v1")) }}
+{{ if and (.Values.ingress.type.contour) ($.Capabilities.APIVersions.Has "projectcontour.io/v1") }}
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:

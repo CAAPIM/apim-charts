@@ -30,6 +30,6 @@ dependencies:
   version: 4.15.1
   condition: ingress.create
 - name: contour
-  repository: "file://../contour"
-  version: ^0.8.0
+  repository: "https://projectcontour.github.io/helm-charts/"
+  version: 0.8.0
   condition: ingress.createContour
