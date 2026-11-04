@@ -34,7 +34,7 @@ Compared to the [Gateway chart](../../../ingress/gateway-chart/gateway/), the Po
 ## Prerequisites
 
 1. **Gateway API CRDs** must be installed. These are typically bundled with your Gateway controller. To install them separately, see the [Gateway API releases](https://github.com/kubernetes-sigs/gateway-api/releases)
-2. A **GatewayClass** must be available (see [GatewayClass](../../readme.md#gatewayclass))
+2. A **GatewayClass** must be available (see [GatewayClass](../../readme.md#gatewayclass)). For Contour, a sample is in [gatewayclass-contour.yaml](./gatewayclass-contour.yaml): `kubectl apply -f gatewayclass-contour.yaml`
 3. A **Gateway controller** must be running (Contour or Envoy Gateway)
 
 ---
