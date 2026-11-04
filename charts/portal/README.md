@@ -372,6 +372,7 @@ This section describes configurable parameters in **values.yaml**, there is also
 | `ingress.type.secretName` | Certificate Secret Name to be created | `dispatcher-tls` |
 | `ingress.tls` | Enable or disable tls on the ingress rule | `true` |
 | `ingress.create` | Deploy the Nginx subchart as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
+| `ingress.createContour` | Deploy the Contour subchart (from the projectcontour Helm repo) as part of this deployment. ***Note:-*** This is a third-party sub chart which is not supported/maintained by Layer7. Included only for reference/sample | `false` |
 | `ingress.class.name` | Deploy the Nginx subchart with the specified name | `nginx` |
 | `ingress.class.enabled` | Deploy the Nginx subchart with the specified name , if the flag is enabled | `true` |
 | `ingress.annotations` | Ingress annotations | `additional annotations that you would like to pass to the Ingress object` |
@@ -384,6 +385,10 @@ This section describes configurable parameters in **values.yaml**, there is also
 When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific `HTTPProxy` resources using TLS passthrough (`tcpproxy`) for all fixed portal routes, dynamic `ingress.tenantIds`, and `ingress.customRoutes`. The `projectcontour.io/v1` CRDs must be available on the cluster.
 
 `ingress.type.contour` and `ingress.type.kubernetes` can both be `true` simultaneously, allowing a gradual migration from standard Ingress to Contour HTTPProxy without a hard DNS cutover.
+
+> **Installing from a git clone:** the Contour subchart is not committed to the repository. Run `helm dependency build charts/portal` before `helm install`; otherwise the install fails with a missing dependency error, even when `ingress.createContour=false`. Installing from the Helm repo or a released chart package needs no extra step because the subchart is bundled.
+
+Contour is available as an optional subchart (`ingress.createContour=true`, default `false`) for reference only. Contour settings go under the `contour:` key; see the Contour [chart](https://github.com/projectcontour/helm-charts/tree/main/charts/contour). Gateway API support in this chart stays controller-agnostic and is not gated on Contour. Contour does not yet support TLSRoute at v1, so keep `ingress.gatewayAPI.tlsRouteApiVersion=gateway.networking.k8s.io/v1alpha2` when using it. An example is in [examples/ingress](../../examples/ingress).
 
 You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
 

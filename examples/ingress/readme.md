@@ -35,6 +35,7 @@ The Layer7 API Management Helm Charts support multiple ingress strategies for ro
 - **Portal Chart**
   - [Ingress v1 examples](./portal-chart/ingress/) -- standard Ingress and Contour HTTPProxy resources
   - [Gateway API examples](./portal-chart/gateway/) -- TLSRoute (TLS passthrough) with auto-generated routes
+  - [Contour example](./portal-chart/contour/) -- deploy Contour with the Portal and route with Gateway API (reference only)
 
 ### Chart Configuration
 
