@@ -250,8 +250,6 @@ ingress:
     tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
     # -- Create a new Gateway resource managed by this chart
     create: true
-    # -- Gateway name override. Defaults to "<fullname>-gateway", or "portal-gateway" when ingress.createContour is true.
-    name: ""
     # -- GatewayClass name (e.g. contour, eg). Required when create: true.
     gatewayClassName: "contour"
     # -- Optional addresses requested for the Gateway (e.g. static IPs).
@@ -1465,7 +1463,7 @@ mysql:
 # Only deployed when ingress.createContour=true
 contour:
   # Contour reads this to serve the Gateway created by this chart (ingress.gatewayAPI.create=true).
-  # Only used with ingress.type.gatewayAPI=true. The name must match the Gateway name.
+  # Only used with ingress.type.gatewayAPI=true. The name must match the Gateway name (<fullname>-gateway; this default assumes the release name does not contain "portal").
   configInline:
     disablePermitInsecure: false
     tls:
@@ -1473,7 +1471,7 @@ contour:
     accesslog-format: envoy
     gateway:
       gatewayRef:
-        name: portal-gateway
+        name: "{{ .Release.Name }}-portal-gateway"
         namespace: "{{ .Release.Namespace }}"
   # Installs the Gateway API CRDs (needed for ingress.type.gatewayAPI=true if not already on the cluster)
   gatewayAPI:
