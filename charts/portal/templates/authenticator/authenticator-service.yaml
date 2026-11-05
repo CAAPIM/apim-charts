@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,6 +14,9 @@ spec:
     - port: 9081
       targetPort: 9081
       name: auth-http
+    - port: 8081
+      targetPort: 8081
+      name: rbac-http
   selector:
     app: authenticator
   type: ClusterIP
