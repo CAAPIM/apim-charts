@@ -221,7 +221,8 @@ ingress:
   secretName: dispatcher-tls
   ## Deploy an nginx-ingress controller as part of this deployment. See Subcharts section for configuration options
   ## Using other ingress controllers will work as long as they support SSL Passthrough
-  create: false
+  ## DEPRECATED: ingress.create will be removed in a future version.
+  create: true
   ## Deploy the Contour ingress controller as part of this deployment (alternative to nginx). Third-party chart, for reference only.
   createContour: false
 # Configure additional ingress controller specific annotations

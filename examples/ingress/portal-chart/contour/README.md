@@ -6,8 +6,6 @@ Deploys Contour with the Portal and routes with Gateway API `TLSRoute` (TLS pass
 
 ## Steps
 
-0. If installing from a git clone, run `helm dependency build charts/portal` first. Not needed when installing from the Helm repo or a released chart package.
-
 1. Install the CRDs once per cluster, either by setting `contour.gatewayAPI.manageCRDs=true` and `contour.contour.manageCRDs=true` on the first install, or by applying them separately. Uninstalling a release that owns the CRDs removes them for the whole cluster.
 2. Apply the GatewayClass (namespace in `controllerName` must be the release namespace):
    ```
