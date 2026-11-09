@@ -4,23 +4,26 @@ Deploys Contour with the Portal (the chart creates the GatewayClass and Gateway)
 
 > Contour does not support `TLSRoute` at `v1` yet, so `tlsRouteApiVersion` is `v1alpha2`.
 
+> The examples use the release name `my-portal` and the namespace `portal`. Change them to match your own.
+
 ## Steps
 
 1. Install the CRDs once per cluster, either by setting `contour.gatewayAPI.manageCRDs=true` and `contour.contour.manageCRDs=true` on the first install, or by applying them separately. Uninstalling a release that owns the CRDs removes them for the whole cluster.
 2. Install the Portal with [values.yaml](./values.yaml):
    ```
-   helm install portal layer7/portal -n portal --create-namespace \
+   helm install my-portal layer7/portal -n portal --create-namespace \
      --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
      -f values.yaml
    ```
-3. Get the external address: `kubectl get svc -n portal | grep envoy`
+3. Get the external address (the Envoy `LoadBalancer` IP, shown under `EXTERNAL-IP`): `kubectl get svc -n portal | grep envoy`
+4. Create DNS records for the Portal hostnames (the hosts in `portal.domain`, for example the tenant, `*-ssg`, `enroll-*` and `analytics-*` hosts) pointing to that address, or use a wildcard record for your domain. Use `contour.envoy.service.loadBalancerIP` to request a fixed IP so the DNS records stay valid. Then open the Portal at `https://<tenant>-<subdomainPrefix>.<portal.domain>`.
 
 ### Install with `--set` flags instead of values.yaml
 
 The chart creates the GatewayClass and the Gateway reference itself, so no `kubectl apply` or `gatewayRef` settings are needed. Use a unique `gatewayClassName` per release on a shared cluster (a GatewayClass is cluster-wide).
 
 ```
-helm install my-portal layer7/portal -n my-portal --create-namespace \
+helm install my-portal layer7/portal -n portal --create-namespace \
   --set global.subdomainPrefix=my-portal \
   --set portal.domain=example.com \
   --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
@@ -43,7 +46,7 @@ Add `--dry-run=server --debug` to check the rendered resources first. `ingress.c
 Use the same settings with `helm upgrade`. Keep `ingress.create=false`, which removes the bundled Nginx from the release.
 
 ```
-helm upgrade my-portal layer7/portal -n my-portal --reset-then-reuse-values \
+helm upgrade my-portal layer7/portal -n portal --reset-then-reuse-values \
   --set ingress.create=false \
   --set ingress.type.kubernetes=false \
   --set contour.contour.ingressClass.create=false \
