@@ -270,6 +270,17 @@ telemetry:
     username:
     password:
 
+# Contour subchart settings (only used when ingress.createContour=true). Third-party chart, reference only.
+contour:
+  configInline:
+    gateway:
+      # Serve the Gateway created by this chart (<release fullname>-gateway). Rendered by the Contour subchart,
+      # so the release name and namespace are filled in automatically. If you set fullnameOverride or
+      # nameOverride on this chart, override gatewayRef.name to match.
+      gatewayRef:
+        name: '{{ if contains "portal" .Release.Name }}{{ .Release.Name }}{{ else }}{{ .Release.Name }}-portal{{ end }}-gateway'
+        namespace: '{{ .Release.Namespace }}'
+
 # Service Account for Portal services
 serviceAccount:
   create: true

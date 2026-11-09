@@ -554,3 +554,16 @@ KafkaTcpProxy assertion.
     {{- $port := int (.Values.portal.kafka.proxy.advertisedPort | default 443) -}}
     {{- printf "%s:%d" $host $port -}}
 {{- end -}}
+
+{{/*
+GatewayClass name for the Gateway. Defaults to "contour" when the built-in Contour is selected.
+*/}}
+{{- define "portal.gatewayAPI.gatewayClassName" -}}
+{{- if .Values.ingress.gatewayAPI.gatewayClassName -}}
+{{- .Values.ingress.gatewayAPI.gatewayClassName -}}
+{{- else if .Values.ingress.createContour -}}
+contour
+{{- else -}}
+{{- required "ingress.gatewayAPI.gatewayClassName is required when ingress.gatewayAPI.create is true" .Values.ingress.gatewayAPI.gatewayClassName -}}
+{{- end -}}
+{{- end -}}

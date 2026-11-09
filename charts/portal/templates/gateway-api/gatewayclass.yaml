@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# GatewayClass for the built-in Contour (ingress.createContour). Not created when using an existing controller.
+{{- if and .Values.ingress.createContour .Values.ingress.type.gatewayAPI .Values.ingress.gatewayAPI.create }}
+{{- if $.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: {{ include "portal.gatewayAPI.gatewayClassName" . }}
+  labels:
+    app: {{ template "portal.name" . }}
+    chart: {{ template "portal.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  controllerName: projectcontour.io/{{ .Release.Namespace }}/contour
+{{- end }}
+{{- end }}
