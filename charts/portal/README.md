@@ -387,7 +387,7 @@ When `ingress.type.contour` is set to `true`, the chart deploys Contour-specific
 
 `ingress.type.contour` and `ingress.type.kubernetes` can both be `true` simultaneously, allowing a gradual migration from standard Ingress to Contour HTTPProxy without a hard DNS cutover.
 
-Contour is available as an optional subchart (`ingress.createContour=true`, default `false`) for reference only. Contour settings go under the `contour:` key; see the Contour [chart](https://github.com/projectcontour/helm-charts/tree/main/charts/contour). Gateway API support in this chart stays controller-agnostic and is not gated on Contour. Contour does not yet support TLSRoute at v1, so keep `ingress.gatewayAPI.tlsRouteApiVersion=gateway.networking.k8s.io/v1alpha2` when using it. An example is in [examples/ingress](../../examples/ingress).
+Contour is available as an optional subchart (`ingress.createContour=true`, default `false`) for reference only. Contour settings go under the `contour:` key; see the Contour [chart](https://github.com/projectcontour/helm-charts/tree/main/charts/contour). The Contour subchart is bundled with this chart, so no `helm dependency build` is needed. When `ingress.createContour`, `ingress.type.gatewayAPI` and `ingress.gatewayAPI.create` are all `true`, the chart also creates the GatewayClass (default name `contour`) and points Contour at the Gateway it creates, so no extra configuration is required. Install the Gateway API/Contour CRDs once per cluster (`contour.gatewayAPI.manageCRDs=true` and `contour.contour.manageCRDs=true` on the first install). Gateway API support in this chart stays controller-agnostic and is not gated on Contour. Contour does not yet support TLSRoute at v1, so keep `ingress.gatewayAPI.tlsRouteApiVersion=gateway.networking.k8s.io/v1alpha2` when using it. An example is in [examples/ingress](../../examples/ingress).
 
 You can read more about Contour [here](https://projectcontour.io/) and view examples of how to deploy the contour ingress controller [here](../../examples/ingress/ingressv1)
 
@@ -432,12 +432,16 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 | `ingress.type.gatewayAPI` | Enable Kubernetes Gateway API resources (TLSRoute, optionally Gateway) | `false` |
 | `ingress.gatewayAPI.tlsRouteApiVersion` | TLSRoute API version. Set to `gateway.networking.k8s.io/v1` when your CRDs include TLSRoute at v1 | `gateway.networking.k8s.io/v1alpha2` |
 | `ingress.gatewayAPI.create` | Create a new Gateway resource managed by this chart | `false` |
-| `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true` | `""` |
+| `ingress.gatewayAPI.gatewayClassName` | GatewayClass name (e.g. `contour`, `eg`). Required when `gatewayAPI.create` is `true`, except with `ingress.createContour=true` where it defaults to `contour` and the chart creates the GatewayClass | `""` |
 | `ingress.gatewayAPI.addresses` | Optional addresses for the Gateway (e.g. static IPs). Array of `{type, value}` | `[]` |
 | `ingress.gatewayAPI.existingRef.name` | Name of an existing Gateway resource to attach routes to. Required when `gatewayAPI.create` is `false` | `""` |
 | `ingress.gatewayAPI.existingRef.namespace` | Namespace of the existing Gateway resource | `""` |
 | `ingress.gatewayAPI.labels` | Additional labels for Gateway API resources (Gateway and TLSRoutes) | `{}` |
 | `ingress.gatewayAPI.annotations` | Additional annotations for Gateway API resources (Gateway and TLSRoutes) | `{}` |
+| `contour.configInline.gateway.gatewayRef.name` | Gateway served by the built-in Contour. Filled in automatically from the release name. Override only if you set `fullnameOverride` or `nameOverride` | `<release>-portal-gateway` |
+| `contour.configInline.gateway.gatewayRef.namespace` | Namespace of that Gateway. Filled in automatically from the release namespace | `<release namespace>` |
+| `contour.gatewayAPI.manageCRDs` | Let the Contour subchart install the Gateway API CRDs. Set `true` on the first install on a cluster only | `false` |
+| `contour.contour.manageCRDs` | Let the Contour subchart install the Contour CRDs (Contour subchart default). Set `false` if the CRDs already exist on the cluster | `true` |
 
 ### SMTP Parameters
 | Parameter                                 | Description                                                                                                          | Default                                                      |
