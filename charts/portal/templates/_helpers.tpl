@@ -556,13 +556,13 @@ KafkaTcpProxy assertion.
 {{- end -}}
 
 {{/*
-GatewayClass name for the Gateway. Defaults to "contour" when the built-in Contour is selected.
+GatewayClass name for the Gateway. Defaults to a per-release name (GatewayClass is cluster-scoped) when the built-in Contour is selected.
 */}}
 {{- define "portal.gatewayAPI.gatewayClassName" -}}
 {{- if .Values.ingress.gatewayAPI.gatewayClassName -}}
 {{- .Values.ingress.gatewayAPI.gatewayClassName -}}
 {{- else if .Values.ingress.createContour -}}
-contour
+{{- printf "contour-%s-%s" .Release.Namespace (include "portal.fullname" .) | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- required "ingress.gatewayAPI.gatewayClassName is required when ingress.gatewayAPI.create is true" .Values.ingress.gatewayAPI.gatewayClassName -}}
 {{- end -}}

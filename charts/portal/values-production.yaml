@@ -272,6 +272,17 @@ telemetry:
 
 # Contour subchart settings (only used when ingress.createContour=true). Third-party chart, reference only.
 contour:
+  # Do not create a cluster-wide (default) IngressClass; the Portal uses the Gateway API.
+  # Managing CRDs is a conscious choice and disabled by default: with manageCRDs=true the CRDs belong to this
+  # release and `helm uninstall` removes them (and every HTTPProxy etc.) for the whole cluster. Install them
+  # separately instead (see README).
+  gatewayAPI:
+    manageCRDs: false
+  contour:
+    manageCRDs: false
+    ingressClass:
+      create: false
+      default: false
   configInline:
     gateway:
       # Serve the Gateway created by this chart (<release fullname>-gateway). Rendered by the Contour subchart,

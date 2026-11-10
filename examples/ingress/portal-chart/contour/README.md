@@ -8,7 +8,13 @@ Deploys Contour with the Portal (the chart creates the GatewayClass and Gateway)
 
 ## Steps
 
-1. Install the CRDs once per cluster, either by setting `contour.gatewayAPI.manageCRDs=true` and `contour.contour.manageCRDs=true` on the first install, or by applying them separately. Uninstalling a release that owns the CRDs removes them for the whole cluster.
+1. Install the CRDs once per cluster, before the Portal. The chart does not manage them (`contour.gatewayAPI.manageCRDs` and `contour.contour.manageCRDs` are `false`), because CRDs owned by a release are deleted for the whole cluster when it is uninstalled. Skip this if your cluster already has them.
+   ```
+   # Gateway API, experimental channel (includes TLSRoute). Pick the version your Contour supports.
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/<version>/experimental-install.yaml
+   # Contour (match the Contour version bundled in the chart)
+   kubectl apply -f https://raw.githubusercontent.com/projectcontour/contour/<contour-version>/examples/contour/01-crds.yaml
+   ```
 2. Install the Portal with [values.yaml](./values.yaml):
    ```
    helm install my-portal layer7/portal -n portal --create-namespace \
@@ -20,7 +26,7 @@ Deploys Contour with the Portal (the chart creates the GatewayClass and Gateway)
 
 ### Install with `--set` flags instead of values.yaml
 
-The chart creates the GatewayClass and the Gateway reference itself, so no `kubectl apply` or `gatewayRef` settings are needed. Use a unique `gatewayClassName` per release on a shared cluster (a GatewayClass is cluster-wide).
+The chart creates the GatewayClass and the Gateway reference itself, so no `kubectl apply` or `gatewayRef` settings are needed. The GatewayClass name defaults to `contour-<namespace>-<fullname>` because a GatewayClass is cluster-wide. Install the CRDs first (step 1).
 
 ```
 helm install my-portal layer7/portal -n portal --create-namespace \
@@ -29,13 +35,9 @@ helm install my-portal layer7/portal -n portal --create-namespace \
   --set-file "portal.registryCredentials=/path/to/docker-secret.yaml" \
   --set ingress.create=false \
   --set ingress.type.kubernetes=false \
-  --set contour.contour.ingressClass.create=false \
-  --set contour.contour.ingressClass.default=false \
   --set ingress.createContour=true \
   --set ingress.type.gatewayAPI=true \
   --set ingress.gatewayAPI.create=true \
-  --set ingress.gatewayAPI.gatewayClassName=contour-my-portal \
-  --set contour.contour.manageCRDs=false \
   --set contour.envoy.service.loadBalancerIP=<static-ip>
 ```
 
@@ -43,23 +45,19 @@ Add `--dry-run=server --debug` to check the rendered resources first. `ingress.c
 
 ## Upgrading an existing release (for example from the bundled Nginx)
 
-Use the same settings with `helm upgrade`. Keep `ingress.create=false`, which removes the bundled Nginx from the release.
+Use the same settings with `helm upgrade`. Keep `ingress.create=false`, which removes the bundled Nginx from the release. `--reset-then-reuse-values` needs Helm 3.14 or later.
 
 ```
 helm upgrade my-portal layer7/portal -n portal --reset-then-reuse-values \
   --set ingress.create=false \
   --set ingress.type.kubernetes=false \
-  --set contour.contour.ingressClass.create=false \
-  --set contour.contour.ingressClass.default=false \
   --set ingress.createContour=true \
   --set ingress.type.gatewayAPI=true \
   --set ingress.gatewayAPI.create=true \
-  --set ingress.gatewayAPI.gatewayClassName=contour-my-portal \
-  --set contour.contour.manageCRDs=false \
   --set contour.envoy.service.loadBalancerIP=<static-ip>
 ```
 
-If you created the GatewayClass manually in an earlier install, the upgrade fails because it already exists. Delete it first (`kubectl delete gatewayclass contour-my-portal`), or let Helm adopt it by adding the label `app.kubernetes.io/managed-by=Helm` and the annotations `meta.helm.sh/release-name` and `meta.helm.sh/release-namespace`.
+If you created the GatewayClass manually in an earlier install, the upgrade fails because it already exists. Delete it first (`kubectl delete gatewayclass contour-portal-my-portal`), or let Helm adopt it by adding the label `app.kubernetes.io/managed-by=Helm` and the annotations `meta.helm.sh/release-name` and `meta.helm.sh/release-namespace`.
 
 ## Using an existing Contour
 

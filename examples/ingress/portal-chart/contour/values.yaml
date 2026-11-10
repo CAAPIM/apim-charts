@@ -10,19 +10,4 @@ ingress:
     # Contour does not support TLSRoute at v1 yet
     tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
     create: true
-    # gatewayClassName defaults to "contour" (GatewayClass created by the chart) when createContour is true
-
-contour:
-  # Set true on the first install on a cluster only (CRDs are cluster-wide)
-  gatewayAPI:
-    manageCRDs: false
-  contour:
-    manageCRDs: false
-  # Pull images from your own registry if needed
-  # contour:
-  #   image:
-  #     registry: my.registry.example.com
-  envoy:
-    kind: daemonset   # or "deployment" with replicaCount
-    service:
-      type: LoadBalancer
+    # gatewayClassName defaults to a per-release name (GatewayClass created by the chart) when createContour is true
