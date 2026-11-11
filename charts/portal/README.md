@@ -1345,9 +1345,7 @@ list entries fail authenticator startup. HTTPS and trusted certificates remain m
 The setting does not bypass TLS trust or egress rules. Prefer narrow exceptions for actual IdPs.
 
 Set `image.authenticator` to the compatible approved build; the setting is not implemented by
-older images. Coordinate the companion Portal error-mapping build as well. This chart change
-does not invent or publish new application image tags. Contributions target the repository's
-`unstable` branch as described in CONTRIBUTING.md.
+older images. Coordinate the companion Portal error-mapping build as well.
 
 The authenticator Pod template includes `checksum/authenticator-config`, derived from its rendered
 ConfigMap. A configuration change therefore triggers rollout; an unchanged render has an unchanged
