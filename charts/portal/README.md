@@ -9,6 +9,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.9 General Updates
+- Added `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS` (default `""`) to allow narrow private (RFC1918, CGNAT, ULA) CIDR exceptions for private identity providers. Requires an authenticator image that supports this setting. See [Private identity providers](#private-identity-providers).
+- The authenticator pod template now includes a reserved `checksum/authenticator-config` annotation so authenticator configuration changes trigger a rollout. `authenticator.podAnnotations` must not set this key, and `SSRF_ALLOWED_CIDRS` must not be set in `authenticator.additionalSecret`.
+
 ## 2.4.8 General Updates
 - Retire Portal Enterprise Container. All remaining capabilities migrated to portal-data and authenticator (RBAC port 8081).
 - Removed portalEnterprise configuration and deployment templates.
@@ -501,6 +505,7 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 | `authenticator.pdb.maxUnavailable`                             | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
 | `authenticator.pdb.minAvailable`                               | Minimum number of available pods                                                                                             | `1`                                                          |
 | `authenticator.podAnnotations`                                 | authenticator pod annotations settings.                                                                                      | `{} evaluated as a template`                                 |
+| `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS`               | Comma-separated RFC1918/CGNAT/ULA CIDRs allowed for private identity providers. See [Private identity providers](#private-identity-providers) | `""`                                                         |
 | `authenticator.podSecurityContext`                             | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                  | `{} evaluated as a template`                                 |
 | `authenticator.containerSecurityContext`                       | authenticator container's security context settings. Overrides global.containerSecurityContext settings                      | `{} evaluated as a template`                                 |
 | `authenticator.strategy`                                       | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
