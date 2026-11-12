@@ -8,5 +8,6 @@ chart-repos:
   - hazelcast=https://hazelcast-charts.s3.amazonaws.com/
   - nginx=https://kubernetes.github.io/ingress-nginx/
   - layer7=https://caapim.github.io/apim-charts/
+  - contour=https://projectcontour.github.io/helm-charts/
 excluded-charts:
   - druid

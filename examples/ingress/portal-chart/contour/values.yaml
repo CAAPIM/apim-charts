@@ -1,0 +1,13 @@
+# Example: deploy Contour (projectcontour/contour subchart) with the Portal and route with Gateway API.
+# Third-party chart, reference only. Not supported/maintained by Layer7.
+ingress:
+  create: false
+  createContour: true
+  type:
+    kubernetes: false
+    gatewayAPI: true
+  gatewayAPI:
+    # Contour does not support TLSRoute at v1 yet
+    tlsRouteApiVersion: gateway.networking.k8s.io/v1alpha2
+    create: true
+    # gatewayClassName defaults to a per-release name (GatewayClass created by the chart) when createContour is true

@@ -26,7 +26,7 @@ metadata:
     {{- end }}
   {{- end }}
 spec:
-  gatewayClassName: {{ required "ingress.gatewayAPI.gatewayClassName is required when ingress.gatewayAPI.create is true" .Values.ingress.gatewayAPI.gatewayClassName }}
+  gatewayClassName: {{ include "portal.gatewayAPI.gatewayClassName" . }}
   {{- if .Values.ingress.gatewayAPI.addresses }}
   addresses:
     {{- toYaml .Values.ingress.gatewayAPI.addresses | nindent 4 }}
