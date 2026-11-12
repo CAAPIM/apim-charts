@@ -9,6 +9,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.9 General Updates
+- Added `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS` (default `""`) to allow narrow private (RFC1918, CGNAT, ULA) CIDR exceptions for private identity providers. Requires an authenticator image that supports this setting. See [Private identity providers](#private-identity-providers).
+- The authenticator pod template now includes a reserved `checksum/authenticator-config` annotation so authenticator configuration changes trigger a rollout. `authenticator.podAnnotations` must not set this key, and `SSRF_ALLOWED_CIDRS` must not be set in `authenticator.additionalSecret`.
+
 ## 2.4.8 General Updates
 - Retire Portal Enterprise Container. All remaining capabilities migrated to portal-data and authenticator (RBAC port 8081).
 - Removed portalEnterprise configuration and deployment templates.
@@ -501,6 +505,7 @@ When `ingress.gatewayAPI.create` is `true`, the chart auto-generates one TLS pas
 | `authenticator.pdb.maxUnavailable`                             | Maximum number of simultaneous unavailable pods                                                                              | `not set`                                                    |
 | `authenticator.pdb.minAvailable`                               | Minimum number of available pods                                                                                             | `1`                                                          |
 | `authenticator.podAnnotations`                                 | authenticator pod annotations settings.                                                                                      | `{} evaluated as a template`                                 |
+| `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS`               | Comma-separated RFC1918/CGNAT/ULA CIDRs allowed for private identity providers. See [Private identity providers](#private-identity-providers) | `""`                                                         |
 | `authenticator.podSecurityContext`                             | authenticator pod's security context settings. Overrides global.podSecurityContext settings                                  | `{} evaluated as a template`                                 |
 | `authenticator.containerSecurityContext`                       | authenticator container's security context settings. Overrides global.containerSecurityContext settings                      | `{} evaluated as a template`                                 |
 | `authenticator.strategy`                                       | Update strategy                                                                                                              | `{} evaluated as a template`                                 |
@@ -1327,3 +1332,33 @@ $ kubectl scale statefulset <release-name>-mysql --replicas=<replica_count>
 Copyright (c) 2025 CA, A Broadcom Company. All rights reserved.
 
 This software may be modified and distributed under the terms of the MIT license. See the [LICENSE](https://github.com/CAAPIM/apim-charts/blob/stable/LICENSE) file for details.
+
+
+## Private identity providers
+
+With an authenticator build containing the DE686037 deployment policy, use a values override file:
+
+```yaml
+authenticator:
+  additionalEnv:
+    SSRF_ALLOWED_CIDRS: "10.20.30.15/32,fd12:3456::/32"
+```
+
+Both values files default this setting to `""`. Only literal RFC1918, CGNAT and ULA CIDRs are
+eligible; broad ranges containing other address classes, nonzero host bits and malformed/empty
+list entries fail authenticator startup. HTTPS and trusted certificates remain mandatory.
+The setting does not bypass TLS trust or egress rules. Prefer narrow exceptions for actual IdPs.
+
+Set `image.authenticator` to the compatible approved build; the setting is not implemented by
+older images. Coordinate the companion Portal error-mapping build as well.
+
+The authenticator Pod template includes `checksum/authenticator-config`, derived from its rendered
+ConfigMap. A configuration change therefore triggers rollout; an unchanged render has an unchanged
+checksum. Existing user annotations and `forceRedeploy` behavior are retained. The checksum annotation
+is reserved. Do not put `SSRF_ALLOWED_CIDRS` in `authenticator.additionalSecret`; rendering rejects that
+conflict. Remove any competing JVM/command-line property override as well.
+
+Revoke an exception by explicitly setting `SSRF_ALLOWED_CIDRS: ""` in the effective override file.
+Deleting the key alone can retain the previous value with `--reuse-values` or pipeline deep merges.
+Inspect the rendered upgrade and wait for all replicas to adopt the new policy. Existing sessions
+are not revoked. Use a file for comma-separated CIDRs rather than unescaped Helm `--set` values.
