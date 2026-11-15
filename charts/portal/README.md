@@ -9,6 +9,9 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
+## 2.4.10 General Updates
+- This new version of the chart supports API Portal 5.4.3
+
 ## 2.4.9 General Updates
 - Added `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS` (default `""`) to allow narrow private (RFC1918, CGNAT, ULA) CIDR exceptions for private identity providers. Requires an authenticator image that supports this setting. See [Private identity providers](#private-identity-providers).
 - The authenticator pod template now includes a reserved `checksum/authenticator-config` annotation so authenticator configuration changes trigger a rollout. `authenticator.podAnnotations` must not set this key, and `SSRF_ALLOWED_CIDRS` must not be set in `authenticator.additionalSecret`.
