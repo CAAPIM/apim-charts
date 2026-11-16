@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+{{- if and .Values.database.type .Values.database.enabled }}
+  {{ fail "database.type requires database.enabled: false — an embedded database cannot be used alongside an external database" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,6 +37,27 @@ data:
     {{- else }}
   SSG_DATABASE_JDBC_URL: {{ .Values.database.jdbcURL }}
     {{- end }}
+    {{- if .Values.database.sslMode }}
+  SSG_DATABASE_MYSQL_SSL_MODE: {{ .Values.database.sslMode | quote }}
+    {{- end }}
+    {{- if .Values.database.sslTrustKeystorePath }}
+  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_URL: {{ include "gateway.keystoreFilePath" .Values.database.sslTrustKeystorePath | quote }}
+    {{- end }}
+    {{- if .Values.database.sslTrustKeystoreType }}
+  SSG_DATABASE_MYSQL_TRUST_KEYSTORE_TYPE: {{ .Values.database.sslTrustKeystoreType | quote }}
+    {{- end }}
+    {{- if .Values.database.sslClientKeystorePath }}
+  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_URL: {{ include "gateway.keystoreFilePath" .Values.database.sslClientKeystorePath | quote }}
+    {{- end }}
+    {{- if .Values.database.sslClientKeystoreType }}
+  SSG_DATABASE_MYSQL_CLIENT_KEYSTORE_TYPE: {{ .Values.database.sslClientKeystoreType | quote }}
+    {{- end }}
+    {{- if .Values.database.sslExtraParams }}
+  SSG_DATABASE_MYSQL_EXTRA_PARAMS: {{ .Values.database.sslExtraParams | quote }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.database.type }}
+  SSG_DATABASE_TYPE: {{ .Values.database.type | lower | quote }}
   {{- end }}
 {{- end }}
 {{- if or (.Values.hazelcast.enabled) (.Values.hazelcast.external) }}

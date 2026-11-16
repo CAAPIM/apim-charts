@@ -14,14 +14,13 @@ Learn [why](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-ap
 
 ## Quick Start
 
-Add the layer7 repository:
+Login to the Broadcom Artifactory Helm registry. See [Downloading APIM Artifacts from Broadcom Artifactory](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/overview/apim/downloading-apim-artifacts-from-broadcom-artifactory.html) for how to obtain a registry token (or an API key for CI/CD use):
 
-    $ helm repo add layer7 https://caapim.github.io/apim-charts/
-    $ helm repo update
+    $ helm registry login layer7.packages.broadcom.com -u <email> -p <registry-token>
 
 Then, you can install the charts by:
 
-    $ helm install my-ssg layer7/gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true"
+    $ helm install my-ssg oci://layer7.packages.broadcom.com/charts/gateway --set-file "license.value=path/to/license.xml" --set "license.accept=true"
 
 ## Helm Charts
 

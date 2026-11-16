@@ -26,3 +26,18 @@ Gateway Helm Chart Readme
 
 Thinking in Kubernetes
 - https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-gateway/congw-10-1/learning-center/thinking-in-kubernetes.html#thinkingk8s
+
+{{- if and .Values.database.migrationJob.enabled .Release.IsUpgrade }}
+
+----------------------------------------------------------------------------------
+IMPORTANT: DB Migration Job Enabled
+----------------------------------------------------------------------------------
+A pre-upgrade database migration job has been deployed to safely apply schema updates.
+If you have Gateway version 11.2.2 or newer, you can now start your main Gateway deployments with:
+  javaArgs:
+    - "-Dgateway.db.schema-update.mode=skip"
+
+This ensures that the Gateway will start up quickly by skipping the liquibase schema check entirely,
+regardless of whether the DATABASECHANGELOGLOCK is locked. This mode can only be used with Helm upgrades,
+not installs.
+{{- end }}
