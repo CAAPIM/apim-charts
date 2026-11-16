@@ -1,3 +1,8 @@
+[![Lint and Test Charts](https://github.com/CAAPIM/apim-charts/actions/workflows/lint-test.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/lint-test.yaml)
+[![pages-build-deployment](https://github.com/CAAPIM/apim-charts/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/pages/pages-build-deployment)
+[![Release Charts](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/release.yaml)
+[![Validate Schemas](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml/badge.svg)](https://github.com/CAAPIM/apim-charts/actions/workflows/schema-validation.yaml)
+
 ## APIM Helm Charts
 This repository contains a series of Helm Charts for the Layer7 API Management (APIM) Portfolio.
 
