@@ -7,12 +7,27 @@ The Layer7 API Gateway is now running with Java 21 with the release of v11.2.0.
 
 If you use Policy Manager, you will need to update to v11.2.0.
 
+## 3.1.5 Documentation
+- Replaced gh-pages Helm install instructions (`helm repo add .../caapim.github.io/...`) with Artifactory OCI (`helm registry login` + `oci://layer7.packages.broadcom.com/charts/gateway`)
+
+## 3.1.4 Minor Fix
+- Fixed OTK_JDBC_URL generation when using Demo DB
+
+## 3.1.3 General Updates
+- Added an opt-in pre-upgrade Database Migration Job (`database.migrationJob`) that applies Liquibase schema changes before new Gateway pods roll out, avoiding lock contention during rolling upgrades. Requires Gateway image 11.2.2 or newer. See [Database Migration Job](./README.md#database-migration-job-pre-upgrade-schema-updates).
+- Added support for the H2 embedded database as an alternative to the default Derby embedded database. Set `database.type: "h2"` to enable (requires `database.enabled: false`).
+- Added discrete `database.ssl*` values as an alternative to embedding MySQL TLS parameters in `database.jdbcURL`. See [Database Configuration](./README.md#database-configuration).
+
+## 3.1.2 General Updates
+Updated the default mysql maxAllowedPacket to 64M with an option to customize from values.yaml
+
 ## 3.1.1 OTK 4.7.0 Released
 - The default image tag in values.yaml and production-values.yaml for OTK updated to 4.7.0.
   - otk.job.image.tag: 4.7.0
 - Added support for SSL connection for MySQL database. The sslMode option can be used in the JDBC query
 - Upgrading to 4.7.0 should be tested & validated in a lower environment prior to production rollout
 - For OTK 4.7.0 specific features please refer to [Release Notes](https://techdocs.broadcom.com/us/en/ca-enterprise-software/layer7-api-management/api-management-oauth-toolkit/4-7.html)
+
 
 ## 3.1.0 Bitnami SubChart removal
 - All Bitnami SubCharts have been removed from the Gateway Helm Chart
@@ -338,8 +353,8 @@ config:
 > - To upgrade OTK to 4.6.2 installed over gateway with demo db as database, update helm repo, perform helm delete and install.
 > - When upgrading OTK 4.6.2 on a db backed gateway, the gateway will restart as there is a change related to OTK health check bundle in gateway deployment. This can lead to failure of OTK upgrade. To circumvent this, please perform a helm upgrade `otk.healthCheckBundle.enabled` set to `false` and then upgrade to the 3.0.17.
 > ```
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" layer7/gateway --version 3.0.16 -f ./values-production.yaml
-> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" layer7/gateway --version 3.0.17 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true,otk.healthCheckBundle.enabled=false" oci://layer7.packages.broadcom.com/charts/gateway --version 3.0.16 -f ./values-production.yaml
+> helm upgrade my-ssg --set-file "license.value=license.value=path/to/license.xml" --set "license.accept=true" oci://layer7.packages.broadcom.com/charts/gateway --version 3.0.17 -f ./values-production.yaml
 > ```
 
 
@@ -531,10 +546,9 @@ Things to note and be aware of are the deprecation of TLSv1.0/TLSv1.1 and the JA
 ## Upgrading to 2.0.2
 ***If you are using the demo database in a previous version of this Chart this upgrade will remove it. If you wish to keep your data you will need to perform a backup.***
 ```
-$ helm repo update
-$ helm show values layer7/gateway > gateway-values.yaml
+$ helm show values oci://layer7.packages.broadcom.com/charts/gateway > gateway-values.yaml
 
 Inspect and update the new gateway-values.yaml
 
-$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  layer7/gateway
+$ helm upgrade my-ssg --set-file "license.value=path/to/license.xml" --set "license.accept=true" -f ./gateway-values.yaml  oci://layer7.packages.broadcom.com/charts/gateway
 ```

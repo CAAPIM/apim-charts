@@ -78,6 +78,8 @@ portal:
   enrollNotificationEmail: noreply@mail.example.com
   analytics:
     enabled: true
+    # Please set analytics.replicaCount to a minimum of 2
+    aggregation: false
   # Kafka is the messaging backbone for Portal :
   # Kafka is always deployed and proxied through APIM
   # the kafka subchart itself is governed by kafka.enabled.
@@ -120,8 +122,6 @@ portal:
   # SeaweedFS should be enabled if infrastructureManagement or analytics enabled.
   seaweedFs:
     enabled: true
-  # Please set analytics.replicaCount to a minimum of 2
-    aggregation: false
   # Specify a Gateway v9.x license file via set portal.license.value
   # This bootstraps a license to apim
   # To renew a license toggle license.secretName and specify your new license with helm upgrade
@@ -539,23 +539,23 @@ tenantProvisioner:
   additionalEnv:
 
 image:
-  dispatcher: dispatcher:5.4.2
-  apim: ingress:5.4.2
-  data: portal-data:5.4.2
-  tps: tenant-provisioning-service:5.4.2
-  analytics: analytics-server:5.4.2
-  authenticator: authenticator:5.4.2
-  intelligenceServer: intelligence-server:5.4.2
-  dbUpgrade: db-upgrade-portal:5.4.2
-  rbacUpgrade: db-upgrade-rbac:5.4.2
-  upgradeVerify: upgrade-verify:5.4.2
-  tlsManager: tls-automator:5.4.2
+  dispatcher: dispatcher:5.4.2.5
+  apim: ingress:5.4.2.5
+  data: portal-data:5.4.2.5
+  tps: tenant-provisioning-service:5.4.2.5
+  analytics: analytics-server:5.4.2.5
+  authenticator: authenticator:5.4.2.5
+  intelligenceServer: intelligence-server:5.4.2.5
+  dbUpgrade: db-upgrade-portal:5.4.2.5
+  rbacUpgrade: db-upgrade-rbac:5.4.2.5
+  upgradeVerify: upgrade-verify:5.4.2.5
+  tlsManager: tls-automator:5.4.2.5
 
 ##
 ## Subchart Configuration
 ##
 seaweedfs:
-  image: seaweedfs:5.4.2
+  image: seaweedfs:5.4.2.5
   persistence:
     storage:
       seaweedfs: 50Gi
@@ -988,14 +988,14 @@ druid:
   # affinity: {}
 
   image:
-    zookeeper: zookeeper:5.4.2
-    broker: druid:5.4.2
-    coordinator: druid:5.4.2
-    middlemanager: druid:5.4.2
-    minio: minio:5.4.2
-    historical: druid:5.4.2
-    kafka: kafka:5.4.2
-    ingestion: ingestion-server:5.4.2
+    zookeeper: zookeeper:5.4.2.5
+    broker: druid:5.4.2.5
+    coordinator: druid:5.4.2.5
+    middlemanager: druid:5.4.2.5
+    minio: minio:5.4.2.5
+    historical: druid:5.4.2.5
+    kafka: kafka:5.4.2.5
+    ingestion: ingestion-server:5.4.2.5
 
 
 # Configuration for the custom Kafka subchart.
@@ -1012,8 +1012,8 @@ kafka:
 
   # Image configuration
   image:
-    kafka: kafka:5.4.2
-    autoDiscovery: tls-automator:5.4.2  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
+    kafka: kafka:5.4.2.5
+    autoDiscovery: tls-automator:5.4.2.5  # Used for Kafka broker discovery (overridden by parent chart's image.autoDiscovery)
     pullPolicy: IfNotPresent
 
   # Kafka deployment configuration
@@ -1129,7 +1129,7 @@ rabbitmq:
   image:
     registry: caapim
     repository: message-broker
-    tag: "5.4.2"
+    tag: "5.4.2.5"
     pullSecrets:
       - broadcom-apim
   pdb:
