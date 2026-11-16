@@ -9,13 +9,10 @@ This Chart deploys the Layer7 API Developer Portal on a Kubernetes Cluster using
 
 ## Release Notes
 
-## 2.4.11 General Updates
-- Added `authenticator.additionalEnv.SSRF_ALLOWED_CIDRS` (default `""`) to allow narrow private (RFC1918, CGNAT, ULA) CIDR exceptions for private identity providers. Requires an authenticator image that supports this setting. See [Private identity providers](#private-identity-providers).
-- The authenticator pod template now includes a reserved `checksum/authenticator-config` annotation so authenticator configuration changes trigger a rollout. `authenticator.podAnnotations` must not set this key, and `SSRF_ALLOWED_CIDRS` must not be set in `authenticator.additionalSecret`.
-
 ## 2.4.10 General Updates
 - Retire Portal Enterprise Container. All remaining capabilities migrated to portal-data and authenticator (RBAC port 8081).
 - Removed portalEnterprise configuration and deployment templates.
+- This new version of the chart supports API Portal 5.4.3
 
 ## 2.4.9 Documentation
 - Replaced gh-pages Helm install instructions (`helm repo add .../caapim.github.io/...`) with Artifactory OCI (`helm registry login` + `oci://layer7.packages.broadcom.com/charts/portal`)
