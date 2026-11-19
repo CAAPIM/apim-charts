@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Broadcom Inc. and its subsidiaries. All Rights Reserved.
+# AI assistance has been used to generate some or all contents of this file. That includes, but is not limited to, new code, modifying existing code, stylistic edits.
 # Global values
 global:
   portalRepository: caapim/
@@ -524,48 +526,6 @@ portalData:
 #           operator: In
 #           values:
 #           - portal-data
-#       topologyKey: "kubernetes.io/hostname"
-  additionalEnv:
-
-portalEnterprise:
-  forceRedeploy: false
-  replicaCount: 2
-  javaOptions: -Xms2g -Xmx2g
-  image:
-    pullPolicy: IfNotPresent
-  pdb:
-    create: false
-    maxUnavailable: ""
-    minAvailable: ""
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-  podAnnotations: {}
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-  podSecurityContext: {}
-  # ref:https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext: {}
-  resources:
-    requests:
-      cpu: 250m
-      memory: 2300Mi
-    limits:
-      cpu: 2000m
-      memory: 3072Mi
-# nodeSelector: {}
-# tolerations: []
-# affinity:
-#   podAntiAffinity:
-#     requiredDuringSchedulingIgnoredDuringExecution:
-#     - labelSelector:
-#         matchExpressions:
-#         - key: app
-#           operator: In
-#           values:
-#           - portal-enterprise
 #       topologyKey: "kubernetes.io/hostname"
   additionalEnv:
 
